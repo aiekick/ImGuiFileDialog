@@ -1,6 +1,6 @@
 # ImGuiFileDialog
 
-An example of the File Dialog integrated with the ImGui Demo App
+An example of the File Dialog integrated within the ImGui Demo App
 
 ![alt text](ScreenShot.png)
 
