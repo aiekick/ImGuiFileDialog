@@ -182,7 +182,7 @@ bool ImGuiFileDialog::FileDialog(const char* vName, const char* vFilters, std::s
 
 	IsOk = false;
 
-	ImGui::Begin("Save Dialog");
+	ImGui::Begin(vName);
 
 	if (vPath.size() > 0) vPath = ".";
 	
