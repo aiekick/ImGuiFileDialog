@@ -184,7 +184,7 @@ bool ImGuiFileDialog::FileDialog(const char* vName, const char* vFilters, std::s
 
 	ImGui::Begin(vName);
 
-	if (vPath.size() > 0) vPath = ".";
+	if (vPath.size() == 0) vPath = ".";
 	
 	if (m_FileList.size() == 0)
 	{
