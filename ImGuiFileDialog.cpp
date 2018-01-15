@@ -41,7 +41,6 @@ inline void AppendToBuffer(char* vBuffer, int vBufferLen, std::string vStr)
 	std::string st = vStr;
 	if (st != "" && st != "\n")
 		ReplaceString(st, "\n", "");
-
 	int slen = strlen(vBuffer);
 	vBuffer[slen] = '\0';
 	std::string str = std::string(vBuffer);
@@ -49,8 +48,11 @@ inline void AppendToBuffer(char* vBuffer, int vBufferLen, std::string vStr)
 	str += vStr;
 	int len = vBufferLen - 1;
 	if (len > str.size()) len = str.size();
+#ifdef MINGW32
 	strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
-
+#else
+	strncpy(vBuffer, str.c_str(), len);
+#endif
 	vBuffer[len] = '\0';
 }
 
@@ -99,11 +101,23 @@ void ImGuiFileDialog::ScanDir(std::string vPath)
 	{
 		// get currentPath
 		DIR *currentDir = opendir(vPath.c_str());
-		std::wstring ws(currentDir->wdirp->patt);
-		m_CurrentPath = std::string(ws.begin(), ws.end());
-		ReplaceString(m_CurrentPath, "\\*", "");
-		closedir(currentDir);
-		m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, '\\');
+		if (currentDir == 0) // path not existing
+		{
+			vPath = "."; // current  app path
+			currentDir = opendir(vPath.c_str());
+		}
+		if (currentDir != 0)
+		{
+			std::wstring ws(currentDir->wdirp->patt);
+			m_CurrentPath = std::string(ws.begin(), ws.end());
+			ReplaceString(m_CurrentPath, "\\*", "");
+			closedir(currentDir);
+			m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, '\\');
+		}
+		else
+		{
+			return;
+		}
 	}
 	
 	/* Scan files in directory */
@@ -151,11 +165,19 @@ void ImGuiFileDialog::ScanDir(std::string vPath)
 void ImGuiFileDialog::SetCurrentDir(std::string vPath)
 {
 	DIR *dir = opendir(vPath.c_str());
-	std::wstring ws(dir->wdirp->patt);
-	m_CurrentPath = std::string(ws.begin(), ws.end());
-	ReplaceString(m_CurrentPath, "\\*", "");
-	closedir(dir);
-	m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, '\\');
+	if (dir == 0)
+	{
+		vPath = ".";
+		dir = opendir(vPath.c_str());
+	}
+	if (dir != 0)
+	{
+		std::wstring ws(dir->wdirp->patt);
+		m_CurrentPath = std::string(ws.begin(), ws.end());
+		ReplaceString(m_CurrentPath, "\\*", "");
+		closedir(dir);
+		m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, '\\');
+	}
 }
 
 void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
