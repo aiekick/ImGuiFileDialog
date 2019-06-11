@@ -168,7 +168,7 @@ void ImGuiFileDialog::SetCurrentDir(std::string vPath) {
   }
   if (dir != 0) {
 #ifdef WIN32
-    std::wstring ws(currentDir->wdirp->patt);
+    std::wstring ws(dir->wdirp->patt);
     m_CurrentPath = std::string(ws.begin(), ws.end());
 #else
     struct dirent* pDirent = nullptr;
