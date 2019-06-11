@@ -1,4 +1,5 @@
 #include "ImGuiFileDialog.h"
+#include <iostream>
 
 #ifndef WIN32
 #include <limits.h>
@@ -88,6 +89,16 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
   int i = 0;
   int n = 0;
 
+#ifndef WIN32
+  if (vPath == ".") {
+    char raw_path[PATH_MAX + 1];
+    realpath(".", raw_path);
+    vPath = std::string(raw_path);
+  } else if (vPath.size() > 0 && vPath[0] != DIRECTORY_SEPARATOR_CHAR) {
+    vPath = std::string(DIRECTORY_SEPARATOR_STR) + vPath;
+  }
+#endif
+
   m_FileList.clear();
 
   if (m_CurrentPath_Decomposition.size() == 0) {
@@ -103,24 +114,24 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
       std::wstring ws(currentDir->wdirp->patt);
       m_CurrentPath = std::string(ws.begin(), ws.end());
 #else
-      struct dirent* pDirent = nullptr;
-      pDirent = readdir(currentDir);
-      if (pDirent) {
-        char rawPath[PATH_MAX + 1];
-        realpath(pDirent->d_name, rawPath);
-        m_CurrentPath = std::string(rawPath);
-      }
+      char rawPath[PATH_MAX + 1];
+      realpath(vPath.c_str(), rawPath);
+      m_CurrentPath = std::string(rawPath);
 #endif
       ReplaceString(m_CurrentPath, "\\*", "");
       closedir(currentDir);
-      m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
+      m_CurrentPath_Decomposition =
+          splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
     } else {
       return;
     }
   }
-
+  //std::cerr << "scanning files in " << vPath << "\n";
   /* Scan files in directory */
   n = scandir(vPath.c_str(), &files, NULL, alphaSort);
+
+  //std::cerr << "n is " << n << "\n";
+
   if (n >= 0) {
     for (i = 0; i < n; i++) {
       struct dirent* ent = files[i];
@@ -128,11 +139,7 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
       FileInfoStruct infos;
 
       infos.fileName = ent->d_name;
-
-      if (infos.type == 'f') {
-        size_t lpt = infos.fileName.find_last_of(".");
-        if (lpt != std::string::npos) infos.ext = infos.fileName.substr(lpt);
-      }
+      //std::cout << "scanned filename is " << infos.fileName << "\n";
 
       if (infos.fileName != ".") {
         switch (ent->d_type) {
@@ -147,6 +154,11 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
             break;
         }
 
+        if (infos.type == 'f') {
+          size_t lpt = infos.fileName.find_last_of(".");
+          if (lpt != std::string::npos) infos.ext = infos.fileName.substr(lpt);
+        }
+
         m_FileList.push_back(infos);
       }
     }
@@ -158,6 +170,8 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
   }
 
   std::sort(m_FileList.begin(), m_FileList.end(), stringComparator);
+
+  //  for (auto& file : m_FileList) std::cout << "file : " << file.fileName << "\n";
 }
 
 void ImGuiFileDialog::SetCurrentDir(std::string vPath) {
@@ -171,17 +185,15 @@ void ImGuiFileDialog::SetCurrentDir(std::string vPath) {
     std::wstring ws(dir->wdirp->patt);
     m_CurrentPath = std::string(ws.begin(), ws.end());
 #else
-    struct dirent* pDirent = nullptr;
-    pDirent = readdir(dir);
-    if (pDirent) {
       char rawPath[PATH_MAX + 1];
-      realpath(pDirent->d_name, rawPath);
+      realpath(vPath.c_str(), rawPath);
       m_CurrentPath = std::string(rawPath);
-    }
 #endif
-    ReplaceString(m_CurrentPath, "\\*", ""); //TODO understand the pont of this...?
+    ReplaceString(m_CurrentPath, "\\*",
+                  "");  // TODO understand the pont of this...?
     closedir(dir);
-    m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
+    m_CurrentPath_Decomposition =
+        splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
   }
 }
 
@@ -281,7 +293,8 @@ bool ImGuiFileDialog::FileDialog(const char* vName, const char* vFilters,
   // changement de repertoire
   if (pathClick == true) {
     ScanDir(m_CurrentPath);
-    m_CurrentPath_Decomposition = splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
+    m_CurrentPath_Decomposition =
+        splitStringVector(m_CurrentPath, DIRECTORY_SEPARATOR_CHAR);
     if (m_CurrentPath_Decomposition.size() == 2)
       if (m_CurrentPath_Decomposition[1] == "")
         m_CurrentPath_Decomposition.erase(m_CurrentPath_Decomposition.end() -
@@ -346,7 +359,13 @@ std::string ImGuiFileDialog::GetFilepathName() {
   return GetCurrentPath() + DIRECTORY_SEPARATOR_STR + GetCurrentFileName();
 }
 
-std::string ImGuiFileDialog::GetCurrentPath() { return m_CurrentPath; }
+std::string ImGuiFileDialog::GetCurrentPath() {
+#ifdef WIN32
+  return m_CurrentPath;
+#else
+  return "/" + m_CurrentPath;
+#endif
+}
 
 std::string ImGuiFileDialog::GetCurrentFileName() {
   return std::string(FileNameBuffer);
