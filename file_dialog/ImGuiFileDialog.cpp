@@ -1,4 +1,5 @@
 #include "ImGuiFileDialog.h"
+
 #include <iostream>
 
 #ifndef WIN32
@@ -12,6 +13,7 @@
 #include "imgui.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
+
 #include <algorithm>
 
 #include "imgui_internal.h"
@@ -126,11 +128,11 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
       return;
     }
   }
-  //std::cerr << "scanning files in " << vPath << "\n";
+  // std::cerr << "scanning files in " << vPath << "\n";
   /* Scan files in directory */
   n = scandir(vPath.c_str(), &files, NULL, alphaSort);
 
-  //std::cerr << "n is " << n << "\n";
+  // std::cerr << "n is " << n << "\n";
 
   if (n >= 0) {
     for (i = 0; i < n; i++) {
@@ -139,7 +141,7 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
       FileInfoStruct infos;
 
       infos.fileName = ent->d_name;
-      //std::cout << "scanned filename is " << infos.fileName << "\n";
+      // std::cout << "scanned filename is " << infos.fileName << "\n";
 
       if (infos.fileName != ".") {
         switch (ent->d_type) {
@@ -171,7 +173,8 @@ void ImGuiFileDialog::ScanDir(std::string vPath) {
 
   std::sort(m_FileList.begin(), m_FileList.end(), stringComparator);
 
-  //  for (auto& file : m_FileList) std::cout << "file : " << file.fileName << "\n";
+  //  for (auto& file : m_FileList) std::cout << "file : " << file.fileName <<
+  //  "\n";
 }
 
 void ImGuiFileDialog::SetCurrentDir(std::string vPath) {
@@ -185,9 +188,9 @@ void ImGuiFileDialog::SetCurrentDir(std::string vPath) {
     std::wstring ws(dir->wdirp->patt);
     m_CurrentPath = std::string(ws.begin(), ws.end());
 #else
-      char rawPath[PATH_MAX + 1];
-      realpath(vPath.c_str(), rawPath);
-      m_CurrentPath = std::string(rawPath);
+    char rawPath[PATH_MAX + 1];
+    realpath(vPath.c_str(), rawPath);
+    m_CurrentPath = std::string(rawPath);
 #endif
     ReplaceString(m_CurrentPath, "\\*",
                   "");  // TODO understand the pont of this...?
@@ -214,13 +217,14 @@ void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter) {
 }
 
 bool ImGuiFileDialog::FileDialog(const char* vName, const char* vFilters,
-                                 std::string vPath,
+                                 bool modal, std::string vPath,
                                  std::string vDefaultFileName) {
   bool res = false;
 
   IsOk = false;
 
-  ImGui::Begin(vName);
+  modal ? ImGui::OpenPopup(vName),
+      ImGui::BeginPopupModal(vName) : ImGui::Begin(vName);
 
   if (vPath.size() == 0) vPath = ".";
 
@@ -346,7 +350,7 @@ bool ImGuiFileDialog::FileDialog(const char* vName, const char* vFilters,
     res = true;
   }
 
-  ImGui::End();
+  modal ? ImGui::EndPopup() : ImGui::End();
 
   if (res == true) {
     m_FileList.clear();

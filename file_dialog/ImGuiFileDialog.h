@@ -45,7 +45,8 @@ class ImGuiFileDialog {
   ~ImGuiFileDialog();
 
   bool FileDialog(const char* vName, const char* vFilters = 0,
-                  std::string vPath = ".", std::string vDefaultFileName = "");
+                  bool modal = true, std::string vPath = ".",
+                  std::string vDefaultFileName = "");
   std::string GetFilepathName();
   std::string GetCurrentPath();
   std::string GetCurrentFileName();
