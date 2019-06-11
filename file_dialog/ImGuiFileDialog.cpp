@@ -64,8 +64,8 @@ ImGuiFileDialog::ImGuiFileDialog() {}
 ImGuiFileDialog::~ImGuiFileDialog() {}
 
 /* Alphabetical sorting */
-static int alphaSort(const void* a, const void* b) {
-  return strcoll(((dirent*)a)->d_name, ((dirent*)b)->d_name);
+static int alphaSort(const dirent** a, const dirent** b) {
+  return strcoll((*a)->d_name, (*b)->d_name);
 }
 
 static bool stringComparator(FileInfoStruct a, FileInfoStruct b) {
