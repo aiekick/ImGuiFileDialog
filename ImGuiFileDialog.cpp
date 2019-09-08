@@ -131,14 +131,8 @@ void ImGuiFileDialog::ScanDir(std::string vPath)
 			FileInfoStruct infos;
 
 			infos.fileName = ent->d_name;
-
-			if (infos.type == 'f')
-			{
-				size_t lpt = infos.fileName.find_last_of(".");
-				if (lpt != std::string::npos)
-					infos.ext = infos.fileName.substr(lpt);
-			}
 			
+			// Set type before comparing it to 'f'
 			if (infos.fileName != ".")
 			{
 				switch (ent->d_type)
@@ -150,6 +144,14 @@ void ImGuiFileDialog::ScanDir(std::string vPath)
 
 				m_FileList.push_back(infos);
 			}
+			
+			// Make sure type is file(?)
+			if (infos.type == 'f')
+			{
+				size_t lpt = infos.fileName.find_last_of(".");
+				if (lpt != std::string::npos)
+					infos.ext = infos.fileName.substr(lpt);
+			}				
 		}
 
 		for (i = 0; i < n; i++)
