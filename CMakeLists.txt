@@ -1,5 +1,7 @@
-project(ImGuiFileDialog)
+cmake_policy(SET CMP0048 NEW)
 cmake_minimum_required(VERSION 2.8)
+
+project(ImGuiFileDialog)
 
 # thanks to the cmake project for imgui available here : https://github.com/aid95/MinimalImGui
 
