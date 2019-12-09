@@ -5,8 +5,11 @@
 #include "imgui.h"
 
 #ifdef WIN32
-#include "dirent/dirent.h"
+#include <include/dirent.h>
 #define PATH_SEP '\\'
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
 #elif defined(LINUX) or defined(APPLE)
 #include <sys/types.h>
 #include <dirent.h>
@@ -226,17 +229,17 @@ ImGuiFileDialog::~ImGuiFileDialog()
 }
 
 /* Alphabetical sorting */
-#ifdef WIN32
+/*#ifdef WIN32
 static int alphaSort(const void *a, const void *b)
 {
 	return strcoll(((dirent*)a)->d_name, ((dirent*)b)->d_name);
 }
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(LINUX) or defined(APPLE)*/
 static int alphaSort(const struct dirent **a, const struct dirent **b)
 {
 	return strcoll((*a)->d_name, (*b)->d_name);
 }
-#endif
+//#endif
 
 static bool stringComparator(const FileInfoStruct& a, const FileInfoStruct& b)
 {
