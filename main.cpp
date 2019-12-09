@@ -38,6 +38,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
+static bool canValidateDialog = false;
 
 inline void InfosPane(std::string vFilter, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
@@ -45,8 +46,10 @@ inline void InfosPane(std::string vFilter, bool *vCantContinue) // if vCantConti
 	
 	ImGui::Text("Selected Filter : %s", vFilter.c_str());
 
+	ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
+
 	if (vCantContinue)
-		ImGui::Checkbox("if not checked you cant validate the dialog", vCantContinue);
+	    *vCantContinue = canValidateDialog;
 }
 
 int main(int, char**)

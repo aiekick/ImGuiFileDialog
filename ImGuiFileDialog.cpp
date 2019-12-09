@@ -13,18 +13,15 @@
 #define PATH_SEP '/'
 #endif
 
-//#include "FileHelper.h"
-
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 #include "imgui_internal.h"
-//#include "CustomImGui.h"
 
-#include <limits.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
+#include <iostream>
 
 static std::string s_fs_root(1u, PATH_SEP);
 
@@ -113,12 +110,12 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 #ifdef WIN32
 			CreateDirectory(name.c_str(), NULL);
 #elif defined(LINUX) or defined(APPLE)
-			char buffer[MAX_PATH] = {};
-			snprintf(buffer, MAX_PATH, "mkdir -p %s", name.c_str());
+			char buffer[PATH_MAX] = {};
+			snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
 			const int dir_err = std::system(buffer);
 			if (dir_err == -1)
 			{
-				LogStr("Error creating directory " + name);
+				std::cout << "Error creating directory " << name << std::endl;
 				res = false;
 			}
 #endif
@@ -574,7 +571,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 	{
 		bool res = false;
 
-		std::string name = dlg_name;
+		std::string name = dlg_name + "##" + dlg_key;
 
 		if (m_Name != name)
 		{
@@ -584,7 +581,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 		IsOk = false;
 
-		if (ImGui::Begin(vKey.c_str(), (bool*)0, ImGuiWindowFlags_Modal |
+		if (ImGui::Begin(name.c_str(), (bool*)0, ImGuiWindowFlags_Modal |
 			ImGuiWindowFlags_NoCollapse /*| ImGuiWindowFlags_NoDocking*/))
 		{
 
@@ -803,10 +800,6 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 									}
 									pathClick = true;
 								}
-								else
-								{
-									int i = 0;
-								}
 							}
 						}
 						else
@@ -938,7 +931,6 @@ std::string ImGuiFileDialog::GetCurrentPath()
 std::string ImGuiFileDialog::GetCurrentFileName()
 {
     std::string result = FileNameBuffer;
-    size_t      pos = 0;
 
 	size_t lastPoint = result.find_last_of('.');
 	if (lastPoint != std::string::npos)
