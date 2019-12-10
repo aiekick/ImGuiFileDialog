@@ -9,8 +9,11 @@ An example of the File Dialog integrated within the ImGui Demo App
 - compatible with MacOs, Linux, Win
   - On Win version you can list Drives
   
-MacOs Version :
-![alt text](macos.png)
-
 Win Version :
 ![alt text](win.png)
+
+Linux Version :
+![alt text](linux.png)
+
+MacOs Version :
+![alt text](macos.png)
