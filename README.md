@@ -1,4 +1,4 @@
-# ImGuiFileDialog V2
+# ImGuiFileDialog
 
 An example of the File Dialog integrated within the ImGui Demo App
 
