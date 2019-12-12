@@ -107,8 +107,8 @@ int main(int, char**)
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    //ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -133,6 +133,12 @@ int main(int, char**)
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
+    ImGuiFileDialog::Instance()->SetFilterColor(".h", ImVec4(0,1,0,0.5));
+    ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
+    ImGuiFileDialog::Instance()->SetFilterColor(".md", ImVec4(1,0,1,0.5));
+    ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -166,11 +172,11 @@ int main(int, char**)
 			ImGui::Separator();
 			if (ImGui::Button("Open File Dialog"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0", ".");
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
 			}
 			if (ImGui::Button("Open File Dialog with a custom pane"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0",
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0",
 					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2), 350, "InfosPane");
 			}
 			ImGui::Separator();

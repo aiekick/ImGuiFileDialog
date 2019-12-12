@@ -6,6 +6,7 @@ An example of the File Dialog integrated within the ImGui Demo App
 - can use custom pane via function binding
   - this pane can block the validation of the dialog
   - can also display different things according to current filter
+- support of Filter Coloring
 - compatible with MacOs, Linux, Win
   - On Win version you can list Drives
   
@@ -68,6 +69,18 @@ void drawGui()
 }
 ```
 ![alt text](dlg_with_pane.gif)
+
+## Filter Coloring
+
+```cpp
+ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".h", 	ImVec4(0,1,0,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".md", 	ImVec4(1,0,1,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
+```
+
+![alt text](color_filter.png)
 
 ## Compilation Ok for Win / Linux / MacOs
 

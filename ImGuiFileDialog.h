@@ -1,8 +1,11 @@
 #ifndef __IMGUI_FILE_DIALOG_H_
 #define __IMGUI_FILE_DIALOG_H_
 
+#include "imgui.h"
+
 #include <vector>
 #include <string>
+#include <map>
 
 #include <future>
 #include <functional>
@@ -27,6 +30,7 @@ class ImGuiFileDialog
 {
 private:
 	std::vector<FileInfoStruct> m_FileList;
+	std::map<std::string, ImVec4> m_FilterColor;
 	std::string m_SelectedFileName;
 	std::string m_SelectedExt;
 	std::string m_CurrentPath;
@@ -88,6 +92,10 @@ public:
 	std::string GetCurrentFileName();
 	std::string GetCurrentFilter();
 	std::string GetUserString();
+
+	void SetFilterColor(std::string vFilter, ImVec4 vColor);
+    bool GetFilterColor(std::string vFilter, ImVec4 *vColor);
+    void ClearFilterColor();
 
 private:
 	void SetPath(const std::string& vPath);

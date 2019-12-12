@@ -744,7 +744,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 				if (infos.type == 'd') str = "[Dir] " + infos.fileName;
 				if (infos.type == 'l') str = "[Link] " + infos.fileName;
 				if (infos.type == 'f') str = "[File] " + infos.fileName;
-				if (infos.type == 'f' && m_SelectedExt.size() > 0 && infos.ext != m_SelectedExt)
+				if (infos.type == 'f' && m_SelectedExt.size() > 0 && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
 				{
 					show = false;
 				}
@@ -754,6 +754,11 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 				}
 				if (show == true)
 				{
+				    ImVec4 c;
+				    bool showColor = GetFilterColor(infos.ext, &c);
+				    if (showColor)
+				        ImGui::PushStyleColor(ImGuiCol_Text, c);
+
 					if (ImGui::Selectable(str.c_str(), (infos.fileName == m_SelectedFileName)))
 					{
 						if (infos.type == 'd')
@@ -813,7 +818,10 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 						}
 						break;
 					}
-				}
+
+                    if (showColor)
+                        ImGui::PopStyleColor();
+                }
 			}
 
 			// changement de repertoire
@@ -954,4 +962,27 @@ std::string ImGuiFileDialog::GetCurrentFilter()
 std::string ImGuiFileDialog::GetUserString()
 {
 	return dlg_userString;
+}
+
+void ImGuiFileDialog::SetFilterColor(std::string vFilter, ImVec4 vColor)
+{
+    m_FilterColor[vFilter] = vColor;
+}
+
+bool ImGuiFileDialog::GetFilterColor(std::string vFilter, ImVec4 *vColor)
+{
+    if (vColor)
+    {
+        if (m_FilterColor.find(vFilter) != m_FilterColor.end()) // found
+        {
+            *vColor = m_FilterColor[vFilter];
+            return true;
+        }
+    }
+    return false;;
+}
+
+void ImGuiFileDialog::ClearFilterColor()
+{
+    m_FilterColor.clear();
 }
