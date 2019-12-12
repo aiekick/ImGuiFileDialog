@@ -816,6 +816,8 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 							ResetBuffer(FileNameBuffer);
 							AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, m_SelectedFileName);
 						}
+						 if (showColor)
+                        ImGui::PopStyleColor();
 						break;
 					}
 
