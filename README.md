@@ -74,9 +74,9 @@ void drawGui()
 
 ```cpp
 ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
-ImGuiFileDialog::Instance()->SetFilterColor(".h", 	ImVec4(0,1,0,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".h",   ImVec4(0,1,0,0.5));
 ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
-ImGuiFileDialog::Instance()->SetFilterColor(".md", 	ImVec4(1,0,1,0.5));
+ImGuiFileDialog::Instance()->SetFilterColor(".md",  ImVec4(1,0,1,0.5));
 ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
 ```
 
