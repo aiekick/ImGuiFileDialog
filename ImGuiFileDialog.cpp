@@ -716,7 +716,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 				}
 			}
 
-			ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float)dlg_optionsPaneWidth, 120.0f);
+			ImGuiContext& g = *GImGui;
+			const float itemsHeight = (g.FontSize + g.Style.FramePadding.y * 2.0f + g.Style.ItemSpacing.y * 2.0f) * 4.0f + g.Style.WindowPadding.y * 2.0f;
+			ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float)dlg_optionsPaneWidth, itemsHeight);
 
 			// search field
 			if (ImGui::Button("R##ImGuiFileDialogSearchFiled"))
