@@ -1,5 +1,26 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+/*
+MIT License
+
+Copyright (c) 2019-2020 Aiekick
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
@@ -25,8 +46,9 @@
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
+#include <utility>
 
-static std::string s_fs_root(1u, PATH_SEP);
+static std::string s_fs_root = std::string(1u, PATH_SEP);
 
 inline bool replaceString(::std::string& str, const ::std::string& oldStr, const ::std::string& newStr)
 {
@@ -44,14 +66,14 @@ inline bool replaceString(::std::string& str, const ::std::string& oldStr, const
 inline std::vector<std::string> splitStringToVector(const ::std::string& text, char delimiter, bool pushEmpty)
 {
 	std::vector<std::string> arr;
-	if (text.size() > 0)
+	if (!text.empty())
 	{
 		std::string::size_type start = 0;
 		std::string::size_type end = text.find(delimiter, start);
 		while (end != std::string::npos)
 		{
 			std::string token = text.substr(start, end - start);
-			if (token.size() > 0 || (token.size() == 0 && pushEmpty))
+			if (!token.empty() || (token.empty() && pushEmpty))
 				arr.push_back(token);
 			start = end + 1;
 			end = text.find(delimiter, start);
@@ -86,11 +108,11 @@ inline bool IsDirectoryExist(const std::string& name)
 {
 	bool bExists = false;
 
-	if (name.size() > 0)
+	if (!name.empty())
 	{
-		DIR *pDir = 0;
+		DIR *pDir = nullptr;
 		pDir = opendir(name.c_str());
-		if (pDir != NULL)
+		if (pDir != nullptr)
 		{
 			bExists = true;
 			(void)closedir(pDir);
@@ -104,14 +126,14 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 {
 	bool res = false;
 
-	if (name.size() > 0)
+	if (!name.empty())
 	{
 		if (!IsDirectoryExist(name))
 		{
 			res = true;
 
 #ifdef WIN32
-			CreateDirectoryA(name.c_str(), NULL);
+			CreateDirectoryA(name.c_str(), nullptr);
 #elif defined(LINUX) or defined(APPLE)
 			char buffer[PATH_MAX] = {};
 			snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
@@ -146,7 +168,7 @@ inline PathStruct ParsePathFileName(const std::string& vPathFileName)
 {
 	PathStruct res;
 
-	if (vPathFileName.size() > 0)
+	if (!vPathFileName.empty())
 	{
 		std::string pfn = vPathFileName;
 		std::string separator(1u, PATH_SEP);
@@ -177,20 +199,20 @@ inline PathStruct ParsePathFileName(const std::string& vPathFileName)
 	return res;
 }
 
-inline void AppendToBuffer(char* vBuffer, size_t vBufferLen, std::string vStr)
+inline void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
 {
     std::string st = vStr;
     size_t len = vBufferLen - 1u;
     size_t slen = strlen(vBuffer);
 
-    if (st != "" && st != "\n")
+    if (!st.empty() && st != "\n")
     {
         replaceString(st, "\n", "");
         replaceString(st, "\r", "");
     }
     vBuffer[slen] = '\0';
     std::string str = std::string(vBuffer);
-    if (str.size() > 0) str += "\n";
+    if (!str.empty()) str += "\n";
     str += vStr;
     if (len > str.size()) len = str.size();
 #ifdef MSVC
@@ -218,15 +240,12 @@ ImGuiFileDialog::ImGuiFileDialog()
 	m_ShowDialog = false;
 	m_ShowDrives = false;
 	m_CreateDirectoryMode = false;
-	dlg_optionsPane = 0;
+	dlg_optionsPane = nullptr;
 	dlg_optionsPaneWidth = 250;
 	dlg_filters = "";
 }
 
-ImGuiFileDialog::~ImGuiFileDialog()
-{
-
-}
+ImGuiFileDialog::~ImGuiFileDialog() = default;
 
 /* Alphabetical sorting */
 /*#ifdef WIN32
@@ -251,7 +270,7 @@ static bool stringComparator(const FileInfoStruct& a, const FileInfoStruct& b)
 
 void ImGuiFileDialog::ScanDir(const std::string& vPath)
 {
-    struct dirent **files               = NULL;
+    struct dirent **files               = nullptr;
     int             i                   = 0;
     int             n                   = 0;
 	std::string		path				= vPath;
@@ -266,12 +285,12 @@ void ImGuiFileDialog::ScanDir(const std::string& vPath)
     }
 #endif
 
-    if (0u == m_CurrentPath_Decomposition.size())
+    if (m_CurrentPath_Decomposition.empty())
     {
         SetCurrentDir(path);
     }
 
-    if (0u != m_CurrentPath_Decomposition.size())
+    if (!m_CurrentPath_Decomposition.empty())
     {
 #ifdef WIN32
 		if (path == s_fs_root)
@@ -279,7 +298,7 @@ void ImGuiFileDialog::ScanDir(const std::string& vPath)
 			path += PATH_SEP;
 		}
 #endif
-        n = scandir(path.c_str(), &files, NULL, alphaSort);
+        n = scandir(path.c_str(), &files, nullptr, alphaSort);
         if (n > 0)
         {
 			m_FileList.clear();
@@ -334,16 +353,16 @@ void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
     DIR  *dir = opendir(path.c_str());
     char  real_path[PATH_MAX];
 
-    if (NULL == dir)
+    if (nullptr == dir)
     {
 		path = ".";
         dir = opendir(path.c_str());
     }
 
-    if (NULL != dir)
+    if (nullptr != dir)
     {
 #ifdef WIN32
-		size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX-1, real_path, 0);
+		size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX-1, real_path, nullptr);
 #elif defined(LINUX) or defined(APPLE)
 		char *numchar = realpath(path.c_str(), real_path);
 #endif
@@ -358,7 +377,7 @@ void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
 #if defined(LINUX) or defined(APPLE)
 			m_CurrentPath_Decomposition.insert(m_CurrentPath_Decomposition.begin(), std::string(1u, PATH_SEP));
 #endif
-			if (m_CurrentPath_Decomposition.size()>0)
+			if (!m_CurrentPath_Decomposition.empty())
             {
 #ifdef WIN32
                 s_fs_root = m_CurrentPath_Decomposition[0];
@@ -374,7 +393,7 @@ bool ImGuiFileDialog::CreateDir(const std::string& vPath)
 {
 	bool res = false;
 
-	if (vPath.size())
+	if (!vPath.empty())
 	{
 		std::string path = m_CurrentPath + PATH_SEP + vPath;
 
@@ -426,18 +445,18 @@ void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
 void ImGuiFileDialog::GetDrives()
 {
 	auto res = GetDrivesList();
-	if (res.size() > 0)
+	if (!res.empty())
 	{
 		m_CurrentPath = "";
 		m_CurrentPath_Decomposition.clear();
 		m_FileList.clear();
-		for (auto it = res.begin(); it != res.end(); ++it)
+		for (auto & re : res)
 		{
 			FileInfoStruct infos;
-			infos.fileName = *it;
+			infos.fileName = re;
 			infos.type = 'd';
 
-			if (infos.fileName.size() > 0)
+			if (!infos.fileName.empty())
 			{
 				m_FileList.push_back(infos);
 			}
@@ -448,7 +467,7 @@ void ImGuiFileDialog::GetDrives()
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 	const std::string& vPath, const std::string& vDefaultFileName,
-	std::function<void(std::string, bool*)> vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
+	const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
 {
 	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
 		return;
@@ -458,7 +477,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_filters = vFilters;
 	dlg_path = vPath;
 	dlg_defaultFileName = vDefaultFileName;
-	dlg_optionsPane = vOptionsPane;
+	dlg_optionsPane = std::move(vOptionsPane);
 	dlg_userString = vUserString;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
 
@@ -469,7 +488,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 	const std::string& vFilePathName,
-	std::function<void(std::string, bool*)> vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
+	const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
 {
 	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
 		return;
@@ -492,7 +511,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 		dlg_defaultExt = "";
 	}
 
-	dlg_optionsPane = vOptionsPane;
+	dlg_optionsPane = std::move(vOptionsPane);
 	dlg_userString = vUserString;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
 
@@ -523,7 +542,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 		dlg_defaultExt = "";
 	}
 
-	dlg_optionsPane = 0;
+	dlg_optionsPane = nullptr;
 	dlg_userString = vUserString;
 	dlg_optionsPaneWidth = 0;
 
@@ -541,7 +560,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_filters = vFilters;
 	dlg_path = vPath;
 	dlg_defaultFileName = vDefaultFileName;
-	dlg_optionsPane = 0;
+	dlg_optionsPane = nullptr;
 	dlg_userString = vUserString;
 	dlg_optionsPaneWidth = 0;
 
@@ -584,7 +603,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 		IsOk = false;
 
-		if (ImGui::Begin(name.c_str(), (bool*)0, ImGuiWindowFlags_Modal |
+		if (ImGui::Begin(name.c_str(), (bool*)nullptr, ImGuiWindowFlags_Modal |
 			ImGuiWindowFlags_NoCollapse /*| ImGuiWindowFlags_NoDocking*/))
 		{
 
@@ -592,19 +611,19 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 			m_AnyWindowsHovered |= ImGui::IsWindowHovered();
 
-			if (dlg_path.size() == 0) dlg_path = ".";
+			if (dlg_path.empty()) dlg_path = ".";
 
-			if (m_FileList.size() == 0 && !m_ShowDrives)
+			if (m_FileList.empty() && !m_ShowDrives)
 			{
 				replaceString(dlg_defaultFileName, dlg_path, ""); // local path
 
-				if (dlg_defaultFileName.size() > 0)
+				if (!dlg_defaultFileName.empty())
 				{
 					ResetBuffer(FileNameBuffer);
 					AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, dlg_defaultFileName);
 					m_SelectedFileName = dlg_defaultFileName;
 
-					if (dlg_defaultExt.size() > 0)
+					if (!dlg_defaultExt.empty())
 					{
 						m_SelectedExt = dlg_defaultExt;
 
@@ -618,9 +637,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 						}
 						int idx = 0;
 						auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
-						for (auto it = arr.begin(); it != arr.end(); ++it)
+						for (auto & it : arr)
 						{
-							if (m_SelectedExt == *it)
+							if (m_SelectedExt == it)
 							{
 								ImGuiFileDialog::FilterIndex = idx;
 								break;
@@ -699,10 +718,10 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 			// show current path
 			bool pathClick = false;
-			if (m_CurrentPath_Decomposition.size() > 0)
+			if (!m_CurrentPath_Decomposition.empty())
 			{
 				ImGui::SameLine();
-				for (std::vector<std::string>::iterator itPathDecomp = m_CurrentPath_Decomposition.begin();
+				for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
 					itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
 				{
 					if (itPathDecomp != m_CurrentPath_Decomposition.begin())
@@ -736,9 +755,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 			ImGui::BeginChild("##FileDialog_FileList", size);
 
-			for (std::vector<FileInfoStruct>::iterator it = m_FileList.begin(); it != m_FileList.end(); ++it)
+			for (auto & it : m_FileList)
 			{
-				const FileInfoStruct& infos = *it;
+				const FileInfoStruct& infos = it;
 
 				bool show = true;
 
@@ -746,15 +765,15 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 				if (infos.type == 'd') str = "[Dir] " + infos.fileName;
 				if (infos.type == 'l') str = "[Link] " + infos.fileName;
 				if (infos.type == 'f') str = "[File] " + infos.fileName;
-				if (infos.type == 'f' && m_SelectedExt.size() > 0 && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
+				if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
 				{
 					show = false;
 				}
-				if (searchTag.size() > 0 && infos.fileName.find(searchTag) == std::string::npos)
+				if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
 				{
 					show = false;
 				}
-				if (show == true)
+				if (show)
 				{
 				    ImVec4 c;
 				    bool showColor = GetFilterColor(infos.ext, &c);
@@ -765,7 +784,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 					{
 						if (infos.type == 'd')
 						{
-							if ((*it).fileName == "..")
+							if (it.fileName == "..")
 							{
 								if (m_CurrentPath_Decomposition.size() > 1)
 								{
@@ -829,12 +848,12 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 			}
 
 			// changement de repertoire
-			if (pathClick == true)
+			if (pathClick)
 			{
 				SetPath(m_CurrentPath);
 			}
 
-			if (drivesClick == true)
+			if (drivesClick)
 			{
 				GetDrives();
 			}
@@ -871,9 +890,9 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 				ImGui::SameLine();
 
 				ImGui::PushItemWidth(100.0f);
-				bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.size() == 0;
+				bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.empty();
 				ImGui::PopItemWidth();
-				if (comboClick == true)
+				if (comboClick)
 				{
 					int itemIdx = 0;
 					const char* p = dlg_filters;
@@ -913,7 +932,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey)
 
 		ImGui::End();
 
-		if (res == true)
+		if (res)
 		{
 			m_FileList.clear();
 		}
@@ -968,12 +987,12 @@ std::string ImGuiFileDialog::GetUserString()
 	return dlg_userString;
 }
 
-void ImGuiFileDialog::SetFilterColor(std::string vFilter, ImVec4 vColor)
+void ImGuiFileDialog::SetFilterColor(const std::string& vFilter, ImVec4 vColor)
 {
     m_FilterColor[vFilter] = vColor;
 }
 
-bool ImGuiFileDialog::GetFilterColor(std::string vFilter, ImVec4 *vColor)
+bool ImGuiFileDialog::GetFilterColor(const std::string& vFilter, ImVec4 *vColor)
 {
     if (vColor)
     {
