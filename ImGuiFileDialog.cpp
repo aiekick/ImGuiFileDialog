@@ -69,7 +69,7 @@ inline std::vector<std::string> GetDrivesList()
 	DWORD mydrives = 2048;
 	char lpBuffer[2048];
 
-	DWORD countChars = GetLogicalDriveStrings(mydrives, lpBuffer);
+	DWORD countChars = GetLogicalDriveStringsA(mydrives, lpBuffer);
 
 	if (countChars > 0)
 	{
@@ -111,7 +111,7 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 			res = true;
 
 #ifdef WIN32
-			CreateDirectory(name.c_str(), NULL);
+			CreateDirectoryA(name.c_str(), NULL);
 #elif defined(LINUX) or defined(APPLE)
 			char buffer[PATH_MAX] = {};
 			snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
@@ -343,7 +343,7 @@ void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
     if (NULL != dir)
     {
 #ifdef WIN32
-		size_t numchar = GetFullPathName(path.c_str(), PATH_MAX-1, real_path, 0);
+		size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX-1, real_path, 0);
 #elif defined(LINUX) or defined(APPLE)
 		char *numchar = realpath(path.c_str(), real_path);
 #endif
