@@ -24,7 +24,7 @@ if(UNIX)
 elseif(WIN32)
     add_definitions(-DWIN32)
     add_definitions(-DMINGW32)
-    set(DIRENT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/dirent)
+    set(DIRENT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/dirent/include)
     include_directories(${DIRENT_INCLUDE_DIR})
 endif()
 

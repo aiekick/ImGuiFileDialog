@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Aiekick
+Copyright (c) 2019-2020 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,8 @@ SOFTWARE.
 #include <list>
 
 #define MAX_FILE_DIALOG_NAME_BUFFER 1024
+
+#include "ImGuiFileDialogConfig.h"
 
 struct FileInfoStruct
 {
@@ -110,7 +112,7 @@ public:
 		const std::string& vFilePathName, const std::string& vUserString = "");
 
 	void CloseDialog(const std::string& vKey);
-	bool FileDialog(const std::string& vKey);
+	bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse);
 	std::string GetFilepathName();
 	std::string GetCurrentPath();
 	std::string GetCurrentFileName();
