@@ -2,12 +2,16 @@
 
 An example of the File Dialog integrated within the ImGui Demo App
 
-- separate system for call and display
-- can use custom pane via function binding
+- Separate system for call and display
+- Can use custom pane via function binding
   - this pane can block the validation of the dialog
   - can also display different things according to current filter
-- support of Filter Coloring
-- compatible with MacOs, Linux, Win
+- Support of Filter Coloring
+- Multi Selection (ctrl/shift + click) :
+  - 0 => infinite
+  - 1 => one file (default)
+  - n => n files
+- Compatible with MacOs, Linux, Win
   - On Win version you can list Drives
   
 ## Simple Dialog :
@@ -81,6 +85,26 @@ ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
 ```
 
 ![alt text](color_filter.png)
+
+## Multi Selection
+
+You can define in OpenDialog call the count file you wan to select :
+- 0 => inifnite
+- 1 => one file only (default)
+- n => n files only
+
+See the define at the end of these funcs after path.
+
+```cpp
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 1 File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 1);
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 5 File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose many File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png\0.jpg\0\0",
+   ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2), 1, 350, "SaveFile"); // 1 file
+```
+
+![alt text](multiSelection.gif)
 
 ## Compilation Ok for Win / Linux / MacOs
 
