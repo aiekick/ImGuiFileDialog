@@ -76,20 +76,45 @@ static std::string s_fs_root = std::string(1u, PATH_SEP);
 #define drivesButtonString "Drives"
 #endif
 #ifndef searchString
-#define searchString "Search : "
+#define searchString "Search :"
 #endif
 #ifndef dirEntryString
-#define dirEntryString "[Dir] "
+#define dirEntryString "[Dir]"
 #endif
 #ifndef linkEntryString
-#define linkEntryString "[Link] "
+#define linkEntryString "[Link]"
 #endif
 #ifndef fileEntryString
-#define fileEntryString "[File] "
+#define fileEntryString "[File]"
 #endif
 #ifndef fileNameString
-#define fileNameString "File Name : "
+#define fileNameString "File Name :"
 #endif
+#ifndef buttonResetSearchString
+#define buttonResetSearchString "Reset search"
+#endif
+#ifndef buttonDriveString
+#define buttonDriveString "Drives"
+#endif
+#ifndef buttonResetPathString
+#define buttonResetPathString "Reset to current directory"
+#endif
+#ifndef buttonCreateDirString
+#define buttonCreateDirString "Create Directory"
+#endif
+
+/* Alphabetical sorting */
+/*#ifdef WIN32
+static int alphaSort(const void *a, const void *b)
+{
+	return strcoll(((dirent*)a)->d_name, ((dirent*)b)->d_name);
+}
+#elif defined(LINUX) or defined(APPLE)*/
+inline int alphaSort(const struct dirent **a, const struct dirent **b)
+{
+	return strcoll((*a)->d_name, (*b)->d_name);
+}
+//#endif
 
 inline bool replaceString(::std::string& str, const ::std::string& oldStr, const ::std::string& newStr)
 {
@@ -191,6 +216,14 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 	return res;
 }
 
+inline bool stringComparator(const FileInfoStruct& a, const FileInfoStruct& b)
+{
+	bool res;
+	if (a.type != b.type) res = (a.type < b.type);
+	else res = (a.fileName < b.fileName);
+	return res;
+}
+
 struct PathStruct
 {
 	std::string path;
@@ -253,7 +286,7 @@ inline void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& 
 	}
 	vBuffer[slen] = '\0';
 	std::string str = std::string(vBuffer);
-	if (!str.empty()) str += "\n";
+	//if (!str.empty()) str += "\n";
 	str += vStr;
 	if (len > str.size()) len = str.size();
 #ifdef MSVC
@@ -288,25 +321,760 @@ ImGuiFileDialog::ImGuiFileDialog()
 
 ImGuiFileDialog::~ImGuiFileDialog() = default;
 
-/* Alphabetical sorting */
-/*#ifdef WIN32
-static int alphaSort(const void *a, const void *b)
+void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vPath, const std::string& vDefaultFileName,
+	const std::function<void(std::string, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, const std::string& vUserString)
 {
-	return strcoll(((dirent*)a)->d_name, ((dirent*)b)->d_name);
-}
-#elif defined(LINUX) or defined(APPLE)*/
-static int alphaSort(const struct dirent **a, const struct dirent **b)
-{
-	return strcoll((*a)->d_name, (*b)->d_name);
-}
-//#endif
+	if (m_ShowDialog) // if already opened, quit
+		return;
 
-static bool stringComparator(const FileInfoStruct& a, const FileInfoStruct& b)
+	dlg_key = vKey;
+	dlg_name = std::string(vName);
+	dlg_filters = vFilters;
+	dlg_path = vPath;
+	dlg_defaultFileName = vDefaultFileName;
+	dlg_optionsPane = std::move(vOptionsPane);
+	dlg_userString = vUserString;
+	dlg_optionsPaneWidth = vOptionsPaneWidth;
+	dlg_CountSelectionMax = vCountSelectionMax;
+
+	dlg_defaultExt = "";
+
+	SetPath(m_CurrentPath);
+	CheckFilter();
+
+	m_ShowDialog = true;
+}
+
+void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vFilePathName,
+	const std::function<void(std::string, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, const std::string& vUserString)
 {
-	bool res;
-	if (a.type != b.type) res = (a.type < b.type);
-	else res = (a.fileName < b.fileName);
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	dlg_key = vKey;
+	dlg_name = std::string(vName);
+	dlg_filters = vFilters;
+
+	auto ps = ParsePathFileName(vFilePathName);
+	if (ps.isOk)
+	{
+		dlg_path = ps.path;
+		dlg_defaultFileName = vFilePathName;
+		dlg_defaultExt = "." + ps.ext;
+	}
+	else
+	{
+		dlg_path = ".";
+		dlg_defaultFileName = "";
+		dlg_defaultExt = "";
+	}
+
+	dlg_optionsPane = std::move(vOptionsPane);
+	dlg_userString = vUserString;
+	dlg_optionsPaneWidth = vOptionsPaneWidth;
+	dlg_CountSelectionMax = vCountSelectionMax;
+
+	SetPath(m_CurrentPath);
+	CheckFilter();
+
+	m_ShowDialog = true;
+}
+
+void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vFilePathName, const int& vCountSelectionMax, const std::string& vUserString)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	dlg_key = vKey;
+	dlg_name = std::string(vName);
+	dlg_filters = vFilters;
+
+	auto ps = ParsePathFileName(vFilePathName);
+	if (ps.isOk)
+	{
+		dlg_path = ps.path;
+		dlg_defaultFileName = vFilePathName;
+		dlg_defaultExt = "." + ps.ext;
+	}
+	else
+	{
+		dlg_path = ".";
+		dlg_defaultFileName = "";
+		dlg_defaultExt = "";
+	}
+
+	dlg_optionsPane = nullptr;
+	dlg_userString = vUserString;
+	dlg_optionsPaneWidth = 0;
+	dlg_CountSelectionMax = vCountSelectionMax;
+
+	SetPath(m_CurrentPath);
+	CheckFilter();
+
+	m_ShowDialog = true;
+}
+
+void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, const std::string& vUserString)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	dlg_key = vKey;
+	dlg_name = std::string(vName);
+	dlg_filters = vFilters;
+	dlg_path = vPath;
+	dlg_defaultFileName = vDefaultFileName;
+	dlg_optionsPane = nullptr;
+	dlg_userString = vUserString;
+	dlg_optionsPaneWidth = 0;
+	dlg_CountSelectionMax = vCountSelectionMax;
+
+	dlg_defaultExt = "";
+
+	SetPath(m_CurrentPath);
+	CheckFilter();
+
+	m_ShowDialog = true;
+}
+
+bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags)
+{
+	if (m_ShowDialog && dlg_key == vKey)
+	{
+		bool res = false;
+
+		std::string name = dlg_name + "##" + dlg_key;
+
+		if (m_Name != name)
+		{
+			m_FileList.clear();
+			m_CurrentPath_Decomposition.clear();
+			m_SelectedExt.clear();
+		}
+
+		IsOk = false;
+
+		if (ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar))
+		{
+			m_Name = name;
+
+			m_AnyWindowsHovered |= ImGui::IsWindowHovered();
+
+			if (dlg_path.empty()) dlg_path = ".";
+
+			if (m_FileList.empty() && !m_ShowDrives)
+			{
+				replaceString(dlg_defaultFileName, dlg_path, ""); // local path
+
+				if (!dlg_defaultFileName.empty())
+				{
+					ResetBuffer(FileNameBuffer);
+					AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, dlg_defaultFileName);
+					//m_SelectedFileName = dlg_defaultFileName;
+
+					if (!dlg_defaultExt.empty())
+					{
+						m_SelectedExt = dlg_defaultExt;
+
+						ImGuiFileDialog::FilterIndex = 0;
+						size_t size = 0;
+						const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
+						while (*p)
+						{
+							size += strlen(p) + 1;
+							p += size;
+						}
+						int idx = 0;
+						auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
+						for (auto & it : arr)
+						{
+							if (m_SelectedExt == it)
+							{
+								ImGuiFileDialog::FilterIndex = idx;
+								break;
+							}
+							idx++;
+						}
+					}
+				}
+
+				ScanDir(dlg_path);
+			}
+
+			if (IMGUI_BUTTON(createDirButtonString))
+			{
+				if (!m_CreateDirectoryMode)
+				{
+					m_CreateDirectoryMode = true;
+					ResetBuffer(DirectoryNameBuffer);
+				}
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(buttonCreateDirString);
+
+			if (m_CreateDirectoryMode)
+			{
+				ImGui::SameLine();
+
+				ImGui::PushItemWidth(100.0f);
+				ImGui::InputText("##DirectoryFileName", DirectoryNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+				ImGui::PopItemWidth();
+
+				ImGui::SameLine();
+
+				if (IMGUI_BUTTON(okButtonString))
+				{
+					std::string newDir = std::string(DirectoryNameBuffer);
+					if (CreateDir(newDir))
+					{
+						SetPath(m_CurrentPath + PATH_SEP + newDir);
+					}
+
+					m_CreateDirectoryMode = false;
+				}
+
+				ImGui::SameLine();
+
+				if (IMGUI_BUTTON(cancelButtonString))
+				{
+					m_CreateDirectoryMode = false;
+				}
+			}
+
+			ImGui::SameLine();
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+			ImGui::SameLine();
+
+			if (IMGUI_BUTTON(resetButtonString))
+			{
+				SetPath(".");
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(buttonResetPathString);
+
+			bool drivesClick = false;
+
+#ifdef WIN32
+			ImGui::SameLine();
+
+			if (IMGUI_BUTTON(drivesButtonString))
+			{
+				drivesClick = true;
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(buttonDriveString);
+#endif
+
+			ImGui::SameLine();
+
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+			// show current path
+			bool pathClick = false;
+			if (!m_CurrentPath_Decomposition.empty())
+			{
+				ImGui::SameLine();
+				for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
+					itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
+				{
+					if (itPathDecomp != m_CurrentPath_Decomposition.begin())
+						ImGui::SameLine();
+					if (IMGUI_PATH_BUTTON((*itPathDecomp).c_str()))
+					{
+						ComposeNewPath(itPathDecomp);
+						pathClick = true;
+						break;
+					}
+				}
+			}
+
+			ImGuiContext& g = *GImGui;
+			const float itemsHeight = (g.FontSize + g.Style.FramePadding.y * 2.0f + g.Style.ItemSpacing.y * 2.0f) * 4.0f + g.Style.WindowPadding.y * 2.0f;
+			ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float)dlg_optionsPaneWidth, itemsHeight);
+
+			// search field
+			if (IMGUI_BUTTON(resetButtonString "##ImGuiFileDialogSearchFiled"))
+			{
+				ResetBuffer(SearchBuffer);
+				searchTag.clear();
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(buttonResetSearchString);
+			ImGui::SameLine();
+			ImGui::Text(searchString);
+			ImGui::SameLine();
+			if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
+			{
+				searchTag = SearchBuffer;
+			}
+
+			ImGui::BeginChild("##FileDialog_FileList", size);
+
+			for (auto & it : m_FileList)
+			{
+				const FileInfoStruct& infos = it;
+
+				bool show = true;
+
+				std::string str = " " + infos.fileName;
+				if (infos.type == 'd') str = dirEntryString + str;
+				if (infos.type == 'l') str = linkEntryString + str;
+				if (infos.type == 'f') str = fileEntryString + str;
+				if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
+				{
+					show = false;
+				}
+				if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
+				{
+					show = false;
+				}
+				if (show)
+				{
+					ImVec4 c;
+					bool showColor = GetFilterColor(infos.ext, &c);
+					if (showColor)
+						ImGui::PushStyleColor(ImGuiCol_Text, c);
+
+					bool selected = false;
+					if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
+						selected = true;
+
+					if (ImGui::Selectable(str.c_str(), selected))
+					{
+						if (infos.type == 'd')
+						{
+							pathClick = SelectDirectory(infos);
+						}
+						else
+						{
+							SelectFileName(infos);
+						}
+						if (showColor)
+							ImGui::PopStyleColor();
+						break;
+					}
+
+					if (showColor)
+						ImGui::PopStyleColor();
+				}
+			}
+
+			// changement de repertoire
+			if (pathClick)
+			{
+				SetPath(m_CurrentPath);
+			}
+
+			if (drivesClick)
+			{
+				GetDrives();
+			}
+
+			ImGui::EndChild();
+
+			bool _CanWeContinue = true;
+
+			if (dlg_optionsPane)
+			{
+				ImGui::SameLine();
+
+				size.x = (float)dlg_optionsPaneWidth;
+
+				ImGui::BeginChild("##FileTypes", size);
+
+				dlg_optionsPane(m_SelectedExt, &_CanWeContinue);
+
+				ImGui::EndChild();
+			}
+
+			ImGui::Text(fileNameString);
+
+			ImGui::SameLine();
+
+			float width = ImGui::GetContentRegionAvail().x;
+			if (dlg_filters) width -= 120.0f;
+			ImGui::PushItemWidth(width);
+			ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+			ImGui::PopItemWidth();
+
+			if (dlg_filters)
+			{
+				ImGui::SameLine();
+
+				ImGui::PushItemWidth(100.0f);
+				bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.empty();
+				ImGui::PopItemWidth();
+				if (comboClick)
+				{
+					int itemIdx = 0;
+					const char* p = dlg_filters;
+					while (*p)
+					{
+						if (FilterIndex == itemIdx)
+						{
+							m_SelectedExt = std::string(p);
+							break;
+						}
+						p += strlen(p) + 1;
+						itemIdx++;
+					}
+				}
+			}
+
+			if (_CanWeContinue)
+			{
+				if (IMGUI_BUTTON(okButtonString))
+				{
+					if ('\0' != FileNameBuffer[0])
+					{
+						IsOk = true;
+						res = true;
+					}
+				}
+
+				ImGui::SameLine();
+			}
+
+			if (IMGUI_BUTTON(cancelButtonString))
+			{
+				IsOk = false;
+				res = true;
+			}
+		}
+
+		ImGui::End();
+
+		return res;
+	}
+
+	return false;
+}
+
+void ImGuiFileDialog::CloseDialog(const std::string& vKey)
+{
+	if (dlg_key == vKey)
+	{
+		dlg_key.clear();
+		m_ShowDialog = false;
+	}
+}
+
+std::string ImGuiFileDialog::GetFilepathName()
+{
+	std::string  result = m_CurrentPath;
+
+	if (s_fs_root != result)
+	{
+		result += PATH_SEP;
+	}
+
+	result += GetCurrentFileName();
+
+	return result;
+}
+
+std::string ImGuiFileDialog::GetCurrentPath()
+{
+	return m_CurrentPath;
+}
+
+std::string ImGuiFileDialog::GetCurrentFileName()
+{
+	std::string result = FileNameBuffer;
+
+	size_t lastPoint = result.find_last_of('.');
+	if (lastPoint != std::string::npos)
+	{
+		result = result.substr(0, lastPoint);
+	}
+
+	result += m_SelectedExt;
+
+	return result;
+}
+
+std::string ImGuiFileDialog::GetCurrentFilter()
+{
+	return m_SelectedExt;
+}
+
+std::string ImGuiFileDialog::GetUserString()
+{
+	return dlg_userString;
+}
+
+std::map<std::string, std::string> ImGuiFileDialog::GetSelection()
+{
+	std::map<std::string, std::string> res;
+
+	for (auto & it : m_SelectedFileNames)
+	{
+		std::string  result = m_CurrentPath;
+
+		if (s_fs_root != result)
+		{
+			result += PATH_SEP;
+		}
+
+		result += it.first;
+
+		res[it.first] = result;
+	}
+
 	return res;
+}
+
+void ImGuiFileDialog::SetFilterColor(const std::string& vFilter, ImVec4 vColor)
+{
+	m_FilterColor[vFilter] = vColor;
+}
+
+bool ImGuiFileDialog::GetFilterColor(const std::string& vFilter, ImVec4 *vColor)
+{
+	if (vColor)
+	{
+		if (m_FilterColor.find(vFilter) != m_FilterColor.end()) // found
+		{
+			*vColor = m_FilterColor[vFilter];
+			return true;
+		}
+	}
+	return false;;
+}
+
+void ImGuiFileDialog::ClearFilterColor()
+{
+	m_FilterColor.clear();
+}
+
+bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
+{
+	bool pathClick = false;
+
+	if (vInfos.fileName == "..")
+	{
+		if (m_CurrentPath_Decomposition.size() > 1)
+		{
+			ComposeNewPath(m_CurrentPath_Decomposition.end() - 2);
+			pathClick = true;
+		}
+	}
+	else
+	{
+		std::string newPath;
+
+		if (m_ShowDrives)
+		{
+			newPath = vInfos.fileName + PATH_SEP;
+		}
+		else
+		{
+#ifdef LINUX
+			if (s_fs_root == m_CurrentPath)
+			{
+				newPath = m_CurrentPath + infos.fileName;
+			}
+			else
+			{
+#endif
+				newPath = m_CurrentPath + PATH_SEP + vInfos.fileName;
+#ifdef LINUX
+			}
+#endif
+		}
+
+		if (IsDirectoryExist(newPath))
+		{
+			if (m_ShowDrives)
+			{
+				m_CurrentPath = vInfos.fileName;
+				s_fs_root = m_CurrentPath;
+			}
+			else
+			{
+				m_CurrentPath = newPath;
+			}
+			pathClick = true;
+		}
+	}
+
+	return pathClick;
+}
+
+void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
+{
+	if (ImGui::GetIO().KeyCtrl)
+	{
+		if (dlg_CountSelectionMax == 0) // infinite selection
+		{
+			if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+			{
+				AddFileNameInSelection(vInfos.fileName, true);
+			}
+			else // found +> remove
+			{
+				RemoveFileNameInSelection(vInfos.fileName);
+			}
+		}
+		else // selection limited by size
+		{
+			if (m_SelectedFileNames.size() <= dlg_CountSelectionMax)
+			{
+				if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+				{
+					AddFileNameInSelection(vInfos.fileName, true);
+				}
+				else // found +> remove
+				{
+					RemoveFileNameInSelection(vInfos.fileName);
+				}
+			}
+		}
+	}
+	else if (ImGui::GetIO().KeyShift)
+	{
+		if (dlg_CountSelectionMax != 1)
+		{
+			m_SelectedFileNames.clear();
+			// we will iterate filelist and get the last selection after the start selection
+			bool startMultiSelection = false;
+			std::string fileNameToSelect = vInfos.fileName;
+			std::string savedLastSelectedFileName; // for invert selection mode
+			for (auto & it : m_FileList)
+			{
+				const FileInfoStruct& infos = it;
+
+				bool canTake = true;
+				if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*")) canTake = false;
+				if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos) canTake = false;
+				if (canTake) // if not filtered, we will take files who are filtered by the dialog
+				{
+					if (infos.fileName == m_LastSelectedFileName)
+					{
+						startMultiSelection = true;
+						AddFileNameInSelection(m_LastSelectedFileName, false);
+					}
+					else if (startMultiSelection)
+					{
+						if (dlg_CountSelectionMax == 0) // infinite selection
+						{
+							AddFileNameInSelection(infos.fileName, false);
+						}
+						else // selection limited by size
+						{
+							if (m_SelectedFileNames.size() < dlg_CountSelectionMax)
+							{
+								AddFileNameInSelection(infos.fileName, false);
+							}
+							else
+							{
+								startMultiSelection = false;
+								if (!savedLastSelectedFileName.empty())
+									m_LastSelectedFileName = savedLastSelectedFileName;
+								break;
+							}
+						}
+					}
+
+					if (infos.fileName == fileNameToSelect)
+					{
+						if (!startMultiSelection) // we are before the last Selected FileName, so we must inverse
+						{
+							savedLastSelectedFileName = m_LastSelectedFileName;
+							m_LastSelectedFileName = fileNameToSelect;
+							fileNameToSelect = savedLastSelectedFileName;
+							startMultiSelection = true;
+							AddFileNameInSelection(m_LastSelectedFileName, false);
+						}
+						else
+						{
+							startMultiSelection = false;
+							if (!savedLastSelectedFileName.empty())
+								m_LastSelectedFileName = savedLastSelectedFileName;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		m_SelectedFileNames.clear();
+		ResetBuffer(FileNameBuffer);
+		AddFileNameInSelection(vInfos.fileName, true);
+	}
+}
+
+void ImGuiFileDialog::RemoveFileNameInSelection(const std::string& vFileName)
+{
+	m_SelectedFileNames.erase(vFileName);
+
+	if (m_SelectedFileNames.size() == 1)
+	{
+		snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+	}
+	else
+	{
+		snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", m_SelectedFileNames.size());
+	}
+}
+
+void ImGuiFileDialog::AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName)
+{
+	m_SelectedFileNames[vFileName];
+
+	if (m_SelectedFileNames.size() == 1)
+	{
+		snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+	}
+	else
+	{
+		snprintf(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", m_SelectedFileNames.size());
+	}
+
+	if (vSetLastSelectionFileName)
+		m_LastSelectedFileName = vFileName;
+}
+
+void ImGuiFileDialog::CheckFilter()
+{
+	bool found = false;
+	int itemIdx = 0;
+	const char* p = dlg_filters;
+	while (*p)
+	{
+		if (m_SelectedExt == std::string(p))
+		{
+			found = true;
+			FilterIndex = itemIdx;
+			break;
+		}
+		p += strlen(p) + 1;
+		itemIdx++;
+	}
+	if (!found)
+	{
+		m_SelectedExt.clear();
+		FilterIndex = 0;
+	}
+}
+
+void ImGuiFileDialog::SetPath(const std::string& vPath)
+{
+	m_ShowDrives = false;
+	m_CurrentPath = vPath;
+	m_FileList.clear();
+	m_CurrentPath_Decomposition.clear();
+	ScanDir(m_CurrentPath);
 }
 
 void ImGuiFileDialog::ScanDir(const std::string& vPath)
@@ -504,548 +1272,4 @@ void ImGuiFileDialog::GetDrives()
 		}
 		m_ShowDrives = true;
 	}
-}
-
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vPath, const std::string& vDefaultFileName,
-	const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
-{
-	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
-		return;
-
-	dlg_key = vKey;
-	dlg_name = std::string(vName);
-	dlg_filters = vFilters;
-	dlg_path = vPath;
-	dlg_defaultFileName = vDefaultFileName;
-	dlg_optionsPane = std::move(vOptionsPane);
-	dlg_userString = vUserString;
-	dlg_optionsPaneWidth = vOptionsPaneWidth;
-
-	dlg_defaultExt = "";
-
-	m_ShowDialog = true;
-}
-
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vFilePathName,
-	const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth, const std::string& vUserString)
-{
-	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
-		return;
-
-	dlg_key = vKey;
-	dlg_name = std::string(vName);
-	dlg_filters = vFilters;
-
-	auto ps = ParsePathFileName(vFilePathName);
-	if (ps.isOk)
-	{
-		dlg_path = ps.path;
-		dlg_defaultFileName = vFilePathName;
-		dlg_defaultExt = "." + ps.ext;
-	}
-	else
-	{
-		dlg_path = ".";
-		dlg_defaultFileName = "";
-		dlg_defaultExt = "";
-	}
-
-	dlg_optionsPane = std::move(vOptionsPane);
-	dlg_userString = vUserString;
-	dlg_optionsPaneWidth = vOptionsPaneWidth;
-
-	m_ShowDialog = true;
-}
-
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vFilePathName, const std::string& vUserString)
-{
-	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
-		return;
-
-	dlg_key = vKey;
-	dlg_name = std::string(vName);
-	dlg_filters = vFilters;
-
-	auto ps = ParsePathFileName(vFilePathName);
-	if (ps.isOk)
-	{
-		dlg_path = ps.path;
-		dlg_defaultFileName = vFilePathName;
-		dlg_defaultExt = "." + ps.ext;
-	}
-	else
-	{
-		dlg_path = ".";
-		dlg_defaultFileName = "";
-		dlg_defaultExt = "";
-	}
-
-	dlg_optionsPane = nullptr;
-	dlg_userString = vUserString;
-	dlg_optionsPaneWidth = 0;
-
-	m_ShowDialog = true;
-}
-
-void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vPath, const std::string& vDefaultFileName, const std::string& vUserString)
-{
-	if (m_ShowDialog) // si deja ouvert on ne fou pas la merde en voulant en ecrire une autre
-		return;
-
-	dlg_key = vKey;
-	dlg_name = std::string(vName);
-	dlg_filters = vFilters;
-	dlg_path = vPath;
-	dlg_defaultFileName = vDefaultFileName;
-	dlg_optionsPane = nullptr;
-	dlg_userString = vUserString;
-	dlg_optionsPaneWidth = 0;
-
-	dlg_defaultExt = "";
-
-	m_ShowDialog = true;
-}
-
-void ImGuiFileDialog::CloseDialog(const std::string& vKey)
-{
-	if (dlg_key == vKey)
-	{
-		dlg_key.clear();
-		m_ShowDialog = false;
-	}
-}
-
-void ImGuiFileDialog::SetPath(const std::string& vPath)
-{
-	m_ShowDrives = false;
-	m_CurrentPath = vPath;
-	m_FileList.clear();
-	m_CurrentPath_Decomposition.clear();
-	ScanDir(m_CurrentPath);
-}
-
-bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags)
-{
-	if (m_ShowDialog && dlg_key == vKey)
-	{
-		bool res = false;
-
-		std::string name = dlg_name + "##" + dlg_key;
-
-		if (m_Name != name)
-		{
-			m_FileList.clear();
-			m_CurrentPath_Decomposition.clear();
-		}
-
-		IsOk = false;
-
-		if (ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar))
-		{
-
-			m_Name = name;
-
-			m_AnyWindowsHovered |= ImGui::IsWindowHovered();
-
-			if (dlg_path.empty()) dlg_path = ".";
-
-			if (m_FileList.empty() && !m_ShowDrives)
-			{
-				replaceString(dlg_defaultFileName, dlg_path, ""); // local path
-
-				if (!dlg_defaultFileName.empty())
-				{
-					ResetBuffer(FileNameBuffer);
-					AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, dlg_defaultFileName);
-					m_SelectedFileName = dlg_defaultFileName;
-
-					if (!dlg_defaultExt.empty())
-					{
-						m_SelectedExt = dlg_defaultExt;
-
-						ImGuiFileDialog::FilterIndex = 0;
-						size_t size = 0;
-						const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
-						while (*p)
-						{
-							size += strlen(p) + 1;
-							p += size;
-						}
-						int idx = 0;
-						auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
-						for (auto & it : arr)
-						{
-							if (m_SelectedExt == it)
-							{
-								ImGuiFileDialog::FilterIndex = idx;
-								break;
-							}
-							idx++;
-						}
-					}
-				}
-
-				ScanDir(dlg_path);
-			}
-
-			if (IMGUI_BUTTON(createDirButtonString))
-			{
-				if (!m_CreateDirectoryMode)
-				{
-					m_CreateDirectoryMode = true;
-					ResetBuffer(DirectoryNameBuffer);
-				}
-			}
-
-			if (m_CreateDirectoryMode)
-			{
-				ImGui::SameLine();
-
-				ImGui::PushItemWidth(100.0f);
-				ImGui::InputText("##DirectoryFileName", DirectoryNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
-				ImGui::PopItemWidth();
-
-				ImGui::SameLine();
-
-				if (IMGUI_BUTTON(okButtonString))
-				{
-					std::string newDir = std::string(DirectoryNameBuffer);
-					if (CreateDir(newDir))
-					{
-						SetPath(m_CurrentPath + PATH_SEP + newDir);
-					}
-
-					m_CreateDirectoryMode = false;
-				}
-
-				ImGui::SameLine();
-
-				if (IMGUI_BUTTON(cancelButtonString))
-				{
-					m_CreateDirectoryMode = false;
-				}
-			}
-
-			ImGui::SameLine();
-
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-			ImGui::SameLine();
-
-			if (IMGUI_BUTTON(resetButtonString))
-			{
-				SetPath(".");
-			}
-
-			bool drivesClick = false;
-
-#ifdef WIN32
-			ImGui::SameLine();
-
-			if (IMGUI_BUTTON(drivesButtonString))
-			{
-				drivesClick = true;
-			}
-#endif
-
-			ImGui::SameLine();
-
-			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-			// show current path
-			bool pathClick = false;
-			if (!m_CurrentPath_Decomposition.empty())
-			{
-				ImGui::SameLine();
-				for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
-					itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
-				{
-					if (itPathDecomp != m_CurrentPath_Decomposition.begin())
-						ImGui::SameLine();
-					if (IMGUI_PATH_BUTTON((*itPathDecomp).c_str()))
-					{
-						ComposeNewPath(itPathDecomp);
-						pathClick = true;
-						break;
-					}
-				}
-			}
-
-			ImGuiContext& g = *GImGui;
-			const float itemsHeight = (g.FontSize + g.Style.FramePadding.y * 2.0f + g.Style.ItemSpacing.y * 2.0f) * 4.0f + g.Style.WindowPadding.y * 2.0f;
-			ImVec2 size = ImGui::GetContentRegionMax() - ImVec2((float)dlg_optionsPaneWidth, itemsHeight);
-
-			// search field
-			if (IMGUI_BUTTON("R##ImGuiFileDialogSearchFiled"))
-			{
-				ResetBuffer(SearchBuffer);
-				searchTag.clear();
-			}
-			ImGui::SameLine();
-			ImGui::Text(searchString);
-			ImGui::SameLine();
-			if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
-			{
-				searchTag = SearchBuffer;
-			}
-
-			ImGui::BeginChild("##FileDialog_FileList", size);
-
-			for (auto & it : m_FileList)
-			{
-				const FileInfoStruct& infos = it;
-
-				bool show = true;
-
-				std::string str;
-				if (infos.type == 'd') str = dirEntryString + infos.fileName;
-				if (infos.type == 'l') str = linkEntryString + infos.fileName;
-				if (infos.type == 'f') str = fileEntryString + infos.fileName;
-				if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
-				{
-					show = false;
-				}
-				if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
-				{
-					show = false;
-				}
-				if (show)
-				{
-					ImVec4 c;
-					bool showColor = GetFilterColor(infos.ext, &c);
-					if (showColor)
-						ImGui::PushStyleColor(ImGuiCol_Text, c);
-
-					if (ImGui::Selectable(str.c_str(), (infos.fileName == m_SelectedFileName)))
-					{
-						if (infos.type == 'd')
-						{
-							if (it.fileName == "..")
-							{
-								if (m_CurrentPath_Decomposition.size() > 1)
-								{
-									ComposeNewPath(m_CurrentPath_Decomposition.end() - 2);
-									pathClick = true;
-								}
-							}
-							else
-							{
-								std::string newPath;
-
-								if (m_ShowDrives)
-								{
-									newPath = infos.fileName + PATH_SEP;
-								}
-								else
-								{
-#ifdef LINUX
-									if (s_fs_root == m_CurrentPath)
-									{
-										newPath = m_CurrentPath + infos.fileName;
-									}
-									else
-									{
-#endif
-										newPath = m_CurrentPath + PATH_SEP + infos.fileName;
-#ifdef LINUX
-									}
-#endif
-								}
-
-								if (IsDirectoryExist(newPath))
-								{
-									if (m_ShowDrives)
-									{
-										m_CurrentPath = infos.fileName;
-										s_fs_root = m_CurrentPath;
-									}
-									else
-									{
-										m_CurrentPath = newPath;
-									}
-									pathClick = true;
-								}
-							}
-						}
-						else
-						{
-							m_SelectedFileName = infos.fileName;
-							ResetBuffer(FileNameBuffer);
-							AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, m_SelectedFileName);
-						}
-						if (showColor)
-							ImGui::PopStyleColor();
-						break;
-					}
-
-					if (showColor)
-						ImGui::PopStyleColor();
-				}
-			}
-
-			// changement de repertoire
-			if (pathClick)
-			{
-				SetPath(m_CurrentPath);
-			}
-
-			if (drivesClick)
-			{
-				GetDrives();
-			}
-
-			ImGui::EndChild();
-
-			bool _CanWeContinue = true;
-
-			if (dlg_optionsPane)
-			{
-				ImGui::SameLine();
-
-				size.x = (float)dlg_optionsPaneWidth;
-
-				ImGui::BeginChild("##FileTypes", size);
-
-				dlg_optionsPane(m_SelectedExt, &_CanWeContinue);
-
-				ImGui::EndChild();
-			}
-
-			ImGui::Text(fileNameString);
-
-			ImGui::SameLine();
-
-			float width = ImGui::GetContentRegionAvail().x;
-			if (dlg_filters) width -= 120.0f;
-			ImGui::PushItemWidth(width);
-			ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
-			ImGui::PopItemWidth();
-
-			if (dlg_filters)
-			{
-				ImGui::SameLine();
-
-				ImGui::PushItemWidth(100.0f);
-				bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.empty();
-				ImGui::PopItemWidth();
-				if (comboClick)
-				{
-					int itemIdx = 0;
-					const char* p = dlg_filters;
-					while (*p)
-					{
-						if (FilterIndex == itemIdx)
-						{
-							m_SelectedExt = std::string(p);
-							break;
-						}
-						p += strlen(p) + 1;
-						itemIdx++;
-					}
-				}
-			}
-
-			if (IMGUI_BUTTON(cancelButtonString))
-			{
-				IsOk = false;
-				res = true;
-			}
-
-			if (_CanWeContinue)
-			{
-				ImGui::SameLine();
-
-				if (IMGUI_BUTTON(okButtonString))
-				{
-					if ('\0' != FileNameBuffer[0])
-					{
-						IsOk = true;
-						res = true;
-					}
-				}
-			}
-		}
-
-		ImGui::End();
-
-		if (res)
-		{
-			m_FileList.clear();
-		}
-
-		return res;
-	}
-
-	return false;
-}
-
-std::string ImGuiFileDialog::GetFilepathName()
-{
-	std::string  result = m_CurrentPath;
-
-	if (s_fs_root != result)
-	{
-		result += PATH_SEP;
-	}
-
-	result += GetCurrentFileName();
-
-	return result;
-}
-
-std::string ImGuiFileDialog::GetCurrentPath()
-{
-	return m_CurrentPath;
-}
-
-std::string ImGuiFileDialog::GetCurrentFileName()
-{
-	std::string result = FileNameBuffer;
-
-	size_t lastPoint = result.find_last_of('.');
-	if (lastPoint != std::string::npos)
-	{
-		result = result.substr(0, lastPoint);
-	}
-
-	result += m_SelectedExt;
-
-	return result;
-}
-
-std::string ImGuiFileDialog::GetCurrentFilter()
-{
-	return m_SelectedExt;
-}
-
-std::string ImGuiFileDialog::GetUserString()
-{
-	return dlg_userString;
-}
-
-void ImGuiFileDialog::SetFilterColor(const std::string& vFilter, ImVec4 vColor)
-{
-	m_FilterColor[vFilter] = vColor;
-}
-
-bool ImGuiFileDialog::GetFilterColor(const std::string& vFilter, ImVec4 *vColor)
-{
-	if (vColor)
-	{
-		if (m_FilterColor.find(vFilter) != m_FilterColor.end()) // found
-		{
-			*vColor = m_FilterColor[vFilter];
-			return true;
-		}
-	}
-	return false;;
-}
-
-void ImGuiFileDialog::ClearFilterColor()
-{
-	m_FilterColor.clear();
 }

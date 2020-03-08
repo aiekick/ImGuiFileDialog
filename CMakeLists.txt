@@ -35,6 +35,8 @@ include_directories(
         ${GLFW_INCLUDE_DIR}
         ${GLAD_INCLUDE_DIR}
         ${IMGUI_INCLUDE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
 )
 
 target_link_libraries(${PROJECT}

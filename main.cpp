@@ -6,8 +6,11 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
+#include <string>
 
-#include "ImGuiFileDialog.h"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
+
+#include "CustomFont.cpp"
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -129,6 +132,12 @@ int main(int, char**)
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
 
+	// load icon font file (CustomFont.cpp)
+	ImGui::GetIO().Fonts->AddFontDefault();
+	static const ImWchar icons_ranges[] = { ICON_MIN_IMFDLG, ICON_MAX_IMFDLG, 0 };
+	ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
+	ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_IMFDLG, 15.0f, &icons_config, icons_ranges);
+
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
@@ -170,14 +179,22 @@ int main(int, char**)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
 			ImGui::Separator();
-			if (ImGui::Button("Open File Dialog"))
+			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
 			}
-			if (ImGui::Button("Open File Dialog with a custom pane"))
+			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection 5 items"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0",
-					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2), 350, "InfosPane");
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+			}
+			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with infinite selection"))
+			{
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+			}
+			if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
+			{
+				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2), 1, 350, "SaveFile");
 			}
 			ImGui::Separator();
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
@@ -208,6 +225,9 @@ int main(int, char**)
 			{
 				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
 				std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+				std::string filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
+				std::string userString = ImGuiFileDialog::Instance()->GetUserString();
+				auto selection = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 
 				// action
 			}

@@ -42,7 +42,7 @@ SOFTWARE.
 
 #define MAX_FILE_DIALOG_NAME_BUFFER 1024
 
-#include "ImGuiFileDialogConfig.h"
+#include "ImGuiFileDialogConfig.h" 
 
 struct FileInfoStruct
 {
@@ -57,13 +57,15 @@ class ImGuiFileDialog
 private:
 	std::vector<FileInfoStruct> m_FileList;
 	std::map<std::string, ImVec4> m_FilterColor;
-	std::string m_SelectedFileName;
+	//std::string m_SelectedFileName;
+	std::map<std::string, bool> m_SelectedFileNames; // map for have binary search
 	std::string m_SelectedExt;
 	std::string m_CurrentPath;
 	std::vector<std::string> m_CurrentPath_Decomposition;
 	std::string m_Name;
 	bool m_ShowDialog = false;
 	bool m_ShowDrives = false;
+	std::string m_LastSelectedFileName; // for shift multi selectio
 
 public:
 	static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -85,6 +87,7 @@ private:
 	size_t dlg_optionsPaneWidth = 0;
 	std::string searchTag;
 	std::string dlg_userString;
+	int dlg_CountSelectionMax = 1; // 0 for infinite
 
 public:
 	static ImGuiFileDialog* Instance()
@@ -102,28 +105,42 @@ protected:
 public:
 	void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 		const std::string& vPath, const std::string& vDefaultFileName,
-		const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth = 250, const std::string& vUserString = "");
+		const std::function<void(std::string, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
+		const int& vCountSelectionMax = 1, const std::string& vUserString = "");
 	void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vDefaultFileName,
-		const std::function<void(std::string, bool*)>& vOptionsPane, size_t vOptionsPaneWidth = 250, const std::string& vUserString = "");
+		const std::string& vDefaultFileName, 
+		const std::function<void(std::string, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
+		const int& vCountSelectionMax = 1, const std::string& vUserString = "");
 	void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName, const std::string& vUserString = "");
+		const std::string& vPath, const std::string& vDefaultFileName, 
+		const int& vCountSelectionMax = 1, const std::string& vUserString = "");
 	void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vFilePathName, const std::string& vUserString = "");
+		const std::string& vFilePathName, const int& vCountSelectionMax = 1, 
+		const std::string& vUserString = "");
 
-	void CloseDialog(const std::string& vKey);
 	bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse);
+	void CloseDialog(const std::string& vKey);
+	
 	std::string GetFilepathName();
 	std::string GetCurrentPath();
 	std::string GetCurrentFileName();
 	std::string GetCurrentFilter();
 	std::string GetUserString();
-
+	std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
+		
 	void SetFilterColor(const std::string& vFilter, ImVec4 vColor);
     bool GetFilterColor(const std::string& vFilter, ImVec4 *vColor);
     void ClearFilterColor();
 
 private:
+	bool SelectDirectory(const FileInfoStruct& vInfos);
+
+	void SelectFileName(const FileInfoStruct& vInfos);
+	void RemoveFileNameInSelection(const std::string& vFileName);
+	void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);
+
+	void CheckFilter();
+	
 	void SetPath(const std::string& vPath);
 	void ScanDir(const std::string& vPath);
 	void SetCurrentDir(const std::string& vPath);

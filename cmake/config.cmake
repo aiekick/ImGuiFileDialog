@@ -22,22 +22,27 @@ macro(make_project_)
             )
     endif()
     
-    if (NOT DEFINED HEADERS)
-        file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-    endif ()
-
     if (NOT DEFINED SOURCES)
-        file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+        file(GLOB SOURCES 
+			${CMAKE_CURRENT_SOURCE_DIR}/*.cpp 
+			${CMAKE_CURRENT_SOURCE_DIR}/*.h)
     endif ()
 
-    source_group("Header Files" FILES ${HEADERS})
-    source_group("Source Files" FILES ${SOURCES})
+    source_group("Source" FILES ${SOURCES})
+	
+	if (NOT DEFINED IMGUIFILEDIALOG)
+        file(GLOB IMGUIFILEDIALOG 
+			${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/*.cpp 
+			${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/*.h)
+    endif ()
+
+    source_group("ImGuiFileDialog" FILES ${IMGUIFILEDIALOG})
 endmacro ()
 
 macro(make_executable)
     make_project_()
     
-    add_executable(${PROJECT} ${HEADERS} ${SOURCES})
+    add_executable(${PROJECT} ${SOURCES} ${IMGUIFILEDIALOG})
 
     add_definitions(${GLFW_DEFINITIONS})
     
@@ -49,7 +54,7 @@ endmacro()
 
 macro(make_library)
     make_project_()
-    add_library(${PROJECT} STATIC ${HEADERS} ${SOURCES})
+    add_library(${PROJECT} STATIC ${SOURCES} ${IMGUIFILEDIALOG})
     target_include_directories(${PROJECT} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
     set_target_properties(${PROJECT} PROPERTIES FOLDER Libraries)
@@ -57,7 +62,9 @@ macro(make_library)
     include_directories(
         ${GLM_INCLUDE_DIR}
         ${GLAD_INCLUDE_DIR}
-        ${GLFW_INCLUDE_DIR})
+        ${GLFW_INCLUDE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog)
 
     if (NOT SOURCES)
         set_target_properties(${PROJECT} PROPERTIES LINKER_LANGUAGE CXX)
