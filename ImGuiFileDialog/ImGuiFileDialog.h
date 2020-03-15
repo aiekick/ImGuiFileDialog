@@ -92,7 +92,7 @@ private:
 	size_t dlg_optionsPaneWidth = 0;
 	std::string searchTag;
 	UserDatas dlg_userDatas;
-	int dlg_CountSelectionMax = 1; // 0 for infinite
+	size_t dlg_CountSelectionMax = 1; // 0 for infinite
 
 public:
 	static ImGuiFileDialog* Instance()

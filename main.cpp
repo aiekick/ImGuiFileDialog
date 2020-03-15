@@ -48,6 +48,7 @@ inline void InfosPane(std::string vFilter, UserDatas vUserDatas, bool *vCantCont
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	
 	ImGui::Text("Selected Filter : %s", vFilter.c_str());
+	ImGui::Text("User Datas : %s", (const char*)vUserDatas);
 
 	ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
 
@@ -195,7 +196,7 @@ int main(int, char**)
 			if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
 			{
 				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
-					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 1, 350, "SaveFile");
+					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile");
 			}
 			ImGui::Separator();
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f

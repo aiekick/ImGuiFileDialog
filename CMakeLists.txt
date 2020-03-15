@@ -27,6 +27,9 @@ elseif(WIN32)
     set(DIRENT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/dirent/include)
     include_directories(${DIRENT_INCLUDE_DIR})
 endif()
+if(MSVC)
+    add_definitions(-DMSVC)
+endif()
 
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../CustomImGuiFileDialogConfig.h")
 

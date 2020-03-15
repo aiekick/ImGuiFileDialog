@@ -1086,7 +1086,7 @@ void ImGuiFileDialog::ScanDir(const std::string& vPath)
 	int             n = 0;
 	std::string		path = vPath;
 
-#if defined(LINUX) or defined(APPLE)
+#if defined(UNIX) // UNIX is LINUX or APPLE
 	if (path.size() > 0)
 	{
 		if (path[0] != PATH_SEP)
@@ -1185,7 +1185,7 @@ void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
 				m_CurrentPath = m_CurrentPath.substr(0, m_CurrentPath.size() - 1);
 			}
 			m_CurrentPath_Decomposition = splitStringToVector(m_CurrentPath, PATH_SEP, false);
-#if defined(LINUX) or defined(APPLE)
+#if defined(UNIX) // UNIX is LINUX or APPLE
 			m_CurrentPath_Decomposition.insert(m_CurrentPath_Decomposition.begin(), std::string(1u, PATH_SEP));
 #endif
 			if (!m_CurrentPath_Decomposition.empty())
@@ -1242,7 +1242,7 @@ void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
 
 		if (vIter == m_CurrentPath_Decomposition.begin())
 		{
-#if defined(LINUX) or defined(APPLE)
+#if defined(UNIX) // UNIX is LINUX or APPLE
 			if (m_CurrentPath[0] != PATH_SEP)
 				m_CurrentPath = PATH_SEP + m_CurrentPath;
 #endif
