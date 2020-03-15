@@ -24,4 +24,22 @@
 //#define buttonResetPathString "Reset to current directory"
 //#define buttonCreateDirString "Create Directory"
 
+/*
+Comment theses line if you not want to have customization, like icon font here
+*/
+
+#include <CustomFont.h>
+
+#define createDirButtonString ICON_IMFDLG_ADD
+#define okButtonString ICON_IMFDLG_OK " OK"
+#define cancelButtonString ICON_IMFDLG_CANCEL " Cancel"
+#define resetButtonString ICON_IMFDLG_RESET
+#define drivesButtonString ICON_IMFDLG_DRIVES
+#define searchString ICON_IMFDLG_SEARCH
+#define dirEntryString ICON_IMFDLG_FOLDER
+#define linkEntryString ICON_IMFDLG_LINK
+#define fileEntryString ICON_IMFDLG_FILE
+
+
+
 

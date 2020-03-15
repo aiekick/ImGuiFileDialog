@@ -28,6 +28,8 @@ elseif(WIN32)
     include_directories(${DIRENT_INCLUDE_DIR})
 endif()
 
+add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../CustomImGuiFileDialogConfig.h")
+
 include_directories(
         ${PLOG_INCLUDE_DIR}
         ${GLM_INCLUDE_DIR}
