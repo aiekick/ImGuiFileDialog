@@ -43,13 +43,6 @@ SOFTWARE.
 #endif
 #include "imgui_internal.h"
 
-#include <cstdlib>
-#include <algorithm>
-#include <iostream>
-#include <utility>
-
-static std::string s_fs_root = std::string(1u, PATH_SEP);
-
 // for lets you define your button widget
 // if you have like me a speial two color button
 #ifndef IMGUI_PATH_BUTTON
@@ -102,6 +95,13 @@ static std::string s_fs_root = std::string(1u, PATH_SEP);
 #ifndef buttonCreateDirString
 #define buttonCreateDirString "Create Directory"
 #endif
+
+#include <cstdlib>
+#include <algorithm>
+#include <iostream>
+#include <utility>
+
+static std::string s_fs_root = std::string(1u, PATH_SEP);
 
 /* Alphabetical sorting */
 /*#ifdef WIN32
@@ -216,7 +216,9 @@ inline bool CreateDirectoryIfNotExist(const std::string& name)
 	return res;
 }
 
-inline bool stringComparator(const FileInfoStruct& a, const FileInfoStruct& b)
+inline bool stringComparator(
+	const FileInfoStruct& a, 
+	const FileInfoStruct& b)
 {
 	bool res;
 	if (a.type != b.type) res = (a.type < b.type);
@@ -323,8 +325,8 @@ ImGuiFileDialog::~ImGuiFileDialog() = default;
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 	const std::string& vPath, const std::string& vDefaultFileName,
-	const std::function<void(std::string, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-	const int& vCountSelectionMax, const std::string& vUserString)
+	const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, UserDatas vUserDatas)
 {
 	if (m_ShowDialog) // if already opened, quit
 		return;
@@ -335,7 +337,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_path = vPath;
 	dlg_defaultFileName = vDefaultFileName;
 	dlg_optionsPane = std::move(vOptionsPane);
-	dlg_userString = vUserString;
+	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
 	dlg_CountSelectionMax = vCountSelectionMax;
 
@@ -349,8 +351,8 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 	const std::string& vFilePathName,
-	const std::function<void(std::string, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-	const int& vCountSelectionMax, const std::string& vUserString)
+	const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, UserDatas vUserDatas)
 {
 	if (m_ShowDialog) // if already opened, quit
 		return;
@@ -374,7 +376,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	}
 
 	dlg_optionsPane = std::move(vOptionsPane);
-	dlg_userString = vUserString;
+	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
 	dlg_CountSelectionMax = vCountSelectionMax;
 
@@ -385,7 +387,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 }
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vFilePathName, const int& vCountSelectionMax, const std::string& vUserString)
+	const std::string& vFilePathName, const int& vCountSelectionMax, UserDatas vUserDatas)
 {
 	if (m_ShowDialog) // if already opened, quit
 		return;
@@ -409,7 +411,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	}
 
 	dlg_optionsPane = nullptr;
-	dlg_userString = vUserString;
+	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = 0;
 	dlg_CountSelectionMax = vCountSelectionMax;
 
@@ -420,7 +422,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 }
 
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-	const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, const std::string& vUserString)
+	const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, UserDatas vUserDatas)
 {
 	if (m_ShowDialog) // if already opened, quit
 		return;
@@ -431,7 +433,7 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_path = vPath;
 	dlg_defaultFileName = vDefaultFileName;
 	dlg_optionsPane = nullptr;
-	dlg_userString = vUserString;
+	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = 0;
 	dlg_CountSelectionMax = vCountSelectionMax;
 
@@ -690,7 +692,7 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
 				ImGui::BeginChild("##FileTypes", size);
 
-				dlg_optionsPane(m_SelectedExt, &_CanWeContinue);
+				dlg_optionsPane(m_SelectedExt, dlg_userDatas, &_CanWeContinue);
 
 				ImGui::EndChild();
 			}
@@ -806,9 +808,9 @@ std::string ImGuiFileDialog::GetCurrentFilter()
 	return m_SelectedExt;
 }
 
-std::string ImGuiFileDialog::GetUserString()
+UserDatas ImGuiFileDialog::GetUserDatas()
 {
-	return dlg_userString;
+	return dlg_userDatas;
 }
 
 std::map<std::string, std::string> ImGuiFileDialog::GetSelection()
