@@ -30,11 +30,7 @@ SOFTWARE.
 #include <string>
 #include <map>
 
-#include <future>
 #include <functional>
-#include <thread>
-#include <atomic>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <list>
@@ -88,10 +84,10 @@ private:
 	std::string dlg_path;
 	std::string dlg_defaultFileName;
 	std::string dlg_defaultExt;
-	std::function<void(std::string, UserDatas, bool*)> dlg_optionsPane;
+	std::function<void(std::string, UserDatas, bool*)> dlg_optionsPane = 0;
 	size_t dlg_optionsPaneWidth = 0;
 	std::string searchTag;
-	UserDatas dlg_userDatas;
+	UserDatas dlg_userDatas = 0;
 	size_t dlg_CountSelectionMax = 1; // 0 for infinite
 
 public:
