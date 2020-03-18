@@ -13,7 +13,8 @@ An example of the File Dialog integrated within the ImGui Demo App
   - n => n files
 - Compatible with MacOs, Linux, Win
   - On Win version you can list Drives
-  
+- Support of Modal/Standard dialog type
+
 ## Simple Dialog :
 ```cpp
 void drawGui()
