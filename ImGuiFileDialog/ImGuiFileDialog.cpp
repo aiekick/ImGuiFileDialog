@@ -323,6 +323,10 @@ ImGuiFileDialog::ImGuiFileDialog()
 
 ImGuiFileDialog::~ImGuiFileDialog() = default;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 	const std::string& vPath, const std::string& vDefaultFileName,
 	const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
@@ -339,7 +343,8 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_optionsPane = std::move(vOptionsPane);
 	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
-	dlg_CountSelectionMax = vCountSelectionMax;
+	dlg_countSelectionMax = vCountSelectionMax;
+	dlg_modal = false;
 
 	dlg_defaultExt = "";
 
@@ -378,7 +383,8 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_optionsPane = std::move(vOptionsPane);
 	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = vOptionsPaneWidth;
-	dlg_CountSelectionMax = vCountSelectionMax;
+	dlg_countSelectionMax = vCountSelectionMax;
+	dlg_modal = false;
 
 	SetPath(m_CurrentPath);
 	CheckFilter();
@@ -413,7 +419,8 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_optionsPane = nullptr;
 	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = 0;
-	dlg_CountSelectionMax = vCountSelectionMax;
+	dlg_countSelectionMax = vCountSelectionMax;
+	dlg_modal = false;
 
 	SetPath(m_CurrentPath);
 	CheckFilter();
@@ -435,7 +442,8 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 	dlg_optionsPane = nullptr;
 	dlg_userDatas = vUserDatas;
 	dlg_optionsPaneWidth = 0;
-	dlg_CountSelectionMax = vCountSelectionMax;
+	dlg_countSelectionMax = vCountSelectionMax;
+	dlg_modal = false;
 
 	dlg_defaultExt = "";
 
@@ -444,6 +452,66 @@ void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, con
 
 	m_ShowDialog = true;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vPath, const std::string& vDefaultFileName,
+	const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, UserDatas vUserDatas)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	OpenDialog(vKey, vName, vFilters,
+		vPath, vDefaultFileName,
+		vOptionsPane, vOptionsPaneWidth,
+		vCountSelectionMax, vUserDatas);
+	dlg_modal = true;
+}
+
+void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vFilePathName,
+	const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
+	const int& vCountSelectionMax, UserDatas vUserDatas)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	OpenDialog(vKey, vName, vFilters,
+		vFilePathName,
+		vOptionsPane, vOptionsPaneWidth,
+		vCountSelectionMax, vUserDatas);
+	dlg_modal = true;
+}
+
+void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vFilePathName, const int& vCountSelectionMax, UserDatas vUserDatas)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	OpenDialog(vKey, vName, vFilters,
+		vFilePathName, vCountSelectionMax, vUserDatas);
+	dlg_modal = true;
+}
+
+void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, UserDatas vUserDatas)
+{
+	if (m_ShowDialog) // if already opened, quit
+		return;
+
+	OpenDialog(vKey, vName, vFilters,
+		vPath, vDefaultFileName, vCountSelectionMax, vUserDatas);
+	dlg_modal = true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+///// MAIN FUNCTION //////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags)
 {
@@ -462,7 +530,18 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 
 		IsOk = false;
 
-		if (ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar))
+		bool beg = false;
+		if (dlg_modal)
+		{
+			ImGui::OpenPopup(name.c_str());
+			beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr,
+				vFlags | ImGuiWindowFlags_NoScrollbar);
+		}
+		else
+		{
+			beg = ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar);
+		}
+		if (beg)
 		{
 			m_Name = name;
 
@@ -750,9 +829,13 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 				IsOk = false;
 				res = true;
 			}
+
+			if (dlg_modal)
+				ImGui::EndPopup();
 		}
 
-		ImGui::End();
+		if (!dlg_modal)
+			ImGui::End();
 
 		return res;
 	}
@@ -915,7 +998,7 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
 {
 	if (ImGui::GetIO().KeyCtrl)
 	{
-		if (dlg_CountSelectionMax == 0) // infinite selection
+		if (dlg_countSelectionMax == 0) // infinite selection
 		{
 			if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
 			{
@@ -928,7 +1011,7 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
 		}
 		else // selection limited by size
 		{
-			if (m_SelectedFileNames.size() <= dlg_CountSelectionMax)
+			if (m_SelectedFileNames.size() <= dlg_countSelectionMax)
 			{
 				if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
 				{
@@ -943,7 +1026,7 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
 	}
 	else if (ImGui::GetIO().KeyShift)
 	{
-		if (dlg_CountSelectionMax != 1)
+		if (dlg_countSelectionMax != 1)
 		{
 			m_SelectedFileNames.clear();
 			// we will iterate filelist and get the last selection after the start selection
@@ -966,13 +1049,13 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
 					}
 					else if (startMultiSelection)
 					{
-						if (dlg_CountSelectionMax == 0) // infinite selection
+						if (dlg_countSelectionMax == 0) // infinite selection
 						{
 							AddFileNameInSelection(infos.fileName, false);
 						}
 						else // selection limited by size
 						{
-							if (m_SelectedFileNames.size() < dlg_CountSelectionMax)
+							if (m_SelectedFileNames.size() < dlg_countSelectionMax)
 							{
 								AddFileNameInSelection(infos.fileName, false);
 							}
