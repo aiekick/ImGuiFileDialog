@@ -1011,7 +1011,7 @@ void ImGuiFileDialog::SelectFileName(const FileInfoStruct& vInfos)
 		}
 		else // selection limited by size
 		{
-			if (m_SelectedFileNames.size() <= dlg_countSelectionMax)
+			if (m_SelectedFileNames.size() < dlg_countSelectionMax)
 			{
 				if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
 				{
