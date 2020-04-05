@@ -513,7 +513,7 @@ void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, cons
 ///// MAIN FUNCTION //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags)
+bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize)
 {
 	if (m_ShowDialog && dlg_key == vKey)
 	{
@@ -529,6 +529,8 @@ bool ImGuiFileDialog::FileDialog(const std::string& vKey, ImGuiWindowFlags vFlag
 		}
 
 		IsOk = false;
+
+		ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
 
 		bool beg = false;
 		if (dlg_modal)
@@ -965,7 +967,7 @@ bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
 #ifdef LINUX
 			if (s_fs_root == m_CurrentPath)
 			{
-				newPath = m_CurrentPath + infos.fileName;
+				newPath = m_CurrentPath + vInfos.fileName;
 			}
 			else
 			{

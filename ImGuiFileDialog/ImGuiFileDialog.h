@@ -26,6 +26,8 @@ SOFTWARE.
 
 #include "imgui.h"
 
+#include <float.h>
+
 #include <vector>
 #include <string>
 #include <map>
@@ -140,7 +142,8 @@ public: // modal dialog
 		const std::string& vFilePathName, const int& vCountSelectionMax = 1,
 		UserDatas vUserDatas = 0);
 
-	bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse);
+	bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
+		ImVec2 vMinSize = ImVec2(0,0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
 	void CloseDialog(const std::string& vKey);
 	
 	std::string GetFilepathName();
