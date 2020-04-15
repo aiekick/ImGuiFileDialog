@@ -1,0 +1,23 @@
+name: Win
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build_Win_2016:
+    runs-on: windows-2016
+    steps:
+    - uses: actions/checkout@v1
+    - name: checkout submodules
+      run : git submodule update --init --recursive 
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release
+    - name: build
+      run: cmake --build build --config Release
+    - name: upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: ImGuiFileDialog
+        path: build\Release\ImGuiFileDialog.exe
