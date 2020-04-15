@@ -1,6 +1,6 @@
 ![Win](https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg) ![Linux](https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg) ![Osx](https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg)
 
-Last Actions Builds : [Win](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin) / [Linux](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux) / [Osx](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
+Last Github Actions Builds : [Win](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin) / [Linux](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux) / [Osx](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
 
 # ImGuiFileDialog
 
