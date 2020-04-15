@@ -195,8 +195,9 @@ int main(int, char**)
 			}
 			if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
 			{
+				char* mode = "SaveFile";
 				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
-					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile");
+					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
 			}
 			ImGui::Separator();
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
