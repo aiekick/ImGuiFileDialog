@@ -116,13 +116,23 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
 
 ![alt text](multiSelection.gif)
 
-## Compilation Ok for Win / Linux / MacOs
+## Using ImGuiFileDialog as a module
 
-Win Version :
-![alt text](win.png)
+You can customize ImGuiFileDialog for avoid code modification/adaptation.
 
-Linux Version :
-![alt text](linux.png)
+You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
+like i do here with CustomImGuiFileDialogConfig.h
 
-MacOs Version :
-![alt text](macos.png)
+After that, for let ImGuiFileDialog your own custom file,
+you must define the preprocessor directive CUSTOM_IMGUIFILEDIALOG_CONFIG with the path of you custom config file.
+This path must be relative to the directory where you put ImGuiFileDialog module.
+
+Thats all.
+
+You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
+- this trick was used for have custom icon font instead of labels for buttons or messages titles
+- you can also use your custom imgui button, the button call stamp must be same by the way :)
+
+The Custom Icon Font (in [CustomFont.cpp](CustomFont.cpp) and [CustomFont.h](CustomFont.h)) was made with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
+ImGuiFontStudio is using also ImGuiFileDialog.
+
