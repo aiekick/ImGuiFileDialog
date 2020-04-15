@@ -1,21 +1,18 @@
-cmake_policy(SET CMP0048 NEW)
 cmake_minimum_required(VERSION 2.8)
+cmake_policy(SET CMP0048 NEW)
+cmake_policy(SET CMP0054 NEW)
+cmake_policy(SET CMP0012 NEW)
+cmake_policy(SET CMP0023 NEW)
 
-project(ImGuiFileDialog)
+set(PROJECT ImGuiFileDialog)
 
-# thanks to the cmake project for imgui available here : https://github.com/aid95/MinimalImGui
+enable_language(C CXX)
+project(${PROJECT} CXX)
 
-# 3rd party libraries
 include(cmake/3rdparty.cmake)
 
-# macro and configurations
-include(cmake/config.cmake)
-
-# projects
-make_executable()
-
 if(UNIX)
-    if (APPLE)
+    if(APPLE)
         add_definitions(-DAPPLE)
     else()
         add_definitions(-DLINUX)
@@ -23,15 +20,68 @@ if(UNIX)
     add_definitions(-DUNIX)
 elseif(WIN32)
     add_definitions(-DWIN32)
-    add_definitions(-DMINGW32)
+	if(MINGW)
+		add_definitions(-DMINGW32)
+	endif()
     set(DIRENT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/dirent/include)
     include_directories(${DIRENT_INCLUDE_DIR})
 endif()
+
 if(MSVC)
+    # Ignore 4055 for glad
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /IGNORE:4055")
+    add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-DMSVC)
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
+endif ()
+
+add_definitions(${GLFW_DEFINITIONS})
+add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
+   
+file(GLOB SRC 
+		${CMAKE_SOURCE_DIR}/*.cpp 
+		${CMAKE_SOURCE_DIR}/*.h
+		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.cpp
+		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.h)
+		
+if (APPLE)
+	##set(ICON icon.icns)
+	##set_source_files_properties(icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 endif()
 
-add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../CustomImGuiFileDialogConfig.h")
+add_executable(${PROJECT}
+		MACOSX_BUNDLE
+		##${ICON}
+		${SRC}
+)
+
+if (APPLE)
+	set_target_properties(${PROJECT}
+			PROPERTIES
+			OUTPUT_NAME "ImGuiFileDialog"
+			MACOSX_BUNDLE_EXECUTABLE_NAME "ImGuiFileDialog"
+			MACOSX_BUNDLE_BUNDLE_NAME "ImGuiFileDialog"
+			FOLDER "ImGuiFileDialog"
+			##RESOURCE icon.icns
+			MACOSX_BUNDLE_SHORT_VERSION_STRING ""
+			MACOSX_BUNDLE_LONG_VERSION_STRING ""
+			##MACOSX_BUNDLE_ICON_FILE icon.icns
+			MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
+elseif(WIN32)
+	if (MINGW)
+		set_target_properties(${PROJECT} PROPERTIES	OUTPUT_NAME "ImGuiFileDialog_Mingw32")
+	elseif (CYGWIN)
+		set_target_properties(${PROJECT} PROPERTIES	OUTPUT_NAME "ImGuiFileDialog_Cygwin")
+	elseif(MSVC)
+		set_target_properties(${PROJECT} PROPERTIES	OUTPUT_NAME "ImGuiFileDialog_Msvc")
+	endif()
+elseif(UNIX)
+	set_target_properties(${PROJECT} PROPERTIES	OUTPUT_NAME "ImGuiFileDialog")
+endif()
+
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+install(TARGETS ${PROJECT} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 include_directories(
         ${PLOG_INCLUDE_DIR}
@@ -44,10 +94,10 @@ include_directories(
 		${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
 )
 
-target_link_libraries(${PROJECT}
-        ${OPENGL_LIBRARIES}
+target_link_libraries(${PROJECT} PRIVATE
+		${OPENGL_LIBRARIES}
         ${GLFW_LIBRARIES}
         ${GLAD_LIBRARIES}
         ${IMGUI_LIBRARIES}
-        )
+)
 
