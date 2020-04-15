@@ -1,3 +1,5 @@
+![Win](https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg) ![Linux](https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg) ![Osx](https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg)
+
 # ImGuiFileDialog
 
 An example of the File Dialog integrated within the ImGui Demo App
