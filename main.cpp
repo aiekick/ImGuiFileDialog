@@ -43,7 +43,7 @@ static void glfw_error_callback(int error, const char* description)
 
 static bool canValidateDialog = false;
 
-inline void InfosPane(std::string vFilter, UserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
+inline void InfosPane(std::string vFilter, igfd::UserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	
@@ -144,11 +144,11 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
-    ImGuiFileDialog::Instance()->SetFilterColor(".h", ImVec4(0,1,0,0.5));
-    ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
-    ImGuiFileDialog::Instance()->SetFilterColor(".md", ImVec4(1,0,1,0.5));
-    ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".h", ImVec4(0,1,0,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".md", ImVec4(1,0,1,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -183,20 +183,20 @@ int main(int, char**)
 
 			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
 			}
 			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection 5 items"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
 			}
 			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with infinite selection"))
 			{
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
 			}
 			if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
 			{
 				char* mode = "SaveFile";
-				ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
 					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
 			}
 			ImGui::Separator();
@@ -222,20 +222,20 @@ int main(int, char**)
             ImGui::End();
         }
 
-		if (ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
+		if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
 		{
-			if (ImGuiFileDialog::Instance()->IsOk == true)
+			if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
 			{
-				std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-				std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-				std::string filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
+				std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
+				std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+				std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 				// here convert from string because a string was passed as a userDatas, but it can be what you want
-				auto userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas()); 
-				auto selection = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+				auto userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
+				auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 
 				// action
 			}
-			ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
 		}
 
 		// Rendering
