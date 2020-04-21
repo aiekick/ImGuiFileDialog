@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - master
-    - detail_view_mode
 
 jobs:
   build_Linux_Ubuntu:
