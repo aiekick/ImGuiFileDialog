@@ -3,6 +3,11 @@
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.)
 
 #include "imgui.h"
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+#include "imgui_internal.h"
+
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
@@ -160,6 +165,9 @@ int main(int, char**)
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
+		int display_w, display_h;
+		glfwGetFramebufferSize(window, &display_w, &display_h);
+
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -181,26 +189,92 @@ int main(int, char**)
             ImGui::Checkbox("Another Window", &show_another_window);
 			ImGui::Separator();
 
-			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog"))
+			ImGui::Text("imGuiFileDialog Demo : ");
+			ImGui::Indent();
 			{
-				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+				static bool _UseWindowContraints = true;
+				ImGui::Separator();
+				ImGui::Checkbox("Use file dialog constraint", &_UseWindowContraints);
+				ImGui::Text("Constraints is used here for define min/ax fiel dialog size");
+				ImGui::Separator();
+				ImGui::Text("Standard mode :");
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+				}
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection 5 items"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+				}
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with infinite selection"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+				}
+				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
+				{
+					char* mode = "SaveFile";
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
+				}
+				ImGui::Separator();
+				ImGui::Text("Modal mode :");
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+				}
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog with selection 5 items"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+				}
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog with infinite selection"))
+				{
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+				}
+				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Modal Dialog with a custom pane"))
+				{
+					char* mode = "SaveFile";
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
+				}
+				
+				ImVec2 minSize = ImVec2(0, 0);
+				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
+
+				if (_UseWindowContraints)
+				{
+					maxSize = ImVec2(display_w, display_h);
+					minSize = maxSize * 0.5f;
+				}
+
+				// you can define your flags and min/max window size (theses three settings ae defined by default :
+				// flags => ImGuiWindowFlags_NoCollapse
+				// minSize => 0,0
+				// maxSize => FLT_MAX, FLT_MAX (defined is float.h)
+
+				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey", 
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				{
+					if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
+					{
+						std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
+						std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+						std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						auto userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
+						auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+
+						// action
+					}
+					igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+				}
 			}
-			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection 5 items"))
-			{
-				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
-			}
-			if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with infinite selection"))
-			{
-				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
-			}
-			if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
-			{
-				char* mode = "SaveFile";
-				igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
-					".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
-			}
+			ImGui::Unindent();
+
 			ImGui::Separator();
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::Text("Window mode :");
+			ImGui::Separator();
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
             if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -222,27 +296,10 @@ int main(int, char**)
             ImGui::End();
         }
 
-		if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
-		{
-			if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
-			{
-				std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
-				std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-				std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
-				// here convert from string because a string was passed as a userDatas, but it can be what you want
-				auto userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
-				auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
-
-				// action
-			}
-			igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
-		}
-
+		
 		// Rendering
         ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
+       glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
