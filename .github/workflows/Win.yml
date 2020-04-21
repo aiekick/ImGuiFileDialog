@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - detail_view_mode
 
 jobs:
   build_Win_2016:
