@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#include "imgui.h"
+#include <imgui.h>
 
 #include <float.h>
 
@@ -41,15 +41,15 @@ SOFTWARE.
 #include <vector>
 #include <list>
 
+#ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
+#include "ImGuiFileDialogConfig.h"
+#else
+#include CUSTOM_IMGUIFILEDIALOG_CONFIG
+#endif
+	
 namespace igfd
 {
 	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
-
-	#ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
-	#include "ImGuiFileDialogConfig.h"
-	#else
-	#include CUSTOM_IMGUIFILEDIALOG_CONFIG
-	#endif
 
 	typedef void* UserDatas;
 
