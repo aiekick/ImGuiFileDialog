@@ -46,7 +46,6 @@ SOFTWARE.
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
-#include <utility>
 
 namespace igfd
 {
@@ -936,7 +935,7 @@ namespace igfd
 				return true;
 			}
 		}
-		return false;;
+		return false;
 	}
 
 	void ImGuiFileDialog::ClearFilterColor()
