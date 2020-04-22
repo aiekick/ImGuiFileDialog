@@ -24,6 +24,8 @@ SOFTWARE.
 
 #pragma once
 
+#define IMGUIFILEDIALOG_VERSION "v0.1"
+
 #include <imgui.h>
 
 #include <float.h>
@@ -61,11 +63,24 @@ namespace igfd
 		std::string ext;
 	};
 
+	struct FilterInfosStruct
+	{
+		std::string icon;
+		ImVec4 color = ImVec4(0, 0, 0, 0);
+
+		FilterInfosStruct() { color = ImVec4(0, 0, 0, 0); }
+		FilterInfosStruct(const ImVec4& vColor, const std::string& vIcon)
+		{
+			color = vColor;
+			icon = vIcon;
+		}
+	};
+
 	class ImGuiFileDialog
 	{
 	private:
 		std::vector<FileInfoStruct> m_FileList;
-		std::map<std::string, ImVec4> m_FilterColor;
+		std::map<std::string, FilterInfosStruct> m_FilterInfos;
 		//std::string m_SelectedFileName;
 		std::map<std::string, bool> m_SelectedFileNames; // map for have binary search
 		std::string m_SelectedExt;
@@ -155,9 +170,9 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
-		void SetFilterColor(const std::string& vFilter, ImVec4 vColor);
-		bool GetFilterColor(const std::string& vFilter, ImVec4 *vColor);
-		void ClearFilterColor();
+		void SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
+		bool GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
+		void ClearFilterInfos();
 
 	private:
 		bool SelectDirectory(const FileInfoStruct& vInfos);

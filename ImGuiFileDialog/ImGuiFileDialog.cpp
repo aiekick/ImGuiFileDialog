@@ -708,10 +708,6 @@ namespace igfd
 
 					bool show = true;
 
-					std::string str = " " + infos.fileName;
-					if (infos.type == 'd') str = dirEntryString + str;
-					if (infos.type == 'l') str = linkEntryString + str;
-					if (infos.type == 'f') str = fileEntryString + str;
 					if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
 					{
 						show = false;
@@ -722,11 +718,23 @@ namespace igfd
 					}
 					if (show)
 					{
-						ImVec4 c;
-						bool showColor = GetFilterColor(infos.ext, &c);
+						
+						ImVec4 c; std::string icon;
+						bool showColor = GetFilterInfos(infos.ext, &c, &icon);
 						if (showColor)
 							ImGui::PushStyleColor(ImGuiCol_Text, c);
 
+						std::string str = " " + infos.fileName;
+						if (infos.type == 'd') str = dirEntryString + str;
+						else if (infos.type == 'l') str = linkEntryString + str;
+						else if (infos.type == 'f')
+						{
+							if (showColor && !icon.empty())
+								str = icon + str;
+							else
+								str = fileEntryString + str;
+						}
+						
 						bool selected = false;
 						if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
 							selected = true;
@@ -920,27 +928,31 @@ namespace igfd
 		return res;
 	}
 
-	void ImGuiFileDialog::SetFilterColor(const std::string& vFilter, ImVec4 vColor)
+	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon)
 	{
-		m_FilterColor[vFilter] = vColor;
+		m_FilterInfos[vFilter] = FilterInfosStruct(vColor, vIcon);
 	}
 
-	bool ImGuiFileDialog::GetFilterColor(const std::string& vFilter, ImVec4 *vColor)
+	bool ImGuiFileDialog::GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon)
 	{
 		if (vColor)
 		{
-			if (m_FilterColor.find(vFilter) != m_FilterColor.end()) // found
+			if (m_FilterInfos.find(vFilter) != m_FilterInfos.end()) // found
 			{
-				*vColor = m_FilterColor[vFilter];
+				*vColor = m_FilterInfos[vFilter].color;
+				if (vIcon)
+				{
+					*vIcon = m_FilterInfos[vFilter].icon;
+				}
 				return true;
 			}
 		}
 		return false;
 	}
 
-	void ImGuiFileDialog::ClearFilterColor()
+	void ImGuiFileDialog::ClearFilterInfos()
 	{
-		m_FilterColor.clear();
+		m_FilterInfos.clear();
 	}
 
 	bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)

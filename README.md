@@ -10,7 +10,7 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Can use custom pane via function binding
   - this pane can block the validation of the dialog
   - can also display different things according to current filter and User Datas
-- Support of Filter Coloring
+- Support of Filter Custom Coloring / Icons / text 
 - Multi Selection (ctrl/shift + click) :
   - 0 => infinite
   - 1 => one file (default)
@@ -19,7 +19,7 @@ An example of the File Dialog integrated within the ImGui Demo App
   - On Win version you can list Drives
 - Support of Modal/Standard dialog type
 
-Use Namespace igfd (for avoid conflict with variables, struct and class names)
+Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
 ## Simple Dialog :
 ```cpp
@@ -44,7 +44,7 @@ void drawGui()
   }
 }
 ```
-![alt text](dlg_simple.gif)
+![alt text](doc/dlg_simple.gif)
 
 ## Dialog with Custom Pane :
 ```cpp
@@ -84,19 +84,30 @@ void drawGui()
   }
 }
 ```
-![alt text](dlg_with_pane.gif)
+![alt text](doc/dlg_with_pane.gif)
 
-## Filter Coloring
+## Filter Infos
 
+You can define color for a filter type
 ```cpp
-igfd::ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
-igfd::ImGuiFileDialog::Instance()->SetFilterColor(".h",   ImVec4(0,1,0,0.5));
-igfd::ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
-igfd::ImGuiFileDialog::Instance()->SetFilterColor(".md",  ImVec4(1,0,1,0.5));
-igfd::ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".cpp", ImVec4(1,1,0, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".h", ImVec4(0,1,0, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".hpp", ImVec4(0,0,1, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".md", ImVec4(1,0,1, 0.9));
 ```
 
-![alt text](color_filter.png)
+![alt text](doc/color_filter.png)
+
+and also specific icons (with icon font files) or file type names :
+
+```cpp
+// add an icon for png files 
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".png", ImVec4(0,1,1,0.9), ICON_IMFDLG_FILE_TYPE_PIC);
+// add a text for gif files (the default value is [File] 
+igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
+```
+
+![alt text](doc/filter_Icon.png)
 
 ## Multi Selection
 
@@ -116,7 +127,7 @@ igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File",
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
-![alt text](multiSelection.gif)
+![alt text](doc/multiSelection.gif)
 
 ## Using ImGuiFileDialog as a module
 

@@ -10,7 +10,6 @@
 
 #include "3rdparty/imgui/examples/imgui_impl_opengl3.h"
 #include "3rdparty/imgui/examples/imgui_impl_glfw.h"
-
 #include <stdio.h>
 #include <string>
 
@@ -150,11 +149,12 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".cpp", ImVec4(1,1,0,0.5));
-	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".h", ImVec4(0,1,0,0.5));
-	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".hpp", ImVec4(0,0,1,0.5));
-	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".md", ImVec4(1,0,1,0.5));
-	igfd::ImGuiFileDialog::Instance()->SetFilterColor(".png", ImVec4(0,1,1,0.5));
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IMFDLG_FILE_TYPE_PIC); // add an icon for the filter type
+	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -190,7 +190,7 @@ int main(int, char**)
             ImGui::Checkbox("Another Window", &show_another_window);
 			ImGui::Separator();
 
-			ImGui::Text("imGuiFileDialog Demo : ");
+			ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
 			ImGui::Indent();
 			{
 				static bool _UseWindowContraints = true;
@@ -243,7 +243,7 @@ int main(int, char**)
 
 				if (_UseWindowContraints)
 				{
-					maxSize = ImVec2(display_w, display_h);
+					maxSize = ImVec2((float)display_w, (float)display_h);
 					minSize = maxSize * 0.5f;
 				}
 
