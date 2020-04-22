@@ -39,12 +39,25 @@ endif ()
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
    
-file(GLOB SRC 
-		${CMAKE_SOURCE_DIR}/*.cpp 
-		${CMAKE_SOURCE_DIR}/*.h
+file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
+file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
+file(GLOB RES_SOURCES 
+		${CMAKE_SOURCE_DIR}/CustomFont.cpp 
+		${CMAKE_SOURCE_DIR}/CustomFont.h)
+file(GLOB IMGUIFILEDIALOG_SOURCES 
 		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.cpp
 		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.h)
-		
+file(GLOB IMGUIIMPL_SOURCES 
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_glfw.cpp
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_glfw.h
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_opengl3.cpp
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_opengl3.h)
+source_group(main FILES ${MAIN_SOURCES})
+source_group(src\\Custom FILES ${CUSTOM_SOURCES})
+source_group(src\\Res FILES ${RES_SOURCES})
+source_group(src\\ImGuiFileDialog FILES ${IMGUIFILEDIALOG_SOURCES})
+source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
+
 if (APPLE)
 	##set(ICON icon.icns)
 	##set_source_files_properties(icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
@@ -53,7 +66,11 @@ endif()
 add_executable(${PROJECT}
 		MACOSX_BUNDLE
 		##${ICON}
-		${SRC}
+		${MAIN_SOURCES}
+		${CUSTOM_SOURCES}
+		${RES_SOURCES}
+		${IMGUIFILEDIALOG_SOURCES}
+		${IMGUIIMPL_SOURCES}
 )
 
 if (APPLE)
