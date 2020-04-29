@@ -16,6 +16,7 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Compatible with MacOs, Linux, Win
   - On Win version you can list Drives
 - Support of Modal/Standard dialog type
+- Support both Mode : File Chooser or Directory Chooser
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
