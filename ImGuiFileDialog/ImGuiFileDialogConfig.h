@@ -19,6 +19,7 @@
 //#define linkEntryString "[LINK] "
 //#define fileEntryString "[FILE] "
 //#define fileNameString "File Name : "
+//#define dirNameString "Directory Name : "
 //#define buttonResetSearchString "Reset search"
 //#define buttonDriveString "Drives"
 //#define buttonResetPathString "Reset to current directory"

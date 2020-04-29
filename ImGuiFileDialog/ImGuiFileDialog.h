@@ -89,7 +89,7 @@ namespace igfd
 		std::string m_Name;
 		bool m_ShowDialog = false;
 		bool m_ShowDrives = false;
-		std::string m_LastSelectedFileName; // for shift multi selectio
+		std::string m_LastSelectedFileName; // for shift multi selection
 
 	public:
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -127,7 +127,7 @@ namespace igfd
 		ImGuiFileDialog& operator =(const ImGuiFileDialog&) { return *this; }; // Prevent assignment
 		~ImGuiFileDialog(); // Prevent unwanted destruction
 
-	public: // standard dialog
+	public: // standard dialog // set filters to NULL for have directory chosser mode
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
@@ -143,7 +143,7 @@ namespace igfd
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
 			UserDatas vUserDatas = 0);
 
-	public: // modal dialog
+	public: // modal dialog // set filters to NULL for have directory chosser mode
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,

@@ -44,6 +44,17 @@ void drawGui()
 ```
 ![alt text](doc/dlg_simple.gif)
 
+## Directory Chooser :
+
+For have only a directory chooser, you just need to specify a filter null :
+```cpp
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", 0, ".");
+```
+
+In this mode you can select any directory with one click, and open directory with double click
+
+![directoryChooser](doc/directoryChooser.gif)
+
 ## Dialog with Custom Pane :
 ```cpp
 static bool canValidateDialog = false;

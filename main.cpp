@@ -201,44 +201,61 @@ int main(int, char**)
 				ImGui::Text("Standard mode :");
 				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
 				}
-				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection 5 items"))
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with selection of 5 items"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
 				}
 				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Dialog with infinite selection"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
 				}
 				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
 				{
 					char* mode = "SaveFile";
-					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose a File", ".png\0.jpg\0\0",
 						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
 				}
-				ImGui::Separator();
+                if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Dialog"))
+                {
+                    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a Directory", 0, ".");
+                }
+                if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Dialog with selection of 5 items"))
+                {
+                    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a Directory", 0, ".", 5);
+                }
+
+                ImGui::Separator();
 				ImGui::Text("Modal mode :");
 				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
 				}
-				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog with selection 5 items"))
+				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog with selection of 5 items"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
 				}
 				if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open File Modal Dialog with infinite selection"))
 				{
-					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
 				}
 				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Modal Dialog with a custom pane"))
 				{
 					char* mode = "SaveFile";
-					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose File", ".png\0.jpg\0\0",
+					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose a File", ".png\0.jpg\0\0",
 						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
 				}
-				
-				ImVec2 minSize = ImVec2(0, 0);
+                if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Modal Dialog"))
+                {
+                    igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a Directory", 0, ".");
+                }
+                if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Modal with selection of 5 items"))
+                {
+                    igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a Directory", 0, ".",5);
+                }
+
+                ImVec2 minSize = ImVec2(0, 0);
 				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
 				if (_UseWindowContraints)
@@ -252,22 +269,43 @@ int main(int, char**)
 				// minSize => 0,0
 				// maxSize => FLT_MAX, FLT_MAX (defined is float.h)
 
-				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey", 
-					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey",
+				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
 				{
-					if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
+					if (igfd::ImGuiFileDialog::Instance()->IsOk)
 					{
 						std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
 						std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
 						std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 						// here convert from string because a string was passed as a userDatas, but it can be what you want
-						auto userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
+                        std::string userDatas;
+						if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
+                            userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
 						auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 
 						// action
 					}
 					igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
 				}
+
+				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseDirDlgKey",
+				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+                {
+                    if (igfd::ImGuiFileDialog::Instance()->IsOk)
+                    {
+                        std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
+                        std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+                        std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
+                        // here convert from string because a string was passed as a userDatas, but it can be what you want
+                        std::string userDatas;
+                        if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
+                            userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
+                        auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+
+                        // action
+                    }
+                    igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseDirDlgKey");
+                }
 			}
 			ImGui::Unindent();
 

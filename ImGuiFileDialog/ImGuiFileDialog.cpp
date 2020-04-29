@@ -88,7 +88,10 @@ namespace igfd
 	#endif
 	#ifndef fileNameString
 	#define fileNameString "File Name :"
-	#endif
+    #endif
+    #ifndef dirNameString
+    #define dirNameString "Directory Name :"
+    #endif
 	#ifndef buttonResetSearchString
 	#define buttonResetSearchString "Reset search"
 	#endif
@@ -381,7 +384,7 @@ namespace igfd
 			dlg_defaultExt = "";
 		}
 
-		dlg_optionsPane = std::move(vOptionsPane);
+		dlg_optionsPane = vOptionsPane;
 		dlg_userDatas = vUserDatas;
 		dlg_optionsPaneWidth = vOptionsPaneWidth;
 		dlg_countSelectionMax = vCountSelectionMax;
@@ -568,23 +571,26 @@ namespace igfd
 
 							ImGuiFileDialog::FilterIndex = 0;
 							size_t size = 0;
-							const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
-							while (*p)
-							{
-								size += strlen(p) + 1;
-								p += size;
-							}
-							int idx = 0;
-							auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
-							for (auto & it : arr)
-							{
-								if (m_SelectedExt == it)
-								{
-									ImGuiFileDialog::FilterIndex = idx;
-									break;
-								}
-								idx++;
-							}
+							if (dlg_filters)
+                            {
+                                const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
+                                while (*p)
+                                {
+                                    size += strlen(p) + 1;
+                                    p += size;
+                                }
+                                int idx = 0;
+                                auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
+                                for (auto & it : arr)
+                                {
+                                    if (m_SelectedExt == it)
+                                    {
+                                        ImGuiFileDialog::FilterIndex = idx;
+                                        break;
+                                    }
+                                    idx++;
+                                }
+                            }
 						}
 					}
 
@@ -708,17 +714,27 @@ namespace igfd
 
 					bool show = true;
 
-					if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
-					{
-						show = false;
-					}
-					if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
-					{
-						show = false;
-					}
+					if (dlg_filters)
+                    {
+                        if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
+                        {
+                            show = false;
+                        }
+                        if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
+                        {
+                            show = false;
+                        }
+                    }
+					else // directory mode
+                    {
+                        if (infos.type != 'd')
+                        {
+                            show = false;
+                        }
+                    }
+
 					if (show)
 					{
-						
 						ImVec4 c; std::string icon;
 						bool showColor = GetFilterInfos(infos.ext, &c, &icon);
 						if (showColor)
@@ -739,13 +755,20 @@ namespace igfd
 						if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
 							selected = true;
 
-						if (ImGui::Selectable(str.c_str(), selected))
+						if (ImGui::Selectable(str.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick))
 						{
-							if (infos.type == 'd')
+						    if (infos.type == 'd')
 							{
-								pathClick = SelectDirectory(infos);
+						        if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
+                                {
+                                    pathClick = SelectDirectory(infos);
+                                }
+						        else // directory chooser
+                                {
+                                    SelectFileName(infos);
+                                }
 							}
-							else
+						    else
 							{
 								SelectFileName(infos);
 							}
@@ -787,7 +810,10 @@ namespace igfd
 					ImGui::EndChild();
 				}
 
-				ImGui::Text(fileNameString);
+				if (dlg_filters)
+				    ImGui::Text(fileNameString);
+                else // directory chooser
+                    ImGui::Text(dirNameString);
 
 				ImGui::SameLine();
 
@@ -1149,18 +1175,21 @@ namespace igfd
 	{
 		bool found = false;
 		int itemIdx = 0;
-		const char* p = dlg_filters;
-		while (*p)
-		{
-			if (m_SelectedExt == std::string(p))
-			{
-				found = true;
-				FilterIndex = itemIdx;
-				break;
-			}
-			p += strlen(p) + 1;
-			itemIdx++;
-		}
+		if (dlg_filters)
+        {
+            const char* p = dlg_filters;
+            while (*p)
+            {
+                if (m_SelectedExt == std::string(p))
+                {
+                    found = true;
+                    FilterIndex = itemIdx;
+                    break;
+                }
+                p += strlen(p) + 1;
+                itemIdx++;
+            }
+        }
 		if (!found)
 		{
 			m_SelectedExt.clear();
