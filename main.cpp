@@ -53,7 +53,10 @@ inline void InfosPane(std::string vFilter, igfd::UserDatas vUserDatas, bool *vCa
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	
 	ImGui::Text("Selected Filter : %s", vFilter.c_str());
-	ImGui::Text("User Datas : %s", (const char*)vUserDatas);
+
+	const char* userDatas = (const char*)vUserDatas;
+	if (userDatas)
+        ImGui::Text("User Datas : %s", userDatas);
 
 	ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
 
@@ -213,9 +216,8 @@ int main(int, char**)
 				}
 				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Dialog with a custom pane"))
 				{
-					char* mode = "SaveFile";
 					igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose a File", ".png\0.jpg\0\0",
-						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
+						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
 				}
                 if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Dialog"))
                 {
@@ -242,9 +244,8 @@ int main(int, char**)
 				}
 				if (ImGui::Button(ICON_IMFDLG_SAVE " Save File Modal Dialog with a custom pane"))
 				{
-					char* mode = "SaveFile";
-					igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose a File", ".png\0.jpg\0\0",
-						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, mode);
+                    igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IMFDLG_SAVE " Choose a File", ".png\0.jpg\0\0",
+						".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
 				}
                 if (ImGui::Button(ICON_IMFDLG_FOLDER_OPEN " Open Directory Modal Dialog"))
                 {

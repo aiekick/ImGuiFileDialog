@@ -90,6 +90,7 @@ elseif(WIN32)
 elseif(UNIX)
 	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "ImGuiFileDialog")
 endif()
+set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 install(TARGETS ${PROJECT} DESTINATION ${CMAKE_INSTALL_PREFIX})
