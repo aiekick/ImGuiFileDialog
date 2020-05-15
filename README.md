@@ -63,6 +63,8 @@ inline void InfosPane(std::string vFilter, igfd::UserDatas vUserDatas, bool *vCa
 {
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	ImGui::Text("Selected Filter : %s", vFilter.c_str());
+	if (vUserDatas)
+		ImGui::Text("UserDatas : %s", vUserDatas);
 	ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
 	if (vCantContinue)
 	    *vCantContinue = canValidateDialog;
@@ -73,7 +75,7 @@ void drawGui()
   // open Dialog with Pane
   if (ImGui::Button("Open File Dialog with a custom pane"))
     igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0",
-            ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "InfosPane");
+            ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, igfd::UserDatas("InfosPane"));
 
   // display and action if ok
   if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) 
@@ -84,7 +86,9 @@ void drawGui()
 		std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
 		std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 		// here convert from string because a string was passed as a userDatas, but it can be what you want
-		auto userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas()); 
+		std::string userDatas;
+		if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
+			userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas()); 
 		auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 
 		// action
