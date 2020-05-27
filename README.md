@@ -125,8 +125,8 @@ igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0, 1, 0.5, 0.9)
 
 ## Multi Selection
 
-You can define in OpenDialog call the count file you wan to select :
-- 0 => inifnite
+You can define in OpenDialog/OpenModal call the count file you wan to select :
+- 0 => infinite
 - 1 => one file only (default)
 - n => n files only
 
@@ -142,6 +142,23 @@ igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File",
 ```
 
 ![alt text](doc/multiSelection.gif)
+
+## File Dialog Constraints
+
+you can define min/max size of the dialog when you display It 
+
+by ex : 
+
+* MaxSize is the full display size
+* MinSize in the half display size.
+
+```cpp
+ImVec2 maxSize = ImVec2((float)display_w, (float)display_h);
+ImVec2 minSize = maxSize * 0.5f;
+igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize);
+```
+
+![alt text](doc/contraintDisplay.gif)
 
 ## Using ImGuiFileDialog as a module
 
