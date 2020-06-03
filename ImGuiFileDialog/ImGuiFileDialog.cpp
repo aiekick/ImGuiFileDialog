@@ -25,7 +25,7 @@ SOFTWARE.
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
 
-#include <string.h> // strcmpi
+#include <string.h> // stricmp / strcasecmp
 #include <sstream>
 #include <iomanip>
 #include <time.h>
@@ -43,6 +43,7 @@ SOFTWARE.
 #define PATH_MAX 260
 #endif
 #elif defined(LINUX) or defined(APPLE)
+#define stricmp strcasecmp
 #include <sys/types.h>
 #include <dirent.h>
 #define PATH_SEP '/'
