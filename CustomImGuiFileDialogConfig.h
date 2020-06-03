@@ -2,6 +2,8 @@
 
 // uncomment and modify defines under for customize ImGuiFileDialog
 
+//#define USE_IMGUI_TABLES
+
 // widget
 // button widget use for compose path
 //#define IMGUI_PATH_BUTTON ImGui::Button

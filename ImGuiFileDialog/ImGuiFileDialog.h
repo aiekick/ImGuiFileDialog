@@ -32,13 +32,11 @@ SOFTWARE.
 
 #include <vector>
 #include <string>
+#include <set>
 #include <map>
 
 #include <future>
 #include <functional>
-#include <thread>
-#include <atomic>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <list>
@@ -48,7 +46,7 @@ SOFTWARE.
 #else
 #include CUSTOM_IMGUIFILEDIALOG_CONFIG
 #endif
-	
+
 namespace igfd
 {
 	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
@@ -61,6 +59,10 @@ namespace igfd
 		std::string filePath;
 		std::string fileName;
 		std::string ext;
+		size_t fileSize = 0; // for sorting operations
+		std::string formatedFileSize;
+		std::string fileModifDate;
+
 	};
 
 	struct FilterInfosStruct
@@ -69,27 +71,34 @@ namespace igfd
 		ImVec4 color = ImVec4(0, 0, 0, 0);
 
 		FilterInfosStruct() { color = ImVec4(0, 0, 0, 0); }
-		FilterInfosStruct(const ImVec4& vColor, const std::string& vIcon)
+		FilterInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
 		{
 			color = vColor;
 			icon = vIcon;
 		}
 	};
 
+	enum SortingFieldEnum
+    {
+        FIELD_NONE=0,
+	    FIELD_FILENAME,
+	    FIELD_SIZE,
+		FIELD_DATE
+    };
+
 	class ImGuiFileDialog
 	{
 	private:
 		std::vector<FileInfoStruct> m_FileList;
 		std::map<std::string, FilterInfosStruct> m_FilterInfos;
-		//std::string m_SelectedFileName;
-		std::map<std::string, bool> m_SelectedFileNames; // map for have binary search
+		std::set<std::string> m_SelectedFileNames;
 		std::string m_SelectedExt;
 		std::string m_CurrentPath;
 		std::vector<std::string> m_CurrentPath_Decomposition;
 		std::string m_Name;
 		bool m_ShowDialog = false;
 		bool m_ShowDrives = false;
-		std::string m_LastSelectedFileName; // for shift multi selection
+		std::string m_LastSelectedFileName; // for shift multi selectio
 
 	public:
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -114,6 +123,13 @@ namespace igfd
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
 
+	private:
+		std::string m_HeaderFileName;
+		std::string m_HeaderFileSize;
+		std::string m_HeaderFileDate;
+		bool m_SortingDirection[3] = { true,true,true }; // true => Descending, false => Ascending
+		SortingFieldEnum m_SortingField = SortingFieldEnum::FIELD_FILENAME;
+
 	public:
 		static ImGuiFileDialog* Instance()
 		{
@@ -127,7 +143,7 @@ namespace igfd
 		ImGuiFileDialog& operator =(const ImGuiFileDialog&) { return *this; }; // Prevent assignment
 		~ImGuiFileDialog(); // Prevent unwanted destruction
 
-	public: // standard dialog // set filters to NULL for have directory chosser mode
+	public: // standard dialog
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
@@ -143,7 +159,7 @@ namespace igfd
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
 			UserDatas vUserDatas = 0);
 
-	public: // modal dialog // set filters to NULL for have directory chosser mode
+	public: // modal dialog
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
@@ -170,20 +186,20 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
+		void SetFilterInfos(const std::string& vFilter, FilterInfosStruct vInfos);
 		void SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
 		bool GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
 		void ClearFilterInfos();
 
 	private:
 		bool SelectDirectory(const FileInfoStruct& vInfos);
-
 		void SelectFileName(const FileInfoStruct& vInfos);
 		void RemoveFileNameInSelection(const std::string& vFileName);
 		void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);
-
 		void CheckFilter();
-
 		void SetPath(const std::string& vPath);
+		void FillInfos(FileInfoStruct *vFileInfoStruct);
+		void SortFields(SortingFieldEnum vSortingField = SortingFieldEnum::FIELD_NONE, bool vCanChangeOrder = false);
 		void ScanDir(const std::string& vPath);
 		void SetCurrentDir(const std::string& vPath);
 		bool CreateDir(const std::string& vPath);
