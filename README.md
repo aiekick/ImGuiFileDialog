@@ -158,7 +158,16 @@ ImVec2 minSize = maxSize * 0.5f;
 igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize);
 ```
 
-![alt text](doc/contraintDisplay.gif)
+![alt text](doc/dialog_constraints.gif)
+
+## Detail View Mode
+
+You can have tables display like that.
+
+- you need to use imgui tables branch (not merged in master at this moment)
+- uncomment "#define USE_IMGUI_TABLES" in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+
+![alt text](doc/imgui_tables_branch.gif)
 
 ## Using ImGuiFileDialog as a module
 

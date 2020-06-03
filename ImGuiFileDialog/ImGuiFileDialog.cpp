@@ -1271,16 +1271,19 @@ namespace igfd
 		bool found = false;
 		int itemIdx = 0;
 		const char* p = dlg_filters;
-		while (*p)
+		if (p)
 		{
-			if (m_SelectedExt == std::string(p))
+			while (*p)
 			{
-				found = true;
-				FilterIndex = itemIdx;
-				break;
+				if (m_SelectedExt == std::string(p))
+				{
+					found = true;
+					FilterIndex = itemIdx;
+					break;
+				}
+				p += strlen(p) + 1;
+				itemIdx++;
 			}
-			p += strlen(p) + 1;
-			itemIdx++;
 		}
 		if (!found)
 		{
