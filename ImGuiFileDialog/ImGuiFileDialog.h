@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.1"
+#define IMGUIFILEDIALOG_VERSION "v0.2"
 
 #include <imgui.h>
 
@@ -34,6 +34,7 @@ SOFTWARE.
 #include <string>
 #include <set>
 #include <map>
+#include <unordered_map>
 
 #include <future>
 #include <functional>
@@ -58,6 +59,7 @@ namespace igfd
 		char type = ' ';
 		std::string filePath;
 		std::string fileName;
+		std::string fileName_optimized; // optimized for search => insensitivecase
 		std::string ext;
 		size_t fileSize = 0; // for sorting operations
 		std::string formatedFileSize;
@@ -65,16 +67,42 @@ namespace igfd
 
 	};
 
-	struct FilterInfosStruct
+	struct FileExtentionInfosStruct
 	{
 		std::string icon;
 		ImVec4 color = ImVec4(0, 0, 0, 0);
 
-		FilterInfosStruct() { color = ImVec4(0, 0, 0, 0); }
-		FilterInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
+		FileExtentionInfosStruct() { color = ImVec4(0, 0, 0, 0); }
+		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
 		{
 			color = vColor;
 			icon = vIcon;
+		}
+	};
+
+	struct FilterInfosStruct
+	{
+		std::string filter;
+		std::set<std::string> collectionfilters;
+
+		void clear()
+		{
+			filter.clear();
+			collectionfilters.clear();
+		}
+
+		bool empty()
+		{
+			return 
+				filter.empty() && 
+				collectionfilters.empty();
+		}
+
+		bool FilterExist(std::string vFilter)
+		{
+			return
+				filter == vFilter ||
+				collectionfilters.find(vFilter) != collectionfilters.end();
 		}
 	};
 
@@ -90,21 +118,21 @@ namespace igfd
 	{
 	private:
 		std::vector<FileInfoStruct> m_FileList;
-		std::map<std::string, FilterInfosStruct> m_FilterInfos;
+		std::unordered_map<std::string, FileExtentionInfosStruct> m_FileExtentionInfos;
 		std::set<std::string> m_SelectedFileNames;
-		std::string m_SelectedExt;
 		std::string m_CurrentPath;
 		std::vector<std::string> m_CurrentPath_Decomposition;
 		std::string m_Name;
 		bool m_ShowDialog = false;
 		bool m_ShowDrives = false;
 		std::string m_LastSelectedFileName; // for shift multi selectio
+		std::vector<FilterInfosStruct> m_Filters;
+		FilterInfosStruct m_SelectedFilter;
 
 	public:
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
-		static int FilterIndex;
 		bool IsOk = false;
 		bool m_AnyWindowsHovered = false;
 		bool m_CreateDirectoryMode = false;
@@ -122,7 +150,7 @@ namespace igfd
 		UserDatas dlg_userDatas;
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
-
+		
 	private:
 		std::string m_HeaderFileName;
 		std::string m_HeaderFileSize;
@@ -186,7 +214,7 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
-		void SetFilterInfos(const std::string& vFilter, FilterInfosStruct vInfos);
+		void SetFilterInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos);
 		void SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
 		bool GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
 		void ClearFilterInfos();
@@ -196,7 +224,6 @@ namespace igfd
 		void SelectFileName(const FileInfoStruct& vInfos);
 		void RemoveFileNameInSelection(const std::string& vFileName);
 		void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);
-		void CheckFilter();
 		void SetPath(const std::string& vPath);
 		void FillInfos(FileInfoStruct *vFileInfoStruct);
 		void SortFields(SortingFieldEnum vSortingField = SortingFieldEnum::FIELD_NONE, bool vCanChangeOrder = false);
@@ -205,5 +232,8 @@ namespace igfd
 		bool CreateDir(const std::string& vPath);
 		void ComposeNewPath(std::vector<std::string>::iterator vIter);
 		void GetDrives();
+		void ParseFilters(const char *vFilters);
+		void SetSelectedFilterWithExt(const std::string& vFilter);
+		std::string OptimizeFilenameForSearchOperations(std::string vFileName);
 	};
 }

@@ -139,11 +139,11 @@ namespace igfd
 		return strcoll((*a)->d_name, (*b)->d_name);
 	}
 
-	inline bool replaceString(::std::string& str, const ::std::string& oldStr, const ::std::string& newStr)
+	inline bool replaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
 		bool found = false;
 		size_t pos = 0;
-		while ((pos = str.find(oldStr, pos)) != ::std::string::npos)
+		while ((pos = str.find(oldStr, pos)) != std::string::npos)
 		{
 			found = true;
 			str.replace(pos, oldStr.length(), newStr);
@@ -152,7 +152,7 @@ namespace igfd
 		return found;
 	}
 
-	inline std::vector<std::string> splitStringToVector(const ::std::string& text, char delimiter, bool pushEmpty)
+	inline std::vector<std::string> splitStringToVector(const std::string& text, char delimiter, bool pushEmpty)
 	{
 		std::vector<std::string> arr;
 		if (!text.empty())
@@ -167,7 +167,9 @@ namespace igfd
 				start = end + 1;
 				end = text.find(delimiter, start);
 			}
-			arr.push_back(text.substr(start));
+			std::string token = text.substr(start);
+			if (token.size() > 0 || (token.empty() && pushEmpty))
+				arr.push_back(token);
 		}
 		return arr;
 	}
@@ -320,7 +322,6 @@ namespace igfd
 	char ImGuiFileDialog::FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 	char ImGuiFileDialog::DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 	char ImGuiFileDialog::SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-	int ImGuiFileDialog::FilterIndex = 0;
 
 	ImGuiFileDialog::ImGuiFileDialog()
 	{
@@ -351,6 +352,7 @@ namespace igfd
 		dlg_key = vKey;
 		dlg_name = std::string(vName);
 		dlg_filters = vFilters;
+		ParseFilters(dlg_filters);
 		dlg_path = vPath;
 		dlg_defaultFileName = vDefaultFileName;
 		dlg_optionsPane = std::move(vOptionsPane);
@@ -362,7 +364,6 @@ namespace igfd
 		dlg_defaultExt = "";
 
 		SetPath(m_CurrentPath);
-		CheckFilter();
 
 		m_ShowDialog = true;
 	}
@@ -378,6 +379,7 @@ namespace igfd
 		dlg_key = vKey;
 		dlg_name = std::string(vName);
 		dlg_filters = vFilters;
+		ParseFilters(dlg_filters);
 
 		auto ps = ParsePathFileName(vFilePathName);
 		if (ps.isOk)
@@ -399,8 +401,8 @@ namespace igfd
 		dlg_countSelectionMax = vCountSelectionMax;
 		dlg_modal = false;
 
+		SetSelectedFilterWithExt(dlg_defaultExt);
 		SetPath(m_CurrentPath);
-		CheckFilter();
 
 		m_ShowDialog = true;
 	}
@@ -414,6 +416,7 @@ namespace igfd
 		dlg_key = vKey;
 		dlg_name = std::string(vName);
 		dlg_filters = vFilters;
+		ParseFilters(dlg_filters);
 
 		auto ps = ParsePathFileName(vFilePathName);
 		if (ps.isOk)
@@ -435,8 +438,8 @@ namespace igfd
 		dlg_countSelectionMax = vCountSelectionMax;
 		dlg_modal = false;
 
+		SetSelectedFilterWithExt(dlg_defaultExt);
 		SetPath(m_CurrentPath);
-		CheckFilter();
 
 		m_ShowDialog = true;
 	}
@@ -450,6 +453,7 @@ namespace igfd
 		dlg_key = vKey;
 		dlg_name = std::string(vName);
 		dlg_filters = vFilters;
+		ParseFilters(dlg_filters);
 		dlg_path = vPath;
 		dlg_defaultFileName = vDefaultFileName;
 		dlg_optionsPane = nullptr;
@@ -461,7 +465,6 @@ namespace igfd
 		dlg_defaultExt = "";
 
 		SetPath(m_CurrentPath);
-		CheckFilter();
 
 		m_ShowDialog = true;
 	}
@@ -538,7 +541,6 @@ namespace igfd
 			{
 				m_FileList.clear();
 				m_CurrentPath_Decomposition.clear();
-				m_SelectedExt.clear();
 			}
 
 			IsOk = false;
@@ -564,6 +566,14 @@ namespace igfd
 
 				if (dlg_path.empty()) dlg_path = ".";
 
+				if (m_SelectedFilter.empty())
+				{
+					if (!m_Filters.empty())
+					{
+						m_SelectedFilter = *m_Filters.begin();
+					}
+				}
+
 				if (m_FileList.empty() && !m_ShowDrives)
 				{
 					replaceString(dlg_defaultFileName, dlg_path, ""); // local path
@@ -572,34 +582,9 @@ namespace igfd
 					{
 						ResetBuffer(FileNameBuffer);
 						AppendToBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, dlg_defaultFileName);
-						//m_SelectedFileName = dlg_defaultFileName;
-
-						if (!dlg_defaultExt.empty())
-						{
-							m_SelectedExt = dlg_defaultExt;
-
-							ImGuiFileDialog::FilterIndex = 0;
-							size_t size = 0;
-							const char* p = dlg_filters;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
-							while (*p)
-							{
-								size += strlen(p) + 1;
-								p += size;
-							}
-							int idx = 0;
-							auto arr = splitStringToVector(std::string(dlg_filters, size), '\0', false);
-							for (auto & it : arr)
-							{
-								if (m_SelectedExt == it)
-								{
-									ImGuiFileDialog::FilterIndex = idx;
-									break;
-								}
-								idx++;
-							}
-						}
+						SetSelectedFilterWithExt(dlg_defaultExt);
 					}
-
+					
 					ScanDir(dlg_path);
 				}
 
@@ -772,23 +757,17 @@ namespace igfd
 
 						bool show = true;
 
-						if (dlg_filters)
+						// if search tag
+						if (!searchTag.empty() &&
+							infos.fileName_optimized.find(searchTag) == std::string::npos && // first try wihtout case and accents
+							infos.fileName.find(searchTag) == std::string::npos) // second if searched with case and accents
 						{
-							if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*"))
-							{
-								show = false;
-							}
-							if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos)
-							{
-								show = false;
-							}
+							show = false;
 						}
-						else // directory mode
+
+						if (!dlg_filters && infos.type != 'd') // directory mode
 						{
-							if (infos.type != 'd')
-							{
-								show = false;
-							}
+							show = false;
 						}
 
 						if (show)
@@ -893,7 +872,7 @@ namespace igfd
 
 					ImGui::BeginChild("##FileTypes", size);
 
-					dlg_optionsPane(m_SelectedExt, dlg_userDatas, &_CanWeContinue);
+					dlg_optionsPane(m_SelectedFilter.filter, dlg_userDatas, &_CanWeContinue);
 
 					ImGui::EndChild();
 				}
@@ -916,23 +895,31 @@ namespace igfd
 				{
 					ImGui::SameLine();
 
+					bool needToApllyNewFilter = false;
+
 					ImGui::PushItemWidth(100.0f);
-					bool comboClick = ImGui::Combo("##Filters", &FilterIndex, dlg_filters) || m_SelectedExt.empty();
-					ImGui::PopItemWidth();
-					if (comboClick)
+					if (ImGui::BeginCombo("##Filters", m_SelectedFilter.filter.c_str(), ImGuiComboFlags_None))
 					{
-						int itemIdx = 0;
-						const char* p = dlg_filters;
-						while (*p)
+						intptr_t i = 0;
+						for (auto filter : m_Filters)
 						{
-							if (FilterIndex == itemIdx)
+							const bool item_selected = (filter.filter == m_SelectedFilter.filter);
+							ImGui::PushID((void*)(intptr_t)i++);
+							if (ImGui::Selectable(filter.filter.c_str(), item_selected))
 							{
-								m_SelectedExt = std::string(p);
-								break;
+								m_SelectedFilter = filter;
+								needToApllyNewFilter = true;
 							}
-							p += strlen(p) + 1;
-							itemIdx++;
+							ImGui::PopID();
 						}
+						
+						ImGui::EndCombo();
+					}
+					ImGui::PopItemWidth();
+
+					if (needToApllyNewFilter)
+					{
+						SetPath(m_CurrentPath);
 					}
 				}
 
@@ -1003,20 +990,24 @@ namespace igfd
 	{
 		std::string result = FileNameBuffer;
 
-		size_t lastPoint = result.find_last_of('.');
-		if (lastPoint != std::string::npos)
+		// if not a collection we can replace the filter by thee extention we want
+		if (m_SelectedFilter.collectionfilters.empty())
 		{
-			result = result.substr(0, lastPoint);
-		}
+			size_t lastPoint = result.find_last_of('.');
+			if (lastPoint != std::string::npos)
+			{
+				result = result.substr(0, lastPoint);
+			}
 
-		result += m_SelectedExt;
+			result += m_SelectedFilter.filter;
+		}
 
 		return result;
 	}
 
 	std::string ImGuiFileDialog::GetCurrentFilter()
 	{
-		return m_SelectedExt;
+		return m_SelectedFilter.filter;
 	}
 
 	UserDatas ImGuiFileDialog::GetUserDatas()
@@ -1045,26 +1036,26 @@ namespace igfd
 		return res;
 	}
 
-	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, FilterInfosStruct vInfos)
+	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos)
 	{
-		m_FilterInfos[vFilter] = vInfos;
+		m_FileExtentionInfos[vFilter] = vInfos;
 	}
 
 	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon)
 	{
-		m_FilterInfos[vFilter] = FilterInfosStruct(vColor, vIcon);
+		m_FileExtentionInfos[vFilter] = FileExtentionInfosStruct(vColor, vIcon);
 	}
 
 	bool ImGuiFileDialog::GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon)
 	{
 		if (vColor)
 		{
-			if (m_FilterInfos.find(vFilter) != m_FilterInfos.end()) // found
+			if (m_FileExtentionInfos.find(vFilter) != m_FileExtentionInfos.end()) // found
 			{
-				*vColor = m_FilterInfos[vFilter].color;
+				*vColor = m_FileExtentionInfos[vFilter].color;
 				if (vIcon)
 				{
-					*vIcon = m_FilterInfos[vFilter].icon;
+					*vIcon = m_FileExtentionInfos[vFilter].icon;
 				}
 				return true;
 			}
@@ -1074,7 +1065,7 @@ namespace igfd
 
 	void ImGuiFileDialog::ClearFilterInfos()
 	{
-		m_FilterInfos.clear();
+		m_FileExtentionInfos.clear();
 	}
 
 	bool ImGuiFileDialog::SelectDirectory(const FileInfoStruct& vInfos)
@@ -1175,7 +1166,6 @@ namespace igfd
 					const FileInfoStruct& infos = it;
 
 					bool canTake = true;
-					if (infos.type == 'f' && !m_SelectedExt.empty() && (infos.ext != m_SelectedExt && m_SelectedExt != ".*")) canTake = false;
 					if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos) canTake = false;
 					if (canTake) // if not filtered, we will take files who are filtered by the dialog
 					{
@@ -1265,32 +1255,6 @@ namespace igfd
 
 		if (vSetLastSelectionFileName)
 			m_LastSelectedFileName = vFileName;
-	}
-
-	void ImGuiFileDialog::CheckFilter()
-	{
-		bool found = false;
-		int itemIdx = 0;
-		const char* p = dlg_filters;
-		if (p)
-		{
-			while (*p)
-			{
-				if (m_SelectedExt == std::string(p))
-				{
-					found = true;
-					FilterIndex = itemIdx;
-					break;
-				}
-				p += strlen(p) + 1;
-				itemIdx++;
-			}
-		}
-		if (!found)
-		{
-			m_SelectedExt.clear();
-			FilterIndex = 0;
-		}
 	}
 
 	void ImGuiFileDialog::SetPath(const std::string& vPath)
@@ -1526,6 +1490,7 @@ namespace igfd
 
 					infos.filePath = path;
 					infos.fileName = ent->d_name;
+					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
 					if (("." != infos.fileName))
 					{
 						switch (ent->d_type)
@@ -1538,12 +1503,26 @@ namespace igfd
 							infos.type = 'l'; break;
 						}
 
-						if (infos.type == 'f')
+						if (infos.type == 'f' || 
+							infos.type == 'l') // link can have the same extention of a file
 						{
 							size_t lpt = infos.fileName.find_last_of('.');
 							if (lpt != std::string::npos)
 							{
 								infos.ext = infos.fileName.substr(lpt);
+							}
+
+							if (dlg_filters)
+							{
+								// check if current file extention is covered by current filter
+								// we do that here, for avoid doing taht during filelist display
+								// for better fps
+								if (!m_SelectedFilter.empty() && // selected filter exist
+									(!m_SelectedFilter.FilterExist(infos.ext) && // filter not found
+										m_SelectedFilter.filter != ".*"))
+								{
+									continue;
+								}
 							}
 						}
 
@@ -1683,5 +1662,115 @@ namespace igfd
 			}
 			m_ShowDrives = true;
 		}
+	}
+
+	void ImGuiFileDialog::ParseFilters(const char *vFilters)
+	{
+		m_Filters.clear();
+
+		if (vFilters)
+		{
+			std::string fullStr = vFilters;
+
+			// ".*,.cpp,.h,.hpp"
+			// "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md"
+
+			bool currentFilterFound = false;
+
+			size_t nan = std::string::npos;
+			size_t p = 0, lp = 0;
+			while ((p = fullStr.find_first_of("{,", p)) != nan)
+			{
+				FilterInfosStruct infos;
+
+				if (fullStr[p] == '{') // {
+				{
+					infos.filter = fullStr.substr(lp, p - lp);
+
+					p++;
+
+					size_t lp = fullStr.find('}', p);
+					if (lp != nan)
+					{
+						std::string fs = fullStr.substr(p, lp - p);
+						auto arr = splitStringToVector(fs, ',', false);
+						for (auto a : arr)
+						{
+							infos.collectionfilters.emplace(a);
+						}
+					}
+
+					p = lp + 1;
+				}
+				else // ,
+				{
+					infos.filter = fullStr.substr(lp, p - lp);
+					p++;
+				}
+
+				if (!currentFilterFound && m_SelectedFilter.filter == infos.filter)
+				{
+					currentFilterFound = true;
+					m_SelectedFilter = infos;
+				}
+
+				lp = p;
+				if (!infos.empty())
+					m_Filters.emplace_back(infos);
+			}
+
+			std::string token = fullStr.substr(lp);
+			if (!token.empty())
+			{
+				FilterInfosStruct infos;
+				infos.filter = token;
+				m_Filters.emplace_back(infos);
+			}
+
+			if (!currentFilterFound)
+				if (!m_Filters.empty())
+					m_SelectedFilter = *m_Filters.begin();
+		}
+	}
+
+	void ImGuiFileDialog::SetSelectedFilterWithExt(const std::string& vFilter)
+	{
+		if (!m_Filters.empty())
+		{
+			if (!vFilter.empty())
+			{
+				// std::map<std::string, FilterInfosStruct>
+				for (auto infos : m_Filters)
+				{
+					if (vFilter == infos.filter)
+					{
+						m_SelectedFilter = infos;
+					}
+					else
+					{
+						// maybe this ext is in an extention so we will 
+						// explore the collections is they are existing
+						for (auto filter : infos.collectionfilters)
+						{
+							if (vFilter == filter)
+							{
+								m_SelectedFilter = infos;
+							}
+						}
+					}
+				}
+			}
+
+			if (m_SelectedFilter.empty())
+				m_SelectedFilter = *m_Filters.begin();
+		}
+	}
+	
+	std::string ImGuiFileDialog::OptimizeFilenameForSearchOperations(std::string vFileName)
+	{
+		// convert to lower case
+		for (auto & c : vFileName)
+			c = std::tolower(c);
+		return vFileName;
 	}
 }

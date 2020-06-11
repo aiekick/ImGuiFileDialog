@@ -17,6 +17,7 @@ An example of the File Dialog integrated within the ImGui Demo App
   - On Win version you can list Drives
 - Support of Modal/Standard dialog type
 - Support both Mode : File Chooser or Directory Chooser
+- Support filter collection / Custom filter name
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
@@ -26,7 +27,7 @@ void drawGui()
 { 
   // open Dialog Simple
   if (ImGui::Button("Open File Dialog"))
-    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0", ".");
+    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", ".");
 
   // display
   if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey")) 
@@ -74,7 +75,7 @@ void drawGui()
 {
   // open Dialog with Pane
   if (ImGui::Button("Open File Dialog with a custom pane"))
-    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0",
+    igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp",
             ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, igfd::UserDatas("InfosPane"));
 
   // display and action if ok
@@ -123,6 +124,22 @@ igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0, 1, 0.5, 0.9)
 
 ![alt text](doc/filter_Icon.png)
 
+## Filter Collections 
+
+you can define a custom filter name who correspond to a group of filter
+
+you must use this syntax : custom_name1{filter1,filter2,filter3},custom_name2{filter1,filter2},filter1
+when you will select custom_name1, the gorup of filter 1 to 3 will be applied
+the reserved char are {}, you cant use them for define filter name.
+
+this code :
+```cpp
+const char *filters = "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", filters, ".");
+```
+will produce :
+![alt text](doc/collectionFilters.gif)
+
 ## Multi Selection
 
 You can define in OpenDialog/OpenModal call the count file you wan to select :
@@ -133,11 +150,11 @@ You can define in OpenDialog/OpenModal call the count file you wan to select :
 See the define at the end of these funcs after path.
 
 ```cpp
-igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*\0.cpp\0.h\0.hpp\0\0", ".");
-igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 1 File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 1);
-igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 5 File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 5);
-igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose many File", ".*\0.cpp\0.h\0.hpp\0\0", ".", 0);
-igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png\0.jpg\0\0",
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".*,.cpp,.h,.hpp", ".");
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 1 File", ".*,.cpp,.h,.hpp", ".", 1);
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 5 File", ".*,.cpp,.h,.hpp", ".", 5);
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose many File", ".*,.cpp,.h,.hpp", ".", 0);
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png,.jpg",
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
