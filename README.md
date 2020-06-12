@@ -188,6 +188,8 @@ You can have tables display like that.
 
 ## Using ImGuiFileDialog as a module
 
+ImGuiFileDialog require dirent lib on windows platform.
+
 You can customize ImGuiFileDialog for avoid code modification/adaptation.
 
 You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
