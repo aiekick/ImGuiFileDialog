@@ -207,12 +207,12 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IMFDLG_FILE_TYPE_PIC); // add an icon for the filter type
-	igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IMFDLG_FILE_TYPE_PIC); // add an icon for the filter type
+	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 
     // Main loop
     while (!glfwWindowShouldClose(window))
