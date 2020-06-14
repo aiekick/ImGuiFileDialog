@@ -67,6 +67,7 @@ namespace igfd
 
 	};
 
+	// old FilterInfosStruct
 	struct FileExtentionInfosStruct
 	{
 		std::string icon;
@@ -98,7 +99,7 @@ namespace igfd
 				collectionfilters.empty();
 		}
 
-		bool FilterExist(std::string vFilter)
+		bool filterExist(std::string vFilter)
 		{
 			return
 				filter == vFilter ||
@@ -214,10 +215,10 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
-		void SetFilterInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos);
-		void SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
-		bool GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
-		void ClearFilterInfos();
+		void SetExtentionInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos);
+		void SetExtentionInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
+		bool GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
+		void ClearExtentionInfos();
 
 	private:
 		bool SelectDirectory(const FileInfoStruct& vInfos);

@@ -774,7 +774,7 @@ namespace igfd
 						{
 							ImVec4 c;
 							std::string icon;
-							bool showColor = GetFilterInfos(infos.ext, &c, &icon);
+							bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
 							if (showColor)
 								ImGui::PushStyleColor(ImGuiCol_Text, c);
 
@@ -1036,17 +1036,17 @@ namespace igfd
 		return res;
 	}
 
-	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos)
+	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos)
 	{
 		m_FileExtentionInfos[vFilter] = vInfos;
 	}
 
-	void ImGuiFileDialog::SetFilterInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon)
+	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon)
 	{
 		m_FileExtentionInfos[vFilter] = FileExtentionInfosStruct(vColor, vIcon);
 	}
 
-	bool ImGuiFileDialog::GetFilterInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon)
+	bool ImGuiFileDialog::GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon)
 	{
 		if (vColor)
 		{
@@ -1063,7 +1063,7 @@ namespace igfd
 		return false;
 	}
 
-	void ImGuiFileDialog::ClearFilterInfos()
+	void ImGuiFileDialog::ClearExtentionInfos()
 	{
 		m_FileExtentionInfos.clear();
 	}
@@ -1491,6 +1491,7 @@ namespace igfd
 					infos.filePath = path;
 					infos.fileName = ent->d_name;
 					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
+
 					if (("." != infos.fileName))
 					{
 						switch (ent->d_type)
@@ -1518,7 +1519,7 @@ namespace igfd
 								// we do that here, for avoid doing taht during filelist display
 								// for better fps
 								if (!m_SelectedFilter.empty() && // selected filter exist
-									(!m_SelectedFilter.FilterExist(infos.ext) && // filter not found
+									(!m_SelectedFilter.filterExist(infos.ext) && // filter not found
 										m_SelectedFilter.filter != ".*"))
 								{
 									continue;
