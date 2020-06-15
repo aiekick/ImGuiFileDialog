@@ -186,11 +186,14 @@ You can have tables display like that.
 
 ![alt text](doc/imgui_tables_branch.gif)
 
-## Using ImGuiFileDialog as a module
+## How to Integrate ImGuiFileDialog in your porject
 
-ImGuiFileDialog require dirent lib on windows platform.
+### ImGuiFileDialog require :
 
-You can customize ImGuiFileDialog for avoid code modification/adaptation.
+* [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) lib, only for windows. Successfully tested with version v1.23 only
+* [ImGui](https://github.com/ocornut/imgui/tree/master) (with/without tables widgets)
+
+### Customize ImGuiFileDialog :
 
 You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
 like i do here with CustomImGuiFileDialogConfig.h
