@@ -338,6 +338,135 @@ namespace igfd
 	ImGuiFileDialog::~ImGuiFileDialog() = default;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///// CUSTOM SELECTABLE (Flashing Support) ///////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	bool ImGuiFileDialog::FlashableSelectable(const char* label, bool selected, 
+		ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg)
+	{
+		using namespace ImGui;
+
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return false;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+
+		if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns) // FIXME-OPT: Avoid if vertically clipped.
+			PushColumnsBackground();
+
+		// Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
+		ImGuiID id = window->GetID(label);
+		ImVec2 label_size = CalcTextSize(label, NULL, true);
+		ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
+		ImVec2 pos = window->DC.CursorPos;
+		pos.y += window->DC.CurrLineTextBaseOffset;
+		ItemSize(size, 0.0f);
+
+		// Fill horizontal space
+		const float min_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Min.x : pos.x;
+		const float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Max.x : GetContentRegionMaxAbs().x;
+		if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_SpanAvailWidth))
+			size.x = ImMax(label_size.x, max_x - min_x);
+
+		// Text stays at the submission position, but bounding box may be extended on both sides
+		const ImVec2 text_min = pos;
+		const ImVec2 text_max(min_x + size.x, pos.y + size.y);
+
+		// Selectables are meant to be tightly packed together with no click-gap, so we extend their box to cover spacing between selectable.
+		ImRect bb_enlarged(min_x, pos.y, text_max.x, text_max.y);
+		const float spacing_x = style.ItemSpacing.x;
+		const float spacing_y = style.ItemSpacing.y;
+		const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
+		const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
+		bb_enlarged.Min.x -= spacing_L;
+		bb_enlarged.Min.y -= spacing_U;
+		bb_enlarged.Max.x += (spacing_x - spacing_L);
+		bb_enlarged.Max.y += (spacing_y - spacing_U);
+		//if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_align.Min, bb_align.Max, IM_COL32(255, 0, 0, 255)); }
+		//if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_enlarged.Min, bb_enlarged.Max, IM_COL32(0, 255, 0, 255)); }
+
+		bool item_add;
+		if (flags & ImGuiSelectableFlags_Disabled)
+		{
+			ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
+			window->DC.ItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
+			item_add = ItemAdd(bb_enlarged, id);
+			window->DC.ItemFlags = backup_item_flags;
+		}
+		else
+		{
+			item_add = ItemAdd(bb_enlarged, id);
+		}
+		if (!item_add)
+		{
+			if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns)
+				PopColumnsBackground();
+			return false;
+		}
+
+		// We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
+		ImGuiButtonFlags button_flags = 0;
+		if (flags & ImGuiSelectableFlags_NoHoldingActiveID) { button_flags |= ImGuiButtonFlags_NoHoldingActiveId; }
+		if (flags & ImGuiSelectableFlags_SelectOnClick) { button_flags |= ImGuiButtonFlags_PressedOnClick; }
+		if (flags & ImGuiSelectableFlags_SelectOnRelease) { button_flags |= ImGuiButtonFlags_PressedOnRelease; }
+		if (flags & ImGuiSelectableFlags_Disabled) { button_flags |= ImGuiButtonFlags_Disabled; }
+		if (flags & ImGuiSelectableFlags_AllowDoubleClick) { button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick; }
+		if (flags & ImGuiSelectableFlags_AllowItemOverlap) { button_flags |= ImGuiButtonFlags_AllowItemOverlap; }
+
+		if (flags & ImGuiSelectableFlags_Disabled)
+			selected = false;
+
+		const bool was_selected = selected;
+		bool hovered, held;
+		bool pressed = ButtonBehavior(bb_enlarged, id, &hovered, &held, button_flags);
+
+		// Update NavId when clicking or when Hovering (this doesn't happen on most widgets), so navigation can be resumed with gamepad/keyboard
+		if (pressed || (hovered && (flags & ImGuiSelectableFlags_SetNavIdOnHover)))
+		{
+			if (!g.NavDisableMouseHover && g.NavWindow == window && g.NavLayer == window->DC.NavLayerCurrent)
+			{
+				g.NavDisableHighlight = true;
+				SetNavID(id, window->DC.NavLayerCurrent, window->DC.NavFocusScopeIdCurrent);
+			}
+		}
+		if (pressed)
+			MarkItemEdited(id);
+
+		if (flags & ImGuiSelectableFlags_AllowItemOverlap)
+			SetItemAllowOverlap();
+
+		// In this branch, Selectable() cannot toggle the selection so this will never trigger.
+		if (selected != was_selected) //-V547
+			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
+
+		// Render
+		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
+			hovered = true;
+		if (hovered || selected)
+		{
+			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
+			RenderFrame(bb_enlarged.Min, bb_enlarged.Max, col, false, 0.0f);
+			RenderNavHighlight(bb_enlarged, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+		}
+
+		if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns)
+			PopColumnsBackground();
+
+		if (flags & ImGuiSelectableFlags_Disabled) PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
+		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb_enlarged);
+		if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
+
+		// Automatically close popups
+		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(window->DC.ItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
+			CloseCurrentPopup();
+
+		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
+		return pressed;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -751,7 +880,8 @@ namespace igfd
                     }
 	#endif
 #endif
-					for (auto & it : m_FileList)
+					size_t idx = 0;
+					for (auto &it : m_FileList)
 					{
 						const FileInfoStruct& infos = it;
 
@@ -796,11 +926,17 @@ namespace igfd
 							if (ImGui::TableSetColumnIndex(0)) // first column
 							{
 #endif
-								if (ImGui::Selectable(str.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick
+								ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
 #ifdef USE_IMGUI_TABLES
-									| ImGuiSelectableFlags_SpanAllColumns
+								selectableFlags |= ImGuiSelectableFlags_SpanAllColumns;
 #endif
-								))
+								LocateByInputKey();
+								bool _selectablePressed = false;
+								bool flashed = BeginFlashItem(idx);
+								_selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
+								if (flashed)
+									EndFlashItem();
+								if (_selectablePressed)
 								{
 									if (infos.type == 'd')
 									{
@@ -839,11 +975,17 @@ namespace igfd
 							if (showColor)
 								ImGui::PopStyleColor();
 						}
-#ifdef USE_IMGUI_TABLES
+
+						idx++;
 					}
-					ImGui::EndTable();
-#endif
+					//clipper.End();
+
+#ifdef USE_IMGUI_TABLES
 				}
+				ImGui::EndTable();
+#endif
+
+				ExploreWithkeys(); // outside of file list loop
 
 				// changement de repertoire
 				if (pathClick)
@@ -1774,4 +1916,186 @@ namespace igfd
 			c = std::tolower(c);
 		return vFileName;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//// LOCATE / EXPLORE WITH KEYS ////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////
+
+	static size_t locateFileByInputChar_lastFileIdx = 0;
+
+	void ImGuiFileDialog::LocateByInputKey()
+	{
+		ImGuiContext& g = *GImGui;
+		if (!g.ActiveId && !m_FileList.empty())
+		{
+			// point by char
+			static char locateFileByInputChar_lastChar = 0;
+			static int locateFileByInputChar_InputQueueCharactersSize = 0;
+			if (!ImGui::GetIO().InputQueueCharacters.empty())
+			{
+				char c = ImGui::GetIO().InputQueueCharacters.back();
+				if (locateFileByInputChar_InputQueueCharactersSize != ImGui::GetIO().InputQueueCharacters.size())
+				{
+					if (c == locateFileByInputChar_lastChar) // next file starting with same char until
+					{
+						if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
+							locateFileByInputChar_lastFileIdx++;
+						else
+							locateFileByInputChar_lastFileIdx = 0;
+					}
+					else // new char
+					{
+						locateFileByInputChar_lastFileIdx = 0;
+					}
+
+					static bool locateFileByInputChar_lastFound = false;
+					bool found = false;
+					for (int i = locateFileByInputChar_lastFileIdx; i < m_FileList.size(); i++)
+					{
+						if (m_FileList[i].fileName_optimized[0] == c || // lower case search
+							m_FileList[i].fileName[0] == c) // maybe upper case search
+						{
+							float p = (float)((double)i / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
+							ImGui::SetScrollY(p);
+							found = true;
+							locateFileByInputChar_lastFound = true;
+							locateFileByInputChar_lastFileIdx = i;
+							StartFlashItem(locateFileByInputChar_lastFileIdx);
+							break;
+						}
+						
+						if (c == locateFileByInputChar_lastChar && 
+							locateFileByInputChar_lastFound && 
+							!found && 
+							i == m_FileList.size() - 1) //last item and not found => new loop
+						{
+							locateFileByInputChar_lastFileIdx = 0; // cyclic next file starting with same char until
+							i = 0;
+							locateFileByInputChar_lastFound = false;
+						}
+					}
+
+					locateFileByInputChar_lastChar = c;
+				}
+			}
+			locateFileByInputChar_InputQueueCharactersSize = ImGui::GetIO().InputQueueCharacters.size();
+		}
+	}
+
+	void ImGuiFileDialog::ExploreWithkeys()
+	{
+		// explore 
+		bool exploreByKey = false;
+		bool enterInDirectory = false;
+		bool exitDirectory = false;
+		if (ImGui::IsKeyReleased(IGFD_KEY_UP))
+		{
+			exploreByKey = true;
+			if (locateFileByInputChar_lastFileIdx > 0)
+			{
+				locateFileByInputChar_lastFileIdx--;
+			}
+		}
+		else if (ImGui::IsKeyReleased(IGFD_KEY_DOWN))
+		{
+			exploreByKey = true;
+			if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
+			{
+				locateFileByInputChar_lastFileIdx++;
+			}
+		}
+		else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+		{
+			exploreByKey = true;
+			enterInDirectory = true;
+		}
+		else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE))
+		{
+			exploreByKey = true;
+			exitDirectory = true;
+		}
+
+		if (exploreByKey)
+		{
+			float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
+			ImGui::SetScrollY(p);
+			StartFlashItem(locateFileByInputChar_lastFileIdx);
+
+			auto infos = &m_FileList[locateFileByInputChar_lastFileIdx];
+			
+			if (infos->type == 'd')
+			{
+				if (dlg_filters || enterInDirectory)
+				{
+					if (enterInDirectory)
+					{
+						if (SelectDirectory(*infos))
+						{
+							// changement de repertoire
+							SetPath(m_CurrentPath);
+							if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+							{
+								locateFileByInputChar_lastFileIdx = 0;
+							}
+						}
+					}
+				}
+				else // directory chooser
+				{
+					SelectFileName(*infos);
+				}
+			}
+			else
+			{
+				SelectFileName(*infos);
+			}
+
+			if (exitDirectory)
+			{
+				FileInfoStruct nfo;
+				nfo.fileName = "..";
+
+				if (SelectDirectory(nfo))
+				{
+					// changement de repertoire
+					SetPath(m_CurrentPath);
+					if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+					{
+						locateFileByInputChar_lastFileIdx = 0;
+					}
+				}
+			}
+		}
+	}
+
+	void ImGuiFileDialog::StartFlashItem(size_t vIdx)
+	{
+		m_FlashAlpha = 1.0f;
+		m_FlashedItem = vIdx;
+	}
+
+	bool ImGuiFileDialog::BeginFlashItem(size_t vIdx)
+	{
+		bool res = false;
+
+		if (m_FlashedItem == vIdx && 
+			std::abs(m_FlashAlpha - 0.0f) > 0.00001f)
+		{
+			m_FlashAlpha -= m_FlashAlphaStep;
+			if (m_FlashAlpha < 0.0f) m_FlashAlpha = 0.0f;
+
+			ImVec4 hov = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
+			hov.w = m_FlashAlpha;
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, hov);
+			res = true;
+		}
+
+		return res;
+	}
+
+	void ImGuiFileDialog::EndFlashItem()
+	{
+		ImGui::PopStyleColor();
+	}
 }
+

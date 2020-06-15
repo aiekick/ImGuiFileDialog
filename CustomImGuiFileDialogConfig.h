@@ -4,6 +4,12 @@
 
 //#define USE_IMGUI_TABLES
 
+#include <GLFW/glfw3.h>
+#define IGFD_KEY_UP GLFW_KEY_UP
+#define IGFD_KEY_DOWN GLFW_KEY_DOWN
+#define IGFD_KEY_ENTER GLFW_KEY_ENTER
+#define IGFD_KEY_BACKSPACE GLFW_KEY_BACKSPACE
+
 // widget
 // button widget use for compose path
 //#define IMGUI_PATH_BUTTON ImGui::Button

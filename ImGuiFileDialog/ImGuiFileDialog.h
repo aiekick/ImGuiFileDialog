@@ -130,6 +130,11 @@ namespace igfd
 		std::vector<FilterInfosStruct> m_Filters;
 		FilterInfosStruct m_SelectedFilter;
 
+	private: // flash when select by char
+		size_t m_FlashedItem = 0;
+		float m_FlashAlpha = 0.0f;
+		float m_FlashAlphaStep = 0.01f; // fps display dependant
+
 	public:
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -236,5 +241,14 @@ namespace igfd
 		void ParseFilters(const char *vFilters);
 		void SetSelectedFilterWithExt(const std::string& vFilter);
 		std::string OptimizeFilenameForSearchOperations(std::string vFileName);
+		
+	private: // file localization by input chat // widget flashing
+		void LocateByInputKey();
+		void ExploreWithkeys();
+		bool FlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
+			bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));
+		void StartFlashItem(size_t vIdx);
+		bool BeginFlashItem(size_t vIdx);
+		void EndFlashItem();
 	};
 }
