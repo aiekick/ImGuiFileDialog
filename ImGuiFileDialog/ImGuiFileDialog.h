@@ -248,7 +248,7 @@ namespace igfd
 #ifdef USE_EXPLORATION_BY_KEYS
 	private: // file localization by input chat // widget flashing
 		void LocateByInputKey();
-		bool LocateItem_Loop(char vC);
+		bool LocateItem_Loop(ImWchar vC);
 		void ExploreWithkeys();
 		static bool FlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
 			bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));

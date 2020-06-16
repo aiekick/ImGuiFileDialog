@@ -1822,10 +1822,8 @@ namespace igfd
 				if (fullStr[p] == '{') // {
 				{
 					infos.filter = fullStr.substr(lp, p - lp);
-
 					p++;
-
-					size_t lp = fullStr.find('}', p);
+					lp = fullStr.find('}', p);
 					if (lp != nan)
 					{
 						std::string fs = fullStr.substr(p, lp - p);
@@ -1835,7 +1833,6 @@ namespace igfd
 							infos.collectionfilters.emplace(a);
 						}
 					}
-
 					p = lp + 1;
 				}
 				else // ,
@@ -1905,8 +1902,8 @@ namespace igfd
 	std::string ImGuiFileDialog::OptimizeFilenameForSearchOperations(std::string vFileName)
 	{
 		// convert to lower case
-		for (auto & c : vFileName)
-			c = std::tolower(c);
+		for (char & c : vFileName)
+			c = (char)std::tolower(c);
 		return vFileName;
 	}
 
@@ -1945,11 +1942,11 @@ namespace igfd
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static size_t locateFileByInputChar_lastFileIdx = 0;
-	static char locateFileByInputChar_lastChar = 0;
+	static ImWchar locateFileByInputChar_lastChar = 0;
 	static int locateFileByInputChar_InputQueueCharactersSize = 0;
 	static bool locateFileByInputChar_lastFound = false;
 
-	bool ImGuiFileDialog::LocateItem_Loop(char vC)
+	bool ImGuiFileDialog::LocateItem_Loop(ImWchar vC)
 	{
 		bool found = false;
 
@@ -1997,7 +1994,7 @@ namespace igfd
 			// point by char
 			if (!ImGui::GetIO().InputQueueCharacters.empty())
 			{
-				char c = ImGui::GetIO().InputQueueCharacters.back();
+				ImWchar c = ImGui::GetIO().InputQueueCharacters.back();
 				if (locateFileByInputChar_InputQueueCharactersSize != 
 					ImGui::GetIO().InputQueueCharacters.size())
 				{
@@ -2150,7 +2147,7 @@ namespace igfd
 
 	void ImGuiFileDialog::SetFlashingAttenuationInSeconds(float vAttenValue)
 	{
-		m_FlashAlphaAttenInSecs = 1.0f / max(vAttenValue,0.01f);
+		m_FlashAlphaAttenInSecs = 1.0f / ImMax(vAttenValue,0.01f);
 	}
 #endif
 }
