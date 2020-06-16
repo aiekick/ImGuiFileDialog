@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.2"
+#define IMGUIFILEDIALOG_VERSION "v0.3"
 
 #include <imgui.h>
 
@@ -64,7 +64,6 @@ namespace igfd
 		size_t fileSize = 0; // for sorting operations
 		std::string formatedFileSize;
 		std::string fileModifDate;
-
 	};
 
 	// old FilterInfosStruct
@@ -72,7 +71,6 @@ namespace igfd
 	{
 		std::string icon;
 		ImVec4 color = ImVec4(0, 0, 0, 0);
-
 		FileExtentionInfosStruct() { color = ImVec4(0, 0, 0, 0); }
 		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
 		{
@@ -109,7 +107,7 @@ namespace igfd
 
 	enum SortingFieldEnum
     {
-        FIELD_NONE=0,
+		FIELD_NONE = 0,
 	    FIELD_FILENAME,
 	    FIELD_SIZE,
 		FIELD_DATE
@@ -134,7 +132,7 @@ namespace igfd
 	private: // flash when select by char
 		size_t m_FlashedItem = 0;
 		float m_FlashAlpha = 0.0f;
-		float m_FlashAlphaStep = 0.01f; // fps display dependant
+		float m_FlashAlphaAttenInSecs = 1.0f; // fps display dependant
 
 	public:
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -210,6 +208,7 @@ namespace igfd
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
 			UserDatas vUserDatas = 0);
 
+	public: // core
 		bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
 		void CloseDialog(const std::string& vKey);
@@ -246,13 +245,18 @@ namespace igfd
 	private:
 	    void ApplyFilteringOnFileList();
 
+#ifdef USE_EXPLORATION_BY_KEYS
 	private: // file localization by input chat // widget flashing
 		void LocateByInputKey();
+		bool LocateItem_Loop(char vC);
 		void ExploreWithkeys();
 		static bool FlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
 			bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));
 		void StartFlashItem(size_t vIdx);
 		bool BeginFlashItem(size_t vIdx);
 		void EndFlashItem();
+	public:
+		void SetFlashingAttenuationInSeconds(float vAttenValue);
+#endif
 	};
 }
