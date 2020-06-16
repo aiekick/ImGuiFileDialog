@@ -190,12 +190,15 @@ You can have tables display like that.
 
 ## Exploring by keys
 
-you can activate this feature by uncomment "#define USE_EXPLORATION_BY_KEYS" in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+you can activate this feature by uncomment : "#define USE_EXPLORATION_BY_KEYS" 
+in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+
 you can also uncomment the next lines for define your keys :
-*IGFD_KEY_UP => Up key for explore to the top
-*IGFD_KEY_DOWN => Down key for explore to the bottom
-*IGFD_KEY_ENTER => Enter key for open directory
-*IGFD_KEY_BACKSPACE => BackSpace for comming back to the last directory
+
+* IGFD_KEY_UP => Up key for explore to the top
+* IGFD_KEY_DOWN => Down key for explore to the bottom
+* IGFD_KEY_ENTER => Enter key for open directory
+* IGFD_KEY_BACKSPACE => BackSpace for comming back to the last directory
 
 you can also explore a file list by use the current key char.
 
