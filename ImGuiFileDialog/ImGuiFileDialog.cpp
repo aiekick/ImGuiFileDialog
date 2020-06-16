@@ -62,7 +62,7 @@ SOFTWARE.
 namespace igfd
 {
 	// for lets you define your button widget
-	// if you have like me a speial two color button
+	// if you have like me a special bi-color button
 	#ifndef IMGUI_PATH_BUTTON
 	#define IMGUI_PATH_BUTTON ImGui::Button
 	#endif
@@ -131,6 +131,53 @@ namespace igfd
 	#ifndef tableHeaderFileDateString
 	#define tableHeaderFileDateString "Date"
 	#endif
+
+#ifdef USE_BOOKMARK
+	#ifndef bookmarkPaneWith
+	#define bookmarkPaneWith 150.0f
+	#endif
+	#ifndef bookmarksButtonString
+	#define bookmarksButtonString "Bookmark"
+	#endif
+	#ifndef bookmarksButtonHelpString
+	#define bookmarksButtonHelpString "bookmark"
+	#endif
+	#ifndef addBookmarkButtonString
+	#define addBookmarkButtonString "+"
+	#endif
+	#ifndef removeBookmarkButtonString
+	#define removeBookmarkButtonString "-"
+	#endif
+	#ifndef IMGUI_TOGGLE_BUTTON
+	inline bool ToggleButton(const char *vLabel, bool *vToggled)
+	{
+		bool pressed = false;
+
+		if (vToggled && *vToggled)
+		{
+			ImVec4 bua = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+			ImVec4 buh = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+			ImVec4 bu = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+			ImVec4 te = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, te);
+			ImGui::PushStyleColor(ImGuiCol_Text, bua);
+		}
+
+		pressed = IMGUI_BUTTON(vLabel);
+
+		if (vToggled && *vToggled)
+		{
+			ImGui::PopStyleColor(2);
+		}
+
+		if (vToggled && pressed)
+			*vToggled = !*vToggled;
+
+		return pressed;
+	}
+	#define IMGUI_TOGGLE_BUTTON ToggleButton
+	#endif
+#endif
 
 	static std::string s_fs_root = std::string(1u, PATH_SEP);
 
@@ -322,7 +369,10 @@ namespace igfd
 	char ImGuiFileDialog::FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 	char ImGuiFileDialog::DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 	char ImGuiFileDialog::SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-
+#ifdef USE_BOOKMARK
+	char ImGuiFileDialog::BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
+#endif
+	
 	ImGuiFileDialog::ImGuiFileDialog()
 	{
 		m_AnyWindowsHovered = false;
@@ -334,6 +384,7 @@ namespace igfd
 		dlg_optionsPaneWidth = 250;
 		dlg_filters = "";
         dlg_userDatas = 0;
+		m_BookmarkPaneShown = false;
 	}
 
 	ImGuiFileDialog::~ImGuiFileDialog() = default;
@@ -497,6 +548,7 @@ namespace igfd
 		SetPath(m_CurrentPath);
 
 		m_ShowDialog = true;
+		m_BookmarkPaneShown = false;
 	}
 
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
@@ -536,6 +588,7 @@ namespace igfd
 		SetPath(m_CurrentPath);
 
 		m_ShowDialog = true;
+		m_BookmarkPaneShown = false;
 	}
 
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
@@ -573,6 +626,7 @@ namespace igfd
 		SetPath(m_CurrentPath);
 
 		m_ShowDialog = true;
+		m_BookmarkPaneShown = false;
 	}
 
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
@@ -598,6 +652,7 @@ namespace igfd
 		SetPath(m_CurrentPath);
 
 		m_ShowDialog = true;
+		m_BookmarkPaneShown = false;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -719,6 +774,15 @@ namespace igfd
 					ScanDir(dlg_path);
 				}
 
+#ifdef USE_BOOKMARK
+				IMGUI_TOGGLE_BUTTON(bookmarksButtonString, &m_BookmarkPaneShown);
+
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip(bookmarksButtonHelpString);
+
+				ImGui::SameLine();
+#endif
+
 				if (IMGUI_BUTTON(createDirButtonString))
 				{
 					if (!m_CreateDirectoryMode)
@@ -826,8 +890,71 @@ namespace igfd
 				}
 
 				static float lastBarHeight = 0.0f; // need one frame for calculate filelist size
-				ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2((float)dlg_optionsPaneWidth, lastBarHeight);
 
+#ifdef USE_BOOKMARK
+				if (m_BookmarkPaneShown)
+				{
+					ImVec2 size = ImVec2(bookmarkPaneWith, ImGui::GetContentRegionAvail().y - lastBarHeight);
+					ImGui::BeginChild("##bookmarkpane", size);
+					if (IMGUI_BUTTON(addBookmarkButtonString "##ImGuiFileDialogAddBookmark"))
+					{
+						if (!m_CurrentPath_Decomposition.empty())
+						{
+							BookmarkStruct bookmark;
+							bookmark.name = m_CurrentPath_Decomposition.back();
+							bookmark.path = m_CurrentPath;
+							m_Bookmarks.push_back(bookmark);
+						}
+					}
+					static size_t selectedBookmarkForEdition = -1;
+					if (selectedBookmarkForEdition >= 0 &&
+						selectedBookmarkForEdition < m_Bookmarks.size())
+					{
+						ImGui::SameLine();
+						if (IMGUI_BUTTON(removeBookmarkButtonString "##ImGuiFileDialogAddBookmark"))
+						{
+							m_Bookmarks.erase(m_Bookmarks.begin() + selectedBookmarkForEdition);
+							selectedBookmarkForEdition--;
+						}
+						if (selectedBookmarkForEdition >= 0)
+						{
+							ImGui::PushItemWidth(bookmarkPaneWith);
+							if (ImGui::InputText("##ImGuiFileDialogBookmarkEdit", BookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
+							{
+								m_Bookmarks[selectedBookmarkForEdition].name = std::string(BookmarkEditBuffer);
+							}
+							ImGui::PopItemWidth();
+						}
+					}
+					ImGui::Separator();
+					size_t countRows = m_Bookmarks.size();
+					ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+					{
+						const BookmarkStruct& bookmark = m_Bookmarks[i];
+						ImGui::PushID(i);
+						if (ImGui::Selectable(bookmark.name.c_str(), selectedBookmarkForEdition == i, ImGuiSelectableFlags_AllowDoubleClick))
+						{
+							selectedBookmarkForEdition = i;
+							ResetBuffer(BookmarkEditBuffer);
+							AppendToBuffer(BookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER, bookmark.name);
+
+							if (ImGui::IsMouseDoubleClicked(0)) // apply path
+							{
+								SetPath(bookmark.path);
+							}
+						}
+						ImGui::PopID();
+						if (ImGui::IsItemHovered())
+							ImGui::SetTooltip(bookmark.path.c_str());
+					}
+					clipper.End();
+					ImGui::EndChild();
+					ImGui::SameLine();
+				}
+#endif
+
+				ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2((float)dlg_optionsPaneWidth, lastBarHeight);
 #ifndef USE_IMGUI_TABLES
 				ImGui::BeginChild("##FileDialog_FileList", size);
 #else
@@ -884,7 +1011,7 @@ namespace igfd
 #endif
                 size_t countRows = m_FilteredFileList.size();
                 ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
-				 for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+				for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                 {
                     const FileInfoStruct& infos = m_FilteredFileList[i];
 
@@ -2148,6 +2275,38 @@ namespace igfd
 	void ImGuiFileDialog::SetFlashingAttenuationInSeconds(float vAttenValue)
 	{
 		m_FlashAlphaAttenInSecs = 1.0f / ImMax(vAttenValue,0.01f);
+	}
+#endif
+#ifdef USE_BOOKMARK
+	std::string ImGuiFileDialog::SerializeBookmarks()
+	{
+		std::string res;
+
+		size_t idx = 0;
+		for (auto & it : m_Bookmarks)
+		{
+			if (idx++ != 0)
+				res += ":";
+			res += it.name + ":" + it.path;
+		}
+
+		return res;
+	}
+
+	void ImGuiFileDialog::DeserializeBookmarks(std::string vBookmarks)
+	{
+		if (!vBookmarks.empty())
+		{
+			m_Bookmarks.clear();
+			auto arr = splitStringToVector(vBookmarks, ':', true);
+			for (size_t i = 0; i < arr.size(); i += 2)
+			{
+				BookmarkStruct bookmark;
+				bookmark.name = arr[i];
+				bookmark.path = arr[i + 1];
+				m_Bookmarks.push_back(bookmark);
+			}
+		}
 	}
 #endif
 }

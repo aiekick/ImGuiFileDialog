@@ -1,0 +1,38 @@
+<config>
+	<project>
+		<font name="fontawesome-webfont.ttf">
+			<glyphs>
+				<glyph orgId="61442" newId="61442" orgName="search" newName="search"/>
+				<glyph orgId="61452" newId="61452" orgName="ok" newName="ok"/>
+				<glyph orgId="61453" newId="61453" orgName="remove" newName="cancel"/>
+				<glyph orgId="61473" newId="61473" orgName="refresh" newName="refresh"/>
+				<glyph orgId="61486" newId="61486" orgName="bookmark" newName="bookmark"/>
+				<glyph orgId="61504" newId="61504" orgName="pencil" newName="edit"/>
+				<glyph orgId="61540" newId="61540" orgName="share_alt" newName="reset"/>
+				<glyph orgId="61543" newId="61543" orgName="plus" newName="add"/>
+				<glyph orgId="61544" newId="61544" orgName="minus" newName="remove"/>
+				<glyph orgId="61563" newId="61563" orgName="folder_close" newName="folder"/>
+				<glyph orgId="61564" newId="61564" orgName="folder_open" newName="folder_open"/>
+				<glyph orgId="61600" newId="61600" orgName="hdd" newName="drives"/>
+				<glyph orgId="61639" newId="61639" orgName="save" newName="save"/>
+				<glyph orgId="61787" newId="61787" orgName="file" newName="file"/>
+				<glyph orgId="61893" newId="61893" orgName="_425" newName="file_pic"/>
+				<glyph orgId="61897" newId="61897" orgName="_429" newName="link"/>
+			</glyphs>
+			<prefix>IGFD</prefix>
+			<pathfilename>..\ImGuiFontStudio\samples_Fonts\fontawesome-webfont.ttf</pathfilename>
+			<oversample>3</oversample>
+			<fontsize>27</fontsize>
+		</font>
+		<rangecoloring show="false" hash="42.606;14.789;27.817;0.5"/>
+		<previewcountglyph_x>14</previewcountglyph_x>
+		<mergedfontprefix></mergedfontprefix>
+		<curglyphtooltip>true</curglyphtooltip>
+		<srcglyphtooltip>true</srcglyphtooltip>
+		<dstglyphtooltip>true</dstglyphtooltip>
+		<glyphpreviewscale>0.193</glyphpreviewscale>
+		<glyphpreviewshowcontrollines>false</glyphpreviewshowcontrollines>
+		<genmode>653</genmode>
+		<fonttomergein>fontawesome-webfont.ttf</fonttomergein>
+	</project>
+</config>
