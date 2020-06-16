@@ -341,7 +341,7 @@ namespace igfd
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// CUSTOM SELECTABLE (Flashing Support) ///////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	
+#ifdef USE_EXPLORATION_BY_KEYS
 	bool ImGuiFileDialog::FlashableSelectable(const char* label, bool selected, 
 		ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg)
 	{
@@ -466,6 +466,7 @@ namespace igfd
 		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
 		return pressed;
 	}
+#endif
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
@@ -882,8 +883,8 @@ namespace igfd
 	#endif
 #endif
                 size_t countRows = m_FilteredFileList.size();
-                ImGuiListClipper clipper(countRows, ImGui::GetFrameHeight());
-                for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+                ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
+				 for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                 {
                     const FileInfoStruct& infos = m_FilteredFileList[i];
 
@@ -915,12 +916,16 @@ namespace igfd
 #ifdef USE_IMGUI_TABLES
                     selectableFlags |= ImGuiSelectableFlags_SpanAllColumns;
 #endif
+					bool _selectablePressed = false;
+#ifdef USE_EXPLORATION_BY_KEYS
                     LocateByInputKey();
-                    bool _selectablePressed = false;
-                    bool flashed = BeginFlashItem(i);
-                    _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
+					bool flashed = BeginFlashItem(i);
+					 _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
                     if (flashed)
                         EndFlashItem();
+#else
+					_selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
+#endif
                     if (_selectablePressed)
                     {
                         if (infos.type == 'd')
@@ -968,9 +973,9 @@ namespace igfd
 				}
 				ImGui::EndTable();
 #endif
-
+#ifdef USE_EXPLORATION_BY_KEYS
 				ExploreWithkeys(); // outside of file list loop
-
+#endif
 				// changement de repertoire
 				if (pathClick)
 				{
@@ -1665,9 +1670,10 @@ namespace igfd
 				}
 				free(files);
 			}
+
+			SortFields(m_SortingField);
+			ApplyFilteringOnFileList();
 		}
-        SortFields(m_SortingField);
-        ApplyFilteringOnFileList();
 	}
 
 	void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
@@ -1939,57 +1945,75 @@ namespace igfd
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static size_t locateFileByInputChar_lastFileIdx = 0;
+	static char locateFileByInputChar_lastChar = 0;
+	static int locateFileByInputChar_InputQueueCharactersSize = 0;
+	static bool locateFileByInputChar_lastFound = false;
 
+	bool ImGuiFileDialog::LocateItem_Loop(char vC)
+	{
+		bool found = false;
+
+		for (size_t i = locateFileByInputChar_lastFileIdx; i < m_FilteredFileList.size(); i++)
+		{
+			if (m_FilteredFileList[i].fileName_optimized[0] == vC || // lower case search
+				m_FilteredFileList[i].fileName[0] == vC) // maybe upper case search
+			{
+				float p = (float)((double)i / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
+				ImGui::SetScrollY(p);
+				found = true;
+				locateFileByInputChar_lastFound = true;
+				locateFileByInputChar_lastFileIdx = i;
+				StartFlashItem(locateFileByInputChar_lastFileIdx);
+
+				auto infos = &m_FilteredFileList[locateFileByInputChar_lastFileIdx];
+
+				if (infos->type == 'd')
+				{
+					if (!dlg_filters) // directory chooser
+					{
+						SelectFileName(*infos);
+					}
+				}
+				else
+				{
+					SelectFileName(*infos);
+				}
+
+				found = true;
+
+				break;
+			}
+		}
+
+		return found;
+	}
+
+#ifdef USE_EXPLORATION_BY_KEYS
 	void ImGuiFileDialog::LocateByInputKey()
 	{
 		ImGuiContext& g = *GImGui;
-		if (!g.ActiveId && !m_FileList.empty())
+		if (!g.ActiveId && !m_FilteredFileList.empty())
 		{
 			// point by char
-			static char locateFileByInputChar_lastChar = 0;
-			static int locateFileByInputChar_InputQueueCharactersSize = 0;
 			if (!ImGui::GetIO().InputQueueCharacters.empty())
 			{
 				char c = ImGui::GetIO().InputQueueCharacters.back();
-				if (locateFileByInputChar_InputQueueCharactersSize != ImGui::GetIO().InputQueueCharacters.size())
+				if (locateFileByInputChar_InputQueueCharactersSize != 
+					ImGui::GetIO().InputQueueCharacters.size())
 				{
 					if (c == locateFileByInputChar_lastChar) // next file starting with same char until
 					{
-						if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
+						if (locateFileByInputChar_lastFileIdx < m_FilteredFileList.size() - 1)
 							locateFileByInputChar_lastFileIdx++;
 						else
 							locateFileByInputChar_lastFileIdx = 0;
 					}
-					else // new char
-					{
-						locateFileByInputChar_lastFileIdx = 0;
-					}
 
-					static bool locateFileByInputChar_lastFound = false;
-					bool found = false;
-					for (size_t i = locateFileByInputChar_lastFileIdx; i < m_FileList.size(); i++)
+					if (!LocateItem_Loop(c))
 					{
-						if (m_FileList[i].fileName_optimized[0] == c || // lower case search
-							m_FileList[i].fileName[0] == c) // maybe upper case search
-						{
-							float p = (float)((double)i / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
-							ImGui::SetScrollY(p);
-							found = true;
-							locateFileByInputChar_lastFound = true;
-							locateFileByInputChar_lastFileIdx = i;
-							StartFlashItem(locateFileByInputChar_lastFileIdx);
-							break;
-						}
-						
-						if (c == locateFileByInputChar_lastChar && 
-							locateFileByInputChar_lastFound && 
-							!found && 
-							i == m_FileList.size() - 1) //last item and not found => new loop
-						{
-							locateFileByInputChar_lastFileIdx = 0; // cyclic next file starting with same char until
-							i = 0;
-							locateFileByInputChar_lastFound = false;
-						}
+						// not found, loop again from 0 this time
+						locateFileByInputChar_lastFileIdx = 0;
+						LocateItem_Loop(c);
 					}
 
 					locateFileByInputChar_lastChar = c;
@@ -2002,13 +2026,13 @@ namespace igfd
 	void ImGuiFileDialog::ExploreWithkeys()
 	{
         ImGuiContext& g = *GImGui;
-        if (!g.ActiveId && !m_FileList.empty())
+        if (!g.ActiveId && !m_FilteredFileList.empty())
         {
             // explore
             bool exploreByKey = false;
             bool enterInDirectory = false;
             bool exitDirectory = false;
-            if (ImGui::IsKeyReleased(IGFD_KEY_UP))
+            if (ImGui::IsKeyPressed(IGFD_KEY_UP))
             {
                 exploreByKey = true;
                 if (locateFileByInputChar_lastFileIdx > 0)
@@ -2016,10 +2040,10 @@ namespace igfd
                     locateFileByInputChar_lastFileIdx--;
                 }
             }
-            else if (ImGui::IsKeyReleased(IGFD_KEY_DOWN))
+            else if (ImGui::IsKeyPressed(IGFD_KEY_DOWN))
             {
                 exploreByKey = true;
-                if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
+                if (locateFileByInputChar_lastFileIdx < m_FilteredFileList.size() - 1)
                 {
                     locateFileByInputChar_lastFileIdx++;
                 }
@@ -2037,11 +2061,11 @@ namespace igfd
 
             if (exploreByKey)
             {
-                float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
+                float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
                 ImGui::SetScrollY(p);
                 StartFlashItem(locateFileByInputChar_lastFileIdx);
 
-                auto infos = &m_FileList[locateFileByInputChar_lastFileIdx];
+                auto infos = &m_FilteredFileList[locateFileByInputChar_lastFileIdx];
 
                 if (infos->type == 'd')
                 {
@@ -2079,7 +2103,7 @@ namespace igfd
                     {
                         // changement de repertoire
                         SetPath(m_CurrentPath);
-                        if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+                        if (locateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
                         {
                             locateFileByInputChar_lastFileIdx = 0;
                         }
@@ -2111,7 +2135,7 @@ namespace igfd
 		if (m_FlashedItem == vIdx && 
 			std::abs(m_FlashAlpha - 0.0f) > 0.00001f)
 		{
-			m_FlashAlpha -= m_FlashAlphaStep;
+			m_FlashAlpha -= m_FlashAlphaAttenInSecs * ImGui::GetIO().DeltaTime;
 			if (m_FlashAlpha < 0.0f) m_FlashAlpha = 0.0f;
 
 			ImVec4 hov = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
@@ -2127,5 +2151,11 @@ namespace igfd
 	{
 		ImGui::PopStyleColor();
 	}
+
+	void ImGuiFileDialog::SetFlashingAttenuationInSeconds(float vAttenValue)
+	{
+		m_FlashAlphaAttenInSecs = 1.0f / max(vAttenValue,0.01f);
+	}
+#endif
 }
 

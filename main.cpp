@@ -172,6 +172,7 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.FontAllowUserScaling = true; // zoom wiht ctrl + mouse wheel 
 
     // Setup Dear ImGui style
     //ImGui::StyleColorsDark();
@@ -251,6 +252,19 @@ int main(int, char**)
 			ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
 			ImGui::Indent();
 			{
+#ifdef USE_EXPLORATION_BY_KEYS
+				static float flashingAttenuationInSeconds = 1.0f;
+				if (ImGui::Button("R##resetflashlifetime"))
+				{
+					flashingAttenuationInSeconds = 1.0f;
+					igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+				}
+				ImGui::SameLine();
+				ImGui::PushItemWidth(200);
+				if (ImGui::SliderFloat("Flash lifetime (s)", &flashingAttenuationInSeconds, 0.01f, 5.0f))
+					igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+				ImGui::PopItemWidth();
+#endif
 				static bool _UseWindowContraints = true;
 				ImGui::Separator();
 				ImGui::Checkbox("Use file dialog constraint", &_UseWindowContraints);

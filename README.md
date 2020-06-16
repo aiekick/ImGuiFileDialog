@@ -18,6 +18,8 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Support of Modal/Standard dialog type
 - Support both Mode : File Chooser or Directory Chooser
 - Support filter collection / Custom filter name
+- Support files Exploring with keys : Up / Down / Enter (open dir) / Backspace (come back)
+- Support files Exploring by input char (case insensitive)
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
@@ -185,6 +187,28 @@ You can have tables display like that.
 - uncomment "#define USE_IMGUI_TABLES" in you custom config file (CustomImGuiFileDialogConfig.h in this example)
 
 ![alt text](doc/imgui_tables_branch.gif)
+
+## Exploring by keys
+
+you can activate this feature by uncomment : "#define USE_EXPLORATION_BY_KEYS" 
+in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+
+you can also uncomment the next lines for define your keys :
+
+* IGFD_KEY_UP => Up key for explore to the top
+* IGFD_KEY_DOWN => Down key for explore to the bottom
+* IGFD_KEY_ENTER => Enter key for open directory
+* IGFD_KEY_BACKSPACE => BackSpace for comming back to the last directory
+
+you can also explore a file list by use the current key char.
+
+![alt text](doc/explore_ny_keys.gif)
+
+as you see the current item is flashed (by default for 1 sec)
+you can define the flashing life time by yourself with the function
+```cpp
+igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
+```
 
 ## How to Integrate ImGuiFileDialog in your porject
 
