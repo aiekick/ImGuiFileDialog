@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.2"
+#define IMGUIFILEDIALOG_VERSION "v0.3"
 
 #include <imgui.h>
 
