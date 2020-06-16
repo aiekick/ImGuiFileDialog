@@ -333,6 +333,7 @@ namespace igfd
 		dlg_optionsPane = nullptr;
 		dlg_optionsPaneWidth = 250;
 		dlg_filters = "";
+        dlg_userDatas = 0;
 	}
 
 	ImGuiFileDialog::~ImGuiFileDialog() = default;
@@ -442,7 +443,7 @@ namespace igfd
 			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
-		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
+		if ((held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld)) || vFlashing)
 			hovered = true;
 		if (hovered || selected)
 		{
@@ -820,9 +821,9 @@ namespace igfd
 				if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
 				{
 					searchTag = SearchBuffer;
+                    ApplyFilteringOnFileList();
 				}
 
-				ImGuiContext& g = *GImGui;
 				static float lastBarHeight = 0.0f; // need one frame for calculate filelist size
 				ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2((float)dlg_optionsPaneWidth, lastBarHeight);
 
@@ -880,86 +881,71 @@ namespace igfd
                     }
 	#endif
 #endif
-					size_t idx = 0;
-					for (auto &it : m_FileList)
-					{
-						const FileInfoStruct& infos = it;
+                size_t countRows = m_FilteredFileList.size();
+                ImGuiListClipper clipper(countRows, ImGui::GetFrameHeight());
+                for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+                {
+                    const FileInfoStruct& infos = m_FilteredFileList[i];
 
-						bool show = true;
+                    ImVec4 c;
+                    std::string icon;
+                    bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
+                    if (showColor)
+                        ImGui::PushStyleColor(ImGuiCol_Text, c);
 
-						// if search tag
-						if (!searchTag.empty() &&
-							infos.fileName_optimized.find(searchTag) == std::string::npos && // first try wihtout case and accents
-							infos.fileName.find(searchTag) == std::string::npos) // second if searched with case and accents
-						{
-							show = false;
-						}
-
-						if (!dlg_filters && infos.type != 'd') // directory mode
-						{
-							show = false;
-						}
-
-						if (show)
-						{
-							ImVec4 c;
-							std::string icon;
-							bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
-							if (showColor)
-								ImGui::PushStyleColor(ImGuiCol_Text, c);
-
-							std::string str = " " + infos.fileName;
-							if (infos.type == 'd') str = dirEntryString + str;
-							if (infos.type == 'l') str = linkEntryString + str;
-							if (infos.type == 'f')
-							{
-								if (showColor && !icon.empty())
-									str = icon + str;
-								else
-									str = fileEntryString + str;
-							}
-							bool selected = false;
-							if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
-								selected = true;
+                    std::string str = " " + infos.fileName;
+                    if (infos.type == 'd') str = dirEntryString + str;
+                    if (infos.type == 'l') str = linkEntryString + str;
+                    if (infos.type == 'f')
+                    {
+                        if (showColor && !icon.empty())
+                            str = icon + str;
+                        else
+                            str = fileEntryString + str;
+                    }
+                    bool selected = false;
+                    if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
+                        selected = true;
 #ifdef USE_IMGUI_TABLES
-							ImGui::TableNextRow();
+                    ImGui::TableNextRow();
 							if (ImGui::TableSetColumnIndex(0)) // first column
 							{
 #endif
-								ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+                    ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
 #ifdef USE_IMGUI_TABLES
-								selectableFlags |= ImGuiSelectableFlags_SpanAllColumns;
+                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns;
 #endif
-								LocateByInputKey();
-								bool _selectablePressed = false;
-								bool flashed = BeginFlashItem(idx);
-								_selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
-								if (flashed)
-									EndFlashItem();
-								if (_selectablePressed)
-								{
-									if (infos.type == 'd')
-									{
-										if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
-										{
-											pathClick = SelectDirectory(infos);
-										}
-										else // directory chooser
-										{
-											SelectFileName(infos);
-										}
+                    LocateByInputKey();
+                    bool _selectablePressed = false;
+                    bool flashed = BeginFlashItem(i);
+                    _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
+                    if (flashed)
+                        EndFlashItem();
+                    if (_selectablePressed)
+                    {
+                        if (infos.type == 'd')
+                        {
+                            if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
+                            {
+                                pathClick = SelectDirectory(infos);
+                            }
+                            else // directory chooser
+                            {
+                                SelectFileName(infos);
+                            }
 
-										if (showColor)
-											ImGui::PopStyleColor();
-										break;
-									}
-									else
-									{
-										SelectFileName(infos);
-									}
-								}
+                            if (showColor)
+                                ImGui::PopStyleColor();
+
+                            break;
+                        }
+                        else
+                        {
+                            SelectFileName(infos);
+                        }
+                    }
 #ifdef USE_IMGUI_TABLES
-							}
+                    }
 							if (ImGui::TableSetColumnIndex(1)) // second column
 							{
 								if (infos.type != 'd')
@@ -972,13 +958,11 @@ namespace igfd
 								ImGui::Text("%s", infos.fileModifDate.c_str());
 							}
 #endif
-							if (showColor)
-								ImGui::PopStyleColor();
-						}
+                    if (showColor)
+                        ImGui::PopStyleColor();
 
-						idx++;
-					}
-					//clipper.End();
+                }
+                clipper.End();
 
 #ifdef USE_IMGUI_TABLES
 				}
@@ -1620,10 +1604,11 @@ namespace igfd
 			}
 #endif
 			n = scandir(path.c_str(), &files, nullptr, alphaSort);
-			if (n > 0)
-			{
-				m_FileList.clear();
 
+            m_FileList.clear();
+
+            if (n > 0)
+			{
 				for (i = 0; i < n; i++)
 				{
 					struct dirent *ent = files[i];
@@ -1680,9 +1665,9 @@ namespace igfd
 				}
 				free(files);
 			}
-
-            SortFields(m_SortingField);
 		}
+        SortFields(m_SortingField);
+        ApplyFilteringOnFileList();
 	}
 
 	void ImGuiFileDialog::SetCurrentDir(const std::string& vPath)
@@ -1796,6 +1781,7 @@ namespace igfd
 			{
 				FileInfoStruct infos;
 				infos.fileName = re;
+				infos.fileName_optimized = OptimizeFilenameForSearchOperations(re);
 				infos.type = 'd';
 
 				if (!infos.fileName.empty())
@@ -1804,6 +1790,7 @@ namespace igfd
 				}
 			}
 			m_ShowDrives = true;
+            ApplyFilteringOnFileList();
 		}
 	}
 
@@ -1917,7 +1904,37 @@ namespace igfd
 		return vFileName;
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////////
+    void ImGuiFileDialog::ApplyFilteringOnFileList()
+    {
+        m_FilteredFileList.clear();
+
+        for (auto &it : m_FileList)
+        {
+            const FileInfoStruct &infos = it;
+
+            bool show = true;
+
+            // if search tag
+            if (!searchTag.empty() &&
+                infos.fileName_optimized.find(searchTag) == std::string::npos && // first try wihtout case and accents
+                infos.fileName.find(searchTag) == std::string::npos) // second if searched with case and accents
+            {
+                show = false;
+            }
+
+            if (!dlg_filters && infos.type != 'd') // directory mode
+            {
+                show = false;
+            }
+
+            if (show)
+            {
+                m_FilteredFileList.push_back(infos);
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 	//// LOCATE / EXPLORE WITH KEYS ////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1950,7 +1967,7 @@ namespace igfd
 
 					static bool locateFileByInputChar_lastFound = false;
 					bool found = false;
-					for (int i = locateFileByInputChar_lastFileIdx; i < m_FileList.size(); i++)
+					for (size_t i = locateFileByInputChar_lastFileIdx; i < m_FileList.size(); i++)
 					{
 						if (m_FileList[i].fileName_optimized[0] == c || // lower case search
 							m_FileList[i].fileName[0] == c) // maybe upper case search
@@ -1984,88 +2001,101 @@ namespace igfd
 
 	void ImGuiFileDialog::ExploreWithkeys()
 	{
-		// explore 
-		bool exploreByKey = false;
-		bool enterInDirectory = false;
-		bool exitDirectory = false;
-		if (ImGui::IsKeyReleased(IGFD_KEY_UP))
-		{
-			exploreByKey = true;
-			if (locateFileByInputChar_lastFileIdx > 0)
-			{
-				locateFileByInputChar_lastFileIdx--;
-			}
-		}
-		else if (ImGui::IsKeyReleased(IGFD_KEY_DOWN))
-		{
-			exploreByKey = true;
-			if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
-			{
-				locateFileByInputChar_lastFileIdx++;
-			}
-		}
-		else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
-		{
-			exploreByKey = true;
-			enterInDirectory = true;
-		}
-		else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE))
-		{
-			exploreByKey = true;
-			exitDirectory = true;
-		}
+        ImGuiContext& g = *GImGui;
+        if (!g.ActiveId && !m_FileList.empty())
+        {
+            // explore
+            bool exploreByKey = false;
+            bool enterInDirectory = false;
+            bool exitDirectory = false;
+            if (ImGui::IsKeyReleased(IGFD_KEY_UP))
+            {
+                exploreByKey = true;
+                if (locateFileByInputChar_lastFileIdx > 0)
+                {
+                    locateFileByInputChar_lastFileIdx--;
+                }
+            }
+            else if (ImGui::IsKeyReleased(IGFD_KEY_DOWN))
+            {
+                exploreByKey = true;
+                if (locateFileByInputChar_lastFileIdx < m_FileList.size() - 1)
+                {
+                    locateFileByInputChar_lastFileIdx++;
+                }
+            }
+            else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+            {
+                exploreByKey = true;
+                enterInDirectory = true;
+            }
+            else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE))
+            {
+                exploreByKey = true;
+                exitDirectory = true;
+            }
 
-		if (exploreByKey)
-		{
-			float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
-			ImGui::SetScrollY(p);
-			StartFlashItem(locateFileByInputChar_lastFileIdx);
+            if (exploreByKey)
+            {
+                float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FileList.size()) * ImGui::GetScrollMaxY();
+                ImGui::SetScrollY(p);
+                StartFlashItem(locateFileByInputChar_lastFileIdx);
 
-			auto infos = &m_FileList[locateFileByInputChar_lastFileIdx];
-			
-			if (infos->type == 'd')
-			{
-				if (dlg_filters || enterInDirectory)
-				{
-					if (enterInDirectory)
-					{
-						if (SelectDirectory(*infos))
-						{
-							// changement de repertoire
-							SetPath(m_CurrentPath);
-							if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
-							{
-								locateFileByInputChar_lastFileIdx = 0;
-							}
-						}
-					}
-				}
-				else // directory chooser
-				{
-					SelectFileName(*infos);
-				}
-			}
-			else
-			{
-				SelectFileName(*infos);
-			}
+                auto infos = &m_FileList[locateFileByInputChar_lastFileIdx];
 
-			if (exitDirectory)
-			{
-				FileInfoStruct nfo;
-				nfo.fileName = "..";
+                if (infos->type == 'd')
+                {
+                    if (dlg_filters || enterInDirectory)
+                    {
+                        if (enterInDirectory)
+                        {
+                            if (SelectDirectory(*infos))
+                            {
+                                // changement de repertoire
+                                SetPath(m_CurrentPath);
+                                if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+                                {
+                                    locateFileByInputChar_lastFileIdx = 0;
+                                }
+                            }
+                        }
+                    }
+                    else // directory chooser
+                    {
+                        SelectFileName(*infos);
+                    }
+                }
+                else
+                {
+                    SelectFileName(*infos);
+                }
 
-				if (SelectDirectory(nfo))
-				{
-					// changement de repertoire
-					SetPath(m_CurrentPath);
-					if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
-					{
-						locateFileByInputChar_lastFileIdx = 0;
-					}
-				}
-			}
-		}
+                if (exitDirectory)
+                {
+                    FileInfoStruct nfo;
+                    nfo.fileName = "..";
+
+                    if (SelectDirectory(nfo))
+                    {
+                        // changement de repertoire
+                        SetPath(m_CurrentPath);
+                        if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+                        {
+                            locateFileByInputChar_lastFileIdx = 0;
+                        }
+                    }
+#ifdef WIN32
+                    else
+                    {
+                        if (m_CurrentPath_Decomposition.size() == 1)
+                        {
+                            GetDrives(); // display drives
+                        }
+                    }
+#endif
+                }
+            }
+        }
 	}
 
 	void ImGuiFileDialog::StartFlashItem(size_t vIdx)

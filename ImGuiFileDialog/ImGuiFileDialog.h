@@ -119,7 +119,8 @@ namespace igfd
 	{
 	private:
 		std::vector<FileInfoStruct> m_FileList;
-		std::unordered_map<std::string, FileExtentionInfosStruct> m_FileExtentionInfos;
+        std::vector<FileInfoStruct> m_FilteredFileList;
+        std::unordered_map<std::string, FileExtentionInfosStruct> m_FileExtentionInfos;
 		std::set<std::string> m_SelectedFileNames;
 		std::string m_CurrentPath;
 		std::vector<std::string> m_CurrentPath_Decomposition;
@@ -153,7 +154,7 @@ namespace igfd
 		std::function<void(std::string, UserDatas, bool*)> dlg_optionsPane;
 		size_t dlg_optionsPaneWidth = 0;
 		std::string searchTag;
-		UserDatas dlg_userDatas;
+		UserDatas dlg_userDatas{};
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
 		
@@ -241,11 +242,14 @@ namespace igfd
 		void ParseFilters(const char *vFilters);
 		void SetSelectedFilterWithExt(const std::string& vFilter);
 		std::string OptimizeFilenameForSearchOperations(std::string vFileName);
-		
+
+	private:
+	    void ApplyFilteringOnFileList();
+
 	private: // file localization by input chat // widget flashing
 		void LocateByInputKey();
 		void ExploreWithkeys();
-		bool FlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
+		static bool FlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
 			bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));
 		void StartFlashItem(size_t vIdx);
 		bool BeginFlashItem(size_t vIdx);
