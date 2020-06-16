@@ -2036,17 +2036,13 @@ namespace igfd
             {
                 exploreByKey = true;
                 if (locateFileByInputChar_lastFileIdx > 0)
-                {
                     locateFileByInputChar_lastFileIdx--;
-                }
             }
             else if (ImGui::IsKeyPressed(IGFD_KEY_DOWN))
             {
                 exploreByKey = true;
                 if (locateFileByInputChar_lastFileIdx < m_FilteredFileList.size() - 1)
-                {
                     locateFileByInputChar_lastFileIdx++;
-                }
             }
             else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
             {
@@ -2061,7 +2057,7 @@ namespace igfd
 
             if (exploreByKey)
             {
-                float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
+				float p = (float)((double)locateFileByInputChar_lastFileIdx / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
                 ImGui::SetScrollY(p);
                 StartFlashItem(locateFileByInputChar_lastFileIdx);
 
@@ -2077,7 +2073,7 @@ namespace igfd
                             {
                                 // changement de repertoire
                                 SetPath(m_CurrentPath);
-                                if (locateFileByInputChar_lastFileIdx > m_FileList.size() - 1)
+                                if (locateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
                                 {
                                     locateFileByInputChar_lastFileIdx = 0;
                                 }
