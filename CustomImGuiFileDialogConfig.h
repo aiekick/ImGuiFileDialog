@@ -43,16 +43,23 @@ Comment theses line if you not want to have customization, like icon font here
 
 #include <CustomFont.h>
 
-#define createDirButtonString ICON_IMFDLG_ADD
-#define okButtonString ICON_IMFDLG_OK " OK"
-#define cancelButtonString ICON_IMFDLG_CANCEL " Cancel"
-#define resetButtonString ICON_IMFDLG_RESET
-#define drivesButtonString ICON_IMFDLG_DRIVES
-#define searchString ICON_IMFDLG_SEARCH
-#define dirEntryString ICON_IMFDLG_FOLDER
-#define linkEntryString ICON_IMFDLG_LINK
-#define fileEntryString ICON_IMFDLG_FILE
+#define createDirButtonString ICON_IGFD_ADD
+#define okButtonString ICON_IGFD_OK " OK"
+#define cancelButtonString ICON_IGFD_CANCEL " Cancel"
+#define resetButtonString ICON_IGFD_RESET
+#define drivesButtonString ICON_IGFD_DRIVES
+#define searchString ICON_IGFD_SEARCH
+#define dirEntryString ICON_IGFD_FOLDER
+#define linkEntryString ICON_IGFD_LINK
+#define fileEntryString ICON_IGFD_FILE
 
+#define USE_BOOKMARK
+//#define bookmarkPaneWith 150.0f
+//#define IMGUI_TOGGLE_BUTTON ToggleButton
+#define bookmarksButtonString ICON_IGFD_BOOKMARK
+//#define bookmarksButtonHelpString "bookmark"
+#define addBookmarkButtonString ICON_IGFD_ADD
+#define removeBookmarkButtonString ICON_IGFD_REMOVE
 
 
 

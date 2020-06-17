@@ -24,7 +24,7 @@ SOFTWARE.
 
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.3"
+#define IMGUIFILEDIALOG_VERSION "v0.4"
 
 #include <imgui.h>
 
@@ -36,7 +36,6 @@ SOFTWARE.
 #include <map>
 #include <unordered_map>
 
-#include <future>
 #include <functional>
 #include <string>
 #include <vector>
@@ -113,6 +112,12 @@ namespace igfd
 		FIELD_DATE
     };
 
+	struct BookmarkStruct
+	{
+		std::string name;
+		std::string path;
+	};
+
 	class ImGuiFileDialog
 	{
 	private:
@@ -128,6 +133,10 @@ namespace igfd
 		std::string m_LastSelectedFileName; // for shift multi selectio
 		std::vector<FilterInfosStruct> m_Filters;
 		FilterInfosStruct m_SelectedFilter;
+#ifdef USE_BOOKMARK
+		std::vector<BookmarkStruct> m_Bookmarks;
+		bool m_BookmarkPaneShown = false;
+#endif
 
 	private: // flash when select by char
 		size_t m_FlashedItem = 0;
@@ -138,6 +147,9 @@ namespace igfd
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
+#ifdef USE_BOOKMARK
+		static char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
+#endif
 		bool IsOk = false;
 		bool m_AnyWindowsHovered = false;
 		bool m_CreateDirectoryMode = false;
@@ -257,6 +269,12 @@ namespace igfd
 		void EndFlashItem();
 	public:
 		void SetFlashingAttenuationInSeconds(float vAttenValue);
+#endif
+#ifdef USE_BOOKMARK
+	public:
+		void DrawBookmarkPane(ImVec2 vSize);
+		std::string SerializeBookmarks();
+		void DeserializeBookmarks(std::string vBookmarks);
 #endif
 	};
 }

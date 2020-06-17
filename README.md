@@ -20,6 +20,7 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Support filter collection / Custom filter name
 - Support files Exploring with keys : Up / Down / Enter (open dir) / Backspace (come back)
 - Support files Exploring by input char (case insensitive)
+- Support bookmark creation/edition/call for directory (can have custom name corresponding to a path)
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
@@ -209,7 +210,34 @@ you can define the flashing life time by yourself with the function
 ```cpp
 igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
 ```
+## Bookmarks
 
+you can create/edit/call path bookmarks and load/save them in file
+
+you can activate it by uncomment : "#define USE_BOOKMARK"
+
+in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+
+you can also uncomment the next lines for customize it :
+```cpp
+#define bookmarkPaneWith 150.0f => width of the bookmark pane
+#define IMGUI_TOGGLE_BUTTON ToggleButton => customize the Toggled button (button stamp must be : (const char* label, bool *toggle)
+#define bookmarksButtonString "Bookmark" => the text in the toggle button
+#define bookmarksButtonHelpString "Bookmark" => the helper text when mouse over the button
+#define addBookmarkButtonString "+" => the button fro add a bookmark
+#define removeBookmarkButtonString "-" => the button for remove the selected bookmark
+```
+
+* you can select each bookmark for edit the displayed name corresponding to a path
+* you must double click on the label for apply the bookmark 
+
+![bookmarks.gif](doc/bookmarks.gif)
+
+you can also serialize/deserialize bookmarks by ex for load/save from/to file : (check the app sample by ex)
+```cpp
+Load => igfd::ImGuiFileDialog::Instance()->DeserializeBookmarks(bookmarString);
+Save => std::string bookmarkString = igfd::ImGuiFileDialog::Instance()->SerializeBookmarks();
+```
 ## How to Integrate ImGuiFileDialog in your porject
 
 ### ImGuiFileDialog require :
