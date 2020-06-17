@@ -272,6 +272,7 @@ namespace igfd
 #endif
 #ifdef USE_BOOKMARK
 	public:
+		void DrawBookmarkPane(ImVec2 vSize);
 		std::string SerializeBookmarks();
 		void DeserializeBookmarks(std::string vBookmarks);
 #endif

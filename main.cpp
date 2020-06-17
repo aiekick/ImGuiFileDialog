@@ -12,7 +12,8 @@
 #include "3rdparty/imgui/examples/imgui_impl_glfw.h"
 #include <stdio.h>
 #include <string>
-
+#include <sstream>
+#include <fstream>
 #include "ImGuiFileDialog.h"
 
 #include "CustomFont.cpp"
@@ -214,6 +215,18 @@ int main(int, char**)
 	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
 	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
 	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+
+#ifdef USE_BOOKMARK
+	// load bookmarks
+	std::ifstream docFile("bookmarks.conf", std::ios::in);
+	if (docFile.is_open())
+	{
+		std::stringstream strStream;
+		strStream << docFile.rdbuf();//read the file
+		igfd::ImGuiFileDialog::Instance()->DeserializeBookmarks(strStream.str());
+		docFile.close();
+	}
+#endif
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -432,16 +445,25 @@ int main(int, char**)
             ImGui::End();
         }
 
-		
 		// Rendering
         ImGui::Render();
-       glViewport(0, 0, display_w, display_h);
+        glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
     }
+
+#ifdef USE_BOOKMARK
+	// save bookmarks
+	std::ofstream configFileWriter("bookmarks.conf", std::ios::out);
+	if (!configFileWriter.bad())
+	{
+		configFileWriter << igfd::ImGuiFileDialog::Instance()->SerializeBookmarks();
+		configFileWriter.close();
+	}
+#endif
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
