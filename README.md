@@ -224,7 +224,7 @@ you can also uncomment the next lines for customize it :
 #define IMGUI_TOGGLE_BUTTON ToggleButton => customize the Toggled button (button stamp must be : (const char* label, bool *toggle)
 #define bookmarksButtonString "Bookmark" => the text in the toggle button
 #define bookmarksButtonHelpString "Bookmark" => the helper text when mouse over the button
-#define addBookmarkButtonString "+" => the button fro add a bookmark
+#define addBookmarkButtonString "+" => the button for add a bookmark
 #define removeBookmarkButtonString "-" => the button for remove the selected bookmark
 ```
 
