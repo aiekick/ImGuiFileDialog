@@ -33,7 +33,8 @@ SOFTWARE.
 #include <sys/stat.h>
 #include <stdio.h>
 #include <errno.h>
-#ifdef WIN32
+#if defined(__WIN32__) || defined(_WIN32)
+#define WIN32
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
@@ -42,7 +43,8 @@ SOFTWARE.
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#define UNIX
 #define stricmp strcasecmp
 #include <sys/types.h>
 #include <dirent.h>
@@ -274,7 +276,7 @@ namespace igfd
 
 #ifdef WIN32
 				CreateDirectoryA(name.c_str(), nullptr);
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(UNIX)
 				char buffer[PATH_MAX] = {};
 				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
 				const int dir_err = std::system(buffer);
@@ -1309,18 +1311,12 @@ namespace igfd
 			}
 			else
 			{
-#ifdef LINUX
+#ifdef __linux__
 				if (s_fs_root == m_CurrentPath)
-				{
 					newPath = m_CurrentPath + vInfos.fileName;
-				}
 				else
-				{
 #endif
 					newPath = m_CurrentPath + PATH_SEP + vInfos.fileName;
-#ifdef LINUX
-				}
-#endif
 			}
 
 			if (IsDirectoryExist(newPath))
