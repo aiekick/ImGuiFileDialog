@@ -225,7 +225,7 @@ namespace igfd
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
 		void CloseDialog(const std::string& vKey);
 
-		std::string GetFilepathName();
+		std::string GetFilePathName();
 		std::string GetCurrentPath();
 		std::string GetCurrentFileName();
 		std::string GetCurrentFilter();

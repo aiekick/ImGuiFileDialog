@@ -870,12 +870,16 @@ namespace igfd
 				if (!m_CurrentPath_Decomposition.empty())
 				{
 					ImGui::SameLine();
+					int _id = 0;
 					for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
 						itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
 					{
 						if (itPathDecomp != m_CurrentPath_Decomposition.begin())
 							ImGui::SameLine();
-						if (IMGUI_PATH_BUTTON((*itPathDecomp).c_str()))
+						ImGui::PushID(_id++);
+						bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
+						ImGui::PopID();
+						if (click)
 						{
 							ComposeNewPath(itPathDecomp);
 							pathClick = true;
@@ -1182,14 +1186,14 @@ namespace igfd
 		}
 	}
 
-	std::string ImGuiFileDialog::GetFilepathName()
+	std::string ImGuiFileDialog::GetFilePathName()
 	{
 		std::string  result = m_CurrentPath;
 
+#ifdef UNIX
 		if (s_fs_root != result)
-		{
+#endif
 			result += PATH_SEP;
-		}
 
 		result += GetCurrentFileName();
 
@@ -1236,12 +1240,12 @@ namespace igfd
 
 		for (auto & it : m_SelectedFileNames)
 		{
-			std::string  result = m_CurrentPath;
+			std::string result = m_CurrentPath;
 
+#ifdef UNIX
 			if (s_fs_root != result)
-			{
+#endif
 				result += PATH_SEP;
-			}
 
 			result += it;
 
@@ -1690,9 +1694,7 @@ namespace igfd
 		{
 #ifdef WIN32
 			if (path == s_fs_root)
-			{
 				path += PATH_SEP;
-			}
 #endif
 			n = scandir(path.c_str(), &files, nullptr, alphaSort);
 
@@ -1781,7 +1783,7 @@ namespace igfd
 		{
 #ifdef WIN32
 			size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(UNIX) // UNIX is LINUX or APPLE
 			char *numchar = realpath(path.c_str(), real_path);
 #endif
 			if (numchar != 0)
@@ -1831,7 +1833,7 @@ namespace igfd
 			{
 #ifdef WIN32
 				m_CurrentPath = *vIter + PATH_SEP + m_CurrentPath;
-#elif defined(LINUX) or defined(APPLE)
+#elif defined(UNIX) // UNIX is LINUX or APPLE
 				if (*vIter == s_fs_root)
 				{
 					m_CurrentPath = *vIter + m_CurrentPath;
