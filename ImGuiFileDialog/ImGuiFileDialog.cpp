@@ -1057,8 +1057,8 @@ namespace igfd
 				ExploreWithkeys();
 #endif
 #ifdef USE_IMGUI_TABLES
-				}
 				ImGui::EndTable();
+				}
 #endif
 				// changement de repertoire
 				if (pathClick)
