@@ -38,7 +38,7 @@ void drawGui()
     // action if OK
     if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
     {
-      std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
+      std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
       std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
       // action
     }
@@ -86,7 +86,7 @@ void drawGui()
   {
     if (igfd::ImGuiFileDialog::Instance()->IsOk == true)
     {
-		std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilepathName();
+		std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
 		std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
 		std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 		// here convert from string because a string was passed as a userDatas, but it can be what you want
