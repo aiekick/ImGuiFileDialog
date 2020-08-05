@@ -108,10 +108,10 @@ void drawGui()
 
 You can define color for a filter type
 ```cpp
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".cpp", ImVec4(1,1,0, 0.9));
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".h", ImVec4(0,1,0, 0.9));
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".hpp", ImVec4(0,0,1, 0.9));
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".md", ImVec4(1,0,1, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1,1,0, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0,1,0, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0,0,1, 0.9));
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
 ```
 
 ![alt text](doc/color_filter.png)
