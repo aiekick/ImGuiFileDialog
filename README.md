@@ -120,9 +120,9 @@ and also specific icons (with icon font files) or file type names :
 
 ```cpp
 // add an icon for png files 
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".png", ImVec4(0,1,1,0.9), ICON_IMFDLG_FILE_TYPE_PIC);
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0,1,1,0.9), ICON_IMFDLG_FILE_TYPE_PIC);
 // add a text for gif files (the default value is [File] 
-igfd::ImGuiFileDialog::Instance()->SetFilterInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
+igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
 ```
 
 ![alt text](doc/filter_Icon.png)
