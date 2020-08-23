@@ -895,6 +895,7 @@ namespace igfd
 				{
 					ResetBuffer(SearchBuffer);
 					searchTag.clear();
+					ApplyFilteringOnFileList();
 				}
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip(buttonResetSearchString);
@@ -904,7 +905,7 @@ namespace igfd
 				if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
 				{
 					searchTag = SearchBuffer;
-                    ApplyFilteringOnFileList();
+                    			ApplyFilteringOnFileList();
 				}
 
 				static float lastBarHeight = 0.0f; // need one frame for calculate filelist size
