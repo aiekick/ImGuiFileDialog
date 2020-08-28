@@ -34,7 +34,9 @@ SOFTWARE.
 #include <stdio.h>
 #include <errno.h>
 #if defined(__WIN32__) || defined(_WIN32)
+#ifndef WIN32
 #define WIN32
+#endif
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
@@ -974,7 +976,7 @@ namespace igfd
                     }
 	#endif
 #endif
-				size_t countRows = m_FilteredFileList.size();
+				int countRows = (int)m_FilteredFileList.size();
                 ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
 				for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                 {
@@ -2252,7 +2254,7 @@ namespace igfd
 				m_Bookmarks.push_back(bookmark);
 			}
 		}
-		static size_t selectedBookmarkForEdition = -1;
+		static int selectedBookmarkForEdition = -1;
 		if (selectedBookmarkForEdition >= 0 &&
 			selectedBookmarkForEdition < m_Bookmarks.size())
 		{
@@ -2274,7 +2276,7 @@ namespace igfd
 			}
 		}
 		ImGui::Separator();
-		size_t countRows = m_Bookmarks.size();
+		int countRows = (int)m_Bookmarks.size();
 		ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 		{
