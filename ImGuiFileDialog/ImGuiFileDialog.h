@@ -122,12 +122,8 @@ namespace igfd
 	{
 		std::string icon;
 		ImVec4 color = ImVec4(0, 0, 0, 0);
-		FileExtentionInfosStruct() { color = ImVec4(0, 0, 0, 0); }
-		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
-		{
-			color = vColor;
-			icon = vIcon;
-		}
+		FileExtentionInfosStruct() : color(0, 0, 0, 0) { }
+		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string()) : color(vColor), icon(vIcon){}
 	};
 
 	struct FilterInfosStruct
@@ -148,7 +144,7 @@ namespace igfd
 				collectionfilters.empty();
 		}
 
-		bool filterExist(std::string vFilter)
+		bool filterExist(const std::string& vFilter)
 		{
 			return
 				filter == vFilter ||
@@ -284,8 +280,8 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
-		void SetExtentionInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos);
-		void SetExtentionInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
+		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos);
+		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");
 		bool GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
 		void ClearExtentionInfos();
 
@@ -326,7 +322,7 @@ namespace igfd
 	public:
 		void DrawBookmarkPane(ImVec2 vSize);
 		std::string SerializeBookmarks();
-		void DeserializeBookmarks(std::string vBookmarks);
+		void DeserializeBookmarks(const std::string& vBookmarks);
 #endif
 	};
 }
