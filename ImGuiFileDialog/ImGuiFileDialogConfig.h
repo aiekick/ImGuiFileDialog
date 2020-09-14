@@ -17,6 +17,8 @@
 //#define IGFD_KEY_BACKSPACE GLFW_KEY_BACKSPACE
 
 // widget
+// filter combobox width
+//#define FILTER_COMBO_WIDTH 120.0f
 // button widget use for compose path
 //#define IMGUI_PATH_BUTTON ImGui::Button
 // standar button

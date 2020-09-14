@@ -22,6 +22,58 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+github repo : https://github.com/aiekick/ImGuiFileDialog
+
+Description :
+this File Dialog is build on top of DearImGui
+(On windows, need te lib Dirent : https://github.com/tronkko/dirent, use the branch 1.23 for avoid any issues)
+Complete readme here : https://github.com/aiekick/ImGuiFileDialog/blob/master/README.md)
+
+this filedialog was created principally for have custom pane with widgets. 
+it was not possible with native filedialog
+
+The possibilities are :
+- Separate system for call and display
+- Can use custom pane via function binding
+    this pane can block the validation of the dialog
+    can also display different things according to current filter and User Datas
+- Support of Filter Custom Coloring / Icons / text
+- Multi Selection (ctrl/shift + click) :
+    0 => infinite
+    1 => one file (default)
+    n => n files
+- Compatible with MacOs, Linux, Win
+    On Win version you can list Drives
+- Support of Modal/Standard dialog type
+- Support both Mode : File Chooser or Directory Chooser
+- Support filter collection / Custom filter name
+- Support files Exploring with keys : Up / Down / Enter (open dir) / Backspace (come back)
+- Support files Exploring by input char (case insensitive)
+- Support bookmark creation/edition/call for directory (can have custom name corresponding to a path)
+
+Use the Namespace igfd (for avoid conflict with variables, struct and class names)
+
+you can display only one dialog at a time, this class is a simgleton and called like that :
+igfd::ImGuiFileDialog::Instance()->method_of_your_choice()
+
+its a bit long but you can use a defime if you want like : 
+#define fdi igfd::ImGuiFileDialog::Instance()
+for call any func like fdi->method_of_your_choice()
+
+the filter syntax is a list of filter ext with the '.' : 
+syntax : ".filter1, .filter2, .filter3"
+ex : ".cpp,.h,.hpp"
+
+you can define collections of filters by put filters in {} :
+syntax : "collection1_name{.filter1, .filter2, .filter3}, collection2_name{.filter4, .filter5, .filter6}
+ex : "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
+
+you can customize ImGuiFileDialog with a config file here : ImGuiFileDialog/ImGuiFileDialogConfig.h
+you can use your own and define the path of your custom config file realtive to the ImGuiFileDialog directory with this define :
+#define CUSTOM_IMGUIFILEDIALOG_CONFIG relative_path_to_IGFD_dir\my_config_file.h
+
+*/
 #pragma once
 
 #define IMGUIFILEDIALOG_VERSION "v0.4"
@@ -70,12 +122,8 @@ namespace igfd
 	{
 		std::string icon;
 		ImVec4 color = ImVec4(0, 0, 0, 0);
-		FileExtentionInfosStruct() { color = ImVec4(0, 0, 0, 0); }
-		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string())
-		{
-			color = vColor;
-			icon = vIcon;
-		}
+		FileExtentionInfosStruct() : color(0, 0, 0, 0) { }
+		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string()) : color(vColor), icon(vIcon){}
 	};
 
 	struct FilterInfosStruct
@@ -96,7 +144,7 @@ namespace igfd
 				collectionfilters.empty();
 		}
 
-		bool filterExist(std::string vFilter)
+		bool filterExist(const std::string& vFilter)
 		{
 			return
 				filter == vFilter ||
@@ -232,8 +280,8 @@ namespace igfd
 		UserDatas GetUserDatas();
 		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
 
-		void SetExtentionInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos);
-		void SetExtentionInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon = "");
+		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos);
+		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");
 		bool GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = 0);
 		void ClearExtentionInfos();
 
@@ -274,7 +322,7 @@ namespace igfd
 	public:
 		void DrawBookmarkPane(ImVec2 vSize);
 		std::string SerializeBookmarks();
-		void DeserializeBookmarks(std::string vBookmarks);
+		void DeserializeBookmarks(const std::string& vBookmarks);
 #endif
 	};
 }

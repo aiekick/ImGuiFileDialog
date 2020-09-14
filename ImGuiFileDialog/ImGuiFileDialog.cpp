@@ -1,3 +1,6 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 /*
 MIT License
 
@@ -25,6 +28,7 @@ SOFTWARE.
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
 
+#include <float.h>
 #include <string.h> // stricmp / strcasecmp
 #include <sstream>
 #include <iomanip>
@@ -34,7 +38,9 @@ SOFTWARE.
 #include <stdio.h>
 #include <errno.h>
 #if defined(__WIN32__) || defined(_WIN32)
+#ifndef WIN32
 #define WIN32
+#endif
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
@@ -63,6 +69,15 @@ SOFTWARE.
 
 namespace igfd
 {
+	// float comparisons
+	#define IS_FLOAT_DIFFERENT(a,b) (fabs((a) - (b)) > FLT_EPSILON)
+	#define IS_FLOAT_EQUAL(a,b) (fabs((a) - (b)) < FLT_EPSILON)
+
+	// width of filter combobox
+	#ifndef FILTER_COMBO_WIDTH
+	#define FILTER_COMBO_WIDTH 150.0f
+	#endif
+	
 	// for lets you define your button widget
 	// if you have like me a special bi-color button
 	#ifndef IMGUI_PATH_BUTTON
@@ -171,7 +186,7 @@ namespace igfd
 
 		if (vToggled && *vToggled)
 		{
-			ImGui::PopStyleColor(4);
+			ImGui::PopStyleColor(4); //-V112
 		}
 
 		if (vToggled && pressed)
@@ -213,13 +228,13 @@ namespace igfd
 			while (end != std::string::npos)
 			{
 				std::string token = text.substr(start, end - start);
-				if (!token.empty() || (token.empty() && pushEmpty))
+				if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 					arr.push_back(token);
 				start = end + 1;
 				end = text.find(delimiter, start);
 			}
 			std::string token = text.substr(start);
-			if (token.size() > 0 || (token.empty() && pushEmpty))
+			if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 				arr.push_back(token);
 		}
 		return arr;
@@ -237,7 +252,7 @@ namespace igfd
 
 		if (countChars > 0)
 		{
-			std::string var = std::string(lpBuffer, countChars);
+			std::string var = std::string(lpBuffer, (size_t)countChars);
 			replaceString(var, "\\", "");
 			res = splitStringToVector(var, '\0', false);
 		}
@@ -417,7 +432,10 @@ namespace igfd
 		// Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
 		ImGuiID id = window->GetID(label);
 		ImVec2 label_size = CalcTextSize(label, NULL, true);
-		ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
+		ImVec2 size(
+			IS_FLOAT_DIFFERENT(size_arg.x, 0.0f) ? size_arg.x : label_size.x, 
+			IS_FLOAT_DIFFERENT(size_arg.y, 0.0f) ? size_arg.y : label_size.y
+		);
 		ImVec2 pos = window->DC.CursorPos;
 		pos.y += window->DC.CurrLineTextBaseOffset;
 		ItemSize(size, 0.0f);
@@ -425,7 +443,7 @@ namespace igfd
 		// Fill horizontal space
 		const float min_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Min.x : pos.x;
 		const float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Max.x : GetContentRegionMaxAbs().x;
-		if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_SpanAvailWidth))
+		if (IS_FLOAT_DIFFERENT(size_arg.x, 0.0f) || (flags & ImGuiSelectableFlags_SpanAvailWidth))
 			size.x = ImMax(label_size.x, max_x - min_x);
 
 		// Text stays at the submission position, but bounding box may be extended on both sides
@@ -546,10 +564,10 @@ namespace igfd
 		dlg_optionsPane = std::move(vOptionsPane);
 		dlg_userDatas = vUserDatas;
 		dlg_optionsPaneWidth = vOptionsPaneWidth;
-		dlg_countSelectionMax = vCountSelectionMax;
+		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
 
-		dlg_defaultExt = "";
+		dlg_defaultExt.clear();
 
 		SetPath(m_CurrentPath);
 
@@ -582,14 +600,14 @@ namespace igfd
 		else
 		{
 			dlg_path = ".";
-			dlg_defaultFileName = "";
-			dlg_defaultExt = "";
+			dlg_defaultFileName.clear();
+			dlg_defaultExt.clear();
 		}
 
 		dlg_optionsPane = std::move(vOptionsPane);
 		dlg_userDatas = vUserDatas;
 		dlg_optionsPaneWidth = vOptionsPaneWidth;
-		dlg_countSelectionMax = vCountSelectionMax;
+		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
 
 		SetSelectedFilterWithExt(dlg_defaultExt);
@@ -622,14 +640,14 @@ namespace igfd
 		else
 		{
 			dlg_path = ".";
-			dlg_defaultFileName = "";
-			dlg_defaultExt = "";
+			dlg_defaultFileName.clear();
+			dlg_defaultExt.clear();
 		}
 
 		dlg_optionsPane = nullptr;
 		dlg_userDatas = vUserDatas;
 		dlg_optionsPaneWidth = 0;
-		dlg_countSelectionMax = vCountSelectionMax;
+		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
 
 		SetSelectedFilterWithExt(dlg_defaultExt);
@@ -656,10 +674,10 @@ namespace igfd
 		dlg_optionsPane = nullptr;
 		dlg_userDatas = vUserDatas;
 		dlg_optionsPaneWidth = 0;
-		dlg_countSelectionMax = vCountSelectionMax;
+		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
 
-		dlg_defaultExt = "";
+		dlg_defaultExt.clear();
 
 		SetPath(m_CurrentPath);
 
@@ -760,7 +778,7 @@ namespace igfd
 			}
 			if (beg)
 			{
-				m_Name = name;
+				m_Name = name; //-V820
 
 				m_AnyWindowsHovered |= ImGui::IsWindowHovered();
 
@@ -895,18 +913,22 @@ namespace igfd
 				{
 					ResetBuffer(SearchBuffer);
 					searchTag.clear();
+					ApplyFilteringOnFileList();
 				}
 				if (ImGui::IsItemHovered())
 					ImGui::SetTooltip(buttonResetSearchString);
 				ImGui::SameLine();
 				ImGui::Text(searchString);
 				ImGui::SameLine();
-				if (ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
+				float aw = ImGui::GetContentRegionAvailWidth();
+				ImGui::PushItemWidth(aw);
+				bool edited = ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+				ImGui::PopItemWidth();
+				if (edited)
 				{
 					searchTag = SearchBuffer;
                     ApplyFilteringOnFileList();
 				}
-
 				static float lastBarHeight = 0.0f; // need one frame for calculate filelist size
 
 #ifdef USE_BOOKMARK
@@ -953,7 +975,6 @@ namespace igfd
 					ImGui::TableAutoHeaders();
 	#else
 					ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-                    bool columnPressed[3] = {false,false,false};
                     for (int column = 0; column < 3; column++)
                     {
                         ImGui::TableSetColumnIndex(column);
@@ -967,13 +988,13 @@ namespace igfd
                                 SortFields(SortingFieldEnum::FIELD_FILENAME, true);
                             else if (column == 1)
                                 SortFields(SortingFieldEnum::FIELD_SIZE, true);
-                            else if (column == 2)
+                            else //if (column == 2) => alwasy true for the moment, to uncomment if we add a fourth column
                                 SortFields(SortingFieldEnum::FIELD_DATE, true);
                         }
                     }
 	#endif
 #endif
-				size_t countRows = m_FilteredFileList.size();
+				int countRows = (int)m_FilteredFileList.size();
                 ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
 				for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                 {
@@ -1045,12 +1066,12 @@ namespace igfd
 							{
 								if (infos.type != 'd')
 								{
-									ImGui::Text("%s ", infos.formatedFileSize.c_str());
+									ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
 								}
 							}
 							if (ImGui::TableSetColumnIndex(2)) // third column
 							{
-								ImGui::Text("%s", infos.fileModifDate.c_str());
+								ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
 							}
 #endif
                     if (showColor)
@@ -1105,9 +1126,9 @@ namespace igfd
 
 				ImGui::SameLine();
 
-				float width = ImGui::GetContentRegionAvail().x;
+				float width = ImGui::GetContentRegionAvailWidth();
 				if (dlg_filters) 
-					width -= 120.0f;
+					width -= FILTER_COMBO_WIDTH;
 				ImGui::PushItemWidth(width);
 				ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
 				ImGui::PopItemWidth();
@@ -1118,7 +1139,7 @@ namespace igfd
 
 					bool needToApllyNewFilter = false;
 
-					ImGui::PushItemWidth(100.0f);
+					ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
 					if (ImGui::BeginCombo("##Filters", m_SelectedFilter.filter.c_str(), ImGuiComboFlags_None))
 					{
 						intptr_t i = 0;
@@ -1257,12 +1278,12 @@ namespace igfd
 		return res;
 	}
 
-	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, FileExtentionInfosStruct vInfos)
+	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos)
 	{
 		m_FileExtentionInfos[vFilter] = vInfos;
 	}
 
-	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, ImVec4 vColor, std::string vIcon)
+	void ImGuiFileDialog::SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon)
 	{
 		m_FileExtentionInfos[vFilter] = FileExtentionInfosStruct(vColor, vIcon);
 	}
@@ -1328,7 +1349,7 @@ namespace igfd
 				}
 				else
 				{
-					m_CurrentPath = newPath;
+					m_CurrentPath = newPath; //-V820
 				}
 				pathClick = true;
 			}
@@ -1497,12 +1518,12 @@ namespace igfd
 			static double mo = 1024 * 1024 * 1024;
 
 			double v = (double)vByteSize;
-
-			if (vByteSize < lo) 
+			
+			if (v < lo) 
 				*vFormat = round_n(v, 0) + " o"; // octet
-			else if (vByteSize < ko) 
+			else if (v < ko) 
 				*vFormat = round_n(v / lo, 2) + " Ko"; // ko
-			else  if (vByteSize < mo) 
+			else  if (v < mo) 
 				*vFormat = round_n(v / ko, 2) + " Mo"; // Mo 
 			else 
 				*vFormat = round_n(v / mo, 2) + " Go"; // Go 
@@ -1544,7 +1565,7 @@ namespace igfd
 			{
 				if (vFileInfoStruct->type != 'd')
 				{
-					vFileInfoStruct->fileSize = statInfos.st_size;
+					vFileInfoStruct->fileSize = (size_t)statInfos.st_size;
 					FormatFileSize(vFileInfoStruct->fileSize, 
 						&vFileInfoStruct->formatedFileSize);
 				}
@@ -1677,8 +1698,8 @@ namespace igfd
 	void ImGuiFileDialog::ScanDir(const std::string& vPath)
 	{
 		struct dirent **files = nullptr;
-		int             i = 0;
-		int             n = 0;
+		int          i = 0;
+		int          n = 0;
 		std::string		path = vPath;
 
 		if (m_CurrentPath_Decomposition.empty())
@@ -1752,6 +1773,7 @@ namespace igfd
 				{
 					free(files[i]);
 				}
+
 				free(files);
 			}
 
@@ -1821,7 +1843,7 @@ namespace igfd
 
 	void ImGuiFileDialog::ComposeNewPath(std::vector<std::string>::iterator vIter)
 	{
-		m_CurrentPath = "";
+		m_CurrentPath.clear();
 
 		while (true)
 		{
@@ -1854,7 +1876,7 @@ namespace igfd
 				break;
 			}
 
-			vIter--;
+			--vIter;
 		}
 	}
 
@@ -1863,7 +1885,7 @@ namespace igfd
 		auto res = GetDrivesList();
 		if (!res.empty())
 		{
-			m_CurrentPath = "";
+			m_CurrentPath.clear();
 			m_CurrentPath_Decomposition.clear();
 			m_FileList.clear();
 			for (auto & re : res)
@@ -2042,7 +2064,6 @@ namespace igfd
 				//float p = ((float)i) * ImGui::GetTextLineHeightWithSpacing();
 				float p = (float)((double)i / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
 				ImGui::SetScrollY(p);
-				found = true;
 				locateFileByInputChar_lastFound = true;
 				locateFileByInputChar_lastFileIdx = i;
 				StartFlashItem(locateFileByInputChar_lastFileIdx);
@@ -2075,12 +2096,13 @@ namespace igfd
 		ImGuiContext& g = *GImGui;
 		if (!g.ActiveId && !m_FilteredFileList.empty())
 		{
+			auto &queueChar = ImGui::GetIO().InputQueueCharacters;
+
 			// point by char
-			if (!ImGui::GetIO().InputQueueCharacters.empty())
+			if (!queueChar.empty())
 			{
-				ImWchar c = ImGui::GetIO().InputQueueCharacters.back();
-				if (locateFileByInputChar_InputQueueCharactersSize != 
-					ImGui::GetIO().InputQueueCharacters.size())
+				ImWchar c = queueChar.back();
+				if (locateFileByInputChar_InputQueueCharactersSize != queueChar.size())
 				{
 					if (c == locateFileByInputChar_lastChar) // next file starting with same char until
 					{
@@ -2100,7 +2122,8 @@ namespace igfd
 					locateFileByInputChar_lastChar = c;
 				}
 			}
-			locateFileByInputChar_InputQueueCharactersSize = ImGui::GetIO().InputQueueCharacters.size();
+
+			locateFileByInputChar_InputQueueCharactersSize = queueChar.size();
 		}
 	}
 
@@ -2251,15 +2274,15 @@ namespace igfd
 				m_Bookmarks.push_back(bookmark);
 			}
 		}
-		static size_t selectedBookmarkForEdition = -1;
+		static int selectedBookmarkForEdition = -1;
 		if (selectedBookmarkForEdition >= 0 &&
-			selectedBookmarkForEdition < m_Bookmarks.size())
+			selectedBookmarkForEdition < (int)m_Bookmarks.size())
 		{
 			ImGui::SameLine();
 			if (IMGUI_BUTTON(removeBookmarkButtonString "##ImGuiFileDialogAddBookmark"))
 			{
 				m_Bookmarks.erase(m_Bookmarks.begin() + selectedBookmarkForEdition);
-				if (selectedBookmarkForEdition == m_Bookmarks.size())
+				if (selectedBookmarkForEdition == (int)m_Bookmarks.size())
 					selectedBookmarkForEdition--;
 			}
 			if (selectedBookmarkForEdition >= 0)
@@ -2273,7 +2296,7 @@ namespace igfd
 			}
 		}
 		ImGui::Separator();
-		size_t countRows = m_Bookmarks.size();
+		int countRows = (int)m_Bookmarks.size();
 		ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 		{
@@ -2314,7 +2337,7 @@ namespace igfd
 		return res;
 	}
 
-	void ImGuiFileDialog::DeserializeBookmarks(std::string vBookmarks)
+	void ImGuiFileDialog::DeserializeBookmarks(const std::string& vBookmarks)
 	{
 		if (!vBookmarks.empty())
 		{
