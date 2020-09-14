@@ -1005,7 +1005,7 @@ namespace igfd
 #endif
                     ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
 #ifdef USE_IMGUI_TABLES
-                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns;
+                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
 #endif
 					bool _selectablePressed = false;
 #ifdef USE_EXPLORATION_BY_KEYS
