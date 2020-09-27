@@ -946,7 +946,7 @@ namespace igfd
 #else
 				static ImGuiTableFlags flags = ImGuiTableFlags_SizingPolicyFixedX | ImGuiTableFlags_RowBg | 
 					ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY | 
-					ImGuiTableFlags_NoHostExtendY | ImGuiTableFlags_ScrollFreezeTopRow 
+					ImGuiTableFlags_NoHostExtendY 
 	#ifndef USE_CUSTOM_SORTING_ICON
 					| ImGuiTableFlags_Sortable
 	#endif
