@@ -920,7 +920,7 @@ namespace igfd
 				ImGui::SameLine();
 				ImGui::Text(searchString);
 				ImGui::SameLine();
-				float aw = ImGui::GetContentRegionAvailWidth();
+				float aw = ImGui::GetContentRegionAvail().x;
 				ImGui::PushItemWidth(aw);
 				bool edited = ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
 				ImGui::PopItemWidth();
@@ -1126,7 +1126,7 @@ namespace igfd
 
 				ImGui::SameLine();
 
-				float width = ImGui::GetContentRegionAvailWidth();
+				float width = ImGui::GetContentRegionAvail().x;
 				if (dlg_filters) 
 					width -= FILTER_COMBO_WIDTH;
 				ImGui::PushItemWidth(width);
