@@ -30,7 +30,7 @@ this File Dialog is build on top of DearImGui
 (On windows, need te lib Dirent : https://github.com/tronkko/dirent, use the branch 1.23 for avoid any issues)
 Complete readme here : https://github.com/aiekick/ImGuiFileDialog/blob/master/README.md)
 
-this filedialog was created principally for have custom pane with widgets. 
+this filedialog was created principally for have custom pane with widgets.
 it was not possible with native filedialog
 
 The possibilities are :
@@ -57,11 +57,11 @@ Use the Namespace igfd (for avoid conflict with variables, struct and class name
 you can display only one dialog at a time, this class is a simgleton and called like that :
 igfd::ImGuiFileDialog::Instance()->method_of_your_choice()
 
-its a bit long but you can use a defime if you want like : 
+its a bit long but you can use a defime if you want like :
 #define fdi igfd::ImGuiFileDialog::Instance()
 for call any func like fdi->method_of_your_choice()
 
-the filter syntax is a list of filter ext with the '.' : 
+the filter syntax is a list of filter ext with the '.' :
 syntax : ".filter1, .filter2, .filter3"
 ex : ".cpp,.h,.hpp"
 
@@ -120,8 +120,8 @@ namespace igfd
 	// old FilterInfosStruct
 	struct FileExtentionInfosStruct
 	{
-		std::string icon;
 		ImVec4 color = ImVec4(0, 0, 0, 0);
+		std::string icon;
 		FileExtentionInfosStruct() : color(0, 0, 0, 0) { }
 		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = std::string()) : color(vColor), icon(vIcon){}
 	};
@@ -139,8 +139,8 @@ namespace igfd
 
 		bool empty()
 		{
-			return 
-				filter.empty() && 
+			return
+				filter.empty() &&
 				collectionfilters.empty();
 		}
 
@@ -215,7 +215,7 @@ namespace igfd
 		UserDatas dlg_userDatas{};
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
-		
+
 	private:
 		std::string m_HeaderFileName;
 		std::string m_HeaderFileSize;
