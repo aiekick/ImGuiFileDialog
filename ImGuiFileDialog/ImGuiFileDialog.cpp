@@ -996,87 +996,90 @@ namespace igfd
 #endif
 				int countRows = (int)m_FilteredFileList.size();
                 ImGuiListClipper clipper(countRows, ImGui::GetTextLineHeightWithSpacing());
-				for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+                while(clipper.Step())
                 {
-                    const FileInfoStruct& infos = m_FilteredFileList[i];
-
-                    ImVec4 c;
-                    std::string icon;
-                    bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
-                    if (showColor)
-                        ImGui::PushStyleColor(ImGuiCol_Text, c);
-
-                    std::string str = " " + infos.fileName;
-                    if (infos.type == 'd') str = dirEntryString + str;
-                    if (infos.type == 'l') str = linkEntryString + str;
-                    if (infos.type == 'f')
+                    for(int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
                     {
-                        if (showColor && !icon.empty())
-                            str = icon + str;
-                        else
-                            str = fileEntryString + str;
-                    }
-                    bool selected = false;
-                    if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
-                        selected = true;
-#ifdef USE_IMGUI_TABLES
-                    ImGui::TableNextRow();
-					if (ImGui::TableSetColumnIndex(0)) // first column
-					{
-#endif
-                    ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-#ifdef USE_IMGUI_TABLES
-                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
-#endif
-					bool _selectablePressed = false;
-#ifdef USE_EXPLORATION_BY_KEYS
-					bool flashed = BeginFlashItem(i);
-					 _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
-                    if (flashed)
-                        EndFlashItem();
-#else
-					_selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
-#endif
-                    if (_selectablePressed)
-                    {
-                        if (infos.type == 'd')
+                        const FileInfoStruct& infos = m_FilteredFileList[i];
+
+                        ImVec4 c;
+                        std::string icon;
+                        bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
+                        if (showColor)
+                            ImGui::PushStyleColor(ImGuiCol_Text, c);
+
+                        std::string str = " " + infos.fileName;
+                        if (infos.type == 'd') str = dirEntryString + str;
+                        if (infos.type == 'l') str = linkEntryString + str;
+                        if (infos.type == 'f')
                         {
-                            if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
+                            if (showColor && !icon.empty())
+                                str = icon + str;
+                            else
+                                str = fileEntryString + str;
+                        }
+                        bool selected = false;
+                        if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
+                            selected = true;
+    #ifdef USE_IMGUI_TABLES
+                        ImGui::TableNextRow();
+                        if (ImGui::TableSetColumnIndex(0)) // first column
+                        {
+    #endif
+                        ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+    #ifdef USE_IMGUI_TABLES
+                        selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
+    #endif
+                        bool _selectablePressed = false;
+    #ifdef USE_EXPLORATION_BY_KEYS
+                        bool flashed = BeginFlashItem(i);
+                        _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags, flashed);
+                        if (flashed)
+                            EndFlashItem();
+    #else
+                        _selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
+    #endif
+                        if (_selectablePressed)
+                        {
+                            if (infos.type == 'd')
                             {
-                                pathClick = SelectDirectory(infos);
+                                if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
+                                {
+                                    pathClick = SelectDirectory(infos);
+                                }
+                                else // directory chooser
+                                {
+                                    SelectFileName(infos);
+                                }
+
+                                if (showColor)
+                                    ImGui::PopStyleColor();
+
+                                break;
                             }
-                            else // directory chooser
+                            else
                             {
                                 SelectFileName(infos);
                             }
-
-                            if (showColor)
-                                ImGui::PopStyleColor();
-
-                            break;
                         }
-                        else
-                        {
-                            SelectFileName(infos);
+    #ifdef USE_IMGUI_TABLES
                         }
-                    }
-#ifdef USE_IMGUI_TABLES
-                    }
-							if (ImGui::TableSetColumnIndex(1)) // second column
-							{
-								if (infos.type != 'd')
-								{
-									ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
-								}
-							}
-							if (ImGui::TableSetColumnIndex(2)) // third column
-							{
-								ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
-							}
-#endif
-                    if (showColor)
-                        ImGui::PopStyleColor();
+                                if (ImGui::TableSetColumnIndex(1)) // second column
+                                {
+                                    if (infos.type != 'd')
+                                    {
+                                        ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
+                                    }
+                                }
+                                if (ImGui::TableSetColumnIndex(2)) // third column
+                                {
+                                    ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
+                                }
+    #endif
+                        if (showColor)
+                            ImGui::PopStyleColor();
 
+                    }
                 }
                 clipper.End();
 #ifdef USE_EXPLORATION_BY_KEYS
