@@ -900,11 +900,6 @@ namespace igfd
                         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
                         ImGui::InputText("##path", m_InputPathBuffer, 1023);
                         ImGui::PopItemWidth();
-                        if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
-                        {
-                            SetPath(std::string(m_InputPathBuffer));
-                            m_InputPathActivated = false;
-                        }
                     }
                     else
                     {
@@ -1088,28 +1083,40 @@ namespace igfd
                             }
                         }
     #ifdef USE_IMGUI_TABLES
-                        }
-                                if (ImGui::TableSetColumnIndex(1)) // second column
-                                {
-                                    if (infos.type != 'd')
-                                    {
-                                        ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
-                                    }
-                                }
-                                if (ImGui::TableSetColumnIndex(2)) // third column
-                                {
-                                    ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
-                                }
+					}
+					if (ImGui::TableSetColumnIndex(1)) // second column
+					{
+						if (infos.type != 'd')
+						{
+							ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
+						}
+					}
+					if (ImGui::TableSetColumnIndex(2)) // third column
+					{
+						ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
+					}
     #endif
-                        if (showColor)
-                            ImGui::PopStyleColor();
+					if (showColor)
+						ImGui::PopStyleColor();
 
                     }
                 }
                 clipper.End();
+
+                if (m_InputPathActivated)
+                {
+                    if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+                    {
+                        SetPath(std::string(m_InputPathBuffer));
+                        m_InputPathActivated = false;
+                    }
+                }
 #ifdef USE_EXPLORATION_BY_KEYS
-				LocateByInputKey();
-				ExploreWithkeys();
+                else
+                {
+                        LocateByInputKey();
+                        ExploreWithkeys();
+                }
 #endif
 #ifdef USE_IMGUI_TABLES
 				ImGui::EndTable();
