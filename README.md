@@ -257,7 +257,7 @@ see in this gif :
 
 ![inputPathEdition.gif](doc/inputPathEdition.gif)
 
-## How to Integrate ImGuiFileDialog in your porject
+## How to Integrate ImGuiFileDialog in your project
 
 ### ImGuiFileDialog require :
 
