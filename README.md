@@ -245,12 +245,6 @@ if you click right on one of any path button, you can input or modify the path p
 then press the validate key (Enter by default with GLFW) for validate the new path
 or press the escape key (Escape by default with GLFW) for quit the input path edition
 
-you can use your own Validation and Escape keys with the defines : 
- * IGFD_INPUT_PATH_VALIDATION
- * IGFD_INPUT_PATH_ESCAPE
-
-in you custom config file (CustomImGuiFileDialogConfig.h in this app example)
-
 see in this gif :
 1) button edition with mouse button right and escape key for quit the edition
 2) focus the input and press validation for set path
