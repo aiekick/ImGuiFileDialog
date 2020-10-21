@@ -246,8 +246,9 @@ then press the validate key (Enter by default with GLFW) for validate the new pa
 or press the escape key (Escape by default with GLFW) for quit the input path edition
 
 you can use your own Validation and Escape keys with the defines : 
-IGFD_INPUT_PATH_VALIDATION
-IGFD_INPUT_PATH_ESCAPE
+ * IGFD_INPUT_PATH_VALIDATION
+ * IGFD_INPUT_PATH_ESCAPE
+
 in you custom config file (CustomImGuiFileDialogConfig.h in this app example)
 
 see in this gif :
@@ -256,7 +257,7 @@ see in this gif :
 
 ![inputPathEdition.gif](doc/inputPathEdition.gif)
 
-## How to Integrate ImGuiFileDialog in your porject
+## How to Integrate ImGuiFileDialog in your project
 
 ### ImGuiFileDialog require :
 
