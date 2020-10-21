@@ -62,4 +62,6 @@ Comment theses line if you not want to have customization, like icon font here
 #define removeBookmarkButtonString ICON_IGFD_REMOVE
 
 // Enter key for input path edition
-#define IGFD_KEY_ENTER GLFW_KEY_ENTER
+//#define IGFD_INPUT_PATH_VALIDATION GLFW_KEY_ENTER
+// excape key for quit input path editio
+//#define IGFD_INPUT_PATH_ESCAPE GLFW_KEY_ESCAPE

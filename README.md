@@ -241,11 +241,20 @@ Save => std::string bookmarkString = igfd::ImGuiFileDialog::Instance()->Serializ
 
 ## Path Edition :
 
-if you click right on one of any path button, you can input or modify a path.
+if you click right on one of any path button, you can input or modify the path pointed by this button.
 then press the validate key (Enter by default with GLFW) for validate the new path
+or press the escape key (Escape by default with GLFW) for quit the input path edition
 
-you can modify the Validation key with the define : IGFD_KEY_ENTER
+you can use your own Validation and Escape keys with the defines : 
+IGFD_INPUT_PATH_VALIDATION
+IGFD_INPUT_PATH_ESCAPE
 in you custom config file (CustomImGuiFileDialogConfig.h in this app example)
+
+see in this gif :
+1) button edition with mouse button right and escape key for quit the edition
+2) focus the input and press validation for set path
+
+![inputPathEdition.gif](doc/inputPathEdition.gif)
 
 ## How to Integrate ImGuiFileDialog in your porject
 

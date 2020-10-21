@@ -76,7 +76,7 @@ you can use your own and define the path of your custom config file realtive to 
 */
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.4"
+#define IMGUIFILEDIALOG_VERSION "v0.5"
 
 #include <imgui.h>
 
@@ -101,7 +101,13 @@ you can use your own and define the path of your custom config file realtive to 
 
 namespace igfd
 {
+	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
 	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
+	#endif
+
+	#ifndef MAX_PATH_BUFFER_SIZE
+	#define MAX_PATH_BUFFER_SIZE 1024
+	#endif
 
 	typedef void* UserDatas;
 
@@ -182,7 +188,7 @@ namespace igfd
 		std::vector<FilterInfosStruct> m_Filters;
 		FilterInfosStruct m_SelectedFilter;
 		bool m_InputPathActivated = false; // show input for path edition
-		char m_InputPathBuffer[1024] = "";
+		
 #ifdef USE_BOOKMARK
 		std::vector<BookmarkStruct> m_Bookmarks;
 		bool m_BookmarkPaneShown = false;
@@ -194,6 +200,7 @@ namespace igfd
 		float m_FlashAlphaAttenInSecs = 1.0f; // fps display dependant
 
 	public:
+		static char InputPathBuffer[MAX_PATH_BUFFER_SIZE];
 		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
 		static char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
@@ -218,7 +225,7 @@ namespace igfd
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
 
-	private:
+	private: // detail view
 		std::string m_HeaderFileName;
 		std::string m_HeaderFileSize;
 		std::string m_HeaderFileDate;
@@ -288,6 +295,7 @@ namespace igfd
 		void ClearExtentionInfos();
 
 	private:
+		void SetDefaultFileName(const std::string& vFileName);
 		bool SelectDirectory(const FileInfoStruct& vInfos);
 		void SelectFileName(const FileInfoStruct& vInfos);
 		void RemoveFileNameInSelection(const std::string& vFileName);
@@ -298,7 +306,7 @@ namespace igfd
 		void ScanDir(const std::string& vPath);
 		void SetCurrentDir(const std::string& vPath);
 		bool CreateDir(const std::string& vPath);
-        void ComposeNewPath(std::vector<std::string>::iterator vIter);
+		std::string ComposeNewPath(std::vector<std::string>::iterator vIter);
 		void GetDrives();
 		void ParseFilters(const char *vFilters);
 		void SetSelectedFilterWithExt(const std::string& vFilter);
