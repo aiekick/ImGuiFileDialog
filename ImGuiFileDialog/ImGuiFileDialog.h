@@ -51,6 +51,7 @@ The possibilities are :
 - Support files Exploring with keys : Up / Down / Enter (open dir) / Backspace (come back)
 - Support files Exploring by input char (case insensitive)
 - Support bookmark creation/edition/call for directory (can have custom name corresponding to a path)
+- Support input path edition by right click on a path button
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
@@ -76,7 +77,7 @@ you can use your own and define the path of your custom config file realtive to 
 */
 #pragma once
 
-#define IMGUIFILEDIALOG_VERSION "v0.5"
+#define IMGUIFILEDIALOG_VERSION "v0.5.1"
 
 #include <imgui.h>
 

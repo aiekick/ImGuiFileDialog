@@ -21,6 +21,7 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Support files Exploring with keys : Up / Down / Enter (open dir) / Backspace (come back)
 - Support files Exploring by input char (case insensitive)
 - Support bookmark creation/edition/call for directory (can have custom name corresponding to a path)
+- Support input path edition by right click on a path button
 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
 
@@ -244,12 +245,6 @@ Save => std::string bookmarkString = igfd::ImGuiFileDialog::Instance()->Serializ
 if you click right on one of any path button, you can input or modify the path pointed by this button.
 then press the validate key (Enter by default with GLFW) for validate the new path
 or press the escape key (Escape by default with GLFW) for quit the input path edition
-
-you can use your own Validation and Escape keys with the defines : 
- * IGFD_INPUT_PATH_VALIDATION
- * IGFD_INPUT_PATH_ESCAPE
-
-in you custom config file (CustomImGuiFileDialogConfig.h in this app example)
 
 see in this gif :
 1) button edition with mouse button right and escape key for quit the edition
