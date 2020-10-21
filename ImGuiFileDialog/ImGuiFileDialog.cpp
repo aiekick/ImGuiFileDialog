@@ -81,8 +81,8 @@ namespace igfd
 	// for lets you define your button widget
 	// if you have like me a special bi-color button
 	#ifndef IMGUI_PATH_BUTTON
-	#define IMGUI_PATH_BUTTON ImGui::Button
-	#endif
+    #define IMGUI_PATH_BUTTON ImGui::Button
+    #endif
 	#ifndef IMGUI_BUTTON
 	#define IMGUI_BUTTON ImGui::Button
 	#endif
@@ -148,6 +148,10 @@ namespace igfd
 	#ifndef tableHeaderFileDateString
 	#define tableHeaderFileDateString "Date"
 	#endif
+
+    #ifndef IGFD_KEY_ENTER
+    #define IGFD_KEY_ENTER GLFW_KEY_ENTER
+    #endif
 
 #ifdef USE_BOOKMARK
 	#ifndef bookmarkPaneWith
@@ -885,28 +889,49 @@ namespace igfd
 
 				ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 
-				// show current path
-				bool pathClick = false;
-				if (!m_CurrentPath_Decomposition.empty())
-				{
-					ImGui::SameLine();
-					int _id = 0;
-					for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
-						itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
-					{
-						if (itPathDecomp != m_CurrentPath_Decomposition.begin())
-							ImGui::SameLine();
-						ImGui::PushID(_id++);
-						bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
-						ImGui::PopID();
-						if (click)
-						{
-							ComposeNewPath(itPathDecomp);
-							pathClick = true;
-							break;
-						}
-					}
-				}
+                // show current path
+                bool pathClick = false;
+                if (!m_CurrentPath_Decomposition.empty())
+                {
+                    ImGui::SameLine();
+
+                    if (m_InputPathActivated)
+                    {
+                        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+                        ImGui::InputText("##path", m_InputPathBuffer, 1023);
+                        ImGui::PopItemWidth();
+                        if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+                        {
+                            SetPath(std::string(m_InputPathBuffer));
+                            m_InputPathActivated = false;
+                        }
+                    }
+                    else
+                    {
+                        int _id = 0;
+                        for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
+                             itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
+                        {
+                            if (itPathDecomp != m_CurrentPath_Decomposition.begin())
+                                ImGui::SameLine();
+                            ImGui::PushID(_id++);
+                            bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
+                            ImGui::PopID();
+                            if (click)
+                            {
+                                ComposeNewPath(itPathDecomp);
+                                pathClick = true;
+                                break;
+                            }
+                            // activate input for path
+                            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                            {
+                                m_InputPathActivated = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
 				// search field
 				if (IMGUI_BUTTON(resetButtonString "##ImGuiFileDialogSearchFiled"))
@@ -1497,7 +1522,7 @@ namespace igfd
 	{
 		m_ShowDrives = false;
 		m_CurrentPath = vPath;
-		m_FileList.clear();
+        m_FileList.clear();
 		m_CurrentPath_Decomposition.clear();
 		ScanDir(m_CurrentPath);
 	}
@@ -1811,7 +1836,9 @@ namespace igfd
 				{
 					m_CurrentPath = m_CurrentPath.substr(0, m_CurrentPath.size() - 1);
 				}
-				m_CurrentPath_Decomposition = splitStringToVector(m_CurrentPath, PATH_SEP, false);
+				ResetBuffer(m_InputPathBuffer);
+                AppendToBuffer(m_InputPathBuffer, 1023, m_CurrentPath);
+                m_CurrentPath_Decomposition = splitStringToVector(m_CurrentPath, PATH_SEP, false);
 #if defined(UNIX) // UNIX is LINUX or APPLE
 				m_CurrentPath_Decomposition.insert(m_CurrentPath_Decomposition.begin(), std::string(1u, PATH_SEP));
 #endif
@@ -1821,7 +1848,7 @@ namespace igfd
 					s_fs_root = m_CurrentPath_Decomposition[0];
 #endif
 				}
-			}
+            }
 
 			closedir(dir);
 		}

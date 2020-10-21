@@ -181,6 +181,8 @@ namespace igfd
 		std::string m_LastSelectedFileName; // for shift multi selectio
 		std::vector<FilterInfosStruct> m_Filters;
 		FilterInfosStruct m_SelectedFilter;
+		bool m_InputPathActivated = false; // show input for path edition
+		char m_InputPathBuffer[1024] = "";
 #ifdef USE_BOOKMARK
 		std::vector<BookmarkStruct> m_Bookmarks;
 		bool m_BookmarkPaneShown = false;
@@ -296,7 +298,7 @@ namespace igfd
 		void ScanDir(const std::string& vPath);
 		void SetCurrentDir(const std::string& vPath);
 		bool CreateDir(const std::string& vPath);
-		void ComposeNewPath(std::vector<std::string>::iterator vIter);
+        void ComposeNewPath(std::vector<std::string>::iterator vIter);
 		void GetDrives();
 		void ParseFilters(const char *vFilters);
 		void SetSelectedFilterWithExt(const std::string& vFilter);

@@ -61,5 +61,5 @@ Comment theses line if you not want to have customization, like icon font here
 #define addBookmarkButtonString ICON_IGFD_ADD
 #define removeBookmarkButtonString ICON_IGFD_REMOVE
 
-
-
+// Enter key for input path edition
+#define IGFD_KEY_ENTER GLFW_KEY_ENTER

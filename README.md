@@ -238,6 +238,15 @@ you can also serialize/deserialize bookmarks by ex for load/save from/to file : 
 Load => igfd::ImGuiFileDialog::Instance()->DeserializeBookmarks(bookmarString);
 Save => std::string bookmarkString = igfd::ImGuiFileDialog::Instance()->SerializeBookmarks();
 ```
+
+## Path Edition :
+
+if you click right on one of any path button, you can input or modify a path.
+then press the validate key (Enter by default with GLFW) for validate the new path
+
+you can modify the Validation key with the define : IGFD_KEY_ENTER
+in you custom config file (CustomImGuiFileDialogConfig.h in this app example)
+
 ## How to Integrate ImGuiFileDialog in your porject
 
 ### ImGuiFileDialog require :

@@ -55,3 +55,6 @@
 //#define bookmarksButtonHelpString "Bookmark"
 //#define addBookmarkButtonString "+"
 //#define removeBookmarkButtonString "-"
+
+// Enter key for input path edition
+//#define IGFD_KEY_ENTER GLFW_KEY_ENTER
