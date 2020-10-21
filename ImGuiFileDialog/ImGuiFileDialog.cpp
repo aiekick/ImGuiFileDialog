@@ -149,26 +149,6 @@ namespace igfd
 	#define tableHeaderFileDateString "Date"
 	#endif
 
-    #ifndef IGFD_INPUT_PATH_VALIDATION
-    #define IGFD_INPUT_PATH_VALIDATION GLFW_KEY_ENTER
-    #endif
-	#ifndef IGFD_INPUT_PATH_ESCAPE
-	#define IGFD_INPUT_PATH_ESCAPE GLFW_KEY_ESCAPE
-	#endif
-
-	#ifndef IGFD_KEY_UP
-	#define IGFD_KEY_UP GLFW_KEY_UP
-	#endif
-	#ifndef IGFD_KEY_DOWN
-	#define IGFD_KEY_DOWN GLFW_KEY_DOWN
-	#endif
-	#ifndef IGFD_KEY_ENTER
-	#define IGFD_KEY_ENTER GLFW_KEY_ENTER
-	#endif
-	#ifndef IGFD_KEY_BACKSPACE
-	#define IGFD_KEY_BACKSPACE GLFW_KEY_BACKSPACE
-	#endif
-
 #ifdef USE_BOOKMARK
 	#ifndef bookmarkPaneWith
 	#define bookmarkPaneWith 150.0f
@@ -1127,12 +1107,13 @@ namespace igfd
 
                 if (m_InputPathActivated)
                 {
-                    if (ImGui::IsKeyReleased(IGFD_INPUT_PATH_VALIDATION))
+					auto gio = ImGui::GetIO();
+                    if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Enter]))
                     {
 						SetPath(std::string(InputPathBuffer));
                         m_InputPathActivated = false;
                     }
-					if (ImGui::IsKeyReleased(IGFD_INPUT_PATH_ESCAPE))
+					if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Escape]))
 					{
 						m_InputPathActivated = false;
 					}

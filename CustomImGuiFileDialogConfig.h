@@ -4,8 +4,9 @@
 
 //#define USE_IMGUI_TABLES
 
-#define USE_EXPLORATION_BY_KEYS
 #include <GLFW/glfw3.h>
+
+#define USE_EXPLORATION_BY_KEYS
 // Up key for explore to the top
 #define IGFD_KEY_UP GLFW_KEY_UP
 // Down key for explore to the bottom
@@ -60,8 +61,3 @@ Comment theses line if you not want to have customization, like icon font here
 //#define bookmarksButtonHelpString "bookmark"
 #define addBookmarkButtonString ICON_IGFD_ADD
 #define removeBookmarkButtonString ICON_IGFD_REMOVE
-
-// Enter key for input path edition
-//#define IGFD_INPUT_PATH_VALIDATION GLFW_KEY_ENTER
-// excape key for quit input path editio
-//#define IGFD_INPUT_PATH_ESCAPE GLFW_KEY_ESCAPE
