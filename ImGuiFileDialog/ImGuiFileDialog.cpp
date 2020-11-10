@@ -1903,11 +1903,11 @@ namespace igfd
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 				if (*vIter == s_fs_root)
 				{
-					m_CurrentPath = *vIter + m_CurrentPath;
+					res = *vIter + res;
 				}
 				else
 				{
-					m_CurrentPath = *vIter + PATH_SEP + m_CurrentPath;
+					res = *vIter + PATH_SEP + res;
 				}
 #endif
 			}
@@ -1919,8 +1919,8 @@ namespace igfd
 			if (vIter == m_CurrentPath_Decomposition.begin())
 			{
 #if defined(UNIX) // UNIX is LINUX or APPLE
-				if (m_CurrentPath[0] != PATH_SEP)
-					m_CurrentPath = PATH_SEP + m_CurrentPath;
+				if (res[0] != PATH_SEP)
+					res = PATH_SEP + res;
 #endif
 				break;
 			}
