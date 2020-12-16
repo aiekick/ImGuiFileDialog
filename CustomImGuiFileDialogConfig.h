@@ -2,7 +2,10 @@
 
 // uncomment and modify defines under for customize ImGuiFileDialog
 
-//#define USE_IMGUI_TABLES
+//#define MAX_FILE_DIALOG_NAME_BUFFER 1024
+//#define MAX_PATH_BUFFER_SIZE 1024
+
+#define USE_IMGUI_TABLES
 
 #include <GLFW/glfw3.h>
 
@@ -17,21 +20,14 @@
 #define IGFD_KEY_BACKSPACE GLFW_KEY_BACKSPACE
 
 // widget
+// filter combobox width
+//#define FILTER_COMBO_WIDTH 120.0f
 // button widget use for compose path
 //#define IMGUI_PATH_BUTTON ImGui::Button
 // standar button
 //#define IMGUI_BUTTON ImGui::Button
 
-// locales string
-//#define createDirButtonString "+"
-//#define okButtonString " OK"
-//#define cancelButtonString " Cancel"
-//#define resetButtonString "R"
-//#define drivesButtonString "Drives"
-//#define searchString "Search"
-//#define dirEntryString "[DIR] "
-//#define linkEntryString "[LINK] "
-//#define fileEntryString "[FILE] "
+
 //#define fileNameString "File Name : "
 //#define buttonResetSearchString "Reset search"
 //#define buttonDriveString "Drives"
@@ -44,6 +40,7 @@ Comment theses line if you not want to have customization, like icon font here
 
 #include <CustomFont.h>
 
+// locales string
 #define createDirButtonString ICON_IGFD_ADD
 #define okButtonString ICON_IGFD_OK " OK"
 #define cancelButtonString ICON_IGFD_CANCEL " Cancel"
@@ -53,6 +50,18 @@ Comment theses line if you not want to have customization, like icon font here
 #define dirEntryString ICON_IGFD_FOLDER
 #define linkEntryString ICON_IGFD_LINK
 #define fileEntryString ICON_IGFD_FILE
+//#define buttonResetSearchString "Reset search"
+//#define buttonDriveString "Drives"
+//#define buttonResetPathString "Reset to current directory"
+//#define buttonCreateDirString "Create Directory"
+
+// theses icons will appear in table headers
+#define USE_CUSTOM_SORTING_ICON
+#define tableHeaderAscendingIcon ICON_IGFD_CHEVRON_UP
+#define tableHeaderDescendingIcon ICON_IGFD_CHEVRON_DOWN
+#define tableHeaderFileNameString " File name"
+#define tableHeaderFileSizeString " Size"
+#define tableHeaderFileDateString " Date"
 
 #define USE_BOOKMARK
 //#define bookmarkPaneWith 150.0f

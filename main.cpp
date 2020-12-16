@@ -8,8 +8,8 @@
 #endif
 #include "imgui_internal.h"
 
-#include "3rdparty/imgui/examples/imgui_impl_opengl3.h"
-#include "3rdparty/imgui/examples/imgui_impl_glfw.h"
+#include "3rdparty/imgui/backends/imgui_impl_opengl3.h"
+#include "3rdparty/imgui/backends/imgui_impl_glfw.h"
 #include <stdio.h>
 #include <string>
 #include <sstream>
@@ -281,9 +281,9 @@ int main(int, char**)
 				static bool _UseWindowContraints = true;
 				ImGui::Separator();
 				ImGui::Checkbox("Use file dialog constraint", &_UseWindowContraints);
-				ImGui::Text("Constraints is used here for define min/ax fiel dialog size");
+				ImGui::Text("Constraints is used here for define min/max file dialog size");
 				ImGui::Separator();
-				static bool standardDialogMode = true;
+				static bool standardDialogMode = false;
 				ImGui::Text("Open Mode : ");
 				ImGui::SameLine();
 				if (RadioButtonLabeled("Standard", standardDialogMode, false)) standardDialogMode = true;

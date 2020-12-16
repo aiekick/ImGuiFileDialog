@@ -27,7 +27,8 @@ endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
-   
+add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
+
 file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
 file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
 file(GLOB RES_SOURCES 
@@ -37,10 +38,10 @@ file(GLOB IMGUIFILEDIALOG_SOURCES
 		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.cpp
 		${CMAKE_SOURCE_DIR}/ImGuiFileDialog/*.h)
 file(GLOB IMGUIIMPL_SOURCES 
-		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_glfw.cpp
-		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_glfw.h
-		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_opengl3.cpp
-		${CMAKE_SOURCE_DIR}/3rdparty/imgui/examples/imgui_impl_opengl3.h)
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
+		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
 source_group(main FILES ${MAIN_SOURCES})
 source_group(src\\Custom FILES ${CUSTOM_SOURCES})
 source_group(src\\Res FILES ${RES_SOURCES})

@@ -45,11 +45,11 @@
 
 // theses icons will appear in table headers
 //#define USE_CUSTOM_SORTING_ICON
-//#define AscendingIcon "A|"
-//#define DescendingIcon "D|"
-//#define tableHeaderFilenameString "File name"
-//#define tableHeaderSizeString "Size"
-//#define tableHeaderDateString "Date"
+//#define tableHeaderAscendingIcon "A|"
+//#define tableHeaderDescendingIcon "D|"
+//#define tableHeaderFileNameString " File name"
+//#define tableHeaderFileSizeString " Size"
+//#define tableHeaderFileDateString " Date"
 
 //#define USE_BOOKMARK
 //#define bookmarkPaneWith 150.0f

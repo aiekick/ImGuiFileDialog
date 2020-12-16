@@ -4,7 +4,7 @@
 #pragma once
 
 #define FONT_ICON_BUFFER_NAME_IGFD IGFD_compressed_data_base85
-#define FONT_ICON_BUFFER_SIZE_IGFD 0xc21
+#define FONT_ICON_BUFFER_SIZE_IGFD 0xd52
 
 #define ICON_MIN_IGFD 0xf002
 #define ICON_MAX_IGFD 0xf1c9
@@ -12,6 +12,8 @@
 #define ICON_IGFD_ADD u8"\uf067"
 #define ICON_IGFD_BOOKMARK u8"\uf02e"
 #define ICON_IGFD_CANCEL u8"\uf00d"
+#define ICON_IGFD_CHEVRON_DOWN u8"\uf078"
+#define ICON_IGFD_CHEVRON_UP u8"\uf077"
 #define ICON_IGFD_DRIVES u8"\uf0a0"
 #define ICON_IGFD_EDIT u8"\uf040"
 #define ICON_IGFD_FILE u8"\uf15b"

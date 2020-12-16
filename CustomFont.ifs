@@ -11,6 +11,8 @@
 				<glyph orgId="61540" newId="61540" orgName="share_alt" newName="reset"/>
 				<glyph orgId="61543" newId="61543" orgName="plus" newName="add"/>
 				<glyph orgId="61544" newId="61544" orgName="minus" newName="remove"/>
+				<glyph orgId="61559" newId="61559" orgName="chevron_up" newName="chevron_up"/>
+				<glyph orgId="61560" newId="61560" orgName="chevron_down" newName="chevron_down"/>
 				<glyph orgId="61563" newId="61563" orgName="folder_close" newName="folder"/>
 				<glyph orgId="61564" newId="61564" orgName="folder_open" newName="folder_open"/>
 				<glyph orgId="61600" newId="61600" orgName="hdd" newName="drives"/>
