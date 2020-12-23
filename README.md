@@ -252,19 +252,12 @@ see in this gif :
 
 ![inputPathEdition.gif](doc/inputPathEdition.gif)
 
-## How to Integrate ImGuiFileDialog in your project
+## Open / Save dialog Behavior :
 
-### ImGuiFileDialog require :
-
-* [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) lib, only for windows. Successfully tested with version v1.23 only
-* [ImGui](https://github.com/ocornut/imgui/tree/master) (with/without tables widgets)
-
-### Open File(s) / Create File :
-
-There is no way to distinguish the "open dialog" behavior thant "save dialog" behavior.
+There is no way to distinguish the "open dialog" behavior than "save dialog" behavior.
 So you msut adapt the return according to your need :
 
-if you want open file(s) or directory(s), you must use : GetSelection() method. you will obtain a std::map<FileName, FilePathName> fo the selection
+if you want open file(s) or directory(s), you must use : GetSelection() method. you will obtain a std::map<FileName, FilePathName> of the selection
 if you want create a file, you must use : GetFilePathName()/GetCurrentFileName()
 
 the return method's and comments :
@@ -277,6 +270,12 @@ std::string GetCurrentFilter();                    // get selected filter
 UserDatas GetUserDatas();                          // get user datas send with Open Dialog
 ```
 
+## How to Integrate ImGuiFileDialog in your project
+
+### ImGuiFileDialog require :
+
+* [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) lib, only for windows. Successfully tested with version v1.23 only
+* [ImGui](https://github.com/ocornut/imgui/tree/master) (with/without tables widgets)
 ### Customize ImGuiFileDialog :
 
 You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
