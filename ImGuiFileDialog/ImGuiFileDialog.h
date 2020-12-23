@@ -284,13 +284,13 @@ namespace igfd
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
 		void CloseDialog(const std::string& vKey);
 
-		std::string GetFilePathName();
-		std::string GetCurrentPath();
-		std::string GetCurrentFileName();
-		std::string GetCurrentFilter();
-		UserDatas GetUserDatas();
-		std::map<std::string, std::string> GetSelection(); // return map<FileName, FilePathName>
-
+		std::map<std::string, std::string> GetSelection(); // Open File behavior : will return selection via a map<FileName, FilePathName>
+		std::string GetFilePathName();                     // Create File behavior : will always return the content of the field with current filter extention and current path
+		std::string GetCurrentFileName();                  // Create File behavior : will always return the content of the field with current filter extention
+		std::string GetCurrentPath();                      // will return current path
+		std::string GetCurrentFilter();                    // get selected filter
+		UserDatas GetUserDatas();                          // get user datas send with Open Dialog
+		
 		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos);
 		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");
 		bool GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = nullptr);

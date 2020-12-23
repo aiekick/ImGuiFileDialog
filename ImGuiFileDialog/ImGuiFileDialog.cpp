@@ -967,7 +967,7 @@ namespace igfd
 				ImGui::BeginChild("##FileDialog_FileList", size);
 #else
 				static ImGuiTableFlags flags = ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
-					ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY | 
+					ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
 					ImGuiTableFlags_NoHostExtendY 
 	#ifndef USE_CUSTOM_SORTING_ICON
 					| ImGuiTableFlags_Sortable
@@ -975,6 +975,7 @@ namespace igfd
 					;
 				if (ImGui::BeginTable("##fileTable", 3, flags, size))
 				{
+					ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
 					ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
 					ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
 					ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 2);

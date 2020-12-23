@@ -252,15 +252,10 @@ int main(int, char**)
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
+			ImGui::Begin("imGuiFileDialog Demo");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-			ImGui::Separator();
+            ImGui::Separator();
 
 			ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
 			ImGui::Indent();
@@ -330,6 +325,15 @@ int main(int, char**)
 						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
 							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", 0);
 				}
+				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*"))
+				{
+					if (standardDialogMode)
+						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
+							ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", 5);
+					else
+						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+							ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", 5);
+				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane"))
 				{
 					const char *filters = "C++ File (*.cpp){.cpp}";
@@ -364,8 +368,7 @@ int main(int, char**)
 						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey",
 							ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".", 5);
                 }
-
-                ImVec2 minSize = ImVec2(0, 0);
+				ImVec2 minSize = ImVec2(0, 0);
 				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
 				if (_UseWindowContraints)
@@ -379,20 +382,29 @@ int main(int, char**)
 				// minSize => 0,0
 				// maxSize => FLT_MAX, FLT_MAX (defined is float.h)
 
+				static std::string filePathName = "";
+				static std::string filePath = "";
+				static std::string filter = "";
+				static std::string userDatas = "";
+				static std::vector<std::pair<std::string, std::string>> selection = {};
+
 				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey",
 				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
 				{
 					if (igfd::ImGuiFileDialog::Instance()->IsOk)
 					{
-						std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-						std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-						std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
+						filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
+						filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+						filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 						// here convert from string because a string was passed as a userDatas, but it can be what you want
-                        std::string userDatas;
+                        userDatas;
 						if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
                             userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
-						auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
-
+						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+						for (auto s : sel)
+						{
+							selection.emplace_back(s.first, s.second);
+						}
 						// action
 					}
 					igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
@@ -403,45 +415,84 @@ int main(int, char**)
                 {
                     if (igfd::ImGuiFileDialog::Instance()->IsOk)
                     {
-                        std::string filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-                        std::string filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-                        std::string filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
+                        filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
+                        filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
+                        filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
                         // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        std::string userDatas;
+                        userDatas;
                         if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
                             userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
-                        auto selection = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
-
+						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+						for (auto s : sel)
+						{
+							selection.emplace_back(s.first, s.second);
+						}
                         // action
                     }
                     igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseDirDlgKey");
                 }
+
+				ImGui::Separator();
+
+				ImGui::Text("ImGuiFileDialog Return's :\n");
+				ImGui::Indent();
+				{
+					ImGui::Text("GetFilePathName() : %s", filePathName.c_str());
+					ImGui::Text("GetFilePath() : %s", filePath.c_str());
+					ImGui::Text("GetCurrentFilter() : %s", filter.c_str());
+					ImGui::Text("GetUserDatas() (was a std::string in this sample) : %s", userDatas.c_str());
+					ImGui::Text("GetSelection() : ");
+					ImGui::Indent();
+					{
+						static int selected = false;
+						if (ImGui::BeginTable("##GetSelection", 2, 
+							ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
+							ImGuiTableFlags_ScrollY))
+						{
+							ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
+							ImGui::TableSetupColumn("File Name", ImGuiTableColumnFlags_WidthStretch, -1, 0);
+							ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
+							ImGui::TableHeadersRow(); 
+							
+							ImGuiListClipper clipper;
+							clipper.Begin((int)selection.size(), ImGui::GetTextLineHeightWithSpacing());
+							while (clipper.Step())
+							{
+								for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+								{
+									const auto& sel = selection[i];
+									ImGui::TableNextRow();
+									if (ImGui::TableSetColumnIndex(0)) // first column
+									{
+										ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+										selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
+										if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
+									}
+									if (ImGui::TableSetColumnIndex(1)) // second column
+									{
+										ImGui::Text("%s", sel.second.c_str());
+									}
+								}
+							}
+							clipper.End();
+
+							ImGui::EndTable();
+						}
+					}
+					ImGui::Unindent();
+				}
+				ImGui::Unindent();
 			}
 			ImGui::Unindent();
+
 
 			ImGui::Separator();
 			ImGui::Text("Window mode :");
 			ImGui::Separator();
 
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
             ImGui::End();
         }
 
