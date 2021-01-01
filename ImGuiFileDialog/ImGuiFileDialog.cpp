@@ -390,14 +390,6 @@ namespace igfd
 		ResetBuffer(vBuffer);
 		AppendToBuffer(vBuffer, vBufferLen, vStr);
 	}
-
-	char ImGuiFileDialog::InputPathBuffer[MAX_PATH_BUFFER_SIZE] = "";
-	char ImGuiFileDialog::FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-	char ImGuiFileDialog::DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-	char ImGuiFileDialog::SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-#ifdef USE_BOOKMARK
-	char ImGuiFileDialog::BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-#endif
 	
 	ImGuiFileDialog::ImGuiFileDialog()
 	{
@@ -420,6 +412,7 @@ namespace igfd
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// CUSTOM SELECTABLE (Flashing Support) ///////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
+
 #ifdef USE_EXPLORATION_BY_KEYS
 	bool ImGuiFileDialog::FlashableSelectable(const char* label, bool selected, 
 		ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg)
@@ -1214,15 +1207,12 @@ namespace igfd
 					}
 				}
 
-				if (_CanWeContinue)
+				if (_CanWeContinue && strlen(FileNameBuffer))
 				{
 					if (IMGUI_BUTTON(okButtonString))
 					{
-						if ('\0' != FileNameBuffer[0])
-						{
-							IsOk = true;
-							res = true;
-						}
+						IsOk = true;
+						res = true;
 					}
 
 					ImGui::SameLine();

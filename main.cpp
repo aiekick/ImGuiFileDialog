@@ -397,8 +397,7 @@ int main(int, char**)
 						filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
 						filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
 						// here convert from string because a string was passed as a userDatas, but it can be what you want
-                        userDatas;
-						if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
+                        if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
                             userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
 						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 						for (auto s : sel)
@@ -419,7 +418,6 @@ int main(int, char**)
                         filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
                         filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
                         // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        userDatas;
                         if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
                             userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
 						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection

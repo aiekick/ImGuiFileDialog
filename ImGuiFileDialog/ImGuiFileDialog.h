@@ -202,12 +202,12 @@ namespace igfd
 		float m_FlashAlphaAttenInSecs = 1.0f; // fps display dependant
 
 	public:
-		static char InputPathBuffer[MAX_PATH_BUFFER_SIZE];
-		static char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
-		static char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
-		static char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
+		char InputPathBuffer[MAX_PATH_BUFFER_SIZE] = "";
+		char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
+		char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
+		char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 #ifdef USE_BOOKMARK
-		static char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER];
+		char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 #endif
 		bool IsOk = false;
 		bool m_AnyWindowsHovered = false;
