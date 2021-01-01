@@ -70,8 +70,12 @@ SOFTWARE.
 namespace igfd
 {
 	// float comparisons
+	#ifndef IS_FLOAT_DIFFERENT
 	#define IS_FLOAT_DIFFERENT(a,b) (fabs((a) - (b)) > FLT_EPSILON)
+	#endif
+	#ifndef IS_FLOAT_EQUAL
 	#define IS_FLOAT_EQUAL(a,b) (fabs((a) - (b)) < FLT_EPSILON)
+	#endif
 
 	// width of filter combobox
 	#ifndef FILTER_COMBO_WIDTH
@@ -751,6 +755,12 @@ namespace igfd
 	{
 		if (m_ShowDialog && dlg_key == vKey)
 		{
+			// to be sure than only one dialog displayed per frame
+			ImGuiContext& g = *GImGui;
+			if (g.FrameCount == m_LastImGuiFrameCount) // one instance was dipslayed this frame for this key +> quit
+				return false;
+			m_LastImGuiFrameCount = g.FrameCount; // mark this instance as sued this frame
+
 			bool res = false;
 
 			std::string name = dlg_name + "##" + dlg_key;
@@ -1246,6 +1256,17 @@ namespace igfd
 			dlg_key.clear();
 			m_ShowDialog = false;
 		}
+	}
+
+	bool ImGuiFileDialog::WasOpenedThisFrame(const std::string& vKey)
+	{
+		bool res = m_ShowDialog && dlg_key == vKey;
+		if (res)
+		{
+			ImGuiContext& g = *GImGui;
+			res &= m_LastImGuiFrameCount == g.FrameCount; // return true if a dialog was displayed in this frame
+		}
+		return res;
 	}
 
 	std::string ImGuiFileDialog::GetFilePathName()
