@@ -70,8 +70,12 @@ SOFTWARE.
 namespace igfd
 {
 	// float comparisons
+	#ifndef IS_FLOAT_DIFFERENT
 	#define IS_FLOAT_DIFFERENT(a,b) (fabs((a) - (b)) > FLT_EPSILON)
+	#endif
+	#ifndef IS_FLOAT_EQUAL
 	#define IS_FLOAT_EQUAL(a,b) (fabs((a) - (b)) < FLT_EPSILON)
+	#endif
 
 	// width of filter combobox
 	#ifndef FILTER_COMBO_WIDTH
