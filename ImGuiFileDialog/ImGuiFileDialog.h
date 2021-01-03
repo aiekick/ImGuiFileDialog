@@ -83,6 +83,7 @@ you can use your own and define the path of your custom config file realtive to 
 
 #include <cfloat>
 #include <utility>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <set>
@@ -98,6 +99,14 @@ you can use your own and define the path of your custom config file realtive to 
 #else
 #include CUSTOM_IMGUIFILEDIALOG_CONFIG
 #endif
+
+typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
+
+enum ImGuiFileDialogFlags_
+{
+	ImGuiFileDialogFlags_None = 0,
+	ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,
+};
 
 namespace igfd
 {
@@ -158,7 +167,7 @@ namespace igfd
 		}
 	};
 
-	enum SortingFieldEnum
+	enum class SortingFieldEnum
     {
 		FIELD_NONE = 0,
 	    FIELD_FILENAME,
@@ -178,9 +187,9 @@ namespace igfd
 		std::vector<FileInfoStruct> m_FileList;
         std::vector<FileInfoStruct> m_FilteredFileList;
         std::unordered_map<std::string, FileExtentionInfosStruct> m_FileExtentionInfos;
-		std::set<std::string> m_SelectedFileNames;
 		std::string m_CurrentPath;
 		std::vector<std::string> m_CurrentPath_Decomposition;
+		std::set<std::string> m_SelectedFileNames;
 		std::string m_Name;
 		bool m_ShowDialog = false;
 		bool m_ShowDrives = false;
@@ -189,6 +198,8 @@ namespace igfd
 		FilterInfosStruct m_SelectedFilter;
 		bool m_InputPathActivated = false; // show input for path edition
         ImGuiListClipper m_FileListClipper;
+		ImVec2 m_DialogCenterPos = ImVec2(0, 0); // center pos for display the confirm overwrite dialog
+		int m_LastImGuiFrameCount = 0; // to be sure than only one dialog displayed per frame
 
 #ifdef USE_BOOKMARK
         ImGuiListClipper m_BookmarkClipper;
@@ -200,6 +211,7 @@ namespace igfd
 		size_t m_FlashedItem = 0;
 		float m_FlashAlpha = 0.0f;
 		float m_FlashAlphaAttenInSecs = 1.0f; // fps display dependant
+		bool m_OkResultToConfirm = false; // to confim if ok for OverWrite
 
 	public:
 		char InputPathBuffer[MAX_PATH_BUFFER_SIZE] = "";
@@ -220,14 +232,14 @@ namespace igfd
 		std::string dlg_path;
 		std::string dlg_defaultFileName;
 		std::string dlg_defaultExt;
+		ImGuiFileDialogFlags dlg_flags = ImGuiFileDialogFlags_None;
 		std::function<void(std::string, UserDatas, bool*)> dlg_optionsPane;
 		size_t dlg_optionsPaneWidth = 0;
 		std::string searchTag;
 		UserDatas dlg_userDatas{};
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
-		int m_LastImGuiFrameCount = 0; // to be sure than only one dialog displayed per frame
-
+		
 	private: // detail view
 		std::string m_HeaderFileName;
 		std::string m_HeaderFileSize;
@@ -252,33 +264,33 @@ namespace igfd
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
-			UserDatas vUserDatas = nullptr);
+			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 	public: // modal dialog
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vDefaultFileName,
 			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t&  vOptionsPaneWidth = 250,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
-			UserDatas vUserDatas = nullptr);
+			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 	public: // core
 		bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
@@ -298,7 +310,7 @@ namespace igfd
 		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");
 		bool GetExtentionInfos(const std::string& vFilter, ImVec4 *vColor, std::string *vIcon = nullptr);
 		void ClearExtentionInfos();
-		
+
 	private:
 		void SetDefaultFileName(const std::string& vFileName);
 		bool SelectDirectory(const FileInfoStruct& vInfos);
@@ -334,10 +346,15 @@ namespace igfd
 		void SetFlashingAttenuationInSeconds(float vAttenValue);
 #endif
 #ifdef USE_BOOKMARK
-	public:
+	private:
 		void DrawBookmarkPane(ImVec2 vSize);
+	public:
 		std::string SerializeBookmarks();
 		void DeserializeBookmarks(const std::string& vBookmarks);
 #endif
+
+	private: // Overwrite Dialog
+		bool Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);
+		bool IsFileExist(const std::string& vFile);
 	};
 }

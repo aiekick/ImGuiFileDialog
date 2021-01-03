@@ -54,6 +54,10 @@ Comment theses line if you not want to have customization, like icon font here
 //#define buttonDriveString "Drives"
 //#define buttonResetPathString "Reset to current directory"
 //#define buttonCreateDirString "Create Directory"
+//#define OverWriteDialogTitleString "The file Already Exist !"
+//#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
+#define OverWriteDialogConfirmButtonString ICON_IGFD_OK " Confirm"
+#define OverWriteDialogCancelButtonString ICON_IGFD_CANCEL " Cancel"
 
 // theses icons will appear in table headers
 #define USE_CUSTOM_SORTING_ICON

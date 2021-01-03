@@ -152,7 +152,18 @@ namespace igfd
 	#ifndef tableHeaderFileDateString
 	#define tableHeaderFileDateString "Date"
 	#endif
-
+	#ifndef OverWriteDialogTitleString
+	#define OverWriteDialogTitleString "The file Already Exist !"
+	#endif
+	#ifndef OverWriteDialogMessageString
+	#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
+	#endif
+	#ifndef OverWriteDialogConfirmButtonString
+	#define OverWriteDialogConfirmButtonString "Confirm"
+	#endif
+	#ifndef OverWriteDialogCancelButtonString
+	#define OverWriteDialogCancelButtonString "Cancel"
+	#endif
 #ifdef USE_BOOKMARK
 	#ifndef bookmarkPaneWith
 	#define bookmarkPaneWith 150.0f
@@ -251,12 +262,13 @@ namespace igfd
 #ifdef WIN32
 		DWORD mydrives = 2048;
 		char lpBuffer[2048];
-
-		DWORD countChars = GetLogicalDriveStringsA(mydrives, lpBuffer);
-
+#define maxi(a,b) (((a) > (b)) ? (a) : (b))
+		DWORD countChars = maxi(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+#undef maxi
 		if (countChars > 0)
 		{
 			std::string var = std::string(lpBuffer, (size_t)countChars);
+
 			replaceString(var, "\\", "");
 			res = splitStringToVector(var, '\0', false);
 		}
@@ -554,7 +566,7 @@ namespace igfd
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 		const std::string& vPath, const std::string& vDefaultFileName,
 		const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas)
+		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
@@ -565,12 +577,12 @@ namespace igfd
 		ParseFilters(dlg_filters);
 		dlg_path = vPath;
 		SetDefaultFileName(vDefaultFileName);
-		dlg_optionsPane = std::move(vOptionsPane);
+		dlg_optionsPane = vOptionsPane;
 		dlg_userDatas = vUserDatas;
+		dlg_flags = vFlags;
 		dlg_optionsPaneWidth = vOptionsPaneWidth;
 		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
-
 		dlg_defaultExt.clear();
 
 		SetPath(m_CurrentPath);
@@ -584,7 +596,7 @@ namespace igfd
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 		const std::string& vFilePathName,
 		const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas)
+		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
@@ -608,12 +620,13 @@ namespace igfd
 			dlg_defaultExt.clear();
 		}
 
-		dlg_optionsPane = std::move(vOptionsPane);
+		dlg_optionsPane = vOptionsPane;
 		dlg_userDatas = vUserDatas;
+		dlg_flags = vFlags;
 		dlg_optionsPaneWidth = vOptionsPaneWidth;
 		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
-
+		
 		SetSelectedFilterWithExt(dlg_defaultExt);
 		SetPath(m_CurrentPath);
 
@@ -624,7 +637,8 @@ namespace igfd
 	}
 
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vFilePathName, const int& vCountSelectionMax, UserDatas vUserDatas)
+		const std::string& vFilePathName, const int& vCountSelectionMax, 
+		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
@@ -650,10 +664,11 @@ namespace igfd
 
 		dlg_optionsPane = nullptr;
 		dlg_userDatas = vUserDatas;
+		dlg_flags = vFlags;
 		dlg_optionsPaneWidth = 0;
 		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
-
+		
 		SetSelectedFilterWithExt(dlg_defaultExt);
 		SetPath(m_CurrentPath);
 
@@ -664,7 +679,8 @@ namespace igfd
 	}
 
 	void ImGuiFileDialog::OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, UserDatas vUserDatas)
+		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, 
+		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
@@ -677,10 +693,10 @@ namespace igfd
 		SetDefaultFileName(vDefaultFileName);
 		dlg_optionsPane = nullptr;
 		dlg_userDatas = vUserDatas;
+		dlg_flags = vFlags;
 		dlg_optionsPaneWidth = 0;
 		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
-
 		dlg_defaultExt.clear();
 
 		SetPath(m_CurrentPath);
@@ -695,55 +711,67 @@ namespace igfd
 	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	void ImGuiFileDialog::OpenModal(
+		const std::string& vKey, const char* vName, const char* vFilters,
 		const std::string& vPath, const std::string& vDefaultFileName,
 		const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas)
+		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenDialog(vKey, vName, vFilters,
+		OpenDialog(
+			vKey, vName, vFilters,
 			vPath, vDefaultFileName,
 			vOptionsPane, vOptionsPaneWidth,
-			vCountSelectionMax, vUserDatas);
+			vCountSelectionMax, vUserDatas, vFlags);
 		dlg_modal = true;
 	}
 
-	void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
+	void ImGuiFileDialog::OpenModal(
+		const std::string& vKey, const char* vName, const char* vFilters,
 		const std::string& vFilePathName,
 		const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const size_t& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas)
+		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenDialog(vKey, vName, vFilters,
+		OpenDialog(
+			vKey, vName, vFilters,
 			vFilePathName,
 			vOptionsPane, vOptionsPaneWidth,
-			vCountSelectionMax, vUserDatas);
+			vCountSelectionMax, vUserDatas, vFlags);
 		dlg_modal = true;
 	}
 
-	void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vFilePathName, const int& vCountSelectionMax, UserDatas vUserDatas)
+	void ImGuiFileDialog::OpenModal(
+		const std::string& vKey, const char* vName, const char* vFilters,
+		const std::string& vFilePathName, const int& vCountSelectionMax, 
+		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenDialog(vKey, vName, vFilters,
-			vFilePathName, vCountSelectionMax, vUserDatas);
+		OpenDialog(
+			vKey, vName, vFilters,
+			vFilePathName, vCountSelectionMax, 
+			vUserDatas, vFlags);
 		dlg_modal = true;
 	}
 
-	void ImGuiFileDialog::OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, UserDatas vUserDatas)
+	void ImGuiFileDialog::OpenModal(
+		const std::string& vKey, const char* vName, const char* vFilters,
+		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax, 
+		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenDialog(vKey, vName, vFilters,
-			vPath, vDefaultFileName, vCountSelectionMax, vUserDatas);
+		OpenDialog(
+			vKey, vName, vFilters,
+			vPath, vDefaultFileName, vCountSelectionMax, 
+			vUserDatas, vFlags);
 		dlg_modal = true;
 	}
 
@@ -776,7 +804,8 @@ namespace igfd
 			ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
 
 			bool beg = false;
-			if (dlg_modal)
+			if (dlg_modal && 
+				!m_OkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
 			{
 				ImGui::OpenPopup(name.c_str());
 				beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr,
@@ -1217,6 +1246,8 @@ namespace igfd
 					}
 				}
 
+				m_DialogCenterPos = ImGui::GetCurrentWindowRead()->ContentRegionRect.GetCenter();
+
 				if (_CanWeContinue && strlen(FileNameBuffer))
 				{
 					if (IMGUI_BUTTON(okButtonString))
@@ -1236,14 +1267,15 @@ namespace igfd
 
 				lastBarHeight = ImGui::GetCursorPosY() - posY;
 
-				if (dlg_modal)
+				if (dlg_modal &&
+					!m_OkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
 					ImGui::EndPopup();
 			}
 
-			if (!dlg_modal)
+			if (!dlg_modal || m_OkResultToConfirm)
 				ImGui::End();
 
-			return res;
+			return Confirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
 		}
 
 		return false;
@@ -1579,9 +1611,9 @@ namespace igfd
 	{
 		if (vFormat && vByteSize != 0)
 		{
-			static double lo = 1024;
-			static double ko = 1024 * 1024;
-			static double mo = 1024 * 1024 * 1024;
+			static double lo = 1024.0;
+			static double ko = 1024.0 * 1024.0;
+			static double mo = 1024.0 * 1024.0 * 1024.0;
 
 			double v = (double)vByteSize;
 			
@@ -2112,9 +2144,10 @@ namespace igfd
     }
 
 #ifdef USE_EXPLORATION_BY_KEYS
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-	//// LOCATE / EXPLORE WITH KEYS ////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////////
+	//// LOCATE / EXPLORE WITH KEYS //////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
 
 	static size_t locateFileByInputChar_lastFileIdx = 0;
 	static ImWchar locateFileByInputChar_lastChar = 0;
@@ -2330,6 +2363,11 @@ namespace igfd
 #endif
 
 #ifdef USE_BOOKMARK
+
+	//////////////////////////////////////////////////////////////////////////////
+	//// BOOKMARK FEATURE ////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
+	
 	void ImGuiFileDialog::DrawBookmarkPane(ImVec2 vSize)
 	{
 		ImGui::BeginChild("##bookmarkpane", vSize);
@@ -2436,5 +2474,94 @@ namespace igfd
 		}
 	}
 #endif
+
+	//////////////////////////////////////////////////////////////////////////////
+	//// OVERWRITE DIALOG ////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
+
+	bool ImGuiFileDialog::Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags)
+	{
+		// if confirmation => return true for confimr the overwrite et quit the dialog
+		// if cancel => return false && set IsOk to false for keep inside the dialog
+
+		// if IsOk == false => return false for quit the dialog
+		if (!IsOk && vLastAction)
+		{
+			return true;
+		}
+
+		// if IsOk == true && no check of overwrite => return true for confirm the dialog
+		if (IsOk && vLastAction && !(dlg_flags & ImGuiFileDialogFlags_ConfirmOverwrite))
+		{
+			return true;
+		}
+
+		// if IsOk == true && check of overwrite => return false and show confirm to overwrite dialog
+		if ((m_OkResultToConfirm || (IsOk && vLastAction)) && (dlg_flags & ImGuiFileDialogFlags_ConfirmOverwrite))
+		{
+			if (IsOk) // catched only one time
+			{
+				if (!IsFileExist(GetFilePathName())) // not existing => quit dialog
+				{
+					return true;
+				}
+				else // existing => confirm dialog to open
+				{
+					IsOk = false;
+					m_OkResultToConfirm = true;
+				}
+			}
+
+			std::string name = OverWriteDialogTitleString "##" + dlg_name + dlg_key + "OverWriteDialog";
+
+			bool res = false;
+
+			ImGui::OpenPopup(name.c_str());
+			if (ImGui::BeginPopupModal(name.c_str(), (bool*)0,
+				vFlags | ImGuiWindowFlags_AlwaysAutoResize | 
+				ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+			{
+				ImGui::SetWindowPos(m_DialogCenterPos - ImGui::GetWindowSize() * 0.5f); // next frame needed for GetWindowSize to work
+
+				ImGui::Text("%s", OverWriteDialogMessageString);
+
+				if (IMGUI_BUTTON(OverWriteDialogConfirmButtonString))
+				{
+					m_OkResultToConfirm = false;
+					IsOk = true;
+					res = true;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (IMGUI_BUTTON(OverWriteDialogCancelButtonString))
+				{
+					m_OkResultToConfirm = false;
+					IsOk = false;
+					res = false;
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			return res;
+		}
+
+
+		return false;
+	}
+
+	bool ImGuiFileDialog::IsFileExist(const std::string& vFile)
+	{
+		std::ifstream docFile(vFile, std::ios::in);
+		if (docFile.is_open())
+		{
+			docFile.close();
+			return true;
+		}
+		return false;
+	}
 }
 

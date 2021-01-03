@@ -4,7 +4,8 @@
 
 An example of the File Dialog integrated within the ImGui Demo App
 
-- Separate system for call and display
+- Separate system for call and display 
+  - can be many func calls with different params for one display func by ex
 - Can use custom pane via function binding
   - this pane can block the validation of the dialog
   - can also display different things according to current filter and User Datas
@@ -22,8 +23,14 @@ An example of the File Dialog integrated within the ImGui Demo App
 - Support files Exploring by input char (case insensitive)
 - Support bookmark creation/edition/call for directory (can have custom name corresponding to a path)
 - Support input path edition by right click on a path button
-
+- Support of a 'Confirm to Overwrite" dialog if File Exist
+ 
 Use the Namespace igfd (for avoid conflict with variables, struct and class names)
+
+## NameSpace / SingleTon
+
+you can display only one dialog at a time, this class is a simgleton and must be called like that :
+igfd::ImGuiFileDialog::Instance()->method_of_your_choice()
 
 ## Simple Dialog :
 ```cpp
@@ -252,6 +259,52 @@ see in this gif :
 
 ![inputPathEdition.gif](doc/inputPathEdition.gif)
 
+## Confirm to OverWrite Dialog :
+
+If you want avoid OverWrite your files after confirmation, 
+you can show a Dialog for confirm or cancel the OverWrite operation.
+
+You just need to define the flag ImGuiFileDialogFlags_ConfirmOverwrite 
+in your call to OpenDialog/OpenModal
+
+By default this flag is not set, since there is no pre-defined way to 
+define if a dialog will be for Open or Save behavior. (and its wanted :) )
+
+Example code For Standard Dialog :
+```cpp
+igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
+	ICON_IGFD_SAVE " Choose a File", filters,
+	".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+```
+
+Example code For Modal Dialog :
+```cpp
+igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+	ICON_IGFD_SAVE " Choose a File", filters,
+	".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+```
+
+This dialog will only verify the file in the file field.
+So Not to be used with GetSelection()
+ 
+The Confirm dialog will be a forced Modal Dialog, not moveable, displayed
+in the center of the current FileDialog.
+
+As usual you can customize the dialog,
+in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+
+you can  uncomment the next lines for customize it :
+```cpp
+//#define OverWriteDialogTitleString "The file Already Exist !"
+//#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
+//#define OverWriteDialogConfirmButtonString "Confirm"
+//#define OverWriteDialogCancelButtonString "Cancel"
+```
+
+See the result :
+
+![ConfirmToOverWrite.gif](doc/ConfirmToOverWrite.gif)
+
 ## Open / Save dialog Behavior :
 
 There is no way to distinguish the "open dialog" behavior than "save dialog" behavior.
@@ -276,6 +329,7 @@ UserDatas GetUserDatas();                          // get user datas send with O
 
 * [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) lib, only for windows. Successfully tested with version v1.23 only
 * [ImGui](https://github.com/ocornut/imgui/tree/master) (with/without tables widgets)
+
 ### Customize ImGuiFileDialog :
 
 You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
