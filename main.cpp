@@ -458,12 +458,12 @@ int main(int, char**)
 					{
 						static int selected = false;
 						if (ImGui::BeginTable("##GetSelection", 2, 
-							ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
+							ImGuiTableFlags_SizingPolicyFixed | ImGuiTableFlags_RowBg |
 							ImGuiTableFlags_ScrollY))
 						{
 							ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
 							ImGui::TableSetupColumn("File Name", ImGuiTableColumnFlags_WidthStretch, -1, 0);
-							ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
+							ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthAuto, -1, 1);
 							ImGui::TableHeadersRow(); 
 							
 							ImGuiListClipper clipper;

@@ -1129,7 +1129,7 @@ namespace igfd
 #ifndef USE_IMGUI_TABLES
 		ImGui::BeginChild("##FileDialog_FileList", vSize);
 #else
-		static ImGuiTableFlags flags = ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
+		static ImGuiTableFlags flags = ImGuiTableFlags_SizingPolicyFixed | ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
 			ImGuiTableFlags_NoHostExtendY
 #ifndef USE_CUSTOM_SORTING_ICON
@@ -1140,8 +1140,8 @@ namespace igfd
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
 			ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
-			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
-			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 2);
+			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthAuto, -1, 1);
+			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthAuto, -1, 2);
 
 #ifndef USE_CUSTOM_SORTING_ICON
 			// Sort our data if sort specs have been changed!
