@@ -262,8 +262,8 @@ namespace igfd
 #ifdef WIN32
 		DWORD mydrives = 2048;
 		char lpBuffer[2048];
-#define maxi(a,b) (((a) > (b)) ? (a) : (b))
-		DWORD countChars = maxi(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+#define mini(a,b) (((a) < (b)) ? (a) : (b))
+		DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
 #undef maxi
 		if (countChars > 0)
 		{
@@ -785,14 +785,13 @@ namespace igfd
 		{
 			// to be sure than only one dialog displayed per frame
 			ImGuiContext& g = *GImGui;
-			if (g.FrameCount == m_LastImGuiFrameCount) // one instance was dipslayed this frame for this key +> quit
+			if (g.FrameCount == m_LastImGuiFrameCount) // one instance was displayed this frame for this key +> quit
 				return false;
-			m_LastImGuiFrameCount = g.FrameCount; // mark this instance as sued this frame
+			m_LastImGuiFrameCount = g.FrameCount; // mark this instance as used this frame
 
 			bool res = false;
 
 			std::string name = dlg_name + "##" + dlg_key;
-
 			if (m_Name != name)
 			{
 				m_FileList.clear();
@@ -800,6 +799,8 @@ namespace igfd
 			}
 
 			IsOk = false;
+
+			ResetEvents();
 
 			ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
 
@@ -818,467 +819,518 @@ namespace igfd
 			if (beg)
 			{
 				m_Name = name; //-V820
-
 				m_AnyWindowsHovered |= ImGui::IsWindowHovered();
 
-				if (dlg_path.empty()) dlg_path = ".";
+				if (dlg_path.empty()) dlg_path = "."; // defaut path is '.'
+				if (m_SelectedFilter.empty() && // no filter selected
+					!m_Filters.empty()) // filter exist
+						m_SelectedFilter = *m_Filters.begin(); // we take the first filter
 
-				if (m_SelectedFilter.empty())
-				{
-					if (!m_Filters.empty())
-					{
-						m_SelectedFilter = *m_Filters.begin();
-					}
-				}
-
+				// init list of files
 				if (m_FileList.empty() && !m_ShowDrives)
 				{
 					replaceString(dlg_defaultFileName, dlg_path, ""); // local path
-
 					if (!dlg_defaultFileName.empty())
 					{
 						SetDefaultFileName(dlg_defaultFileName);
 						SetSelectedFilterWithExt(dlg_defaultExt);
 					}
-					
 					ScanDir(dlg_path);
 				}
 
-#ifdef USE_BOOKMARK
-				IMGUI_TOGGLE_BUTTON(bookmarksButtonString, &m_BookmarkPaneShown);
+				// draw dialog parts
+				DrawHeader(); // bookmark, directory, path
+				DrawContent(); // bookmark, files view, side pane 
+				res = DrawFooter(); // file field, filter combobox, ok/cancel buttons
 
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip(bookmarksButtonHelpString);
+				// for display in dialog center, the confirm to overwrite dlg
+				m_DialogCenterPos = ImGui::GetCurrentWindowRead()->ContentRegionRect.GetCenter(); 
 
-				ImGui::SameLine();
-#endif
-
-				if (IMGUI_BUTTON(createDirButtonString))
-				{
-					if (!m_CreateDirectoryMode)
-					{
-						m_CreateDirectoryMode = true;
-						ResetBuffer(DirectoryNameBuffer);
-					}
-				}
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip(buttonCreateDirString);
-
-				if (m_CreateDirectoryMode)
-				{
-					ImGui::SameLine();
-
-					ImGui::PushItemWidth(100.0f);
-					ImGui::InputText("##DirectoryFileName", DirectoryNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
-					ImGui::PopItemWidth();
-
-					ImGui::SameLine();
-
-					if (IMGUI_BUTTON(okButtonString))
-					{
-						std::string newDir = std::string(DirectoryNameBuffer);
-						if (CreateDir(newDir))
-						{
-							SetPath(m_CurrentPath + PATH_SEP + newDir);
-						}
-
-						m_CreateDirectoryMode = false;
-					}
-
-					ImGui::SameLine();
-
-					if (IMGUI_BUTTON(cancelButtonString))
-					{
-						m_CreateDirectoryMode = false;
-					}
-				}
-
-				ImGui::SameLine();
-
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-				ImGui::SameLine();
-
-				if (IMGUI_BUTTON(resetButtonString))
-				{
-					SetPath(".");
-				}
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip(buttonResetPathString);
-
-				bool drivesClick = false;
-
-#ifdef WIN32
-				ImGui::SameLine();
-
-				if (IMGUI_BUTTON(drivesButtonString))
-				{
-					drivesClick = true;
-				}
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip(buttonDriveString);
-#endif
-
-				ImGui::SameLine();
-
-				ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-                // show current path
-                bool pathClick = false;
-                if (!m_CurrentPath_Decomposition.empty())
-                {
-                    ImGui::SameLine();
-
-                    if (m_InputPathActivated)
-                    {
-                        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
-						ImGui::InputText("##pathedition", InputPathBuffer, MAX_PATH_BUFFER_SIZE);
-                        ImGui::PopItemWidth();
-                    }
-                    else
-                    {
-						int _id = 0;
-						for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
-                             itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
-                        {
-                            if (itPathDecomp != m_CurrentPath_Decomposition.begin())
-                                ImGui::SameLine();
-                            ImGui::PushID(_id++);
-                            bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
-                            ImGui::PopID();
-                            if (click)
-                            {
-								m_CurrentPath = ComposeNewPath(itPathDecomp);
-                                pathClick = true;
-                                break;
-                            }
-                            // activate input for path
-                            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-                            {
-								SetBuffer(InputPathBuffer, MAX_PATH_BUFFER_SIZE, ComposeNewPath(itPathDecomp));
-								m_InputPathActivated = true;
-								break;
-                            }
-                        }
-                    }
-                }
-
-				// search field
-				if (IMGUI_BUTTON(resetButtonString "##ImGuiFileDialogSearchFiled"))
-				{
-					ResetBuffer(SearchBuffer);
-					searchTag.clear();
-					ApplyFilteringOnFileList();
-				}
-				if (ImGui::IsItemHovered())
-					ImGui::SetTooltip(buttonResetSearchString);
-				ImGui::SameLine();
-				ImGui::Text(searchString);
-				ImGui::SameLine();
-				ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
-				bool edited = ImGui::InputText("##ImGuiFileDialogSearchFiled", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
-				ImGui::PopItemWidth();
-				if (edited)
-				{
-					searchTag = SearchBuffer;
-                    ApplyFilteringOnFileList();
-				}
-				static float lastBarHeight = 0.0f; // need one frame for calculate filelist size
-
-#ifdef USE_BOOKMARK
-				if (m_BookmarkPaneShown)
-				{
-					ImVec2 size = ImVec2(bookmarkPaneWith, ImGui::GetContentRegionAvail().y - lastBarHeight);
-					DrawBookmarkPane(size);
-					ImGui::SameLine();
-				}
-#endif
-
-				ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2((float)dlg_optionsPaneWidth, lastBarHeight);
-#ifndef USE_IMGUI_TABLES
-				ImGui::BeginChild("##FileDialog_FileList", size);
-#else
-				static ImGuiTableFlags flags = ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
-					ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
-					ImGuiTableFlags_NoHostExtendY 
-	#ifndef USE_CUSTOM_SORTING_ICON
-					| ImGuiTableFlags_Sortable
-	#endif
-					;
-				if (ImGui::BeginTable("##fileTable", 3, flags, size))
-				{
-					ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
-					ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
-					ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
-					ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 2);
-
-	#ifndef USE_CUSTOM_SORTING_ICON
-					// Sort our data if sort specs have been changed!
-					if (ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs())
-					{
-						if (sorts_specs->SpecsDirty && !m_FileList.empty())
-						{
-							if (sorts_specs->Specs->ColumnUserID == 0)
-								SortFields(SortingFieldEnum::FIELD_FILENAME, true);
-							else if (sorts_specs->Specs->ColumnUserID == 1)
-								SortFields(SortingFieldEnum::FIELD_SIZE, true);
-							else if (sorts_specs->Specs->ColumnUserID == 2)
-								SortFields(SortingFieldEnum::FIELD_DATE, true);
-
-                            sorts_specs->SpecsDirty = false;
-						}
-					}
-
-					ImGui::TableHeadersRow();
-	#else
-					ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-                    for (int column = 0; column < 3; column++)
-                    {
-                        ImGui::TableSetColumnIndex(column);
-                        const char* column_name = ImGui::TableGetColumnName(column); // Retrieve name passed to TableSetupColumn()
-                        ImGui::PushID(column);
-                        ImGui::TableHeader(column_name);
-                        ImGui::PopID();
-                        if (ImGui::IsItemClicked())
-                        {
-                            if (column == 0)
-                                SortFields(SortingFieldEnum::FIELD_FILENAME, true);
-                            else if (column == 1)
-                                SortFields(SortingFieldEnum::FIELD_SIZE, true);
-                            else //if (column == 2) => alwasy true for the moment, to uncomment if we add a fourth column
-                                SortFields(SortingFieldEnum::FIELD_DATE, true);
-                        }
-                    }
-	#endif
-#endif
-                if (!m_FilteredFileList.empty())
-                {
-                    m_FileListClipper.Begin((int) m_FilteredFileList.size(), ImGui::GetTextLineHeightWithSpacing());
-                    while (m_FileListClipper.Step())
-                    {
-                        for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++)
-                        {
-                            if (i < 0) continue;
-
-                            const FileInfoStruct &infos = m_FilteredFileList[i];
-
-                            ImVec4 c;
-                            std::string icon;
-                            bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
-                            if (showColor)
-                                ImGui::PushStyleColor(ImGuiCol_Text, c);
-
-                            std::string str = " " + infos.fileName;
-                            if (infos.type == 'd') str = dirEntryString + str;
-                            else if (infos.type == 'l') str = linkEntryString + str;
-                            else if (infos.type == 'f')
-                            {
-                                if (showColor && !icon.empty())
-                                    str = icon + str;
-                                else
-                                    str = fileEntryString + str;
-                            }
-                            bool selected = false;
-                            if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
-                                selected = true;
-#ifdef USE_IMGUI_TABLES
-                            ImGui::TableNextRow();
-                            if (ImGui::TableSetColumnIndex(0)) // first column
-                            {
-#endif
-                                ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-#ifdef USE_IMGUI_TABLES
-                                selectableFlags |=
-                                        ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
-#endif
-                                bool _selectablePressed = false;
-#ifdef USE_EXPLORATION_BY_KEYS
-                                bool flashed = BeginFlashItem(i);
-                                _selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags,
-                                                                         flashed);
-                                if (flashed)
-                                    EndFlashItem();
-#else
-                                _selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
-#endif
-                                if (_selectablePressed)
-                                {
-                                    if (infos.type == 'd')
-                                    {
-                                        if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
-                                        {
-                                            pathClick = SelectDirectory(infos);
-                                        } else // directory chooser
-                                        {
-                                            SelectFileName(infos);
-                                        }
-
-                                        if (showColor)
-                                            ImGui::PopStyleColor();
-
-                                        break;
-                                    } else
-                                    {
-                                        SelectFileName(infos);
-                                    }
-                                }
-#ifdef USE_IMGUI_TABLES
-                            }
-                            if (ImGui::TableSetColumnIndex(1)) // second column
-                            {
-                                if (infos.type != 'd')
-                                {
-                                    ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
-                                }
-                            }
-                            if (ImGui::TableSetColumnIndex(2)) // third column
-                            {
-                                ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
-                            }
-#endif
-                            if (showColor)
-                                ImGui::PopStyleColor();
-
-                        }
-                    }
-                    m_FileListClipper.End();
-                }
-
-                if (m_InputPathActivated)
-                {
-					auto gio = ImGui::GetIO();
-                    if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Enter]))
-                    {
-						SetPath(std::string(InputPathBuffer));
-                        m_InputPathActivated = false;
-                    }
-					if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Escape]))
-					{
-						m_InputPathActivated = false;
-					}
-                }
-#ifdef USE_EXPLORATION_BY_KEYS
-                else
-                {
-                        LocateByInputKey();
-                        ExploreWithkeys();
-                }
-#endif
-#ifdef USE_IMGUI_TABLES
-				ImGui::EndTable();
-				}
-#endif
-				// changement de repertoire
-				if (pathClick)
-				{
-					SetPath(m_CurrentPath);
-				}
-
-				if (drivesClick)
-				{
-					GetDrives();
-				}
-
-#ifndef USE_IMGUI_TABLES
-				ImGui::EndChild();
-#endif
-
-				float posY = ImGui::GetCursorPos().y; // height of last bar calc
-
-				bool _CanWeContinue = true;
-
-				if (dlg_optionsPane)
-				{
-					ImGui::SameLine();
-
-					size.x = (float)dlg_optionsPaneWidth;
-
-					ImGui::BeginChild("##FileTypes", size);
-
-					dlg_optionsPane(m_SelectedFilter.filter, dlg_userDatas, &_CanWeContinue);
-
-					ImGui::EndChild();
-				}
-
-				if (dlg_filters)
-					ImGui::Text(fileNameString);
-				else // directory chooser
-					ImGui::Text(dirNameString);
-
-				ImGui::SameLine();
-
-				float width = ImGui::GetContentRegionAvail().x;
-				if (dlg_filters) 
-					width -= FILTER_COMBO_WIDTH;
-				ImGui::PushItemWidth(width);
-				ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
-				ImGui::PopItemWidth();
-
-				if (dlg_filters)
-				{
-					ImGui::SameLine();
-
-					bool needToApllyNewFilter = false;
-
-					ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
-					if (ImGui::BeginCombo("##Filters", m_SelectedFilter.filter.c_str(), ImGuiComboFlags_None))
-					{
-						intptr_t i = 0;
-						for (auto filter : m_Filters)
-						{
-							const bool item_selected = (filter.filter == m_SelectedFilter.filter);
-							ImGui::PushID((void*)(intptr_t)i++);
-							if (ImGui::Selectable(filter.filter.c_str(), item_selected))
-							{
-								m_SelectedFilter = filter;
-								needToApllyNewFilter = true;
-							}
-							ImGui::PopID();
-						}
-						
-						ImGui::EndCombo();
-					}
-					ImGui::PopItemWidth();
-
-					if (needToApllyNewFilter)
-					{
-						SetPath(m_CurrentPath);
-					}
-				}
-
-				m_DialogCenterPos = ImGui::GetCurrentWindowRead()->ContentRegionRect.GetCenter();
-
-				if (_CanWeContinue && strlen(FileNameBuffer))
-				{
-					if (IMGUI_BUTTON(okButtonString))
-					{
-						IsOk = true;
-						res = true;
-					}
-
-					ImGui::SameLine();
-				}
-
-				if (IMGUI_BUTTON(cancelButtonString))
-				{
-					IsOk = false;
-					res = true;
-				}
-
-				lastBarHeight = ImGui::GetCursorPosY() - posY;
-
+				// when the confirm to overwrite dialog will appear we need to 
+				// disable the modal mode of the main file dialog
+				// see m_OkResultToConfirm under
 				if (dlg_modal &&
-					!m_OkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
+					!m_OkResultToConfirm) 
 					ImGui::EndPopup();
 			}
 
+			// same things here regarding m_OkResultToConfirm
 			if (!dlg_modal || m_OkResultToConfirm)
 				ImGui::End();
 
+			// confirm the result and show the confirm to overwrite dialog if needed
 			return Confirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
 		}
 
 		return false;
+	}
+
+	void ImGuiFileDialog::ResetEvents()
+	{
+		// reset events
+		m_DrivesClicked = false;
+		m_PathClicked = false;
+		m_CanWeContinue = true;
+	}
+
+	void ImGuiFileDialog::DrawHeader()
+	{
+#ifdef USE_BOOKMARK
+		DrawBookMark();
+		ImGui::SameLine();
+#endif
+		DrawDirectoryCreation();
+		DrawPathComposer();
+		DrawSearchBar();
+	}
+
+	void ImGuiFileDialog::DrawContent()
+	{
+#ifdef USE_BOOKMARK
+		if (m_BookmarkPaneShown)
+		{
+			ImVec2 size = ImVec2(bookmarkPaneWith, ImGui::GetContentRegionAvail().y - m_FooterHeight);
+			DrawBookmarkPane(size);
+			ImGui::SameLine();
+		}
+#endif
+
+		ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2((float)dlg_optionsPaneWidth, m_FooterHeight);
+		DrawFileListView(size);
+
+		DrawSidePane(size);
+	}
+
+	bool ImGuiFileDialog::DrawFooter()
+	{
+		float posY = ImGui::GetCursorPos().y; // height of last bar calc
+
+		if (dlg_filters)
+			ImGui::Text(fileNameString);
+		else // directory chooser
+			ImGui::Text(dirNameString);
+
+		ImGui::SameLine();
+
+		// Input file fields
+		float width = ImGui::GetContentRegionAvail().x;
+		if (dlg_filters)
+			width -= FILTER_COMBO_WIDTH;
+		ImGui::PushItemWidth(width);
+		ImGui::InputText("##FileName", FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+		ImGui::PopItemWidth();
+
+		// combobox of filters
+		if (dlg_filters)
+		{
+			ImGui::SameLine();
+
+			bool needToApllyNewFilter = false;
+
+			ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
+			if (ImGui::BeginCombo("##Filters", m_SelectedFilter.filter.c_str(), ImGuiComboFlags_None))
+			{
+				intptr_t i = 0;
+				for (auto filter : m_Filters)
+				{
+					const bool item_selected = (filter.filter == m_SelectedFilter.filter);
+					ImGui::PushID((void*)(intptr_t)i++);
+					if (ImGui::Selectable(filter.filter.c_str(), item_selected))
+					{
+						m_SelectedFilter = filter;
+						needToApllyNewFilter = true;
+					}
+					ImGui::PopID();
+				}
+
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+
+			if (needToApllyNewFilter)
+			{
+				SetPath(m_CurrentPath);
+			}
+		}
+
+		bool res = false;
+
+		// OK Button
+		if (m_CanWeContinue && strlen(FileNameBuffer))
+		{
+			if (IMGUI_BUTTON(okButtonString))
+			{
+				IsOk = true;
+				res = true;
+			}
+
+			ImGui::SameLine();
+		}
+
+		// Cancel Button
+		if (IMGUI_BUTTON(cancelButtonString))
+		{
+			IsOk = false;
+			res = true;
+		}
+
+		m_FooterHeight = ImGui::GetCursorPosY() - posY;
+
+		return res;
+	}
+
+	void ImGuiFileDialog::DrawBookMark()
+	{
+		IMGUI_TOGGLE_BUTTON(bookmarksButtonString, &m_BookmarkPaneShown);
+
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(bookmarksButtonHelpString);
+	}
+
+	void ImGuiFileDialog::DrawDirectoryCreation()
+	{
+		if (IMGUI_BUTTON(createDirButtonString))
+		{
+			if (!m_CreateDirectoryMode)
+			{
+				m_CreateDirectoryMode = true;
+				ResetBuffer(DirectoryNameBuffer);
+			}
+		}
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(buttonCreateDirString);
+
+		if (m_CreateDirectoryMode)
+		{
+			ImGui::SameLine();
+
+			ImGui::PushItemWidth(100.0f);
+			ImGui::InputText("##DirectoryFileName", DirectoryNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+
+			if (IMGUI_BUTTON(okButtonString))
+			{
+				std::string newDir = std::string(DirectoryNameBuffer);
+				if (CreateDir(newDir))
+				{
+					SetPath(m_CurrentPath + PATH_SEP + newDir);
+				}
+
+				m_CreateDirectoryMode = false;
+			}
+
+			ImGui::SameLine();
+
+			if (IMGUI_BUTTON(cancelButtonString))
+			{
+				m_CreateDirectoryMode = false;
+			}
+		}
+
+		ImGui::SameLine();
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+		ImGui::SameLine();
+	}
+
+	void ImGuiFileDialog::DrawPathComposer()
+	{
+		if (IMGUI_BUTTON(resetButtonString))
+		{
+			SetPath(".");
+		}
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(buttonResetPathString);
+
+#ifdef WIN32
+		ImGui::SameLine();
+
+		if (IMGUI_BUTTON(drivesButtonString))
+		{
+			m_DrivesClicked = true;
+		}
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(buttonDriveString);
+#endif
+
+		ImGui::SameLine();
+
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+		// show current path
+		if (!m_CurrentPath_Decomposition.empty())
+		{
+			ImGui::SameLine();
+
+			if (m_InputPathActivated)
+			{
+				ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+				ImGui::InputText("##pathedition", InputPathBuffer, MAX_PATH_BUFFER_SIZE);
+				ImGui::PopItemWidth();
+			}
+			else
+			{
+				int _id = 0;
+				for (auto itPathDecomp = m_CurrentPath_Decomposition.begin();
+					itPathDecomp != m_CurrentPath_Decomposition.end(); ++itPathDecomp)
+				{
+					if (itPathDecomp != m_CurrentPath_Decomposition.begin())
+						ImGui::SameLine();
+					ImGui::PushID(_id++);
+					bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
+					ImGui::PopID();
+					if (click)
+					{
+						m_CurrentPath = ComposeNewPath(itPathDecomp);
+						m_PathClicked = true;
+						break;
+					}
+					// activate input for path
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					{
+						SetBuffer(InputPathBuffer, MAX_PATH_BUFFER_SIZE, ComposeNewPath(itPathDecomp));
+						m_InputPathActivated = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	void ImGuiFileDialog::DrawSearchBar()
+	{
+		// search field
+		if (IMGUI_BUTTON(resetButtonString "##BtnImGuiFileDialogSearchField"))
+		{
+			ResetBuffer(SearchBuffer);
+			searchTag.clear();
+			ApplyFilteringOnFileList();
+		}
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip(buttonResetSearchString);
+		ImGui::SameLine();
+		ImGui::Text(searchString);
+		ImGui::SameLine();
+		ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
+		bool edited = ImGui::InputText("##InputImGuiFileDialogSearchField", SearchBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+		ImGui::PopItemWidth();
+		if (edited)
+		{
+			searchTag = SearchBuffer;
+			ApplyFilteringOnFileList();
+		}
+	}
+
+	void ImGuiFileDialog::DrawFileListView(ImVec2 vSize)
+	{
+#ifndef USE_IMGUI_TABLES
+		ImGui::BeginChild("##FileDialog_FileList", vSize);
+#else
+		static ImGuiTableFlags flags = ImGuiTableFlags_ColumnsWidthFixed | ImGuiTableFlags_RowBg |
+			ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
+			ImGuiTableFlags_NoHostExtendY
+#ifndef USE_CUSTOM_SORTING_ICON
+			| ImGuiTableFlags_Sortable
+#endif
+			;
+		if (ImGui::BeginTable("##fileTable", 3, flags, vSize))
+		{
+			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
+			ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
+			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 1);
+			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthAutoResize, -1, 2);
+
+#ifndef USE_CUSTOM_SORTING_ICON
+			// Sort our data if sort specs have been changed!
+			if (ImGuiTableSortSpecs* sorts_specs = ImGui::TableGetSortSpecs())
+			{
+				if (sorts_specs->SpecsDirty && !m_FileList.empty())
+				{
+					if (sorts_specs->Specs->ColumnUserID == 0)
+						SortFields(SortingFieldEnum::FIELD_FILENAME, true);
+					else if (sorts_specs->Specs->ColumnUserID == 1)
+						SortFields(SortingFieldEnum::FIELD_SIZE, true);
+					else if (sorts_specs->Specs->ColumnUserID == 2)
+						SortFields(SortingFieldEnum::FIELD_DATE, true);
+
+					sorts_specs->SpecsDirty = false;
+				}
+			}
+
+			ImGui::TableHeadersRow();
+#else
+			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+			for (int column = 0; column < 3; column++)
+			{
+				ImGui::TableSetColumnIndex(column);
+				const char* column_name = ImGui::TableGetColumnName(column); // Retrieve name passed to TableSetupColumn()
+				ImGui::PushID(column);
+				ImGui::TableHeader(column_name);
+				ImGui::PopID();
+				if (ImGui::IsItemClicked())
+				{
+					if (column == 0)
+						SortFields(SortingFieldEnum::FIELD_FILENAME, true);
+					else if (column == 1)
+						SortFields(SortingFieldEnum::FIELD_SIZE, true);
+					else //if (column == 2) => alwasy true for the moment, to uncomment if we add a fourth column
+						SortFields(SortingFieldEnum::FIELD_DATE, true);
+				}
+			}
+#endif
+#endif
+			if (!m_FilteredFileList.empty())
+			{
+				m_FileListClipper.Begin((int)m_FilteredFileList.size(), ImGui::GetTextLineHeightWithSpacing());
+				while (m_FileListClipper.Step())
+				{
+					for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++)
+					{
+						if (i < 0) continue;
+
+						const FileInfoStruct& infos = m_FilteredFileList[i];
+
+						ImVec4 c;
+						std::string icon;
+						bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
+						if (showColor)
+							ImGui::PushStyleColor(ImGuiCol_Text, c);
+
+						std::string str = " " + infos.fileName;
+						if (infos.type == 'd') str = dirEntryString + str;
+						else if (infos.type == 'l') str = linkEntryString + str;
+						else if (infos.type == 'f')
+						{
+							if (showColor && !icon.empty())
+								str = icon + str;
+							else
+								str = fileEntryString + str;
+						}
+						bool selected = false;
+						if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
+							selected = true;
+#ifdef USE_IMGUI_TABLES
+						ImGui::TableNextRow();
+						if (ImGui::TableSetColumnIndex(0)) // first column
+						{
+#endif
+							ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+#ifdef USE_IMGUI_TABLES
+							selectableFlags |=
+								ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
+#endif
+							bool _selectablePressed = false;
+#ifdef USE_EXPLORATION_BY_KEYS
+							bool flashed = BeginFlashItem(i);
+							_selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags,
+								flashed);
+							if (flashed)
+								EndFlashItem();
+#else
+							_selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
+#endif
+							if (_selectablePressed)
+							{
+								if (infos.type == 'd')
+								{
+									if (dlg_filters || ImGui::IsMouseDoubleClicked(0))
+									{
+										m_PathClicked = SelectDirectory(infos);
+									}
+									else // directory chooser
+									{
+										SelectFileName(infos);
+									}
+
+									if (showColor)
+										ImGui::PopStyleColor();
+
+									break;
+								}
+								else
+								{
+									SelectFileName(infos);
+								}
+							}
+#ifdef USE_IMGUI_TABLES
+						}
+						if (ImGui::TableSetColumnIndex(1)) // second column
+						{
+							if (infos.type != 'd')
+							{
+								ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
+							}
+						}
+						if (ImGui::TableSetColumnIndex(2)) // third column
+						{
+							ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
+						}
+#endif
+						if (showColor)
+							ImGui::PopStyleColor();
+
+					}
+				}
+				m_FileListClipper.End();
+			}
+
+			if (m_InputPathActivated)
+			{
+				auto gio = ImGui::GetIO();
+				if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Enter]))
+				{
+					SetPath(std::string(InputPathBuffer));
+					m_InputPathActivated = false;
+				}
+				if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Escape]))
+				{
+					m_InputPathActivated = false;
+				}
+			}
+#ifdef USE_EXPLORATION_BY_KEYS
+			else
+			{
+				LocateByInputKey();
+				ExploreWithkeys();
+			}
+#endif
+#ifdef USE_IMGUI_TABLES
+			ImGui::EndTable();
+		}
+#endif
+		// changement de repertoire
+		if (m_PathClicked)
+		{
+			SetPath(m_CurrentPath);
+		}
+
+		if (m_DrivesClicked)
+		{
+			GetDrives();
+		}
+
+#ifndef USE_IMGUI_TABLES
+		ImGui::EndChild();
+#endif
+	}
+
+	void ImGuiFileDialog::DrawSidePane(ImVec2 vSize)
+	{
+		if (dlg_optionsPane)
+		{
+			ImGui::SameLine();
+
+			vSize.x = (float)dlg_optionsPaneWidth;
+
+			ImGui::BeginChild("##FileTypes", vSize);
+
+			dlg_optionsPane(m_SelectedFilter.filter, dlg_userDatas, &m_CanWeContinue);
+
+			ImGui::EndChild();
+		}
 	}
 
 	void ImGuiFileDialog::CloseDialog(const std::string& vKey)
