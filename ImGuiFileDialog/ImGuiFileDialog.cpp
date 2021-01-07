@@ -1001,7 +1001,7 @@ namespace igfd
 
 		return res;
 	}
-
+#ifdef USE_BOOKMARK
 	void ImGuiFileDialog::DrawBookMark()
 	{
 		IMGUI_TOGGLE_BUTTON(bookmarksButtonString, &m_BookmarkPaneShown);
@@ -1009,6 +1009,7 @@ namespace igfd
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(bookmarksButtonHelpString);
 	}
+#endif
 
 	void ImGuiFileDialog::DrawDirectoryCreation()
 	{
