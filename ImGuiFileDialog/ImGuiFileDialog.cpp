@@ -165,8 +165,8 @@ namespace igfd
 	#define OverWriteDialogCancelButtonString "Cancel"
 	#endif
 #ifdef USE_BOOKMARK
-	#ifndef bookmarkPaneWith
-	#define bookmarkPaneWith 150.0f
+	#ifndef defaultBookmarkPaneWith
+	#define defaultBookmarkPaneWith 150.0f
 	#endif
 	#ifndef bookmarksButtonString
 	#define bookmarksButtonString "Bookmark"
@@ -433,6 +433,7 @@ namespace igfd
         dlg_userDatas = 0;
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
+		m_BookmarkWidth = defaultBookmarkPaneWith;
 #endif
 	}
 
@@ -899,21 +900,29 @@ namespace igfd
 
 	void ImGuiFileDialog::DrawContent()
 	{
+		ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2(0.0f, m_FooterHeight);
+
 #ifdef USE_BOOKMARK
 		if (m_BookmarkPaneShown)
 		{
-			ImVec2 size = ImVec2(bookmarkPaneWith, ImGui::GetContentRegionAvail().y - m_FooterHeight);
+			//size.x -= m_BookmarkWidth;
+			ImGui::PushID("##splitterbookmark");
+			float otherWidth = size.x - m_BookmarkWidth;
+			Splitter(true, 4.0f, &m_BookmarkWidth, &otherWidth, 10.0f, 10.0f + dlg_optionsPaneWidth, size.y);
+			ImGui::PopID();
+			size.x -= otherWidth;
 			DrawBookmarkPane(size);
 			ImGui::SameLine();
 		}
 #endif
 
-		ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2(0.0f, m_FooterHeight);
+		size.x = ImGui::GetContentRegionAvail().x - dlg_optionsPaneWidth;
 
 		if (dlg_optionsPane)
 		{
-			size.x -= dlg_optionsPaneWidth;
+			ImGui::PushID("##splittersidepane");
 			Splitter(true, 4.0f, &size.x, &dlg_optionsPaneWidth, 10.0f, 10.0f, size.y);
+			ImGui::PopID();
 		}
 
 		DrawFileListView(size);
@@ -2456,6 +2465,9 @@ namespace igfd
 	void ImGuiFileDialog::DrawBookmarkPane(ImVec2 vSize)
 	{
 		ImGui::BeginChild("##bookmarkpane", vSize);
+		
+		static int selectedBookmarkForEdition = -1;
+		
 		if (IMGUI_BUTTON(addBookmarkButtonString "##ImGuiFileDialogAddBookmark"))
 		{
 			if (!m_CurrentPath_Decomposition.empty())
@@ -2466,7 +2478,6 @@ namespace igfd
 				m_Bookmarks.push_back(bookmark);
 			}
 		}
-		static int selectedBookmarkForEdition = -1;
 		if (selectedBookmarkForEdition >= 0 &&
 			selectedBookmarkForEdition < (int)m_Bookmarks.size())
 		{
@@ -2477,9 +2488,13 @@ namespace igfd
 				if (selectedBookmarkForEdition == (int)m_Bookmarks.size())
 					selectedBookmarkForEdition--;
 			}
-			if (selectedBookmarkForEdition >= 0)
+
+			if (selectedBookmarkForEdition >= 0 &&
+				selectedBookmarkForEdition < (int)m_Bookmarks.size())
 			{
-				ImGui::PushItemWidth(bookmarkPaneWith);
+				ImGui::SameLine();
+
+				ImGui::PushItemWidth(vSize.x - ImGui::GetCursorPosX());
 				if (ImGui::InputText("##ImGuiFileDialogBookmarkEdit", BookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER))
 				{
 					m_Bookmarks[selectedBookmarkForEdition].name = std::string(BookmarkEditBuffer);
@@ -2521,6 +2536,7 @@ namespace igfd
             }
             m_BookmarkClipper.End();
         }
+
 		ImGui::EndChild();
 	}
 

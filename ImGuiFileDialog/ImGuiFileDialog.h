@@ -570,7 +570,10 @@ namespace igfd
 		UserDatas dlg_userDatas{};
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
-		
+#ifdef USE_BOOKMARK
+		float m_BookmarkWidth = defaultBookmarkPaneWith;
+#endif
+
 	private: // detail view
 		std::string m_HeaderFileName;
 		std::string m_HeaderFileSize;
