@@ -571,7 +571,7 @@ namespace igfd
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
 		bool dlg_modal = false;
 #ifdef USE_BOOKMARK
-		float m_BookmarkWidth = defaultBookmarkPaneWith;
+		float m_BookmarkWidth = 200.0f;
 #endif
 
 	private: // detail view

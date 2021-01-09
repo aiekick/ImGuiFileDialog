@@ -2582,7 +2582,7 @@ namespace igfd
 
 	bool ImGuiFileDialog::Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags)
 	{
-		// if confirmation => return true for confimr the overwrite et quit the dialog
+		// if confirmation => return true for confirm the overwrite et quit the dialog
 		// if cancel => return false && set IsOk to false for keep inside the dialog
 
 		// if IsOk == false => return false for quit the dialog

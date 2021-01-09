@@ -419,7 +419,7 @@ int main(int, char**)
 						}
 						// action
 					}
-					igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+					igfd::ImGuiFileDialog::Instance()->CloseDialog();
 				}
 
 				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseDirDlgKey",
@@ -441,7 +441,7 @@ int main(int, char**)
 						}
                         // action
                     }
-                    igfd::ImGuiFileDialog::Instance()->CloseDialog("ChooseDirDlgKey");
+                    igfd::ImGuiFileDialog::Instance()->CloseDialog();
                 }
 
 				ImGui::Separator();
