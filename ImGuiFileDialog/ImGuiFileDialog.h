@@ -626,18 +626,19 @@ namespace igfd
 	public: // core
 		bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
-		void CloseDialog(const std::string& vKey);
 		void CloseDialog();
 
-		bool WasOpenedThisFrame(const std::string& vKey);	// say if the dialog key was already opened this frame
-		bool IsOpened(std::string* vCurrentOpenedKey = 0);	// say if the dialog is opened somewhere and can eturn the current opened key dialog	
+		bool WasOpenedThisFrame(const std::string& vKey);		// say if the dialog key was already opened this frame
+		bool IsOpened(const std::string& vKey);					// say if the key is opened
+		bool IsOpened();										// say if the dialog is opened somewhere	
+		std::string GetOpenedKey();								// return the dialog key who is opened, return nothing if not opened
 
-		std::map<std::string, std::string> GetSelection();	// Open File behavior : will return selection via a map<FileName, FilePathName>
-		std::string GetFilePathName();						// Create File behavior : will always return the content of the field with current filter extention and current path
-		std::string GetCurrentFileName();					// Create File behavior : will always return the content of the field with current filter extention
-		std::string GetCurrentPath();						// will return current path
-		std::string GetCurrentFilter();						// get selected filter
-		UserDatas GetUserDatas();							// get user datas send with Open Dialog
+		std::map<std::string, std::string> GetSelection();		// Open File behavior : will return selection via a map<FileName, FilePathName>
+		std::string GetFilePathName();							// Create File behavior : will always return the content of the field with current filter extention and current path
+		std::string GetCurrentFileName();						// Create File behavior : will always return the content of the field with current filter extention
+		std::string GetCurrentPath();							// will return current path
+		std::string GetCurrentFilter();							// get selected filter
+		UserDatas GetUserDatas();								// get user datas send with Open Dialog
 		
 		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos);
 		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");

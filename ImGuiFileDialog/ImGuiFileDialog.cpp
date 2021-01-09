@@ -1352,15 +1352,6 @@ namespace igfd
 		ImGui::EndChild();
 	}
 
-	void ImGuiFileDialog::CloseDialog(const std::string& vKey)
-	{
-		if (dlg_key == vKey)
-		{
-			dlg_key.clear();
-			m_ShowDialog = false;
-		}
-	}
-
 	void ImGuiFileDialog::CloseDialog()
 	{
 		dlg_key.clear();
@@ -1377,12 +1368,22 @@ namespace igfd
 		}
 		return res;
 	}
-	
-	bool ImGuiFileDialog::IsOpened(std::string *vCurrentOpenedKey)
+
+	bool ImGuiFileDialog::IsOpened(const std::string& vKey)
 	{
-		if (vCurrentOpenedKey)
-			*vCurrentOpenedKey = dlg_key;
+		return (m_ShowDialog && dlg_key == vKey);
+	}
+
+	bool ImGuiFileDialog::IsOpened()
+	{
 		return m_ShowDialog;
+	}
+
+	std::string ImGuiFileDialog::GetOpenedKey()
+	{
+		if (m_ShowDialog)
+			return dlg_key;
+		return "";
 	}
 
 	std::string ImGuiFileDialog::GetFilePathName()
