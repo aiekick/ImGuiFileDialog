@@ -2344,12 +2344,12 @@ namespace igfd
                 if (locateFileByInputChar_lastFileIdx < m_FilteredFileList.size() - 1)
                     locateFileByInputChar_lastFileIdx++;
             }
-            else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+            else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER) && ImGui::IsWindowHovered())
             {
                 exploreByKey = true;
                 enterInDirectory = true;
             }
-            else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE))
+            else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE) && ImGui::IsWindowHovered())
             {
                 exploreByKey = true;
                 exitDirectory = true;
