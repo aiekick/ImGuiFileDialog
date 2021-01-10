@@ -24,14 +24,14 @@
 #endif
 
 typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
-
 enum ImGuiFileDialogFlags_
 {
 	ImGuiFileDialogFlags_None = 0,
 	ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,
 };
+typedef void* IGFDUserDatas;
 
-namespace igfd
+namespace ImGui
 {
 	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
 	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
@@ -41,7 +41,7 @@ namespace igfd
 	#define MAX_PATH_BUFFER_SIZE 1024
 	#endif
 
-	typedef void* UserDatas;
+	
 
 	struct FileInfoStruct
 	{
@@ -104,7 +104,7 @@ namespace igfd
 		std::string path;
 	};
 
-	struct ImGuiFileDialog
+	struct FileDialog
 	{
 		struct Private
 		{
@@ -155,10 +155,10 @@ namespace igfd
 			std::string dlg_defaultFileName;
 			std::string dlg_defaultExt;
 			ImGuiFileDialogFlags dlg_flags = ImGuiFileDialogFlags_None;
-			std::function<void(std::string, UserDatas, bool*)> dlg_optionsPane;
+			std::function<void(std::string, IGFDUserDatas, bool*)> dlg_optionsPane;
 			float dlg_optionsPaneWidth = 0.0f;
 			std::string searchTag;
-			UserDatas dlg_userDatas{};
+			IGFDUserDatas dlg_userDatas{};
 			size_t dlg_countSelectionMax = 1; // 0 for infinite
 			bool dlg_modal = false;
 
@@ -242,46 +242,45 @@ namespace igfd
 		} m_Private;
 
 		// Init First
-		ImGuiFileDialog();
-		void Init();
+		FileDialog();
 		
 		// standard dialog
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const std::function<void(std::string, IGFDUserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vDefaultFileName,
-			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const std::function<void(std::string, IGFDUserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
-			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 		// modal dialog
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const std::function<void(std::string, IGFDUserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vDefaultFileName,
-			const std::function<void(std::string, UserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const std::function<void(std::string, IGFDUserDatas, bool*)>& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vPath, const std::string& vDefaultFileName,
-			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const std::string& vKey, const char* vName, const char* vFilters,
 			const std::string& vFilePathName, const int& vCountSelectionMax = 1,
-			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 		// core
-		bool FileDialog(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
+		bool Display(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
-		void CloseDialog(const std::string& vKey);
-		void CloseDialog();
+		void Close(const std::string& vKey);
+		void Close();
 
 		bool IsOk();
 
@@ -293,7 +292,7 @@ namespace igfd
 		std::string GetCurrentFileName();					// Create File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();						// will return current path
 		std::string GetCurrentFilter();						// get selected filter
-		UserDatas GetUserDatas();							// get user datas send with Open Dialog
+		IGFDUserDatas GetUserDatas();							// get user datas send with Open Dialog
 		
 		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfosStruct& vInfos);
 		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon = "");

@@ -49,7 +49,7 @@ static void glfw_error_callback(int error, const char* description)
 
 static bool canValidateDialog = false;
 
-inline void InfosPane(std::string vFilter, igfd::UserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
+inline void InfosPane(std::string vFilter, IGFDUserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	
@@ -209,8 +209,8 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	igfd::ImGuiFileDialog fileDialog2;
-	igfd::ImGuiFileDialog fileDialog;
+	ImGui::FileDialog fileDialog2;
+	ImGui::FileDialog fileDialog;
 	fileDialog.SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -343,12 +343,12 @@ int main(int, char**)
 						fileDialog.OpenDialog("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
 							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, 
-							std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
+							std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"));
 					else
 						fileDialog.OpenModal("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
 							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2,
-								std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
+								std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"));
 				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with Confirm Dialog For Overwrite File if exist"))
 				{
@@ -356,11 +356,11 @@ int main(int, char**)
 					if (standardDialogMode)
 						fileDialog.OpenDialog("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
-							".", "", 1, igfd::UserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+							".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 					else
 						fileDialog.OpenModal("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
-							".", 1, igfd::UserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+							".", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog"))
                 {
@@ -402,7 +402,7 @@ int main(int, char**)
 				static std::string userDatas = "";
 				static std::vector<std::pair<std::string, std::string>> selection = {};
 
-				if (fileDialog.FileDialog("ChooseFileDlgKey",
+				if (fileDialog.Display("ChooseFileDlgKey",
 				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
 				{
 					if (fileDialog.IsOk())
@@ -421,10 +421,10 @@ int main(int, char**)
 						}
 						// action
 					}
-					fileDialog.CloseDialog("ChooseFileDlgKey");
+					fileDialog.Close();
 				}
 
-				if (fileDialog2.FileDialog("ChooseDirDlgKey",
+				if (fileDialog2.Display("ChooseDirDlgKey",
 				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
                 {
                     if (fileDialog2.IsOk())
@@ -443,7 +443,7 @@ int main(int, char**)
 						}
                         // action
                     }
-					fileDialog2.CloseDialog("ChooseDirDlgKey");
+					fileDialog2.Close();
                 }
 
 				ImGui::Separator();
@@ -498,7 +498,6 @@ int main(int, char**)
 				ImGui::Unindent();
 			}
 			ImGui::Unindent();
-
 
 			ImGui::Separator();
 			ImGui::Text("Window mode :");
