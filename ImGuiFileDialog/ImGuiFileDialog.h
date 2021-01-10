@@ -33,13 +33,13 @@ enum ImGuiFileDialogFlags_
 
 namespace igfd
 {
-#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
-#define MAX_FILE_DIALOG_NAME_BUFFER 1024
-#endif
+	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
+	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
+	#endif
 
-#ifndef MAX_PATH_BUFFER_SIZE
-#define MAX_PATH_BUFFER_SIZE 1024
-#endif
+	#ifndef MAX_PATH_BUFFER_SIZE
+	#define MAX_PATH_BUFFER_SIZE 1024
+	#endif
 
 	typedef void* UserDatas;
 
