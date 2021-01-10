@@ -128,7 +128,9 @@ namespace ImGui
 			bool m_AnyWindowsHovered = false;
 			bool m_CreateDirectoryMode = false;
 			bool IsOk = false;
-
+#ifdef USE_BOOKMARK
+			float m_BookmarkWidth = 200.0f;
+#endif
 			// events
 			bool m_DrivesClicked = false;
 			bool m_PathClicked = false;
@@ -279,13 +281,14 @@ namespace ImGui
 		// core
 		bool Display(const std::string& vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
 			ImVec2 vMinSize = ImVec2(0, 0), ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));
-		void Close(const std::string& vKey);
 		void Close();
 
 		bool IsOk();
 
 		bool WasOpenedThisFrame(const std::string& vKey);	// say if the dialog key was already opened this frame
-		bool IsOpened(std::string* vCurrentOpenedKey = 0);	// say if the dialog is opened somewhere and can eturn the current opened key dialog	
+		bool IsOpened(const std::string& vKey);				// say if the key is opened
+		bool IsOpened();									// say if the dialog is opened somewhere	
+		std::string GetOpenedKey();							// return the dialog key who is opened, return nothing if not opened
 
 		std::map<std::string, std::string> GetSelection();	// Open File behavior : will return selection via a map<FileName, FilePathName>
 		std::string GetFilePathName();						// Create File behavior : will always return the content of the field with current filter extention and current path
