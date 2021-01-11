@@ -2718,7 +2718,7 @@ IMGUIFILEDIALOG_API struct IGFD_Selection_Pair IGFD_Selection_Pair_Get()
 }
 
 // destroy only the content of vSelection_Pair
-IMGUIFILEDIALOG_API void IGFD_Selection_Pair_Destroy(struct IGFD_Selection_Pair* vSelection_Pair)
+IMGUIFILEDIALOG_API void IGFD_Selection_Pair_DestroyContent(struct IGFD_Selection_Pair* vSelection_Pair)
 {
 	if (vSelection_Pair)
 	{
@@ -2742,7 +2742,7 @@ IMGUIFILEDIALOG_API void IGFD_Selection_DestroyContent(struct IGFD_Selection* vS
 		{
 			for (size_t i = 0U; i < vSelection->count; i++)
 			{
-				IGFD_Selection_Pair_Destroy(&vSelection->table[i]);
+				IGFD_Selection_Pair_DestroyContent(&vSelection->table[i]);
 			}
 			delete[] vSelection->table;
 		}
