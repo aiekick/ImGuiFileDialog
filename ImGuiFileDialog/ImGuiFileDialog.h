@@ -399,9 +399,12 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 My appologies, the v0.5.3 was wrong, not commited the expected good one :(
 */
 
-#pragma once
+#ifndef IMGUIFILEDIALOG_H
+#define IMGUIFILEDIALOG_H
 
 #define IMGUIFILEDIALOG_VERSION "v0.5.4"
+
+#ifdef __cplusplus
 
 #include <imgui.h>
 
@@ -432,9 +435,6 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,
 };
 
-typedef void* IGFDUserDatas;
-typedef std::function<void(const char*, IGFDUserDatas, bool*)> IGFDPaneFun;
-
 namespace IGFD
 {
 	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
@@ -453,7 +453,10 @@ namespace IGFD
 		FileExtentionInfosStruct(ImVec4 vColor, std::string vIcon = std::string()) { color = vColor; icon = vIcon; }
 	};
 
-	class ImGuiFileDialog
+	typedef void* UserDatas;
+	typedef std::function<void(const char*, UserDatas, bool*)> PaneFun;
+	
+	class FileDialog
 	{
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -543,8 +546,8 @@ namespace IGFD
 		std::string dlg_defaultFileName;
 		std::string dlg_defaultExt;
 		ImGuiFileDialogFlags dlg_flags = ImGuiFileDialogFlags_None;
-		IGFDUserDatas dlg_userDatas = nullptr;
-		IGFDPaneFun dlg_optionsPane = nullptr;
+		UserDatas dlg_userDatas = nullptr;
+		PaneFun dlg_optionsPane = nullptr;
 		float dlg_optionsPaneWidth = 0.0f;
 		std::string searchTag;
 		size_t dlg_countSelectionMax = 1; // 0 for infinite
@@ -577,40 +580,40 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	public:
-		ImGuiFileDialog();
-		~ImGuiFileDialog();
+		FileDialog();
+		~FileDialog();
 
 		// standard dialog
 		void OpenDialog(const char* vKey, const char* vName, const char* vFilters,
 			const char* vPath, const char* vDefaultFileName,
-			const IGFDPaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const PaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const char* vKey, const char* vName, const char* vFilters,
 			const char* vDefaultFileName,
-			const IGFDPaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const PaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const char* vKey, const char* vName, const char* vFilters,
 			const char* vPath, const char* vDefaultFileName,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenDialog(const char* vKey, const char* vName, const char* vFilters,
 			const char* vFilePathName, const int& vCountSelectionMax = 1,
-			IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 		// modal dialog
 		void OpenModal(const char* vKey, const char* vName, const char* vFilters,
 			const char* vPath, const char* vDefaultFileName,
-			const IGFDPaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const PaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const char* vKey, const char* vName, const char* vFilters,
 			const char* vDefaultFileName,
-			const IGFDPaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const PaneFun& vOptionsPane, const float&  vOptionsPaneWidth = 250.0f,
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const char* vKey, const char* vName, const char* vFilters,
 			const char* vPath, const char* vDefaultFileName,
-			const int& vCountSelectionMax = 1, IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			const int& vCountSelectionMax = 1, UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 		void OpenModal(const char* vKey, const char* vName, const char* vFilters,
 			const char* vFilePathName, const int& vCountSelectionMax = 1,
-			IGFDUserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
+			UserDatas vUserDatas = nullptr, ImGuiFileDialogFlags flags = 0);
 
 		// Display / Close dialog form
 		bool Display(const char* vKey, ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
@@ -631,7 +634,7 @@ namespace IGFD
 		std::string GetCurrentFileName();						// Create File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();							// will return current path
 		std::string GetCurrentFilter();							// get selected filter
-		IGFDUserDatas GetUserDatas();							// get user datas send with Open Dialog
+		UserDatas GetUserDatas();							// get user datas send with Open Dialog
 		
 		// extentions displaying
 		void SetExtentionInfos(const char* vFilter, const FileExtentionInfosStruct& vInfos);
@@ -709,3 +712,101 @@ namespace IGFD
 #endif
 	};
 }
+typedef IGFD::UserDatas IGFDUserDatas;
+typedef IGFD::PaneFun IGFDPaneFun;
+typedef IGFD::FileDialog ImGuiFileDialog;
+#else
+	typedef struct ImGuiFileDialog ImGuiFileDialog;
+	typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
+	enum ImGuiFileDialogFlags_
+	{
+		ImGuiFileDialogFlags_None = 0,
+		ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,
+	};
+	
+#endif // __cplusplus
+
+	// access functions
+#ifdef __cplusplus
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+	#define IMGUIFILEDIALOG_API EXTERN
+
+	typedef void (*IGFD_PaneFun)(const char*, void*, bool*);
+
+	struct IGFD_String
+	{
+		char* buffer;	// 0
+		size_t size;	// 0U
+	};
+
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_String_Get();
+	IMGUIFILEDIALOG_API void IGFD_String_DestroyContent(struct IGFD_String *vString);
+	
+	struct IGFD_Selection_Pair
+	{
+		IGFD_String fileName;
+		IGFD_String filePathName;
+	};
+
+	IMGUIFILEDIALOG_API struct IGFD_Selection_Pair IGFD_Selection_Pair_Get();
+	IMGUIFILEDIALOG_API void IGFD_Selection_Pair_DestroyContent(struct IGFD_Selection_Pair *vSelection_Pair);
+	
+	struct IGFD_Selection
+	{
+		IGFD_Selection_Pair* table;		// 0
+		size_t count;					// 0U
+	};
+
+	IMGUIFILEDIALOG_API struct IGFD_Selection IGFD_Selection_Get();
+	IMGUIFILEDIALOG_API void IGFD_Selection_DestroyContent(struct IGFD_Selection* vSelection);
+
+	// constructor / destructor
+	IMGUIFILEDIALOG_API ImGuiFileDialog* IGFD_Create(void);
+	IMGUIFILEDIALOG_API void IGFD_Destroy(ImGuiFileDialog *vContext);
+
+	// standard dialog
+	IMGUIFILEDIALOG_API void IGFD_OpenDialog(ImGuiFileDialog* vContext,
+		const char* vKey, const char* vName, const char* vFilters, const char* vPath,
+		const char* vDefaultFileName, IGFD_PaneFun vOptionsPane, const float vOptionsPaneWidth,
+		const int vCountSelectionMax, void* vUserDatas, ImGuiFileDialogFlags flags);
+
+	// modal dialog
+	IMGUIFILEDIALOG_API void IGFD_OpenModal(ImGuiFileDialog* vContext,
+		const char* vKey, const char* vName, const char* vFilters, const char* vPath,
+		const char* vDefaultFileName, IGFD_PaneFun vOptionsPane, const float vOptionsPaneWidth,
+		const int vCountSelectionMax, void* vUserDatas, ImGuiFileDialogFlags flags);
+
+	// core
+	IMGUIFILEDIALOG_API bool IGFD_DisplayDialog(ImGuiFileDialog* vContext, 
+		const char* vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize);							// Display the dialog
+	IMGUIFILEDIALOG_API void IGFD_CloseDialog(ImGuiFileDialog* vContext);										// Close the dialog
+
+	IMGUIFILEDIALOG_API bool IGFD_IsOk(ImGuiFileDialog* vContext);												// Dialog Closed with Ok result
+
+	IMGUIFILEDIALOG_API bool IGFD_WasOpenedThisFrame(ImGuiFileDialog* vContext, const char* vKey);				// say if the dialog key was already opened this frame
+	IMGUIFILEDIALOG_API bool IGFD_IsOpened(ImGuiFileDialog* vContext, const char* vCurrentOpenedKey);			// say if the dialog is opened somewhere and can eturn the current opened key dialog
+
+	IMGUIFILEDIALOG_API struct IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext);						// Open File behavior : will return count selected items / selection struct give FileName and FilePathName
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_GetFilePathName(ImGuiFileDialog* vContext);						// Create File behavior : will always return the content of the field with current filter extention and current path
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_GetCurrentFileName(ImGuiFileDialog* vContext);					// Create File behavior : will always return the content of the field with current filter extention
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_GetCurrentPath(ImGuiFileDialog* vContext);						// will return current path
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_GetCurrentFilter(ImGuiFileDialog* vContext);					// get selected filter
+	IMGUIFILEDIALOG_API void* IGFD_GetUserDatas(ImGuiFileDialog* vContext);										// get user datas send with Open Dialog
+
+	IMGUIFILEDIALOG_API void IGFD_SetExtentionInfos(ImGuiFileDialog* vContext, const char* vFilter, ImVec4 vColor, const char* vIcon);
+	IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(ImGuiFileDialog* vContext, const char* vFilter, ImVec4* vOutColor, struct IGFD_String* vOutIcon);
+	IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(ImGuiFileDialog* vContext);
+
+#ifdef USE_EXPLORATION_BY_KEYS
+	IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(ImGuiFileDialog* vContext, float vAttenValue);
+#endif
+
+#ifdef USE_BOOKMARK
+	IMGUIFILEDIALOG_API struct IGFD_String IGFD_SerializeBookmarks(ImGuiFileDialog* vContext);
+	IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(ImGuiFileDialog* vContext, const char* vBookmarks);
+#endif
+
+#endif // IMGUIFILEDIALOG_H

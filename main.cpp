@@ -206,11 +206,9 @@ int main(int, char**)
 
     // Our state
     bool show_demo_window = true;
-    bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	IGFD::ImGuiFileDialog fileDialog2;
-	IGFD::ImGuiFileDialog fileDialog;
+	ImGuiFileDialog fileDialog;
 	fileDialog.SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -218,15 +216,53 @@ int main(int, char**)
 	fileDialog.SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
 	fileDialog.SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 
+	// just for show multi dialog instance behavior (here use for shwo directory query dialog)
+	ImGuiFileDialog fileDialog2;
+	fileDialog2.SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	fileDialog2.SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+
+	// c interface
+	auto cfileDialog = IGFD_Create();
+	IGFD_SetExtentionInfos(cfileDialog, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	IGFD_SetExtentionInfos(cfileDialog, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+
 #ifdef USE_BOOKMARK
 	// load bookmarks
-	std::ifstream docFile("bookmarks.conf", std::ios::in);
-	if (docFile.is_open())
+	std::ifstream docFile_1("bookmarks_1.conf", std::ios::in);
+	if (docFile_1.is_open())
 	{
 		std::stringstream strStream;
-		strStream << docFile.rdbuf();//read the file
+		strStream << docFile_1.rdbuf();//read the file
 		fileDialog.DeserializeBookmarks(strStream.str());
-		docFile.close();
+		docFile_1.close();
+	}
+
+	std::ifstream docFile_2("bookmarks_2.conf", std::ios::in);
+	if (docFile_2.is_open())
+	{
+		std::stringstream strStream;
+		strStream << docFile_2.rdbuf();//read the file
+		fileDialog2.DeserializeBookmarks(strStream.str());
+		docFile_2.close();
+	}
+
+	// c interface
+	std::ifstream docFile_c("bookmarks_c.conf", std::ios::in);
+	if (docFile_c.is_open())
+	{
+		std::stringstream strStream;
+		strStream << docFile_c.rdbuf();//read the file
+		IGFD_DeserializeBookmarks(cfileDialog, strStream.str().c_str());
+		docFile_c.close();
 	}
 #endif
 
@@ -268,11 +304,21 @@ int main(int, char**)
 				{
 					flashingAttenuationInSeconds = 1.0f;
 					fileDialog.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					
+					// c interface
+					IGFD_SetFlashingAttenuationInSeconds(cfileDialog, flashingAttenuationInSeconds);
 				}
 				ImGui::SameLine();
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("Flash lifetime (s)", &flashingAttenuationInSeconds, 0.01f, 5.0f))
+				{
 					fileDialog.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+
+					// c interface
+					IGFD_SetFlashingAttenuationInSeconds(cfileDialog, flashingAttenuationInSeconds);
+				}
 				ImGui::PopItemWidth();
 #endif
 				static bool _UseWindowContraints = true;
@@ -382,6 +428,28 @@ int main(int, char**)
 						fileDialog2.OpenModal("ChooseDirDlgKey",
 							ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".", 5);
                 }
+
+				ImGui::Separator();
+
+				/////////////////////////////////////////////////////////////////
+				// C Interface
+				/////////////////////////////////////////////////////////////////
+				if (ImGui::Button("C Interface " ICON_IGFD_SAVE " Save File Dialog with a custom pane"))
+				{
+					const char* filters = "C++ File (*.cpp){.cpp}";
+					if (standardDialogMode)
+						IGFD_OpenDialog(cfileDialog, "ChooseFileDlgKey",
+							ICON_IGFD_SAVE " Choose a File", filters,
+							".", "", &InfosPane, 350, 1, (void*)("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+					else
+						IGFD_OpenModal(cfileDialog, "ChooseFileDlgKey",
+							ICON_IGFD_SAVE " Choose a File", filters,
+							".", "", &InfosPane, 350, 1, (void*)("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+				}
+				/////////////////////////////////////////////////////////////////
+				// C Interface
+				/////////////////////////////////////////////////////////////////
+
 				ImVec2 minSize = ImVec2(0, 0);
 				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
@@ -425,26 +493,64 @@ int main(int, char**)
 				}
 
 				if (fileDialog2.Display("ChooseDirDlgKey",
-				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
-                {
-                    if (fileDialog2.IsOk())
-                    {
-                        filePathName = fileDialog2.GetFilePathName();
-                        filePath = fileDialog2.GetCurrentPath();
-                        filter = fileDialog2.GetCurrentFilter();
-                        // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        if (fileDialog2.GetUserDatas())
-                            userDatas = std::string((const char*)fileDialog2.GetUserDatas());
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				{
+					if (fileDialog2.IsOk())
+					{
+						filePathName = fileDialog2.GetFilePathName();
+						filePath = fileDialog2.GetCurrentPath();
+						filter = fileDialog2.GetCurrentFilter();
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						if (fileDialog2.GetUserDatas())
+							userDatas = std::string((const char*)fileDialog2.GetUserDatas());
 						auto sel = fileDialog2.GetSelection(); // multiselection
 						selection.clear();
 						for (auto s : sel)
 						{
 							selection.emplace_back(s.first, s.second);
 						}
-                        // action
-                    }
+						// action
+					}
 					fileDialog2.Close();
-                }
+				}
+
+				/////////////////////////////////////////////////////////////////
+				// C Interface
+				/////////////////////////////////////////////////////////////////
+				if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey",
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				{
+					if (IGFD_IsOk(cfileDialog))
+					{
+						IGFD_String cfilePathName = IGFD_GetFilePathName(cfileDialog);
+						IGFD_String cfilePath = IGFD_GetCurrentPath(cfileDialog);
+						IGFD_String cfilter = IGFD_GetCurrentFilter(cfileDialog);
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						void* cdatas = IGFD_GetUserDatas(cfileDialog);
+						if (cdatas)
+							printf("user Datas : %s", (const char*)cdatas);
+						IGFD_Selection csel = IGFD_GetSelection(cfileDialog); // multiselection
+
+						selection.clear();
+						for (size_t i = 0; i < csel.count; i++)
+						{
+							std::string _fileName = std::string(csel.table[i].fileName.buffer, csel.table[i].fileName.size);
+							std::string _filePathName = std::string(csel.table[i].filePathName.buffer, csel.table[i].filePathName.size);
+							selection.emplace_back(_fileName, _filePathName);
+						}
+						// action
+
+						// destroy
+						IGFD_String_DestroyContent(&cfilePathName);
+						IGFD_String_DestroyContent(&cfilePath);
+						IGFD_String_DestroyContent(&cfilter);
+						IGFD_Selection_DestroyContent(&csel);
+					}
+					IGFD_CloseDialog(cfileDialog);
+				}
+				/////////////////////////////////////////////////////////////////
+				/////////////////////////////////////////////////////////////////
+				/////////////////////////////////////////////////////////////////
 
 				ImGui::Separator();
 
@@ -520,14 +626,32 @@ int main(int, char**)
     }
 
 #ifdef USE_BOOKMARK
-	// save bookmarks
-	std::ofstream configFileWriter("bookmarks.conf", std::ios::out);
-	if (!configFileWriter.bad())
+	// save bookmarks dialog 1
+	std::ofstream configFileWriter_1("bookmarks_1.conf", std::ios::out);
+	if (!configFileWriter_1.bad())
 	{
-		configFileWriter << fileDialog.SerializeBookmarks();
-		configFileWriter.close();
+		configFileWriter_1 << fileDialog.SerializeBookmarks();
+		configFileWriter_1.close();
+	}
+	// save bookmarks dialog 2
+	std::ofstream configFileWriter_2("bookmarks_2.conf", std::ios::out);
+	if (!configFileWriter_2.bad())
+	{
+		configFileWriter_2 << fileDialog2.SerializeBookmarks();
+		configFileWriter_2.close();
+	}
+	// save bookmarks dialog c interface
+	std::ofstream configFileWriter_c("bookmarks_c.conf", std::ios::out);
+	if (!configFileWriter_c.bad())
+	{
+		IGFD_String s = IGFD_SerializeBookmarks(cfileDialog);
+		configFileWriter_c << std::string(s.buffer, s.size);
+		configFileWriter_c.close();
 	}
 #endif
+
+	// c interface
+	IGFD_Destroy(cfileDialog);
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
