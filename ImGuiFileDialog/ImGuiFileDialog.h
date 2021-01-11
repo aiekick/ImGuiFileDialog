@@ -579,7 +579,14 @@ namespace IGFD
 	/// PUBLIC METHODS/////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	public:
+	public: // keep  singleton for easier accces but only one dialog at a time
+		static FileDialog* Instance()
+		{
+			static auto* _instance = new FileDialog();
+			return _instance;
+		}
+
+	public: // can be instanced without singleton if need to manage many dialog at same time
 		FileDialog();
 		~FileDialog();
 
