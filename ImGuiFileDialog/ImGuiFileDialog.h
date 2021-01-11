@@ -404,6 +404,12 @@ My appologies, the v0.5.3 was wrong, not commited the expected good one :(
 
 #define IMGUIFILEDIALOG_VERSION "v0.5.4"
 
+#ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
+#include "ImGuiFileDialogConfig.h"
+#else
+#include CUSTOM_IMGUIFILEDIALOG_CONFIG
+#endif
+
 #ifdef __cplusplus
 
 #include <imgui.h>
@@ -420,12 +426,6 @@ My appologies, the v0.5.3 was wrong, not commited the expected good one :(
 #include <string>
 #include <vector>
 #include <list>
-
-#ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
-#include "ImGuiFileDialogConfig.h"
-#else
-#include CUSTOM_IMGUIFILEDIALOG_CONFIG
-#endif
 
 typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
 
