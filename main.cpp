@@ -49,11 +49,11 @@ static void glfw_error_callback(int error, const char* description)
 
 static bool canValidateDialog = false;
 
-inline void InfosPane(std::string vFilter, IGFDUserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
+inline void InfosPane(const char* vFilter, IGFDUserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
 	
-	ImGui::Text("Selected Filter : %s", vFilter.c_str());
+	ImGui::Text("Selected Filter : %s", vFilter);
 
 	const char* userDatas = (const char*)vUserDatas;
 	if (userDatas)
@@ -209,8 +209,8 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	ImGui::FileDialog fileDialog2;
-	ImGui::FileDialog fileDialog;
+	IGFD::ImGuiFileDialog fileDialog2;
+	IGFD::ImGuiFileDialog fileDialog;
 	fileDialog.SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog.SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -343,16 +343,16 @@ int main(int, char**)
 						fileDialog.OpenDialog("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
 							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, 
-							std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"));
+							std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 					else
 						fileDialog.OpenModal("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
 							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2,
-								std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"));
+								std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with Confirm Dialog For Overwrite File if exist"))
 				{
-					const char* filters = "C++ File (*.cpp){.cpp}";
+					const char* filters = "C/C++ File (*.c *.cpp){.c,.cpp}, Header File (*.h){.h}";
 					if (standardDialogMode)
 						fileDialog.OpenDialog("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
@@ -387,8 +387,8 @@ int main(int, char**)
 
 				if (_UseWindowContraints)
 				{
-					maxSize = ImVec2((float)display_w, (float)display_h);
-					minSize = maxSize * 0.5f;
+					maxSize = ImVec2((float)display_w, (float)display_h) * 0.7f;
+					minSize = maxSize * 0.25f;
 				}
 
 				// you can define your flags and min/max window size (theses three settings ae defined by default :
