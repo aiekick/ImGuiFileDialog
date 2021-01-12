@@ -725,7 +725,6 @@ typedef IGFD::PaneFun IGFDPaneFun;
 typedef IGFD::FileDialog ImGuiFileDialog;
 #else
 	typedef struct ImGuiFileDialog ImGuiFileDialog;
-	typedef struct IGFD_String IGFD_String;
 	typedef struct IGFD_Selection_Pair IGFD_Selection_Pair;
 	typedef struct IGFD_Selection IGFD_Selection;
 	typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
