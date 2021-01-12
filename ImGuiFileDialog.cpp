@@ -580,50 +580,61 @@ namespace IGFD
 	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// path and fileName can be specified
 	void IGFD::FileDialog::OpenDialog(
-		const std::string& vKey, const std::string& vName, const std::string& vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName,
-		const PaneFun& vOptionsPane, const float& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
+		const std::string& vKey,			
+		const std::string& vTitle,			
+		const char *vFilters,				
+		const std::string& vPath,			
+		const std::string& vFileName,
+		const PaneFun& vSidePane,			
+		const float& vSidePaneWidth,		
+		const int& vCountSelectionMax,		
+		UserDatas vUserDatas,				
+		ImGuiFileDialogFlags vFlags)			// ImGuiFileDialogFlags 
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
 		dlg_key = vKey;
-		dlg_name = std::string(vName);
-		dlg_filters = vFilters;
-		ParseFilters(dlg_filters);
+		dlg_title = vTitle;
 		dlg_path = vPath;
-		SetDefaultFileName(vDefaultFileName);
-		dlg_optionsPane = vOptionsPane;
+		dlg_optionsPane = vSidePane;
 		dlg_userDatas = vUserDatas;
 		dlg_flags = vFlags;
-		dlg_optionsPaneWidth = vOptionsPaneWidth;
-		dlg_countSelectionMax = vCountSelectionMax; //-V101
+		dlg_optionsPaneWidth = vSidePaneWidth;
+		dlg_countSelectionMax = vCountSelectionMax;
 		dlg_modal = false;
 		dlg_defaultExt.clear();
 
+		ParseFilters(vFilters);
+		SetDefaultFileName(vFileName);
 		SetPath(m_CurrentPath);
 
-		m_ShowDialog = true;
+		m_ShowDialog = true;					// open dialog
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
 #endif
 	}
 
+	// path and filename are obtained from filePathName
 	void IGFD::FileDialog::OpenDialog(
-		const std::string& vKey, const std::string& vName, const std::string& vFilters,	const std::string& vFilePathName,
-		const PaneFun& vOptionsPane, const float& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
+		const std::string& vKey,	
+		const std::string& vTitle,	
+		const char *vFilters,			
+		const std::string& vFilePathName,	
+		const PaneFun& vSidePane,			
+		const float& vSidePaneWidth,		
+		const int& vCountSelectionMax,		
+		UserDatas vUserDatas,					
+		ImGuiFileDialogFlags vFlags)			// ImGuiFileDialogFlags 
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
 		dlg_key = vKey;
-		dlg_name = std::string(vName);
-		dlg_filters = vFilters;
-		ParseFilters(dlg_filters);
-
+		dlg_title = vTitle;
+		
 		auto ps = ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
@@ -638,13 +649,14 @@ namespace IGFD
 			dlg_defaultExt.clear();
 		}
 
-		dlg_optionsPane = vOptionsPane;
+		dlg_optionsPane = vSidePane;
 		dlg_userDatas = vUserDatas;
 		dlg_flags = vFlags;
-		dlg_optionsPaneWidth = vOptionsPaneWidth;
+		dlg_optionsPaneWidth = vSidePaneWidth;
 		dlg_countSelectionMax = vCountSelectionMax; //-V101
 		dlg_modal = false;
 
+		ParseFilters(vFilters);
 		SetSelectedFilterWithExt(dlg_defaultExt);
 		SetPath(m_CurrentPath);
 
@@ -653,143 +665,49 @@ namespace IGFD
 		m_BookmarkPaneShown = false;
 #endif
 	}
-
-	void IGFD::FileDialog::OpenDialog(const std::string& vKey, const std::string& vName, const std::string& vFilters,
-		const std::string& vFilePathName, const int& vCountSelectionMax,
-		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
-	{
-		if (m_ShowDialog) // if already opened, quit
-			return;
-
-		dlg_key = vKey;
-		dlg_name = std::string(vName);
-		dlg_filters = vFilters;
-		ParseFilters(dlg_filters);
-
-		auto ps = ParsePathFileName(vFilePathName);
-		if (ps.isOk)
-		{
-			dlg_path = ps.path;
-			SetDefaultFileName(vFilePathName);
-			dlg_defaultExt = "." + ps.ext;
-		}
-		else
-		{
-			dlg_path = ".";
-			SetDefaultFileName("");
-			dlg_defaultExt.clear();
-		}
-
-		dlg_optionsPane = nullptr;
-		dlg_userDatas = vUserDatas;
-		dlg_flags = vFlags;
-		dlg_optionsPaneWidth = 0;
-		dlg_countSelectionMax = vCountSelectionMax; //-V101
-		dlg_modal = false;
-
-		SetSelectedFilterWithExt(dlg_defaultExt);
-		SetPath(m_CurrentPath);
-
-		m_ShowDialog = true;
-#ifdef USE_BOOKMARK
-		m_BookmarkPaneShown = false;
-#endif
-	}
-
-	void IGFD::FileDialog::OpenDialog(const std::string& vKey, const std::string& vName, const std::string& vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax,
-		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
-	{
-		if (m_ShowDialog) // if already opened, quit
-			return;
-
-		dlg_key = vKey;
-		dlg_name = std::string(vName);
-		dlg_filters = vFilters;
-		ParseFilters(dlg_filters);
-		dlg_path = vPath;
-		SetDefaultFileName(vDefaultFileName);
-		dlg_optionsPane = nullptr;
-		dlg_userDatas = vUserDatas;
-		dlg_flags = vFlags;
-		dlg_optionsPaneWidth = 0;
-		dlg_countSelectionMax = vCountSelectionMax; //-V101
-		dlg_modal = false;
-		dlg_defaultExt.clear();
-
-		SetPath(m_CurrentPath);
-
-		m_ShowDialog = true;
-#ifdef USE_BOOKMARK
-		m_BookmarkPaneShown = false;
-#endif
-	}
-
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
+	///// MODAL DIALOG ///////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void IGFD::FileDialog::OpenModal(
-		const std::string& vKey, const std::string& vName, const  std::string& vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName,
-		const PaneFun& vOptionsPane, const float& vOptionsPaneWidth,
+		const std::string& vKey, const std::string& vTitle, const char* vFilters,
+		const std::string& vPath, const std::string& vFileName,
+		const PaneFun& vSidePane, const float& vSidePaneWidth,
 		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
 		OpenDialog(
-			vKey, vName, vFilters,
-			vPath, vDefaultFileName,
-			vOptionsPane, vOptionsPaneWidth,
+			vKey, vTitle, vFilters,
+			vPath, vFileName,
+			vSidePane, vSidePaneWidth,
 			vCountSelectionMax, vUserDatas, vFlags);
+
 		dlg_modal = true;
 	}
 
 	void IGFD::FileDialog::OpenModal(
-		const std::string& vKey, const std::string& vName, const std::string& vFilters,
+		const std::string& vKey, 
+		const std::string& vTitle, 
+		const char *vFilters,
 		const std::string& vFilePathName,
-		const PaneFun& vOptionsPane, const float& vOptionsPaneWidth,
-		const int& vCountSelectionMax, UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
+		const PaneFun& vSidePane, 
+		const float& vSidePaneWidth,
+		const int& vCountSelectionMax, 
+		UserDatas vUserDatas, 
+		ImGuiFileDialogFlags vFlags)
 	{
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
 		OpenDialog(
-			vKey, vName, vFilters,
+			vKey, vTitle, vFilters,
 			vFilePathName,
-			vOptionsPane, vOptionsPaneWidth,
+			vSidePane, vSidePaneWidth,
 			vCountSelectionMax, vUserDatas, vFlags);
-		dlg_modal = true;
-	}
 
-	void IGFD::FileDialog::OpenModal(
-		const std::string& vKey, const std::string& vName, const std::string& vFilters,
-		const std::string& vFilePathName, const int& vCountSelectionMax,
-		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
-	{
-		if (m_ShowDialog) // if already opened, quit
-			return;
-
-		OpenDialog(
-			vKey, vName, vFilters,
-			vFilePathName, vCountSelectionMax,
-			vUserDatas, vFlags);
-		dlg_modal = true;
-	}
-
-	void IGFD::FileDialog::OpenModal(
-		const std::string& vKey, const std::string& vName, const std::string& vFilters,
-		const std::string& vPath, const std::string& vDefaultFileName, const int& vCountSelectionMax,
-		UserDatas vUserDatas, ImGuiFileDialogFlags vFlags)
-	{
-		if (m_ShowDialog) // if already opened, quit
-			return;
-
-		OpenDialog(
-			vKey, vName, vFilters,
-			vPath, vDefaultFileName, vCountSelectionMax,
-			vUserDatas, vFlags);
 		dlg_modal = true;
 	}
 
@@ -801,22 +719,22 @@ namespace IGFD
 	{
 		if (m_ShowDialog && dlg_key == vKey)
 		{
-			// to be sure than only one dialog displayed per frame
-			ImGuiContext& g = *GImGui;
-			if (g.FrameCount == m_LastImGuiFrameCount) // one instance was displayed this frame for this key +> quit
-				return false;
-			m_LastImGuiFrameCount = g.FrameCount; // mark this instance as used this frame
-
 			bool res = false;
 
-			std::string name = dlg_name + "##" + dlg_key;
+			// to be sure than only one dialog is displayed per frame
+			ImGuiContext& g = *GImGui;
+			if (g.FrameCount == m_LastImGuiFrameCount) // one instance was displayed this frame before for this key +> quit
+				return res;
+			m_LastImGuiFrameCount = g.FrameCount; // mark this instance as used this frame
+
+			std::string name = dlg_title + "##" + dlg_key;
 			if (m_Name != name)
 			{
 				m_FileList.clear();
 				m_CurrentPath_Decomposition.clear();
 			}
 
-			m_IsOk = false;
+			m_IsOk = false;	 // reset dialog result
 
 			ResetEvents();
 
@@ -2120,11 +2038,16 @@ namespace IGFD
 		}
 	}
 
-	void IGFD::FileDialog::ParseFilters(const std::string& vFilters)
+	void IGFD::FileDialog::ParseFilters(const char* vFilters)
 	{
 		m_Filters.clear();
 
-		if (!vFilters.empty())
+		if (vFilters)
+			dlg_filters = vFilters;				// file mode
+		else
+			dlg_filters.clear();				// directtory mode
+
+		if (!dlg_filters.empty())
 		{
 			// ".*,.cpp,.h,.hpp"
 			// "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md"
@@ -2133,18 +2056,18 @@ namespace IGFD
 
 			size_t nan = std::string::npos;
 			size_t p = 0, lp = 0;
-			while ((p = vFilters.find_first_of("{,", p)) != nan)
+			while ((p = dlg_filters.find_first_of("{,", p)) != nan)
 			{
 				FilterInfosStruct infos;
 
-				if (vFilters[p] == '{') // {
+				if (dlg_filters[p] == '{') // {
 				{
-					infos.filter = vFilters.substr(lp, p - lp);
+					infos.filter = dlg_filters.substr(lp, p - lp);
 					p++;
-					lp = vFilters.find('}', p);
+					lp = dlg_filters.find('}', p);
 					if (lp != nan)
 					{
-						std::string fs = vFilters.substr(p, lp - p);
+						std::string fs = dlg_filters.substr(p, lp - p);
 						auto arr = splitStringToVector(fs, ',', false);
 						for (auto a : arr)
 						{
@@ -2155,7 +2078,7 @@ namespace IGFD
 				}
 				else // ,
 				{
-					infos.filter = vFilters.substr(lp, p - lp);
+					infos.filter = dlg_filters.substr(lp, p - lp);
 					p++;
 				}
 
@@ -2170,7 +2093,7 @@ namespace IGFD
 					m_Filters.emplace_back(infos);
 			}
 
-			std::string token = vFilters.substr(lp);
+			std::string token = dlg_filters.substr(lp);
 			if (!token.empty())
 			{
 				FilterInfosStruct infos;
@@ -2631,7 +2554,7 @@ namespace IGFD
 				}
 			}
 
-			std::string name = OverWriteDialogTitleString "##" + dlg_name + dlg_key + "OverWriteDialog";
+			std::string name = OverWriteDialogTitleString "##" + dlg_title + dlg_key + "OverWriteDialog";
 
 			bool res = false;
 
@@ -2752,30 +2675,30 @@ IMGUIFILEDIALOG_API void IGFD_Destroy(ImGuiFileDialog* vContext)
 
 // standard dialog
 IMGUIFILEDIALOG_API void IGFD_OpenDialog(ImGuiFileDialog* vContext,
-	const char* vKey, const char* vName, const char* vFilters, const char* vPath,
-	const char* vDefaultFileName, IGFD_PaneFun vOptionsPane, const float vOptionsPaneWidth,
+	const char* vKey, const char* vTitle, const char* vFilters, const char* vPath,
+	const char* vFileName, IGFD_PaneFun vSidePane, const float vSidePaneWidth,
 	const int vCountSelectionMax, void* vUserDatas, ImGuiFileDialogFlags flags)
 {
 	if (vContext)
 	{
 		vContext->OpenDialog(
-			vKey, vName, vFilters, vPath, vDefaultFileName,
-			vOptionsPane, vOptionsPaneWidth,
+			vKey, vTitle, vFilters, vPath, vFileName,
+			vSidePane, vSidePaneWidth,
 			vCountSelectionMax, vUserDatas, flags);
 	}
 }
 
 // modal dialog
 IMGUIFILEDIALOG_API void IGFD_OpenModal(ImGuiFileDialog* vContext,
-	const char* vKey, const char* vName, const char* vFilters, const char* vPath,
-	const char* vDefaultFileName, IGFD_PaneFun vOptionsPane, const float vOptionsPaneWidth,
+	const char* vKey, const char* vTitle, const char* vFilters, const char* vPath,
+	const char* vFileName, IGFD_PaneFun vSidePane, const float vSidePaneWidth,
 	const int vCountSelectionMax, void* vUserDatas, ImGuiFileDialogFlags flags)
 {
 	if (vContext)
 	{
 		vContext->OpenModal(
-			vKey, vName, vFilters, vPath, vDefaultFileName,
-			vOptionsPane, vOptionsPaneWidth,
+			vKey, vTitle, vFilters, vPath, vFileName,
+			vSidePane, vSidePaneWidth,
 			vCountSelectionMax, vUserDatas, flags);
 	}
 }
@@ -2809,7 +2732,7 @@ IMGUIFILEDIALOG_API bool IGFD_IsOk(ImGuiFileDialog* vContext)
 	return false;
 }
 
-IMGUIFILEDIALOG_API bool IGFD_WasOpenedThisFrame(ImGuiFileDialog* vContext, 
+IMGUIFILEDIALOG_API bool IGFD_WasKeyOpenedThisFrame(ImGuiFileDialog* vContext, 
 	const char* vKey)
 {
 	if (vContext)
@@ -2820,12 +2743,32 @@ IMGUIFILEDIALOG_API bool IGFD_WasOpenedThisFrame(ImGuiFileDialog* vContext,
 	return false;
 }
 
-IMGUIFILEDIALOG_API bool IGFD_IsOpened(ImGuiFileDialog* vContext, 
+IMGUIFILEDIALOG_API bool IGFD_WasOpenedThisFrame(ImGuiFileDialog* vContext)
+{
+	if (vContext)
+	{
+		vContext->WasOpenedThisFrame();
+	}
+
+	return false;
+}
+
+IMGUIFILEDIALOG_API bool IGFD_IsKeyOpened(ImGuiFileDialog* vContext, 
 	const char* vCurrentOpenedKey)
 {
 	if (vContext)
 	{
 		vContext->IsOpened(vCurrentOpenedKey);
+	}
+
+	return false;
+}
+
+IMGUIFILEDIALOG_API bool IGFD_IsOpened(ImGuiFileDialog* vContext)
+{
+	if (vContext)
+	{
+		vContext->IsOpened();
 	}
 
 	return false;
