@@ -47,7 +47,7 @@ SOFTWARE.
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
-#include <dirent/dirent.h>
+#include "dirent/dirent.h"
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
