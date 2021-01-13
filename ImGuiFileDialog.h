@@ -599,7 +599,6 @@ namespace IGFD
 		bool m_CanWeContinue = true;// events
 		bool m_OkResultToConfirm = false; // to confim if ok for OverWrite
 		bool m_IsOk = false;								
-		bool m_AnyWindowsHovered = false;					// not remember why haha :) todo : to check if we can remove
 		bool m_CreateDirectoryMode = false;					// for create directory mode
 		std::string m_HeaderFileName;						// detail view column file
 		std::string m_HeaderFileSize;						// detail view column size
@@ -651,6 +650,7 @@ namespace IGFD
 #ifdef USE_BOOKMARK
 		char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 #endif
+		bool m_AnyWindowsHovered = false;					// not remember why haha :) todo : to check if we can remove
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	/// PUBLIC METHODS/////////////////////////////////////////////////////////////////////
