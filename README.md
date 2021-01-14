@@ -14,7 +14,7 @@ it was not possible with native filedialog
 ## Struture of this repo
 
 The lib is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/blob/master)
 
 ## Features
 
@@ -83,7 +83,7 @@ void drawGui()
   }
 }
 ```
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/dlg_simple.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
 
 ## Directory Chooser :
 
@@ -94,7 +94,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", "Choose a Directory",
 
 In this mode you can select any directory with one click, and open directory with double click
 
-![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/directoryChooser.gif)
+![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/directoryChooser.gif)
 
 ## Dialog with Custom Pane :
 
@@ -153,7 +153,7 @@ void drawGui()
   }
 }
 ```
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
 
 ## Filter Infos
 
@@ -165,7 +165,7 @@ ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0,0,1, 0.9));
 ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/color_filter.png)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
 and also specific icons (with icon font files) or file type names :
 
@@ -176,7 +176,7 @@ ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0,1,1,0.9), ICON_I
 ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/filter_Icon.png)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/filter_Icon.png)
 
 ## Filter Collections 
 
@@ -192,7 +192,7 @@ const char *filters = "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files 
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_OPEN " Choose a File", filters, ".");
 ```
 will produce :
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/collectionFilters.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/collectionFilters.gif)
 
 ## Multi Selection
 
@@ -212,7 +212,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/multiSelection.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
 
 ## File Dialog Constraints
 
@@ -229,7 +229,7 @@ ImVec2 minSize = maxSize * 0.5f;
 ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize);
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/dialog_constraints.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dialog_constraints.gif)
 
 ## Detail View Mode
 
@@ -237,7 +237,7 @@ You can have tables display like that.
 
 - uncomment "#define USE_IMGUI_TABLES" in you custom config file (CustomImGuiFileDialogConfig.h in this example)
 - will be used by default when ImGui Table will be released in master
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/imgui_tables_branch.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/imgui_tables_branch.gif)
 
 ## Exploring by keys
 
@@ -253,7 +253,7 @@ you can also uncomment the next lines for define your keys :
 
 you can also explore a file list by use the current key char.
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/explore_ny_keys.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/explore_ny_keys.gif)
 
 as you see the current item is flashed (by default for 1 sec)
 you can define the flashing life time by yourself with the function
@@ -281,7 +281,7 @@ you can also uncomment the next lines for customize it :
 * you can select each bookmark for edit the displayed name corresponding to a path
 * you must double click on the label for apply the bookmark 
 
-![bookmarks.gif](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/bookmarks.gif)
+![bookmarks.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/bookmarks.gif)
 
 you can also serialize/deserialize bookmarks by ex for load/save from/to file : (check the app sample by ex)
 ```cpp
@@ -299,7 +299,7 @@ see in this gif :
 1) button edition with mouse button right and escape key for quit the edition
 2) focus the input and press validation for set path
 
-![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/inputPathEdition.gif)
+![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/inputPathEdition.gif)
 
 ## Confirm to OverWrite Dialog :
 
@@ -345,7 +345,7 @@ you can  uncomment the next lines for customize it :
 
 See the result :
 
-![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/ConfirmToOverWrite.gif)
+![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/ConfirmToOverWrite.gif)
 
 ## Open / Save dialog Behavior :
 
@@ -370,7 +370,7 @@ UserDatas GetUserDatas();                          // get user datas send with O
 ### ImGuiFileDialog require :
 
 * [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) lib, only for windows. Successfully tested with version v1.23 only
-* [ImGui](https://github.com/ocornut/imgui/tree/master) (with/without tables widgets)
+* [ImGui](https://github.com/ocornut/imgui/blob/master) (with/without tables widgets)
 
 ### Customize ImGuiFileDialog :
 
