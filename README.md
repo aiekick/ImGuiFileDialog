@@ -48,15 +48,15 @@ you have many possiblities :
 
 With a singleton, you can easily manage the dialog without the need to define an instance. but you can display only one dialog at a time
 ```cpp
-ImGuiFileDialog::Instance()->method_of_your_choice()
+ImGuiFileDialog::Instance()->method_of_your_choice();
 ```
 
 ### Multi Instance :
 
-for have the ability to displaya t same time many dialogs, you must define your own object
+for have the ability to display at same time, many dialogs. you must define your own instance
 ```cpp
 ImGuiFileDialog instance;
-instance.method_of_your_choice()
+instance.method_of_your_choice();
 ```
 
 ## Simple Dialog :
