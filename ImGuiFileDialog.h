@@ -687,7 +687,8 @@ namespace IGFD
 			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
 			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
 
-		void OpenPaneDialog(										// open dialog with custom right pane (path and fileName can be specified)
+		// with pane
+		void OpenDialog(											// open dialog with custom right pane (path and fileName can be specified)
 			const std::string& vKey,								// key dialog
 			const std::string& vTitle,								// title
 			const char* vFilters,									// filters
@@ -699,7 +700,7 @@ namespace IGFD
 			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
 			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
 
-		void OpenPaneDialog(										// open dialog with custom right pane (path and filename are obtained from filePathName)
+		void OpenDialog(											// open dialog with custom right pane (path and filename are obtained from filePathName)
 			const std::string& vKey,								// key dialog
 			const std::string& vTitle,								// title
 			const char* vFilters,									// filters
@@ -730,7 +731,8 @@ namespace IGFD
 			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
 			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
 
-		void OpenPaneModal(											// open modal with custom right pane (path and filename are obtained from filePathName)
+		// with pane
+		void OpenModal(												// open modal with custom right pane (path and filename are obtained from filePathName)
 			const std::string& vKey,								// key dialog
 			const std::string& vTitle,								// title
 			const char* vFilters,									// filters
@@ -742,7 +744,7 @@ namespace IGFD
 			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
 			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
 
-		void OpenPaneModal(											// open modal with custom right pane (path and fielname are obtained from filePathName)
+		void OpenModal(												// open modal with custom right pane (path and fielname are obtained from filePathName)
 			const std::string& vKey,								// key dialog
 			const std::string& vTitle,								// title
 			const char* vFilters,									// filters

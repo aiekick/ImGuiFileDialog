@@ -47,7 +47,7 @@ SOFTWARE.
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
-#include "dirent/dirent.h"
+#include "dirent/dirent.h" // directly open the dirent file attached to this lib
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
@@ -662,8 +662,9 @@ namespace IGFD
 #endif
 	}
 	
+	// with pane
 	// path and fileName can be specified
-	void IGFD::FileDialog::OpenPaneDialog(
+	void IGFD::FileDialog::OpenDialog(
 		const std::string& vKey,
 		const std::string& vTitle,
 		const char* vFilters,
@@ -699,8 +700,9 @@ namespace IGFD
 #endif
 	}
 
+	// with pane
 	// path and filename are obtained from filePathName
-	void IGFD::FileDialog::OpenPaneDialog(
+	void IGFD::FileDialog::OpenDialog(
 		const std::string& vKey,
 		const std::string& vTitle,
 		const char* vFilters,
@@ -793,8 +795,9 @@ namespace IGFD
 		dlg_modal = true;
 	}
 
+	// with pane
 	// path and fileName can be specified
-	void IGFD::FileDialog::OpenPaneModal(
+	void IGFD::FileDialog::OpenModal(
 		const std::string& vKey,
 		const std::string& vTitle,
 		const char* vFilters,
@@ -809,7 +812,7 @@ namespace IGFD
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenPaneDialog(
+		OpenDialog(
 			vKey, vTitle, vFilters,
 			vPath, vFileName, 
 			vSidePane, vSidePaneWidth,
@@ -818,8 +821,9 @@ namespace IGFD
 		dlg_modal = true;
 	}
 
+	// with pane
 	// path and filename are obtained from filePathName
-	void IGFD::FileDialog::OpenPaneModal(
+	void IGFD::FileDialog::OpenModal(
 		const std::string& vKey,
 		const std::string& vTitle,
 		const char* vFilters,
@@ -833,7 +837,7 @@ namespace IGFD
 		if (m_ShowDialog) // if already opened, quit
 			return;
 
-		OpenPaneDialog(
+		OpenDialog(
 			vKey, vTitle, vFilters,
 			vFilePathName,
 			vSidePane, vSidePaneWidth,
@@ -2852,7 +2856,7 @@ IMGUIFILEDIALOG_API void IGFD_OpenPaneDialog(
 {
 	if (vContext)
 	{
-		vContext->OpenPaneDialog(
+		vContext->OpenDialog(
 			vKey, vTitle, vFilters, 
 			vPath, vFileName,
 			vSidePane, vSidePaneWidth,
@@ -2874,7 +2878,7 @@ IMGUIFILEDIALOG_API void IGFD_OpenPaneDialog2(
 {
 	if (vContext)
 	{
-		vContext->OpenPaneDialog(
+		vContext->OpenDialog(
 			vKey, vTitle, vFilters, 
 			vFilePathName,
 			vSidePane, vSidePaneWidth,
@@ -2935,7 +2939,7 @@ IMGUIFILEDIALOG_API void IGFD_OpenPaneModal(
 {
 	if (vContext)
 	{
-		vContext->OpenPaneModal(
+		vContext->OpenModal(
 			vKey, vTitle, vFilters,
 			vPath, vFileName,
 			vSidePane, vSidePaneWidth,
@@ -2957,7 +2961,7 @@ IMGUIFILEDIALOG_API void IGFD_OpenPaneModal2(
 {
 	if (vContext)
 	{
-		vContext->OpenPaneDialog(
+		vContext->OpenDialog(
 			vKey, vTitle, vFilters,
 			vFilePathName,
 			vSidePane, vSidePaneWidth,
