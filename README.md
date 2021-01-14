@@ -429,7 +429,7 @@ void OpenDialog(                                   // open dialog with custom ri
     const std::string& vPath,                      // path
     const std::string& vFileName,                  // defaut file name
     const PaneFun& vSidePane,                      // side pane
-    const float& vSidePaneWidth = 250.0f,                               // side pane width
+    const float& vSidePaneWidth = 250.0f,          // side pane width
     const int& vCountSelectionMax = 1,             // count selection max
     UserDatas vUserDatas = nullptr,                // user datas (can be retrieved in pane)
     ImGuiFileDialogFlags vFlags = 0);              // ImGuiFileDialogFlags 
@@ -440,7 +440,7 @@ void OpenDialog(                                   // open dialog with custom ri
     const char* vFilters,                          // filters
     const std::string& vFilePathName,              // file path name (will be decompsoed in path and fileName)
     const PaneFun& vSidePane,                      // side pane
-    const float& vSidePaneWidth = 250.0f,                               // side pane width
+    const float& vSidePaneWidth = 250.0f,          // side pane width
     const int& vCountSelectionMax = 1,             // count selection max
     UserDatas vUserDatas = nullptr,                // user datas (can be retrieved in pane)
     ImGuiFileDialogFlags vFlags = 0);              // ImGuiFileDialogFlags 
