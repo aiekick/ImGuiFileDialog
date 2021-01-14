@@ -10,3 +10,7 @@
 	path = 3rdparty/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = master
+[submodule "ImGuiFileDialog"]
+	path = ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog/
+	branch = Lib_Only
