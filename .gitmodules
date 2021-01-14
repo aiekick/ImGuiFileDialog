@@ -6,10 +6,6 @@
 	path = 3rdparty/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
-[submodule "3rdparty/dirent"]
-	path = 3rdparty/dirent
-	url = https://github.com/tronkko/dirent.git
-	branch = master
 [submodule "3rdparty/imgui"]
 	path = 3rdparty/imgui
 	url = https://github.com/ocornut/imgui.git
