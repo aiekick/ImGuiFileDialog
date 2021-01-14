@@ -13,8 +13,8 @@ it was not possible with native filedialog
 
 ## Structure of this repo
 
-The lib is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+* The lib is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
+* A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
 ## Features
 
