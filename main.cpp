@@ -44,25 +44,25 @@
 
 static void glfw_error_callback(int error, const char* description)
 {
-    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+	fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 static bool canValidateDialog = false;
 
-inline void InfosPane(std::string vFilter, igfd::UserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
+inline void InfosPane(const char* vFilter, IGFDUserDatas vUserDatas, bool* vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
 	ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
-	
-	ImGui::Text("Selected Filter : %s", vFilter.c_str());
+
+	ImGui::Text("Selected Filter : %s", vFilter);
 
 	const char* userDatas = (const char*)vUserDatas;
 	if (userDatas)
-        ImGui::Text("User Datas : %s", userDatas);
+		ImGui::Text("User Datas : %s", userDatas);
 
 	ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
 
 	if (vCantContinue)
-	    *vCantContinue = canValidateDialog;
+		*vCantContinue = canValidateDialog;
 }
 
 inline bool RadioButtonLabeled(const char* label, bool active, bool disabled)
@@ -122,81 +122,81 @@ inline bool RadioButtonLabeled(const char* label, bool active, bool disabled)
 
 int main(int, char**)
 {
-    // Setup window
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
+	// Setup window
+	glfwSetErrorCallback(glfw_error_callback);
+	if (!glfwInit())
+		return 1;
 
-    // Decide GL+GLSL versions
+	// Decide GL+GLSL versions
 #if APPLE
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+	// GL 3.2 + GLSL 150
+	const char* glsl_version = "#version 150";
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+	// GL 3.0 + GLSL 130
+	const char* glsl_version = "#version 130";
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-    // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
+	// Create window with graphics context
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+	if (window == NULL)
+		return 1;
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1); // Enable vsync
 
-    // Initialize OpenGL loader
+	// Initialize OpenGL loader
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-    bool err = gl3wInit() != 0;
+	bool err = gl3wInit() != 0;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-    bool err = glewInit() != GLEW_OK;
+	bool err = glewInit() != GLEW_OK;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-    bool err = gladLoadGL() == 0;
+	bool err = gladLoadGL() == 0;
 #else
-    bool err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
+	bool err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
 #endif
-    if (err)
-    {
-        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
-        return 1;
-    }
+	if (err)
+	{
+		fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+		return 1;
+	}
 
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	io.FontAllowUserScaling = true; // zoom wiht ctrl + mouse wheel 
 
-    // Setup Dear ImGui style
-    //ImGui::StyleColorsDark();
-    ImGui::StyleColorsClassic();
+	// Setup Dear ImGui style
+	//ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
 
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'docs/FONTS.txt' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != NULL);
+	// Load Fonts
+	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+	// - Read 'docs/FONTS.txt' for more instructions and details.
+	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+	//io.Fonts->AddFontDefault();
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+	//IM_ASSERT(font != NULL);
 
 	// load icon font file (CustomFont.cpp)
 	ImGui::GetIO().Fonts->AddFontDefault();
@@ -204,58 +204,96 @@ int main(int, char**)
 	ImFontConfig icons_config; icons_config.MergeMode = true; icons_config.PixelSnapH = true;
 	ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_IGFD, 15.0f, &icons_config, icons_ranges);
 
-    // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	// Our state
+	bool show_demo_window = true;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
-	igfd::ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+	// singleton acces
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+
+	// just for show multi dialog instance behavior (here use for shwo directory query dialog)
+	ImGuiFileDialog fileDialog2;
+	fileDialog2.SetExtentionInfos(".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	fileDialog2.SetExtentionInfos(".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	fileDialog2.SetExtentionInfos(".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+
+	// c interface
+	auto cfileDialog = IGFD_Create();
+	IGFD_SetExtentionInfos(cfileDialog, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f), "");
+	IGFD_SetExtentionInfos(cfileDialog, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	IGFD_SetExtentionInfos(cfileDialog, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 
 #ifdef USE_BOOKMARK
 	// load bookmarks
-	std::ifstream docFile("bookmarks.conf", std::ios::in);
-	if (docFile.is_open())
+	std::ifstream docFile_1("bookmarks_1.conf", std::ios::in);
+	if (docFile_1.is_open())
 	{
 		std::stringstream strStream;
-		strStream << docFile.rdbuf();//read the file
-		igfd::ImGuiFileDialog::Instance()->DeserializeBookmarks(strStream.str());
-		docFile.close();
+		strStream << docFile_1.rdbuf();//read the file
+		ImGuiFileDialog::Instance()->DeserializeBookmarks(strStream.str());
+		docFile_1.close();
+	}
+
+	std::ifstream docFile_2("bookmarks_2.conf", std::ios::in);
+	if (docFile_2.is_open())
+	{
+		std::stringstream strStream;
+		strStream << docFile_2.rdbuf();//read the file
+		fileDialog2.DeserializeBookmarks(strStream.str());
+		docFile_2.close();
+	}
+
+	// c interface
+	std::ifstream docFile_c("bookmarks_c.conf", std::ios::in);
+	if (docFile_c.is_open())
+	{
+		std::stringstream strStream;
+		strStream << docFile_c.rdbuf();//read the file
+		IGFD_DeserializeBookmarks(cfileDialog, strStream.str().c_str());
+		docFile_c.close();
 	}
 #endif
 
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-    {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        glfwPollEvents();
+	// Main loop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Poll and handle events (inputs, window resize, etc.)
+		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+		glfwPollEvents();
 
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+		if (show_demo_window)
+			ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        {
+		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+		{
 			ImGui::Begin("imGuiFileDialog Demo");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Separator();
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Separator();
 
 			ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
 			ImGui::Indent();
@@ -265,12 +303,22 @@ int main(int, char**)
 				if (ImGui::Button("R##resetflashlifetime"))
 				{
 					flashingAttenuationInSeconds = 1.0f;
-					igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+
+					// c interface
+					IGFD_SetFlashingAttenuationInSeconds(cfileDialog, flashingAttenuationInSeconds);
 				}
 				ImGui::SameLine();
 				ImGui::PushItemWidth(200);
 				if (ImGui::SliderFloat("Flash lifetime (s)", &flashingAttenuationInSeconds, 0.01f, 5.0f))
-					igfd::ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+				{
+					ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+					fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+
+					// c interface
+					IGFD_SetFlashingAttenuationInSeconds(cfileDialog, flashingAttenuationInSeconds);
+				}
 				ImGui::PopItemWidth();
 #endif
 				static bool _UseWindowContraints = true;
@@ -285,108 +333,117 @@ int main(int, char**)
 				ImGui::SameLine();
 				if (RadioButtonLabeled("Modal", !standardDialogMode, false)) standardDialogMode = false;
 
+				ImGui::Text("Singleton acces :");
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog"))
 				{
-					const char *filters = ".*,.cpp,.h,.hpp";
+					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", 
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".");
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "");
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", 
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".");
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "");
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters"))
 				{
-					const char *filters = "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
+					const char* filters = "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".");
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "");
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".");
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "");
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items"))
 				{
-					const char *filters = ".*,.cpp,.h,.hpp";
+					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", 5);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 5);
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", 5);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 5);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with infinite selection"))
 				{
-					const char *filters = ".*,.cpp,.h,.hpp";
+					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", 0);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0);
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", 0);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*"))
 				{
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", 5);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "");
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", 5);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "");
 				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane"))
 				{
-					const char *filters = "C++ File (*.cpp){.cpp}";
+					const char* filters = "C++ File (*.cpp){.cpp}";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-							ICON_IGFD_SAVE " Choose a File", filters,
-							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, 
-							std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
-					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
 							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2,
-								std::placeholders::_3), 350, 1, igfd::UserDatas("SaveFile"));
+								std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+					else
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+							ICON_IGFD_SAVE " Choose a File", filters,
+							".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2,
+								std::placeholders::_3), 350, 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with Confirm Dialog For Overwrite File if exist"))
 				{
+					const char* filters = "C/C++ File (*.c *.cpp){.c,.cpp}, Header File (*.h){.h}";
+					if (standardDialogMode)
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+					else
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+				}
+
+				ImGui::Text("Other Instance (multi dialog demo) :");
+				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog"))
+				{
+					// let filters be null for open directory chooser
+					if (standardDialogMode)
+						fileDialog2.OpenDialog("ChooseDirDlgKey",
+							ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".");
+					else
+						fileDialog2.OpenModal("ChooseDirDlgKey",
+							ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".");
+				}
+				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog with selection of 5 items"))
+				{
+					// set filters be null for open directory chooser
+					if (standardDialogMode)
+						fileDialog2.OpenDialog("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".", "", 5);
+					else
+						fileDialog2.OpenModal("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".", "", 5);
+				}
+
+				ImGui::Separator();
+
+				/////////////////////////////////////////////////////////////////
+				// C Interface
+				/////////////////////////////////////////////////////////////////
+				ImGui::Text("C Instance demo :");
+				if (ImGui::Button("C " ICON_IGFD_SAVE " Save File Dialog with a custom pane"))
+				{
 					const char* filters = "C++ File (*.cpp){.cpp}";
 					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
+						IGFD_OpenPaneDialog(cfileDialog, "ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
-							".", "", 1, igfd::UserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+							".", "", &InfosPane, 350, 1, (void*)("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+						IGFD_OpenPaneModal(cfileDialog, "ChooseFileDlgKey",
 							ICON_IGFD_SAVE " Choose a File", filters,
-							".", 1, igfd::UserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+							".", "", &InfosPane, 350, 1, (void*)("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 				}
-				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog"))
-                {
-					// set filters to 0 for open directory chooser
-					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey",
-						ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".");
-					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".");
-                }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog with selection of 5 items"))
-                {
-					// set filters to 0 for open directory chooser
-					if (standardDialogMode)
-						igfd::ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".", 5);
-					else
-						igfd::ImGuiFileDialog::Instance()->OpenModal("ChooseDirDlgKey",
-							ICON_IGFD_FOLDER_OPEN " Choose a Directory", 0, ".", 5);
-                }
+				/////////////////////////////////////////////////////////////////
+				/////////////////////////////////////////////////////////////////
+
 				ImVec2 minSize = ImVec2(0, 0);
 				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
 				if (_UseWindowContraints)
 				{
-					maxSize = ImVec2((float)display_w, (float)display_h);
-					minSize = maxSize * 0.5f;
+					maxSize = ImVec2((float)display_w, (float)display_h) * 0.7f;
+					minSize = maxSize * 0.25f;
 				}
 
 				// you can define your flags and min/max window size (theses three settings ae defined by default :
@@ -400,18 +457,18 @@ int main(int, char**)
 				static std::string userDatas = "";
 				static std::vector<std::pair<std::string, std::string>> selection = {};
 
-				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey",
-				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey",
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
 				{
-					if (igfd::ImGuiFileDialog::Instance()->IsOk)
+					if (ImGuiFileDialog::Instance()->IsOk())
 					{
-						filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-						filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-						filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
+						filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+						filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+						filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
 						// here convert from string because a string was passed as a userDatas, but it can be what you want
-                        if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
-                            userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
-						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+						if (ImGuiFileDialog::Instance()->GetUserDatas())
+							userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
+						auto sel = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 						selection.clear();
 						for (auto s : sel)
 						{
@@ -419,30 +476,69 @@ int main(int, char**)
 						}
 						// action
 					}
-					igfd::ImGuiFileDialog::Instance()->CloseDialog();
+					ImGuiFileDialog::Instance()->Close();
 				}
 
-				if (igfd::ImGuiFileDialog::Instance()->FileDialog("ChooseDirDlgKey",
-				        ImGuiWindowFlags_NoCollapse, minSize, maxSize))
-                {
-                    if (igfd::ImGuiFileDialog::Instance()->IsOk)
-                    {
-                        filePathName = igfd::ImGuiFileDialog::Instance()->GetFilePathName();
-                        filePath = igfd::ImGuiFileDialog::Instance()->GetCurrentPath();
-                        filter = igfd::ImGuiFileDialog::Instance()->GetCurrentFilter();
-                        // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        if (igfd::ImGuiFileDialog::Instance()->GetUserDatas())
-                            userDatas = std::string((const char*)igfd::ImGuiFileDialog::Instance()->GetUserDatas());
-						auto sel = igfd::ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+				if (fileDialog2.Display("ChooseDirDlgKey",
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				{
+					if (fileDialog2.IsOk())
+					{
+						filePathName = fileDialog2.GetFilePathName();
+						filePath = fileDialog2.GetCurrentPath();
+						filter = fileDialog2.GetCurrentFilter();
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						if (fileDialog2.GetUserDatas())
+							userDatas = std::string((const char*)fileDialog2.GetUserDatas());
+						auto sel = fileDialog2.GetSelection(); // multiselection
 						selection.clear();
 						for (auto s : sel)
 						{
 							selection.emplace_back(s.first, s.second);
 						}
-                        // action
-                    }
-                    igfd::ImGuiFileDialog::Instance()->CloseDialog();
-                }
+						// action
+					}
+					fileDialog2.Close();
+				}
+
+				/////////////////////////////////////////////////////////////////
+				// C Interface
+				/////////////////////////////////////////////////////////////////
+				if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey",
+					ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+				{
+					if (IGFD_IsOk(cfileDialog))
+					{
+						char* cfilePathName = IGFD_GetFilePathName(cfileDialog);
+						if (cfilePathName) filePathName = cfilePathName;
+						char* cfilePath = IGFD_GetCurrentPath(cfileDialog);
+						if (cfilePath) filePath = cfilePath;
+						char* cfilter = IGFD_GetCurrentFilter(cfileDialog);
+						if (cfilter) filter = cfilter;
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						void* cdatas = IGFD_GetUserDatas(cfileDialog);
+						if (cdatas)	userDatas = (const char*)cdatas;
+						IGFD_Selection csel = IGFD_GetSelection(cfileDialog); // multiselection
+
+						selection.clear();
+						for (size_t i = 0; i < csel.count; i++)
+						{
+							std::string _fileName = csel.table[i].fileName;
+							std::string _filePathName = csel.table[i].filePathName;
+							selection.emplace_back(_fileName, _filePathName);
+						}
+						
+						// destroy
+						if (cfilePathName) delete[] cfilePathName;
+						if (cfilePath) delete[] cfilePath;
+						if (cfilter) delete[] cfilter;
+						IGFD_Selection_DestroyContent(&csel);
+					}
+					IGFD_CloseDialog(cfileDialog);
+				}
+				/////////////////////////////////////////////////////////////////
+				/////////////////////////////////////////////////////////////////
+				/////////////////////////////////////////////////////////////////
 
 				ImGui::Separator();
 
@@ -457,15 +553,15 @@ int main(int, char**)
 					ImGui::Indent();
 					{
 						static int selected = false;
-						if (ImGui::BeginTable("##GetSelection", 2, 
-							ImGuiTableFlags_SizingPolicyFixed | ImGuiTableFlags_RowBg |
+						if (ImGui::BeginTable("##GetSelection", 2,
+							ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg |
 							ImGuiTableFlags_ScrollY))
 						{
 							ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
 							ImGui::TableSetupColumn("File Name", ImGuiTableColumnFlags_WidthStretch, -1, 0);
-							ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthAuto, -1, 1);
-							ImGui::TableHeadersRow(); 
-							
+							ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthFixed, -1, 1);
+							ImGui::TableHeadersRow();
+
 							ImGuiListClipper clipper;
 							clipper.Begin((int)selection.size(), ImGui::GetTextLineHeightWithSpacing());
 							while (clipper.Step())
@@ -497,44 +593,64 @@ int main(int, char**)
 			}
 			ImGui::Unindent();
 
-
 			ImGui::Separator();
 			ImGui::Text("Window mode :");
 			ImGui::Separator();
 
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
 
 		// Rendering
-        ImGui::Render();
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui::Render();
+		glViewport(0, 0, display_w, display_h);
+		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		glClear(GL_COLOR_BUFFER_BIT);
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        glfwSwapBuffers(window);
-    }
+		glfwSwapBuffers(window);
+	}
 
 #ifdef USE_BOOKMARK
-	// save bookmarks
-	std::ofstream configFileWriter("bookmarks.conf", std::ios::out);
-	if (!configFileWriter.bad())
+	// save bookmarks dialog 1
+	std::ofstream configFileWriter_1("bookmarks_1.conf", std::ios::out);
+	if (!configFileWriter_1.bad())
 	{
-		configFileWriter << igfd::ImGuiFileDialog::Instance()->SerializeBookmarks();
-		configFileWriter.close();
+		configFileWriter_1 << ImGuiFileDialog::Instance()->SerializeBookmarks();
+		configFileWriter_1.close();
+	}
+	// save bookmarks dialog 2
+	std::ofstream configFileWriter_2("bookmarks_2.conf", std::ios::out);
+	if (!configFileWriter_2.bad())
+	{
+		configFileWriter_2 << fileDialog2.SerializeBookmarks();
+		configFileWriter_2.close();
+	}
+	// save bookmarks dialog c interface
+	std::ofstream configFileWriter_c("bookmarks_c.conf", std::ios::out);
+	if (!configFileWriter_c.bad())
+	{
+		char* s = IGFD_SerializeBookmarks(cfileDialog);
+		if (s)
+		{
+			configFileWriter_c << std::string(s);
+			configFileWriter_c.close();
+		}
 	}
 #endif
 
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+	// c interface
+	IGFD_Destroy(cfileDialog);
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+	// Cleanup
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
-    return 0;
+	glfwDestroyWindow(window);
+	glfwTerminate();
+
+	return 0;
 }

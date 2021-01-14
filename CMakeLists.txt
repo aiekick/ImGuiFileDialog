@@ -1,8 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0048 NEW)
-cmake_policy(SET CMP0054 NEW)
-cmake_policy(SET CMP0012 NEW)
-cmake_policy(SET CMP0023 NEW)
+cmake_minimum_required(VERSION 3.1)
 
 set(PROJECT ImGuiFileDialog)
 
@@ -11,15 +7,9 @@ project(${PROJECT} CXX)
 
 include(cmake/3rdparty.cmake)
 
-if(WIN32)
-    set(DIRENT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/dirent/include)
-    include_directories(${DIRENT_INCLUDE_DIR})
-endif()
-
 if(MSVC)
     # Ignore 4055 for glad
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /IGNORE:4055")
-    add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-DMSVC)
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
@@ -27,7 +17,6 @@ endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
-add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 
 file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
 file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
@@ -92,14 +81,14 @@ include_directories(
         ${GLFW_INCLUDE_DIR}
         ${GLAD_INCLUDE_DIR}
         ${IMGUI_INCLUDE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
 )
 
 target_link_libraries(${PROJECT} PRIVATE
 	${OPENGL_LIBRARIES}
-        ${GLFW_LIBRARIES}
-        ${GLAD_LIBRARIES}
-        ${IMGUI_LIBRARIES}
+	${GLFW_LIBRARIES}
+	${GLAD_LIBRARIES}
+	${IMGUI_LIBRARIES}
 )
 
