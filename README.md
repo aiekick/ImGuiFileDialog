@@ -11,10 +11,10 @@ this File Dialog is build on top of [Dear ImGui](https://github.com/ocornut/imgu
 this filedialog was created principally for have custom pane with widgets according to file extention.
 it was not possible with native filedialog
 
-## Struture of this repo
+## Structure of this repo
 
 The lib is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/blob/master)
+A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
 ## Features
 
