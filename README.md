@@ -94,7 +94,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", "Choose a Directory",
 
 In this mode you can select any directory with one click, and open directory with double click
 
-![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/tree/master/directoryChooser.gif)
+![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/tree/master/doc/directoryChooser.gif)
 
 ## Dialog with Custom Pane :
 
