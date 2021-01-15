@@ -2150,17 +2150,17 @@ namespace IGFD
 
 	void IGFD::FileDialog::GetDrives()
 	{
-		auto res = GetDrivesList();
-		if (!res.empty())
+		auto drives = GetDrivesList();
+		if (!drives.empty())
 		{
 			m_CurrentPath.clear();
 			m_CurrentPath_Decomposition.clear();
 			m_FileList.clear();
-			for (auto& re : res)
+			for (auto& drive : drives)
 			{
 				FileInfoStruct infos;
-				infos.fileName = re;
-				infos.fileName_optimized = OptimizeFilenameForSearchOperations(re);
+				infos.fileName = drive;
+				infos.fileName_optimized = OptimizeFilenameForSearchOperations(drive);
 				infos.type = 'd';
 
 				if (!infos.fileName.empty())
@@ -2275,7 +2275,7 @@ namespace IGFD
 		}
 	}
 
-	std::string IGFD::FileDialog::OptimizeFilenameForSearchOperations(std::string& vFileName)
+	std::string IGFD::FileDialog::OptimizeFilenameForSearchOperations(std::string vFileName)
 	{
 		// convert to lower case
 		for (char& c : vFileName)

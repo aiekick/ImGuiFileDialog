@@ -839,7 +839,7 @@ namespace IGFD
 		void GetDrives();																									// list drives on windows platform
 		void ParseFilters(const char* vFilters);																			// parse filter syntax, detect and parse filter collection
 		void SetSelectedFilterWithExt(const std::string& vFilter);															// select filter
-		static std::string OptimizeFilenameForSearchOperations(std::string& vFileName);										// easier the search by lower case all filenames
+		static std::string OptimizeFilenameForSearchOperations(std::string vFileName);										// easier the search by lower case all filenames
 	    void ApplyFilteringOnFileList();																					// filter the file list accroding to the searh tags
 		bool Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);						// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
 		bool IsFileExist(const std::string& vFile);																			// is file exist
