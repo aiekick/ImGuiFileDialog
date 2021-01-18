@@ -3062,7 +3062,11 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->fileName = new char[siz];
-					strncpy(pair->fileName, s.first.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+					strncpy(pair->fileName, s.first.c_str(), siz);
+#else
+					strncpy_s(pair->fileName, siz, s.first.c_str(), siz);
+#endif
 					pair->fileName[siz - 1U] = '\0';
 				}
 
@@ -3071,7 +3075,11 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->filePathName = new char[siz];
-					strncpy(pair->filePathName, s.first.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+					strncpy(pair->filePathName, s.first.c_str(), siz);
+#else
+					strncpy_s(pair->filePathName, siz, s.first.c_str(), siz);
+#endif
 					pair->filePathName[siz - 1U] = '\0';
 				}
 			}
@@ -3094,7 +3102,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-			strncpy(res, s.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(res, s.c_str(), siz);
+#else
+			strncpy_s(res, siz, s.c_str(), siz);
+#endif
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -3113,7 +3125,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFileName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-			strncpy(res, s.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(res, s.c_str(), siz);
+#else
+			strncpy_s(res, siz, s.c_str(), siz);
+#endif
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -3132,7 +3148,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-			strncpy(res, s.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(res, s.c_str(), siz);
+#else
+			strncpy_s(res, siz, s.c_str(), siz);
+#endif
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -3151,7 +3171,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-			strncpy(res, s.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(res, s.c_str(), siz);
+#else
+			strncpy_s(res, siz, s.c_str(), siz);
+#endif
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -3198,7 +3222,11 @@ IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(ImGuiFileDialog* vContext,
 		{
 			size_t siz = icon.size() + 1U;
 			*vOutIcon = new char[siz];
-			strncpy(*vOutIcon, icon.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(*vOutIcon, icon.c_str(), siz);
+#else
+			strncpy_s(*vOutIcon, siz, icon.c_str(), siz);
+#endif
 			*vOutIcon[siz - 1U] = '\0';
 		}
 		return res;
@@ -3237,7 +3265,11 @@ IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-			strncpy(res, s.c_str(), siz); // no need to use strncpy_s for MSVC here
+#ifndef MSVC
+			strncpy(res, s.c_str(), siz);
+#else
+			strncpy_s(res, siz, s.c_str(), siz);
+#endif
 			res[siz - 1U] = '\0';
 		}
 	}
