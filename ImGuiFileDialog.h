@@ -805,9 +805,9 @@ namespace IGFD
 
 	private: 
 		// dialog parts
-		void DrawHeader();											// draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
-		void DrawContent();											// draw content part of the dialog (bookmark pane, file list, side pane)
-		bool DrawFooter();											// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
+		virtual void DrawHeader();											// draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
+		virtual void DrawContent();											// draw content part of the dialog (bookmark pane, file list, side pane)
+		virtual bool DrawFooter();											// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
 		// widgets components
 		virtual void DrawDirectoryCreation();						// draw directory creation widget
