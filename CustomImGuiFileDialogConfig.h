@@ -5,8 +5,6 @@
 //#define MAX_FILE_DIALOG_NAME_BUFFER 1024
 //#define MAX_PATH_BUFFER_SIZE 1024
 
-#define USE_IMGUI_TABLES
-
 #include <GLFW/glfw3.h>
 
 #define USE_EXPLORATION_BY_KEYS
@@ -58,6 +56,11 @@ Comment theses line if you not want to have customization, like icon font here
 //#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
 #define OverWriteDialogConfirmButtonString ICON_IGFD_OK " Confirm"
 #define OverWriteDialogCancelButtonString ICON_IGFD_CANCEL " Cancel"
+
+// see strftime functionin <ctime> for customize
+// "%Y/%m/%d %H:%M:%S" give 2021:01:22 11:47:10
+// "%Y/%m/%d %i:%M%p" give 2021:01:22 11:45PM
+//#define DateTimeFormat "%Y/%m/%d %i:%M%p"
 
 // theses icons will appear in table headers
 #define USE_CUSTOM_SORTING_ICON
