@@ -364,10 +364,10 @@ std::string GetCurrentFilter();                    // get selected filter
 UserDatas GetUserDatas();                          // get user datas send with Open Dialog
 
 -----------------------------------------------------------------------------------------------------------------
-## C Interface
+## C API
 -----------------------------------------------------------------------------------------------------------------
 
-A C interface is available let you include ImGuiFileDialog in your C project.
+A C API is available let you include ImGuiFileDialog in your C project.
 btw, ImGuiFileDialog depend of ImGui and dirent (for windows)
 
 Sample code with cimgui :
@@ -467,20 +467,18 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 
 -----------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------
-
-My appologies, the v0.5.3 was wrong, not commited the expected good one :(
 */
 
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
-#define IMGUIFILEDIALOG_VERSION "v0.5.4"
+#define IMGUIFILEDIALOG_VERSION "v0.5.5"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include "ImGuiFileDialogConfig.h"
-#else
+#else // CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include CUSTOM_IMGUIFILEDIALOG_CONFIG
-#endif
+#endif // CUSTOM_IMGUIFILEDIALOG_CONFIG
 
 typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_
@@ -510,11 +508,11 @@ namespace IGFD
 {
 	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
 	#define MAX_FILE_DIALOG_NAME_BUFFER 1024
-	#endif
+	#endif // MAX_FILE_DIALOG_NAME_BUFFER
 
 	#ifndef MAX_PATH_BUFFER_SIZE
 	#define MAX_PATH_BUFFER_SIZE 1024
-	#endif
+	#endif // MAX_PATH_BUFFER_SIZE
 
 	struct FileExtentionInfosStruct
 	{
@@ -541,7 +539,7 @@ namespace IGFD
 			std::string name;
 			std::string path;
 		};
-#endif
+#endif // USE_BOOKMARK
 
 		enum class SortingFieldEnum
 		{
@@ -602,7 +600,7 @@ namespace IGFD
 		bool m_CreateDirectoryMode = false;					// for create directory mode
 		std::string m_HeaderFileName;						// detail view column file
 		std::string m_HeaderFileSize;						// detail view column size
-		std::string m_HeaderFileDate;						// detail view column date
+		std::string m_HeaderFileDate;						// detail view column date + time
 		bool m_SortingDirection[3] = { true,true,true };	// detail view // true => Descending, false => Ascending
 		SortingFieldEnum m_SortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
 
@@ -628,15 +626,13 @@ namespace IGFD
 		ImWchar m_LocateFileByInputChar_lastChar = 0;
 		int m_LocateFileByInputChar_InputQueueCharactersSize = 0;
 		bool m_LocateFileByInputChar_lastFound = false;
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 #ifdef USE_BOOKMARK
 		float m_BookmarkWidth = 200.0f;
-#endif
-#ifdef USE_BOOKMARK
         ImGuiListClipper m_BookmarkClipper;
 		std::vector<BookmarkStruct> m_Bookmarks;
 		bool m_BookmarkPaneShown = false;
-#endif
+#endif // USE_BOOKMARK
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	/// PUBLIC PARAMS /////////////////////////////////////////////////////////////////////
@@ -649,7 +645,7 @@ namespace IGFD
 		char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 #ifdef USE_BOOKMARK
 		char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
-#endif
+#endif // USE_BOOKMARK
 		bool m_AnyWindowsHovered = false;					// not remember why haha :) todo : to check if we can remove
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -796,12 +792,12 @@ namespace IGFD
 #ifdef USE_EXPLORATION_BY_KEYS
 		void SetFlashingAttenuationInSeconds(						// set the flashing time of the line in file list when use exploration keys
 			float vAttenValue);										// set the attenuation (from flashed to not flashed) in seconds
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 #ifdef USE_BOOKMARK
 		std::string SerializeBookmarks();							// serialize bookmarks : return bookmark buffer to save in a file
 		void DeserializeBookmarks(									// deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
 			const std::string& vBookmarks);							// bookmark buffer to load
-#endif
+#endif // USE_BOOKMARK
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	/// PRIVATE METHODS ///////////////////////////////////////////////////////////////////
@@ -821,7 +817,7 @@ namespace IGFD
 		virtual void DrawSidePane(float vHeight);					// draw side pane
 #ifdef USE_BOOKMARK
 		virtual void DrawBookMark();								// draw bookmark button
-#endif
+#endif // USE_BOOKMARK
 		// others
 		void ResetEvents();																									// reset events (path, drives, continue)
 		void SetDefaultFileName(const std::string& vFileName);																// set default fiel name
@@ -855,17 +851,17 @@ namespace IGFD
 		void StartFlashItem(size_t vIdx);																					// define than an item must be flashed
 		bool BeginFlashItem(size_t vIdx);																					// start the flashing of a line in lsit view
 		void EndFlashItem();																								// end the fleshing accrdoin to var m_FlashAlphaAttenInSecs
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 
 #ifdef USE_BOOKMARK
 		void DrawBookmarkPane(ImVec2 vSize);																				// draw bookmark pane
-#endif
+#endif // USE_BOOKMARK
 	};
 }
 typedef IGFD::UserDatas IGFDUserDatas;
 typedef IGFD::PaneFun IGFDPaneFun;
 typedef IGFD::FileDialog ImGuiFileDialog;
-#else
+#else // __cplusplus
 	typedef struct ImGuiFileDialog ImGuiFileDialog;
 	typedef struct IGFD_Selection_Pair IGFD_Selection_Pair;
 	typedef struct IGFD_Selection IGFD_Selection;
@@ -878,25 +874,25 @@ typedef IGFD::FileDialog ImGuiFileDialog;
 #if defined _WIN32 || defined __CYGWIN__
 	#ifdef IMGUIFILEDIALOG_NO_EXPORT
 		#define API
-	#else
+	#else // IMGUIFILEDIALOG_NO_EXPORT
 		#define API __declspec(dllexport)
-	#endif
-#else
+	#endif // IMGUIFILEDIALOG_NO_EXPORT
+#else // defined _WIN32 || defined __CYGWIN__
 	#ifdef __GNUC__
 		#define API  __attribute__((__visibility__("default")))
-	#else
+	#else // __GNUC__
 		#define API
-	#endif
-#endif
+	#endif // __GNUC__
+#endif // defined _WIN32 || defined __CYGWIN__
 
 #ifdef __cplusplus
 	#define IMGUIFILEDIALOG_API extern "C" API 
-#else
+#else // __cplusplus
 	#define IMGUIFILEDIALOG_API
-#endif
+#endif // __cplusplus
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///// C INTERFACE //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///// C API ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	struct IGFD_Selection_Pair

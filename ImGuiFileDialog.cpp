@@ -43,7 +43,7 @@ SOFTWARE.
 #if defined(__WIN32__) || defined(_WIN32)
 #ifndef WIN32
 #define WIN32
-#endif
+#endif // WIN32
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
@@ -51,19 +51,19 @@ SOFTWARE.
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
-#endif
+#endif // PATH_MAX
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 #define UNIX
 #define stricmp strcasecmp
 #include <sys/types.h>
 #include <dirent.h>
 #define PATH_SEP '/'
-#endif
+#endif // defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
-#endif
+#endif // IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
 #include <cstdlib>
@@ -75,115 +75,120 @@ namespace IGFD
 	// float comparisons
 #ifndef IS_FLOAT_DIFFERENT
 #define IS_FLOAT_DIFFERENT(a,b) (fabs((a) - (b)) > FLT_EPSILON)
-#endif
+#endif // IS_FLOAT_DIFFERENT
 #ifndef IS_FLOAT_EQUAL
 #define IS_FLOAT_EQUAL(a,b) (fabs((a) - (b)) < FLT_EPSILON)
-#endif
+#endif // IS_FLOAT_EQUAL
 
 // width of filter combobox
 #ifndef FILTER_COMBO_WIDTH
 #define FILTER_COMBO_WIDTH 150.0f
-#endif
+#endif // FILTER_COMBO_WIDTH
 
 // for lets you define your button widget
 // if you have like me a special bi-color button
 #ifndef IMGUI_PATH_BUTTON
 #define IMGUI_PATH_BUTTON ImGui::Button
-#endif
+#endif // IMGUI_PATH_BUTTON
 #ifndef IMGUI_BUTTON
 #define IMGUI_BUTTON ImGui::Button
-#endif
+#endif // IMGUI_BUTTON
 
 // locales
 #ifndef createDirButtonString
 #define createDirButtonString "+"
-#endif
+#endif // createDirButtonString
 #ifndef okButtonString
 #define okButtonString "OK"
-#endif
+#endif // okButtonString
 #ifndef cancelButtonString
 #define cancelButtonString "Cancel"
-#endif
+#endif // cancelButtonString
 #ifndef resetButtonString
 #define resetButtonString "R"
-#endif
+#endif // resetButtonString
 #ifndef drivesButtonString
 #define drivesButtonString "Drives"
-#endif
+#endif // drivesButtonString
 #ifndef searchString
 #define searchString "Search :"
-#endif
+#endif // searchString
 #ifndef dirEntryString
 #define dirEntryString "[Dir]"
-#endif
+#endif // dirEntryString
 #ifndef linkEntryString
 #define linkEntryString "[Link]"
-#endif
+#endif // linkEntryString
 #ifndef fileEntryString
 #define fileEntryString "[File]"
-#endif
+#endif // fileEntryString
 #ifndef fileNameString
 #define fileNameString "File Name :"
-#endif
+#endif // fileNameString
 #ifndef dirNameString
 #define dirNameString "Directory Name :"
-#endif
+#endif // dirNameString
 #ifndef buttonResetSearchString
 #define buttonResetSearchString "Reset search"
-#endif
+#endif // buttonResetSearchString
 #ifndef buttonDriveString
 #define buttonDriveString "Drives"
-#endif
+#endif // buttonDriveString
 #ifndef buttonResetPathString
 #define buttonResetPathString "Reset to current directory"
-#endif
+#endif // buttonResetPathString
 #ifndef buttonCreateDirString
 #define buttonCreateDirString "Create Directory"
-#endif
+#endif // buttonCreateDirString
 #ifndef tableHeaderAscendingIcon
 #define tableHeaderAscendingIcon "A|"
-#endif
+#endif // tableHeaderAscendingIcon
 #ifndef tableHeaderDescendingIcon
 #define tableHeaderDescendingIcon "D|"
-#endif
+#endif // tableHeaderDescendingIcon
 #ifndef tableHeaderFileNameString
 #define tableHeaderFileNameString "File name"
-#endif
+#endif // tableHeaderFileNameString
 #ifndef tableHeaderFileSizeString
 #define tableHeaderFileSizeString "Size"
-#endif
+#endif // tableHeaderFileSizeString
 #ifndef tableHeaderFileDateString
 #define tableHeaderFileDateString "Date"
-#endif
+#endif // tableHeaderFileDateString
 #ifndef OverWriteDialogTitleString
 #define OverWriteDialogTitleString "The file Already Exist !"
-#endif
+#endif // OverWriteDialogTitleString
 #ifndef OverWriteDialogMessageString
 #define OverWriteDialogMessageString "Would you like to OverWrite it ?"
-#endif
+#endif // OverWriteDialogMessageString
 #ifndef OverWriteDialogConfirmButtonString
 #define OverWriteDialogConfirmButtonString "Confirm"
-#endif
+#endif // OverWriteDialogConfirmButtonString
 #ifndef OverWriteDialogCancelButtonString
 #define OverWriteDialogCancelButtonString "Cancel"
-#endif
+#endif // OverWriteDialogCancelButtonString
+// see strftime functionin <ctime> for customize
+#ifndef DateTimeFormat
+#define DateTimeFormat "%Y/%m/%d %H:%M:%S"
+#endif // DateTimeFormat
+
 #ifdef USE_BOOKMARK
+
 #ifndef defaultBookmarkPaneWith
 #define defaultBookmarkPaneWith 150.0f
-#endif
+#endif // defaultBookmarkPaneWith
 #ifndef bookmarksButtonString
 #define bookmarksButtonString "Bookmark"
-#endif
+#endif // bookmarksButtonString
 #ifndef bookmarksButtonHelpString
 #define bookmarksButtonHelpString "Bookmark"
-#endif
+#endif // bookmarksButtonHelpString
 #ifndef addBookmarkButtonString
 #define addBookmarkButtonString "+"
-#endif
+#endif // addBookmarkButtonString
 #ifndef removeBookmarkButtonString
 #define removeBookmarkButtonString "-"
-#endif
-
+#endif // removeBookmarkButtonString
 #ifndef IMGUI_TOGGLE_BUTTON
 	inline bool ToggleButton(const char* vLabel, bool* vToggled)
 	{
@@ -214,8 +219,8 @@ namespace IGFD
 		return pressed;
 	}
 #define IMGUI_TOGGLE_BUTTON ToggleButton
-#endif
-#endif
+#endif // IMGUI_TOGGLE_BUTTON
+#endif // USE_BOOKMARK
 
 	// https://github.com/ocornut/imgui/issues/1720
 	bool Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f)
@@ -281,14 +286,14 @@ namespace IGFD
 		char lpBuffer[2048];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
 		DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
-#undef maxi
+#undef mini
 		if (countChars > 0)
 		{
 			std::string var = std::string(lpBuffer, (size_t)countChars);
 			replaceString(var, "\\", "");
 			res = splitStringToVector(var, '\0', false);
 		}
-#endif
+#endif // WIN32
 
 		return res;
 	}
@@ -332,7 +337,7 @@ namespace IGFD
 					std::cout << "Error creating directory " << name << std::endl;
 					res = false;
 				}
-#endif
+#endif // defined(UNIX)
 			}
 		}
 
@@ -406,9 +411,9 @@ namespace IGFD
 		if (len > str.size()) len = str.size();
 #ifdef MSVC
 		strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
-#else
+#else // MSVC
 		strncpy(vBuffer, str.c_str(), len);
-#endif
+#endif // MSVC
 		vBuffer[len] = '\0';
 	}
 
@@ -437,7 +442,7 @@ namespace IGFD
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
 		m_BookmarkWidth = defaultBookmarkPaneWith;
-#endif
+#endif // USE_BOOKMARK
 	}
 
 	IGFD::FileDialog::~FileDialog() = default;
@@ -574,7 +579,7 @@ namespace IGFD
 		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
 		return pressed;
 	}
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// STANDARD DIALOG ////////////////////////////////////////////////////////////////////////////
@@ -612,7 +617,7 @@ namespace IGFD
 		m_ShowDialog = true;					// open dialog
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
-#endif
+#endif // USE_BOOKMARK
 	}
 
 	// path and filename are obtained from filePathName
@@ -659,7 +664,7 @@ namespace IGFD
 		m_ShowDialog = true;
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
-#endif
+#endif // USE_BOOKMARK
 	}
 	
 	// with pane
@@ -697,7 +702,7 @@ namespace IGFD
 		m_ShowDialog = true;					// open dialog
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
-#endif
+#endif // USE_BOOKMARK
 	}
 
 	// with pane
@@ -747,7 +752,7 @@ namespace IGFD
 		m_ShowDialog = true;
 #ifdef USE_BOOKMARK
 		m_BookmarkPaneShown = false;
-#endif
+#endif // USE_BOOKMARK
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -949,7 +954,7 @@ namespace IGFD
 #ifdef USE_BOOKMARK
 		DrawBookMark();
 		ImGui::SameLine();
-#endif
+#endif // USE_BOOKMARK
 		DrawDirectoryCreation();
 		DrawPathComposer();
 		DrawSearchBar();
@@ -971,7 +976,7 @@ namespace IGFD
 			DrawBookmarkPane(size);
 			ImGui::SameLine();
 		}
-#endif
+#endif // USE_BOOKMARK
 
 		size.x = ImGui::GetContentRegionAvail().x - dlg_optionsPaneWidth;
 
@@ -1075,7 +1080,7 @@ namespace IGFD
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(bookmarksButtonHelpString);
 	}
-#endif
+#endif // USE_BOOKMARK
 
 	void IGFD::FileDialog::DrawDirectoryCreation()
 	{
@@ -1144,7 +1149,7 @@ namespace IGFD
 		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(buttonDriveString);
-#endif
+#endif // WIN32
 
 		ImGui::SameLine();
 
@@ -1216,15 +1221,14 @@ namespace IGFD
 
 	void IGFD::FileDialog::DrawFileListView(ImVec2 vSize)
 	{
-#ifndef USE_IMGUI_TABLES
 		ImGui::BeginChild("##FileDialog_FileList", vSize);
-#else
+
 		static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg |
 			ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
 			ImGuiTableFlags_NoHostExtendY
 #ifndef USE_CUSTOM_SORTING_ICON
 			| ImGuiTableFlags_Sortable
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 			;
 		if (ImGui::BeginTable("##fileTable", 3, flags, vSize))
 		{
@@ -1251,7 +1255,7 @@ namespace IGFD
 			}
 
 			ImGui::TableHeadersRow();
-#else
+#else // USE_CUSTOM_SORTING_ICON
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
 			for (int column = 0; column < 3; column++)
 			{
@@ -1270,8 +1274,7 @@ namespace IGFD
 						SortFields(SortingFieldEnum::FIELD_DATE, true);
 				}
 			}
-#endif
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 			if (!m_FilteredFileList.empty())
 			{
 				m_FileListClipper.Begin((int)m_FilteredFileList.size(), ImGui::GetTextLineHeightWithSpacing());
@@ -1302,16 +1305,13 @@ namespace IGFD
 						bool selected = false;
 						if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
 							selected = true;
-#ifdef USE_IMGUI_TABLES
 						ImGui::TableNextRow();
 						if (ImGui::TableSetColumnIndex(0)) // first column
 						{
-#endif
 							ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-#ifdef USE_IMGUI_TABLES
 							selectableFlags |=
 								ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
-#endif
+
 							bool _selectablePressed = false;
 #ifdef USE_EXPLORATION_BY_KEYS
 							bool flashed = BeginFlashItem(i);
@@ -1319,9 +1319,9 @@ namespace IGFD
 								flashed);
 							if (flashed)
 								EndFlashItem();
-#else
+#else // USE_EXPLORATION_BY_KEYS
 							_selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 							if (_selectablePressed)
 							{
 								if (infos.type == 'd')
@@ -1345,7 +1345,6 @@ namespace IGFD
 									SelectFileName(infos);
 								}
 							}
-#ifdef USE_IMGUI_TABLES
 						}
 						if (ImGui::TableSetColumnIndex(1)) // second column
 						{
@@ -1358,7 +1357,6 @@ namespace IGFD
 						{
 							ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
 						}
-#endif
 						if (showColor)
 							ImGui::PopStyleColor();
 
@@ -1386,11 +1384,9 @@ namespace IGFD
 				LocateByInputKey();
 				ExploreWithkeys();
 			}
-#endif
-#ifdef USE_IMGUI_TABLES
+#endif // USE_EXPLORATION_BY_KEYS
 			ImGui::EndTable();
 		}
-#endif
 		// changement de repertoire
 		if (m_PathClicked)
 		{
@@ -1402,9 +1398,7 @@ namespace IGFD
 			GetDrives();
 		}
 
-#ifndef USE_IMGUI_TABLES
 		ImGui::EndChild();
-#endif
 	}
 
 	void IGFD::FileDialog::DrawSidePane(float vHeight)
@@ -1469,7 +1463,7 @@ namespace IGFD
 
 #ifdef UNIX
 		if (s_fs_root != result)
-#endif
+#endif // UNIX
 			result += PATH_SEP;
 
 		result += GetCurrentFileName();
@@ -1526,7 +1520,7 @@ namespace IGFD
 
 #ifdef UNIX
 			if (s_fs_root != result)
-#endif
+#endif // UNIX
 				result += PATH_SEP;
 
 			result += it;
@@ -1601,7 +1595,7 @@ namespace IGFD
 				if (s_fs_root == m_CurrentPath)
 					newPath = m_CurrentPath + vInfos.fileName;
 				else
-#endif
+#endif // __minux__
 					newPath = m_CurrentPath + PATH_SEP + vInfos.fileName;
 			}
 
@@ -1839,11 +1833,11 @@ namespace IGFD
 #ifdef MSVC
 				struct tm _tm;
 				errno_t err = localtime_s(&_tm, &statInfos.st_mtime);
-				if (!err) len = strftime(timebuf, 99, "%Y/%m/%d ", &_tm);
-#else
+				if (!err) len = strftime(timebuf, 99, DateTimeFormat, &_tm);
+#else // MSVC
 				struct tm* _tm = localtime(&statInfos.st_mtime);
-				if (_tm) len = strftime(timebuf, 99, "%Y/%m/%d ", _tm);
-#endif
+				if (_tm) len = strftime(timebuf, 99, DateTimeFormat, _tm);
+#endif // MSVC
 				if (len)
 				{
 					vFileInfoStruct->fileModifDate = std::string(timebuf, len);
@@ -1870,7 +1864,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileName = tableHeaderDescendingIcon + m_HeaderFileName;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1882,7 +1876,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileName = tableHeaderAscendingIcon + m_HeaderFileName;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1900,7 +1894,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileSize = tableHeaderDescendingIcon + m_HeaderFileSize;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1912,7 +1906,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileSize = tableHeaderAscendingIcon + m_HeaderFileSize;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1930,7 +1924,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileDate = tableHeaderDescendingIcon + m_HeaderFileDate;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1942,7 +1936,7 @@ namespace IGFD
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileDate = tableHeaderAscendingIcon + m_HeaderFileDate;
-#endif
+#endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
@@ -1977,7 +1971,7 @@ namespace IGFD
 #ifdef WIN32
 			if (path == s_fs_root)
 				path += PATH_SEP;
-#endif
+#endif // WIN32
 			n = scandir(path.c_str(), &files, nullptr, alphaSort);
 
 			m_FileList.clear();
@@ -2052,7 +2046,7 @@ namespace IGFD
 #ifdef WIN32
 		if (s_fs_root == path)
 			path += PATH_SEP;
-#endif
+#endif // WIN32
 		DIR* dir = opendir(path.c_str());
 		char  real_path[PATH_MAX];
 
@@ -2068,7 +2062,7 @@ namespace IGFD
 			size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 			char* numchar = realpath(path.c_str(), real_path);
-#endif
+#endif // defined(UNIX)
 			if (numchar != 0)
 			{
 				m_CurrentPath = real_path;
@@ -2080,12 +2074,12 @@ namespace IGFD
 				m_CurrentPath_Decomposition = splitStringToVector(m_CurrentPath, PATH_SEP, false);
 #if defined(UNIX) // UNIX is LINUX or APPLE
 				m_CurrentPath_Decomposition.insert(m_CurrentPath_Decomposition.begin(), std::string(1u, PATH_SEP));
-#endif
+#endif // defined(UNIX)
 				if (!m_CurrentPath_Decomposition.empty())
 				{
 #ifdef WIN32
 					s_fs_root = m_CurrentPath_Decomposition[0];
-#endif
+#endif // WIN32
 				}
 			}
 
@@ -2126,7 +2120,7 @@ namespace IGFD
 				{
 					res = *vIter + PATH_SEP + res;
 				}
-#endif
+#endif // defined(UNIX)
 			}
 			else
 			{
@@ -2138,7 +2132,7 @@ namespace IGFD
 #if defined(UNIX) // UNIX is LINUX or APPLE
 				if (res[0] != PATH_SEP)
 					res = PATH_SEP + res;
-#endif
+#endif // defined(UNIX)
 				break;
 			}
 
@@ -2485,7 +2479,7 @@ namespace IGFD
 							GetDrives(); // display drives
 						}
 					}
-#endif
+#endif // WIN32
 				}
 			}
 		}
@@ -2525,7 +2519,7 @@ namespace IGFD
 	{
 		m_FlashAlphaAttenInSecs = 1.0f / ImMax(vAttenValue, 0.01f);
 	}
-#endif
+#endif // USE_EXPLORATION_BY_KEYS
 
 #ifdef USE_BOOKMARK
 
@@ -2645,7 +2639,7 @@ namespace IGFD
 			}
 		}
 	}
-#endif
+#endif // USE_BOOKMARK
 
 	//////////////////////////////////////////////////////////////////////////////
 	//// OVERWRITE DIALOG ////////////////////////////////////////////////////////
