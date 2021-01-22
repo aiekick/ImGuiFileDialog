@@ -1302,64 +1302,36 @@ namespace IGFD
 							else
 								str = fileEntryString + str;
 						}
-						bool selected = false;
-						if (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()) // found
-							selected = true;
+						bool selected = (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()); // found
 						ImGui::TableNextRow();
+
+						bool needToBreakTheloop = false;
+
 						if (ImGui::TableSetColumnIndex(0)) // first column
 						{
-							ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-							selectableFlags |=
-								ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
-
-							bool _selectablePressed = false;
-#ifdef USE_EXPLORATION_BY_KEYS
-							bool flashed = BeginFlashItem(i);
-							_selectablePressed = FlashableSelectable(str.c_str(), selected, selectableFlags,
-								flashed);
-							if (flashed)
-								EndFlashItem();
-#else // USE_EXPLORATION_BY_KEYS
-							_selectablePressed = ImGui::Selectable(str.c_str(), selected, selectableFlags);
-#endif // USE_EXPLORATION_BY_KEYS
-							if (_selectablePressed)
-							{
-								if (infos.type == 'd')
-								{
-									if (!dlg_filters.empty() || ImGui::IsMouseDoubleClicked(0))
-									{
-										m_PathClicked = SelectDirectory(infos);
-									}
-									else // directory chooser
-									{
-										SelectFileName(infos);
-									}
-
-									if (showColor)
-										ImGui::PopStyleColor();
-
-									break;
-								}
-								else
-								{
-									SelectFileName(infos);
-								}
-							}
+							needToBreakTheloop = SelectableItem(i, infos, selected, str.c_str());
 						}
 						if (ImGui::TableSetColumnIndex(1)) // second column
 						{
 							if (infos.type != 'd')
 							{
-								ImGui::Text("%s ", infos.formatedFileSize.c_str()); //-V111
+								needToBreakTheloop = SelectableItem(i, infos, selected, "%s ", infos.formatedFileSize.c_str());
+							}
+							else
+							{
+								needToBreakTheloop = SelectableItem(i, infos, selected, "");
 							}
 						}
 						if (ImGui::TableSetColumnIndex(2)) // third column
 						{
-							ImGui::Text("%s", infos.fileModifDate.c_str()); //-V111
+							needToBreakTheloop = SelectableItem(i, infos, selected, "%s", infos.fileModifDate.c_str());
 						}
+
 						if (showColor)
 							ImGui::PopStyleColor();
 
+						if (needToBreakTheloop)
+							break;
 					}
 				}
 				m_FileListClipper.End();
@@ -1399,6 +1371,52 @@ namespace IGFD
 		}
 
 		ImGui::EndChild();
+	}
+
+	bool IGFD::FileDialog::SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...)
+	{
+		bool needToBreakTheloop = false;
+		static ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick | 
+			ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
+
+		va_list args;
+		va_start(args, vFmt);
+		int w = vsnprintf(VariadicBuffer, MAX_FILE_DIALOG_NAME_BUFFER - 1, vFmt, args);
+		va_end(args);
+		if (w)
+			VariadicBuffer[w] = '\0';
+
+#ifdef USE_EXPLORATION_BY_KEYS
+		bool flashed = BeginFlashItem(vidx);
+		bool res = FlashableSelectable(VariadicBuffer, vSelected, selectableFlags,
+			flashed);
+		if (flashed)
+			EndFlashItem();
+#else // USE_EXPLORATION_BY_KEYS
+		res = ImGui::Selectable(VariadicBuffer, selected, selectableFlags);
+#endif // USE_EXPLORATION_BY_KEYS
+		if (res)
+		{
+			if (vInfos.type == 'd')
+			{
+				if (!dlg_filters.empty() || ImGui::IsMouseDoubleClicked(0))
+				{
+					m_PathClicked = SelectDirectory(vInfos);
+				}
+				else // directory chooser
+				{
+					SelectFileName(vInfos);
+				}
+
+				return true; // needToBreakTheloop
+			}
+			else
+			{
+				SelectFileName(vInfos);
+			}
+		}
+
+		return false;
 	}
 
 	void IGFD::FileDialog::DrawSidePane(float vHeight)
