@@ -169,7 +169,7 @@ namespace IGFD
 #endif // OverWriteDialogCancelButtonString
 // see strftime functionin <ctime> for customize
 #ifndef DateTimeFormat
-#define DateTimeFormat "%Y/%m/%d %H:%M:%S"
+#define DateTimeFormat "%Y/%m/%d %H:%M"
 #endif // DateTimeFormat
 
 #ifdef USE_BOOKMARK
@@ -1375,16 +1375,13 @@ namespace IGFD
 
 	bool IGFD::FileDialog::SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...)
 	{
-		bool needToBreakTheloop = false;
 		static ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick | 
 			ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
 
 		va_list args;
 		va_start(args, vFmt);
-		int w = vsnprintf(VariadicBuffer, MAX_FILE_DIALOG_NAME_BUFFER - 1, vFmt, args);
+		vsnprintf(VariadicBuffer, MAX_FILE_DIALOG_NAME_BUFFER, vFmt, args);
 		va_end(args);
-		if (w)
-			VariadicBuffer[w] = '\0';
 
 #ifdef USE_EXPLORATION_BY_KEYS
 		bool flashed = BeginFlashItem(vidx);
@@ -1393,17 +1390,17 @@ namespace IGFD
 		if (flashed)
 			EndFlashItem();
 #else // USE_EXPLORATION_BY_KEYS
-		res = ImGui::Selectable(VariadicBuffer, selected, selectableFlags);
+		bool res = ImGui::Selectable(VariadicBuffer, vSelected, selectableFlags);
 #endif // USE_EXPLORATION_BY_KEYS
 		if (res)
 		{
 			if (vInfos.type == 'd')
 			{
-				if (!dlg_filters.empty() || ImGui::IsMouseDoubleClicked(0))
+				if (ImGui::IsMouseDoubleClicked(0))
 				{
 					m_PathClicked = SelectDirectory(vInfos);
 				}
-				else // directory chooser
+				else if (dlg_filters.empty()) // directory chooser
 				{
 					SelectFileName(vInfos);
 				}
