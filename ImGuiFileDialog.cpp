@@ -1390,6 +1390,7 @@ namespace IGFD
 		if (flashed)
 			EndFlashItem();
 #else // USE_EXPLORATION_BY_KEYS
+		(void)vidx; // remove a warnings ofr unused var
 		bool res = ImGui::Selectable(VariadicBuffer, vSelected, selectableFlags);
 #endif // USE_EXPLORATION_BY_KEYS
 		if (res)
