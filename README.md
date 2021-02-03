@@ -4,17 +4,42 @@
 
 # ImGuiFileDialog
 
-## Why ?
+## Purpose
 
-this File Dialog is build on top of [Dear ImGui](https://github.com/ocornut/imgui)
+ImGuiFileDialog is a file selection dialog built for (and using only) [Dear ImGui](https://github.com/ocornut/imgui).
 
-this filedialog was created principally for have custom pane with widgets according to file extention.
-it was not possible with native filedialog
+My primary goal was to have a custom pane with widgets according to file extension. This was not possible using other solutions.
 
 ## Structure of this repo
 
-* The lib is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
+* The library is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
 * A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+
+This library is designed to be dropped into your source code rather than compiled separately.
+
+From your project directory:
+
+```
+mkdir lib
+cd lib
+git clone https://github.com/aiekick/ImGuiFileDialog.git
+git checkout Lib_Only
+```
+
+These commands create a `lib` directory where you can store any third-party dependencies used in your 
+project, downloads the ImGuiFileDialog git repository and checks out the Lib_Only branch where the 
+actual library code is located.
+
+Add `lib/ImGuiFileDialog/ImGuiFileDialog.cpp` to your build system and include 
+`lib/ImGuiFileDialog/ImGuiFileDialog.h` in your source code. ImGuiFileLib will compile with and be 
+included directly in your executable file.
+
+If, for example, your project uses cmake, look for a line like `add_executable(my_project_name main.cpp)` 
+and change it to `add_executable(my_project_name lib/ImGuiFileDialog/ImGuiFileDialog.cpp main.cpp)`. 
+This tells the compiler where to find the source code declared in `ImGuiFileDialog.h` which you included in your own source code.
+
+You must also, of course, have added [Dear ImGui](https://github.com/ocornut/imgui) to your project for this to work at all.
+
 
 ## Features
 
@@ -40,23 +65,25 @@ it was not possible with native filedialog
 - Support of a 'Confirm to Overwrite" dialog if File Exist
 - A C Api is available (Succesfully testec with CimGui
 
-## SingleTon / Multi-Instance
+## Singleton Pattern vs. Multiple Instances
 
-you have many possiblities :
+### Single Dialog : 
 
-### Singleton : 
+If you only need to display one file dialog at a time, use ImGuiFileDialog's singleton pattern to avoid explicitly declaring an object:
 
-With a singleton, you can easily manage the dialog without the need to define an instance. but you can display only one dialog at a time
 ```cpp
 ImGuiFileDialog::Instance()->method_of_your_choice();
 ```
 
-### Multi Instance :
+### Multiple Dialogs :
 
-for have the ability to display at same time, many dialogs. you must define your own instance
+If you need to have multiple file dialogs open at once, declare each dialog explicity:
+
 ```cpp
-ImGuiFileDialog instance;
-instance.method_of_your_choice();
+ImGuiFileDialog instance_a;
+instance_a.method_of_your_choice();
+ImGuiFileDialog instance_b;
+instance_b.method_of_your_choice();
 ```
 
 ## Simple Dialog :
@@ -85,20 +112,22 @@ void drawGui()
 ```
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
 
+
 ## Directory Chooser :
 
-For have only a directory chooser, you just need to specify a filter to null :
+To have a directory chooser, set the file extension filter to nullptr:
 ```cpp
 ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", "Choose a Directory", nullptr, ".");
 ```
 
-In this mode you can select any directory with one click, and open directory with double click
+In this mode you can select any directory with one click and open a directory with a double-click.
 
 ![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/directoryChooser.gif)
 
+
 ## Dialog with Custom Pane :
 
-the stamp of the custom pane callback is :
+The signature of the custom pane callback is:
 
 ### for C++ :
 ```cpp
@@ -157,7 +186,7 @@ void drawGui()
 
 ## Filter Infos
 
-You can define color for a filter type
+You can define a color for a filter type
 ```cpp
 ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1,1,0, 0.9));
 ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0,1,0, 0.9));
@@ -167,7 +196,7 @@ ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
-and also specific icons (with icon font files) or file type names :
+ImGuiFileDialog accepts icon font macros as well as text tags for file types. See https://github.com/juliettef/IconFontCppHeaders for a widely used Dear Imgui icon font helper.
 
 ```cpp
 // add an icon for png files 
@@ -180,11 +209,11 @@ ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "
 
 ## Filter Collections 
 
-you can define a custom filter name who correspond to a group of filter
+You can define a custom filter name that corresponds to a group of filters using this syntax:
 
-you must use this syntax : custom_name1{filter1,filter2,filter3},custom_name2{filter1,filter2},filter1
-when you will select custom_name1, the gorup of filter 1 to 3 will be applied
-the reserved char are {}, you cant use them for define filter name.
+```custom_name1{filter1,filter2,filter3},custom_name2{filter1,filter2},filter1```
+
+When you select custom_name1, filters 1 to 3 will be applied. The characters `{` and `}` are reserved. Don't use them for filter names.
 
 this code :
 ```cpp
@@ -216,16 +245,11 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
 
 ## File Dialog Constraints
 
-you can define min/max size of the dialog when you display It 
-
-by ex : 
-
-* MaxSize is the full display size
-* MinSize in the half display size.
+You can set the minimum and/or maximum size of the dialog:
 
 ```cpp
-ImVec2 maxSize = ImVec2((float)display_w, (float)display_h);
-ImVec2 minSize = maxSize * 0.5f;
+ImVec2 maxSize = ImVec2((float)display_w, (float)display_h);  // The full display area
+ImVec2 minSize = maxSize * 0.5f;  // Half the display area
 ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize);
 ```
 
@@ -291,26 +315,21 @@ Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookm
 
 ## Path Edition :
 
-if you click right on one of any path button, you can input or modify the path pointed by this button.
-then press the validate key (Enter by default with GLFW) for validate the new path
-or press the escape key (Escape by default with GLFW) for quit the input path edition
+Right clicking on any path element button allows the user to manually edit the path from that portion of the tree.
+Pressing the completion key (GLFW uses `enter` by default) validates the new path.
+Pressing the cancel key (GLFW uses`escape` by default) cancels the manual entry and restores the original path.
 
-see in this gif :
-1) button edition with mouse button right and escape key for quit the edition
-2) focus the input and press validation for set path
-
+Here's the manual entry operation in action:
 ![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/inputPathEdition.gif)
 
-## Confirm to OverWrite Dialog :
+## Confirm Overwrite Dialog :
 
-If you want avoid OverWrite your files after confirmation, 
-you can show a Dialog for confirm or cancel the OverWrite operation.
+If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the operation.
 
-You just need to define the flag ImGuiFileDialogFlags_ConfirmOverwrite 
-in your call to OpenDialog/OpenModal
+To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog/OpenModal.
 
-By default this flag is not set, since there is no pre-defined way to 
-define if a dialog will be for Open or Save behavior. (and its wanted :) )
+By default this flag is not set since there is no pre-defined way to 
+define if a dialog will be for Open or Save behavior. (by design! :) )
 
 Example code For Standard Dialog :
 ```cpp
@@ -326,16 +345,14 @@ ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
     ".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
-This dialog will only verify the file in the file field.
-So Not to be used with GetSelection()
+This dialog will only verify the file in the file field, not with `GetSelection()`.
  
-The Confirm dialog will be a forced Modal Dialog, not moveable, displayed
-in the center of the current FileDialog.
+The confirmation dialog will be a non-movable modal (input blocking) dialog displayed
+in the middle of the current ImGuiFileDialog window.
 
-As usual you can customize the dialog,
-in you custom config file (CustomImGuiFileDialogConfig.h in this example)
+As usual, you can customize the dialog in your custom config file (CustomImGuiFileDialogConfig.h in this example)
 
-you can  uncomment the next lines for customize it :
+Uncomment these line for customization options:
 ```cpp
 //#define OverWriteDialogTitleString "The file Already Exist !"
 //#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
@@ -349,21 +366,25 @@ See the result :
 
 ## Open / Save dialog Behavior :
 
-There is no way to distinguish the "open dialog" behavior than "save dialog" behavior.
-So you msut adapt the return according to your need :
+ImGuiFileDialog uses the same code internally for Open and Save dialogs. To distinguish between them access the 
+various data return functions depending on what the dialog is doing.
 
-if you want open file(s) or directory(s), you must use : GetSelection() method. you will obtain a std::map<FileName, FilePathName> of the selection
-if you want create a file, you must use : GetFilePathName()/GetCurrentFileName()
+When selecting an existing file (for example, a Load or Open dialog), use
 
-the return method's and comments :
 ```cpp
-std::map<std::string, std::string> GetSelection(); // Open File behavior : will return selection via a map<FileName, FilePathName>
-std::string GetFilePathName();                     // Create File behavior : will always return the content of the field with current filter extention and current path
-std::string GetCurrentFileName();                  // Create File behavior : will always return the content of the field with current filter extention
-std::string GetCurrentPath();                      // will return current path
-std::string GetCurrentFilter();                    // get selected filter
-UserDatas GetUserDatas();                          // get user datas send with Open Dialog
+std::map<std::string, std::string> GetSelection(); // Returns selection via a map<FileName, FilePathName>
+UserDatas GetUserDatas();                          // Get user data provided by the Open dialog
 ```
+
+To selecting a new file (for example, a Save As... dialog), use:
+
+```cpp
+std::string GetFilePathName();                     // Returns the content of the selection field with current file extension and current path
+std::string GetCurrentFileName();                  // Returns the content of the selection field with current file extension but no path
+std::string GetCurrentPath();                      // Returns current path only
+std::string GetCurrentFilter();                    // The file extension
+```
+
 
 ## How to Integrate ImGuiFileDialog in your project
 
@@ -374,18 +395,14 @@ UserDatas GetUserDatas();                          // get user datas send with O
 
 ### Customize ImGuiFileDialog :
 
-You just need to write your own config file by override the file : ImGuiFileDialog/ImGuiFileDialogConfig.h
-like i do here with CustomImGuiFileDialogConfig.h
+You can customize many aspects of ImGuiFileDialog by overriding `ImGuiFileDialogConfig.h`. 
 
-After that, for let ImGuiFileDialog your own custom file,
-you must define the preprocessor directive CUSTOM_IMGUIFILEDIALOG_CONFIG with the path of you custom config file.
-This path must be relative to the directory where you put ImGuiFileDialog module.
+To enable your customizations, define the preprocessor directive CUSTOM_IMGUIFILEDIALOG_CONFIG with the path of your custom config file.
+This path must be relative to the directory where you put the ImGuiFileDialog module.
 
-Thats all.
-
-You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
-- this trick was used for have custom icon font instead of labels for buttons or messages titles
-- you can also use your custom imgui button, the button call stamp must be same by the way :)
+This operation is demonstrated in `CustomImGuiFileDialog.h` in the example project to:
+* Have a custom icon font instead of labels for buttons or message titles
+* Customize the button text (the button call signature must be the same, by the way! :)
 
 The Custom Icon Font (in [CustomFont.cpp](CustomFont.cpp) and [CustomFont.h](CustomFont.h)) was made with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
 ImGuiFontStudio is using also ImGuiFileDialog.
