@@ -196,7 +196,7 @@ ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
-ImGuiFileDialog accepts icon font macros as well as text tags for file types. See https://github.com/juliettef/IconFontCppHeaders for a widely used Dear Imgui icon font helper.
+ImGuiFileDialog accepts icon font macros as well as text tags for file types. See [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders) for a widely used Dear Imgui icon font helper or with [ImGuIFontStudio](https://github.com/aiekick/ImGuiFontStudio) (a gui tool for easily doing the same as IconFontCppHeaders)
 
 ```cpp
 // add an icon for png files 
