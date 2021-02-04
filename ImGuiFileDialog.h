@@ -643,6 +643,8 @@ namespace IGFD
 		char FileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 		char DirectoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 		char SearchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
+		char VariadicBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
+
 #ifdef USE_BOOKMARK
 		char BookmarkEditBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
 #endif // USE_BOOKMARK
@@ -819,6 +821,7 @@ namespace IGFD
 		virtual void DrawBookMark();								// draw bookmark button
 #endif // USE_BOOKMARK
 		// others
+		bool SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...);					// selectable item for table
 		void ResetEvents();																									// reset events (path, drives, continue)
 		void SetDefaultFileName(const std::string& vFileName);																// set default fiel name
 		bool SelectDirectory(const FileInfoStruct& vInfos);																	// enter directory 
