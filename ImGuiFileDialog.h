@@ -381,7 +381,7 @@ if (igButton("Open File", buttonSize))
 	IGFD_OpenDialog(cfiledialog,
 		"filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
 		"Open a File",                          // dialog title
-		"c files(*.c/*.h){.c,.h}",              // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+		"c files(*.c *.h){.c,.h}",              // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
 		".",                                    // base directory for files scan
 		"",                                     // base filename
 		0,                                      // a fucntion for display a right pane if you want
