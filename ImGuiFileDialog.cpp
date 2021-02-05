@@ -40,6 +40,9 @@ SOFTWARE.
 #include <sys/stat.h>
 #include <stdio.h>
 #include <errno.h>
+#if defined (__EMSCRIPTEN__) // EMSCRIPTEN
+#include <emscripten.h>
+#endif // EMSCRIPTEN
 #if defined(__WIN32__) || defined(_WIN32)
 #ifndef WIN32
 #define WIN32
@@ -52,7 +55,7 @@ SOFTWARE.
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif // PATH_MAX
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
 #define UNIX
 #define stricmp strcasecmp
 #include <sys/types.h>
@@ -328,6 +331,9 @@ namespace IGFD
 
 #ifdef WIN32
 				CreateDirectoryA(name.c_str(), nullptr);
+#elif defined(__EMSCRIPTEN__)
+				std::string str = std::string("FS.mkdir('") + name.c_str() + "');";
+				emscripten_run_script(str.c_str());
 #elif defined(UNIX)
 				char buffer[PATH_MAX] = {};
 				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
