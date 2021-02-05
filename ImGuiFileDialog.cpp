@@ -126,7 +126,7 @@ namespace IGFD
 #define fileNameString "File Name :"
 #endif // fileNameString
 #ifndef dirNameString
-#define dirNameString "Directory Name :"
+#define dirNameString "Directory Path :"
 #endif // dirNameString
 #ifndef buttonResetSearchString
 #define buttonResetSearchString "Reset search"
@@ -902,7 +902,7 @@ namespace IGFD
 					!m_Filters.empty()) // filter exist
 					m_SelectedFilter = *m_Filters.begin(); // we take the first filter
 
-			// init list of files
+				// init list of files
 				if (m_FileList.empty() && !m_ShowDrives)
 				{
 					replaceString(dlg_defaultFileName, dlg_path, ""); // local path
@@ -911,6 +911,8 @@ namespace IGFD
 						SetDefaultFileName(dlg_defaultFileName);
 						SetSelectedFilterWithExt(dlg_defaultExt);
 					}
+					else if (dlg_filters.empty()) // directory mode
+						SetDefaultFileName(".");
 					ScanDir(dlg_path);
 				}
 
@@ -1397,9 +1399,9 @@ namespace IGFD
 		{
 			if (vInfos.type == 'd')
 			{
-				if (ImGui::IsMouseDoubleClicked(0))
+				if (ImGui::IsMouseDoubleClicked(0)) // 0 -> left mouse button double click
 				{
-					m_PathClicked = SelectDirectory(vInfos);
+					m_PathClicked = SelectDirectory(vInfos); 
 				}
 				else if (dlg_filters.empty()) // directory chooser
 				{
@@ -1475,40 +1477,59 @@ namespace IGFD
 
 	std::string IGFD::FileDialog::GetFilePathName()
 	{
-		std::string  result = m_CurrentPath;
+		std::string result = GetCurrentPath();
 
+		std::string filename = GetCurrentFileName();
+		if (!filename.empty())
+		{
 #ifdef UNIX
-		if (s_fs_root != result)
+			if (s_fs_root != result)
 #endif // UNIX
-			result += PATH_SEP;
+				result += PATH_SEP;
 
-		result += GetCurrentFileName();
+			result += filename;
+		}
 
 		return result;
 	}
 
 	std::string IGFD::FileDialog::GetCurrentPath()
 	{
-		return m_CurrentPath;
+		std::string path = m_CurrentPath;
+
+		if (dlg_filters.empty()) // if directory mode
+		{
+			std::string selectedDirectory = FileNameBuffer;
+			if (!selectedDirectory.empty() && 
+				selectedDirectory != ".")
+				path += PATH_SEP + selectedDirectory;
+		}
+
+		return path;
 	}
 
 	std::string IGFD::FileDialog::GetCurrentFileName()
 	{
-		std::string result = FileNameBuffer;
-
-		// if not a collection we can replace the filter by thee extention we want
-		if (m_SelectedFilter.collectionfilters.empty())
+		if (!dlg_filters.empty()) // if not directory mode
 		{
-			size_t lastPoint = result.find_last_of('.');
-			if (lastPoint != std::string::npos)
+			std::string result = FileNameBuffer;
+
+			// if not a collection we can replace the filter by the extention we want
+			if (m_SelectedFilter.collectionfilters.empty())
 			{
-				result = result.substr(0, lastPoint);
+				size_t lastPoint = result.find_last_of('.');
+				if (lastPoint != std::string::npos)
+				{
+					result = result.substr(0, lastPoint);
+				}
+
+				result += m_SelectedFilter.filter;
 			}
 
-			result += m_SelectedFilter.filter;
+			return result;
 		}
 
-		return result;
+		return ""; // directory mode
 	}
 
 	std::string IGFD::FileDialog::GetCurrentFilter()
@@ -1532,7 +1553,7 @@ namespace IGFD
 
 		for (auto& it : m_SelectedFileNames)
 		{
-			std::string result = m_CurrentPath;
+			std::string result = GetCurrentPath();
 
 #ifdef UNIX
 			if (s_fs_root != result)
@@ -1774,6 +1795,8 @@ namespace IGFD
 		m_CurrentPath = vPath;
 		m_FileList.clear();
 		m_CurrentPath_Decomposition.clear();
+		if (dlg_filters.empty()) // directory mode
+			SetDefaultFileName(".");
 		ScanDir(m_CurrentPath);
 	}
 
@@ -1805,9 +1828,11 @@ namespace IGFD
 		}
 	}
 
-	void IGFD::FileDialog::FillInfos(FileInfoStruct* vFileInfoStruct)
+	void IGFD::FileDialog::CompleteFileInfos(FileInfoStruct* vFileInfoStruct)
 	{
-		if (vFileInfoStruct && vFileInfoStruct->fileName != "..")
+		if (vFileInfoStruct && 
+			vFileInfoStruct->fileName != "." && 
+			vFileInfoStruct->fileName != "..")
 		{
 			// _stat struct :
 			//dev_t     st_dev;     /* ID of device containing file */
@@ -2004,7 +2029,8 @@ namespace IGFD
 					infos.fileName = ent->d_name;
 					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
 
-					if (("." != infos.fileName))
+					if (infos.fileName != "." 
+						|| dlg_filters.empty()) // in directory mode we must display the curent dir "."
 					{
 						switch (ent->d_type)
 						{
@@ -2028,7 +2054,7 @@ namespace IGFD
 							if (!dlg_filters.empty())
 							{
 								// check if current file extention is covered by current filter
-								// we do that here, for avoid doing taht during filelist display
+								// we do that here, for avoid doing that during filelist display
 								// for better fps
 								if (!m_SelectedFilter.empty() && // selected filter exist
 									(!m_SelectedFilter.filterExist(infos.ext) && // filter not found
@@ -2039,7 +2065,7 @@ namespace IGFD
 							}
 						}
 
-						FillInfos(&infos);
+						CompleteFileInfos(&infos);
 						m_FileList.push_back(infos);
 					}
 				}

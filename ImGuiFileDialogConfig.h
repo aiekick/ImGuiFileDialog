@@ -36,6 +36,7 @@
 //#define linkEntryString "[LINK] "
 //#define fileEntryString "[FILE] "
 //#define fileNameString "File Name : "
+//#define dirNameString "Directory Path :"
 //#define buttonResetSearchString "Reset search"
 //#define buttonDriveString "Drives"
 //#define buttonResetPathString "Reset to current directory"
@@ -57,7 +58,7 @@
 //#define tableHeaderDescendingIcon "D|"
 //#define tableHeaderFileNameString " File name"
 //#define tableHeaderFileSizeString " Size"
-//#define tableHeaderFileDateString " Date"
+//#define tableHeaderFileDateTimeString " Date"
 
 #define USE_BOOKMARK
 //#define bookmarkPaneWith 150.0f

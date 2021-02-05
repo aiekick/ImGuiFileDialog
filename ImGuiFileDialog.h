@@ -802,14 +802,14 @@ namespace IGFD
 #endif // USE_BOOKMARK
 
 	///////////////////////////////////////////////////////////////////////////////////////
-	/// PRIVATE METHODS ///////////////////////////////////////////////////////////////////
+	/// PROTECTED'S METHODS ///////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	private: 
+	protected: 
 		// dialog parts
-		virtual void DrawHeader();											// draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
-		virtual void DrawContent();											// draw content part of the dialog (bookmark pane, file list, side pane)
-		virtual bool DrawFooter();											// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
+		virtual void DrawHeader();									// draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
+		virtual void DrawContent();									// draw content part of the dialog (bookmark pane, file list, side pane)
+		virtual bool DrawFooter();									// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
 		// widgets components
 		virtual void DrawDirectoryCreation();						// draw directory creation widget
@@ -820,19 +820,20 @@ namespace IGFD
 #ifdef USE_BOOKMARK
 		virtual void DrawBookMark();								// draw bookmark button
 #endif // USE_BOOKMARK
+
 		// others
 		bool SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...);					// selectable item for table
 		void ResetEvents();																									// reset events (path, drives, continue)
-		void SetDefaultFileName(const std::string& vFileName);																// set default fiel name
+		void SetDefaultFileName(const std::string& vFileName);																// set default file name
 		bool SelectDirectory(const FileInfoStruct& vInfos);																	// enter directory 
 		void SelectFileName(const FileInfoStruct& vInfos);																	// select filename
 		void RemoveFileNameInSelection(const std::string& vFileName);														// selection : remove a file name
-		void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);							// selection  add file name
-		void SetPath(const std::string& vPath);																				// set the path of the dialog, will launch the driectory scan for populate the file listview
-		void FillInfos(FileInfoStruct *vFileInfoStruct);																	// set time dand date infos of a file (detail view mode)
+		void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);							// selection : add a file name
+		void SetPath(const std::string& vPath);																				// set the path of the dialog, will launch the directory scan for populate the file listview
+		void CompleteFileInfos(FileInfoStruct *vFileInfoStruct);															// set time and date infos of a file (detail view mode)
 		void SortFields(SortingFieldEnum vSortingField = SortingFieldEnum::FIELD_NONE, 	bool vCanChangeOrder = false);		// will sort a column
-		void ScanDir(const std::string& vPath);																				// scan the directory for retriev the file list
-		void SetCurrentDir(const std::string& vPath);																		// define current directory
+		void ScanDir(const std::string& vPath);																				// scan the directory for retrieve the file list
+		void SetCurrentDir(const std::string& vPath);																		// define current directory for scan
 		bool CreateDir(const std::string& vPath);																			// create a directory on the file system
 		std::string ComposeNewPath(std::vector<std::string>::iterator vIter);												// compose a path from the compose path widget
 		void GetDrives();																									// list drives on windows platform
