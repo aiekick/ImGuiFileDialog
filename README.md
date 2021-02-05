@@ -96,25 +96,25 @@ instance_b.method_of_your_choice();
 
 ```cpp
 void drawGui()
-{
-// open Dialog Simple
-if (ImGui::Button("Open File Dialog"))
-ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", ".");
+{ 
+  // open Dialog Simple
+  if (ImGui::Button("Open File Dialog"))
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", ".");
 
-// display
-if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
-{
-// action if OK
-if (ImGuiFileDialog::Instance()->IsOk())
-{
-std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-// action
-}
-
-// close
-ImGuiFileDialog::Instance()->Close();
-}
+  // display
+  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+  {
+    // action if OK
+    if (ImGuiFileDialog::Instance()->IsOk())
+    {
+      std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+      std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+      // action
+    }
+    
+    // close
+    ImGuiFileDialog::Instance()->Close();
+  }
 }
 ```
 
@@ -154,41 +154,41 @@ void(const char *vFilter, void* vUserDatas, bool *vCantContinue)
 static bool canValidateDialog = false;
 inline void InfosPane(cosnt char *vFilter, IGFDUserDatas vUserDatas, bool *vCantContinue) // if vCantContinue is false, the user cant validate the dialog
 {
-ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
-ImGui::Text("Selected Filter : %s", vFilter.c_str());
-if (vUserDatas)
-ImGui::Text("UserDatas : %s", vUserDatas);
-ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
-if (vCantContinue)
-*vCantContinue = canValidateDialog;
+    ImGui::TextColored(ImVec4(0, 1, 1, 1), "Infos Pane");
+    ImGui::Text("Selected Filter : %s", vFilter.c_str());
+    if (vUserDatas)
+        ImGui::Text("UserDatas : %s", vUserDatas);
+    ImGui::Checkbox("if not checked you cant validate the dialog", &canValidateDialog);
+    if (vCantContinue)
+        *vCantContinue = canValidateDialog;
 }
 
 void drawGui()
 {
-// open Dialog with Pane
-if (ImGui::Button("Open File Dialog with a custom pane"))
-ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp",
-".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, UserDatas("InfosPane"));
+  // open Dialog with Pane
+  if (ImGui::Button("Open File Dialog with a custom pane"))
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp",
+            ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, UserDatas("InfosPane"));
 
-// display and action if ok
-if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
-{
-if (ImGuiFileDialog::Instance()->IsOk())
-{
-std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-std::string filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
-// here convert from string because a string was passed as a userDatas, but it can be what you want
-std::string userDatas;
-if (ImGuiFileDialog::Instance()->GetUserDatas())
-userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
-auto selection = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+  // display and action if ok
+  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+  {
+    if (ImGuiFileDialog::Instance()->IsOk())
+    {
+        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        std::string filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
+        // here convert from string because a string was passed as a userDatas, but it can be what you want
+        std::string userDatas;
+        if (ImGuiFileDialog::Instance()->GetUserDatas())
+            userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas()); 
+        auto selection = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
 
-// action
-}
-// close
-ImGuiFileDialog::Instance()->Close();
-}
+        // action
+    }
+    // close
+    ImGuiFileDialog::Instance()->Close();
+  }
 }
 ```
 
@@ -199,10 +199,10 @@ ImGuiFileDialog::Instance()->Close();
 You can define a color for a filter type
 
 ```cpp
-ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1, 1, 0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0, 1, 0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0, 0, 1, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1, 0, 1, 0.9));
+ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1,1,0, 0.9));
+ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0,1,0, 0.9));
+ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0,0,1, 0.9));
+ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
@@ -260,7 +260,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 1 File", ".*
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 5 File", ".*,.cpp,.h,.hpp", ".", 5);
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose many File", ".*,.cpp,.h,.hpp", ".", 0);
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png,.jpg",
-".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
+   ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
@@ -360,16 +360,16 @@ Example code For Standard Dialog :
 
 ```cpp
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
-ICON_IGFD_SAVE " Choose a File", filters,
-".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+    ICON_IGFD_SAVE " Choose a File", filters,
+    ".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
 Example code For Modal Dialog :
 
 ```cpp
 ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
-ICON_IGFD_SAVE " Choose a File", filters,
-".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+    ICON_IGFD_SAVE " Choose a File", filters,
+    ".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
 This dialog will only verify the file in the file field, not with `GetSelection()`.
