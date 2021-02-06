@@ -245,6 +245,43 @@ namespace IGFD
 		return strcoll((*a)->d_name, (*b)->d_name);
 	}
 
+#ifdef WIN32
+	inline bool wreplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
+	{
+		bool found = false;
+		size_t pos = 0;
+		while ((pos = str.find(oldStr, pos)) != std::wstring::npos)
+		{
+			found = true;
+			str.replace(pos, oldStr.length(), newStr);
+			pos += newStr.length();
+		}
+		return found;
+	}
+
+	inline std::vector<std::wstring> wsplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty)
+	{
+		std::vector<std::wstring> arr;
+		if (!text.empty())
+		{
+			std::wstring::size_type start = 0;
+			std::wstring::size_type end = text.find(delimiter, start);
+			while (end != std::wstring::npos)
+			{
+				std::wstring token = text.substr(start, end - start);
+				if (!token.empty() || (token.empty() && pushEmpty)) //-V728
+					arr.push_back(token);
+				start = end + 1;
+				end = text.find(delimiter, start);
+			}
+			std::wstring token = text.substr(start);
+			if (!token.empty() || (token.empty() && pushEmpty)) //-V728
+				arr.push_back(token);
+		}
+		return arr;
+	}
+#endif
+
 	inline bool replaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
 		bool found = false;
@@ -285,18 +322,31 @@ namespace IGFD
 		std::vector<std::string> res;
 
 #ifdef WIN32
-		DWORD mydrives = 2048;
-		char lpBuffer[2048];
+		DWORD mydrives = 128;
+		wchar_t wlpBuffer[128];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
-		DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+		DWORD countChars = mini(GetLogicalDriveStringsW(mydrives, wlpBuffer), 128 - 1);
 #undef mini
 		if (countChars > 0)
 		{
-			std::string var = std::string(lpBuffer, (size_t)countChars);
-			replaceString(var, "\\", "");
-			res = splitStringToVector(var, '\0', false);
+			std::wstring var = std::wstring(wlpBuffer, (size_t)countChars);
+			wreplaceString(var, L"\\", L"");
+			auto arr = wsplitStringToVector(var, '\0', false);
+			size_t n = 0;
+			char lpBuffer[128];
+			for (auto a : arr)
+			{
+				int error = dirent_wcstombs_s(&n, lpBuffer, 128 - 1, a.data(), a.size());
+				if (!error && n)
+				{
+					res.push_back(std::string(lpBuffer, n));
+				}
+			}
 		}
 #endif // WIN32
+
+		if (res.empty())
+			std::cout << "fail to obtain Logical Drives" << std::endl;
 
 		return res;
 	}
@@ -330,7 +380,15 @@ namespace IGFD
 				res = true;
 
 #ifdef WIN32
-				CreateDirectoryA(name.c_str(), nullptr);
+				//CreateDirectoryA(name.c_str(), nullptr);
+				size_t n;
+				std::vector<wchar_t> wn(name.size() + 1);
+				int error = dirent_mbstowcs_s(&n, wn.data(), wn.size(), name.c_str(), wn.size());
+				if (error || !CreateDirectoryW(wn.data(), nullptr)) 
+				{
+					std::cout << "Error creating directory " << name << std::endl;
+					res = false;
+				}
 #elif defined(__EMSCRIPTEN__)
 				std::string str = std::string("FS.mkdir('") + name.c_str() + "');";
 				emscripten_run_script(str.c_str());
@@ -2095,19 +2153,35 @@ namespace IGFD
 		if (s_fs_root == path)
 			path += PATH_SEP;
 #endif // WIN32
+		char real_path[PATH_MAX];
 		DIR* dir = opendir(path.c_str());
-		char  real_path[PATH_MAX];
-
-		if (nullptr == dir)
+		if (dir == nullptr)
 		{
 			path = ".";
 			dir = opendir(path.c_str());
 		}
 
-		if (nullptr != dir)
+		if (dir != nullptr)
 		{
 #ifdef WIN32
-			size_t numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
+			// numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
+			size_t numchar = 0;
+			size_t n = 0;
+			wchar_t wreal_path[PATH_MAX];
+			std::vector<wchar_t> wn(path.size() + 1);
+			int error = dirent_mbstowcs_s(&n, wn.data(), wn.size(), path.c_str(), wn.size());
+			if (!error)
+				numchar = GetFullPathNameW(wn.data(), PATH_MAX - 1, wreal_path, nullptr);
+			if (error || !numchar)
+			{
+				std::cout << "fail to obtain FullPathName " << path << std::endl;
+			}
+			else
+			{
+				error = dirent_wcstombs_s(&n, real_path, PATH_MAX - 1, wreal_path, numchar);
+				if (error)
+					std::cout << "fail to obtain FullPathName " << path << std::endl;
+			}
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 			char* numchar = realpath(path.c_str(), real_path);
 #endif // defined(UNIX)
