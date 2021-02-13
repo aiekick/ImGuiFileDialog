@@ -545,6 +545,7 @@ namespace IGFD
 		{
 			FIELD_NONE = 0,
 			FIELD_FILENAME,
+			FIELD_TYPE,
 			FIELD_SIZE,
 			FIELD_DATE
 		};
@@ -599,9 +600,10 @@ namespace IGFD
 		bool m_IsOk = false;								
 		bool m_CreateDirectoryMode = false;					// for create directory mode
 		std::string m_HeaderFileName;						// detail view column file
+		std::string m_HeaderFileType;						// detail view column type
 		std::string m_HeaderFileSize;						// detail view column size
 		std::string m_HeaderFileDate;						// detail view column date + time
-		bool m_SortingDirection[3] = { true,true,true };	// detail view // true => Descending, false => Ascending
+		bool m_SortingDirection[4] = { true, true, true, true };	// detail view // true => Descending, false => Ascending
 		SortingFieldEnum m_SortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
 
 		std::string dlg_key;

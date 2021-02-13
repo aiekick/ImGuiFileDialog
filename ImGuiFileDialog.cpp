@@ -152,6 +152,9 @@ namespace IGFD
 #ifndef tableHeaderFileNameString
 #define tableHeaderFileNameString "File name"
 #endif // tableHeaderFileNameString
+#ifndef tableHeaderFileTypeString
+#define tableHeaderFileTypeString "Type"
+#endif // tableHeaderFileTypeString
 #ifndef tableHeaderFileSizeString
 #define tableHeaderFileSizeString "Size"
 #endif // tableHeaderFileSizeString
@@ -512,7 +515,7 @@ namespace IGFD
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	///// CUSTOM SELECTABLE (Flashing Support) ///////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 #ifdef USE_EXPLORATION_BY_KEYS
 	bool IGFD::FileDialog::FlashableSelectable(const char* label, bool selected,
 		ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg)
@@ -526,24 +529,20 @@ namespace IGFD
 		ImGuiContext& g = *GImGui;
 		const ImGuiStyle& style = g.Style;
 
-		if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns) // FIXME-OPT: Avoid if vertically clipped.
-			PushColumnsBackground();
-
 		// Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
 		ImGuiID id = window->GetID(label);
 		ImVec2 label_size = CalcTextSize(label, NULL, true);
-		ImVec2 size(
-			IS_FLOAT_DIFFERENT(size_arg.x, 0.0f) ? size_arg.x : label_size.x,
-			IS_FLOAT_DIFFERENT(size_arg.y, 0.0f) ? size_arg.y : label_size.y
-		);
+		ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
 		ImVec2 pos = window->DC.CursorPos;
 		pos.y += window->DC.CurrLineTextBaseOffset;
 		ItemSize(size, 0.0f);
 
 		// Fill horizontal space
-		const float min_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Min.x : pos.x;
-		const float max_x = (flags & ImGuiSelectableFlags_SpanAllColumns) ? window->ContentRegionRect.Max.x : GetContentRegionMaxAbs().x;
-		if (IS_FLOAT_DIFFERENT(size_arg.x, 0.0f) || (flags & ImGuiSelectableFlags_SpanAvailWidth))
+		// We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitely right-aligned sizes not visibly match other widgets.
+		const bool span_all_columns = (flags & ImGuiSelectableFlags_SpanAllColumns) != 0;
+		const float min_x = span_all_columns ? window->ParentWorkRect.Min.x : pos.x;
+		const float max_x = span_all_columns ? window->ParentWorkRect.Max.x : window->WorkRect.Max.x;
+		if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_SpanAvailWidth))
 			size.x = ImMax(label_size.x, max_x - min_x);
 
 		// Text stays at the submission position, but bounding box may be extended on both sides
@@ -551,36 +550,57 @@ namespace IGFD
 		const ImVec2 text_max(min_x + size.x, pos.y + size.y);
 
 		// Selectables are meant to be tightly packed together with no click-gap, so we extend their box to cover spacing between selectable.
-		ImRect bb_enlarged(min_x, pos.y, text_max.x, text_max.y);
-		const float spacing_x = style.ItemSpacing.x;
-		const float spacing_y = style.ItemSpacing.y;
-		const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
-		const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
-		bb_enlarged.Min.x -= spacing_L;
-		bb_enlarged.Min.y -= spacing_U;
-		bb_enlarged.Max.x += (spacing_x - spacing_L);
-		bb_enlarged.Max.y += (spacing_y - spacing_U);
-		//if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_align.Min, bb_align.Max, IM_COL32(255, 0, 0, 255)); }
-		//if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb_enlarged.Min, bb_enlarged.Max, IM_COL32(0, 255, 0, 255)); }
+		ImRect bb(min_x, pos.y, text_max.x, text_max.y);
+		if ((flags & ImGuiSelectableFlags_NoPadWithHalfSpacing) == 0)
+		{
+			const float spacing_x = span_all_columns ? 0.0f : style.ItemSpacing.x;
+			const float spacing_y = style.ItemSpacing.y;
+			const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
+			const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
+			bb.Min.x -= spacing_L;
+			bb.Min.y -= spacing_U;
+			bb.Max.x += (spacing_x - spacing_L);
+			bb.Max.y += (spacing_y - spacing_U);
+		}
+		//if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb.Min, bb.Max, IM_COL32(0, 255, 0, 255)); }
+
+		// Modify ClipRect for the ItemAdd(), faster than doing a PushColumnsBackground/PushTableBackground for every Selectable..
+		const float backup_clip_rect_min_x = window->ClipRect.Min.x;
+		const float backup_clip_rect_max_x = window->ClipRect.Max.x;
+		if (span_all_columns)
+		{
+			window->ClipRect.Min.x = window->ParentWorkRect.Min.x;
+			window->ClipRect.Max.x = window->ParentWorkRect.Max.x;
+		}
 
 		bool item_add;
 		if (flags & ImGuiSelectableFlags_Disabled)
 		{
 			ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
 			window->DC.ItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
-			item_add = ItemAdd(bb_enlarged, id);
+			item_add = ItemAdd(bb, id);
 			window->DC.ItemFlags = backup_item_flags;
 		}
 		else
 		{
-			item_add = ItemAdd(bb_enlarged, id);
+			item_add = ItemAdd(bb, id);
 		}
-		if (!item_add)
+
+		if (span_all_columns)
 		{
-			if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns)
-				PopColumnsBackground();
-			return false;
+			window->ClipRect.Min.x = backup_clip_rect_min_x;
+			window->ClipRect.Max.x = backup_clip_rect_max_x;
 		}
+
+		if (!item_add)
+			return false;
+
+		// FIXME: We can standardize the behavior of those two, we could also keep the fast path of override ClipRect + full push on render only,
+		// which would be advantageous since most selectable are not selected.
+		if (span_all_columns && window->DC.CurrentColumns)
+			PushColumnsBackground();
+		else if (span_all_columns && g.CurrentTable)
+			TablePushBackgroundChannel();
 
 		// We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
 		ImGuiButtonFlags button_flags = 0;
@@ -596,7 +616,7 @@ namespace IGFD
 
 		const bool was_selected = selected;
 		bool hovered, held;
-		bool pressed = ButtonBehavior(bb_enlarged, id, &hovered, &held, button_flags);
+		bool pressed = ButtonBehavior(bb, id, &hovered, &held, button_flags);
 
 		// Update NavId when clicking or when Hovering (this doesn't happen on most widgets), so navigation can be resumed with gamepad/keyboard
 		if (pressed || (hovered && (flags & ImGuiSelectableFlags_SetNavIdOnHover)))
@@ -618,20 +638,22 @@ namespace IGFD
 			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
-		if ((held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld)) || vFlashing)
+		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
 			hovered = true;
 		if (hovered || selected)
 		{
 			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
-			RenderFrame(bb_enlarged.Min, bb_enlarged.Max, col, false, 0.0f);
-			RenderNavHighlight(bb_enlarged, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+			RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+			RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 		}
 
-		if ((flags & ImGuiSelectableFlags_SpanAllColumns) && window->DC.CurrentColumns)
+		if (span_all_columns && window->DC.CurrentColumns)
 			PopColumnsBackground();
+		else if (span_all_columns && g.CurrentTable)
+			TablePopBackgroundChannel();
 
 		if (flags & ImGuiSelectableFlags_Disabled) PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
-		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb_enlarged);
+		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
 		if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
 
 		// Automatically close popups
@@ -1294,12 +1316,13 @@ namespace IGFD
 			| ImGuiTableFlags_Sortable
 #endif // USE_CUSTOM_SORTING_ICON
 			;
-		if (ImGui::BeginTable("##fileTable", 3, flags, vSize))
+		if (ImGui::BeginTable("##fileTable", 4, flags, vSize))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
 			ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
-			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 1);
-			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 2);
+			ImGui::TableSetupColumn(m_HeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 1);
+			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 2);
+			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 3);
 
 #ifndef USE_CUSTOM_SORTING_ICON
 			// Sort our data if sort specs have been changed!
@@ -1310,8 +1333,10 @@ namespace IGFD
 					if (sorts_specs->Specs->ColumnUserID == 0)
 						SortFields(SortingFieldEnum::FIELD_FILENAME, true);
 					else if (sorts_specs->Specs->ColumnUserID == 1)
-						SortFields(SortingFieldEnum::FIELD_SIZE, true);
+						SortFields(SortingFieldEnum::FIELD_TYPE, true);
 					else if (sorts_specs->Specs->ColumnUserID == 2)
+						SortFields(SortingFieldEnum::FIELD_SIZE, true);
+					else //if (sorts_specs->Specs->ColumnUserID == 3) => alwayd true for the moment, to uncomment if we add a fourth column
 						SortFields(SortingFieldEnum::FIELD_DATE, true);
 
 					sorts_specs->SpecsDirty = false;
@@ -1321,7 +1346,7 @@ namespace IGFD
 			ImGui::TableHeadersRow();
 #else // USE_CUSTOM_SORTING_ICON
 			ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-			for (int column = 0; column < 3; column++)
+			for (int column = 0; column < 4; column++)
 			{
 				ImGui::TableSetColumnIndex(column);
 				const char* column_name = ImGui::TableGetColumnName(column); // Retrieve name passed to TableSetupColumn()
@@ -1333,8 +1358,10 @@ namespace IGFD
 					if (column == 0)
 						SortFields(SortingFieldEnum::FIELD_FILENAME, true);
 					else if (column == 1)
+						SortFields(SortingFieldEnum::FIELD_TYPE, true);
+					else if (column == 2)
 						SortFields(SortingFieldEnum::FIELD_SIZE, true);
-					else //if (column == 2) => alwasy true for the moment, to uncomment if we add a fourth column
+					else //if (column == 3) => alwayd true for the moment, to uncomment if we add a fourth column
 						SortFields(SortingFieldEnum::FIELD_DATE, true);
 				}
 			}
@@ -1367,28 +1394,33 @@ namespace IGFD
 								str = fileEntryString + str;
 						}
 						bool selected = (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()); // found
+
 						ImGui::TableNextRow();
 
 						bool needToBreakTheloop = false;
 
-						if (ImGui::TableSetColumnIndex(0)) // first column
+						if (ImGui::TableNextColumn()) // file name
 						{
 							needToBreakTheloop = SelectableItem(i, infos, selected, str.c_str());
 						}
-						if (ImGui::TableSetColumnIndex(1)) // second column
+						if (ImGui::TableNextColumn()) // file type
+						{
+							ImGui::Text("%s", infos.ext.c_str());
+						}
+						if (ImGui::TableNextColumn()) // file size
 						{
 							if (infos.type != 'd')
 							{
-								needToBreakTheloop = SelectableItem(i, infos, selected, "%s ", infos.formatedFileSize.c_str());
+								ImGui::Text("%s ", infos.formatedFileSize.c_str());
 							}
 							else
 							{
-								needToBreakTheloop = SelectableItem(i, infos, selected, "");
+								ImGui::Text("");
 							}
 						}
-						if (ImGui::TableSetColumnIndex(2)) // third column
+						if (ImGui::TableNextColumn()) // file date + time
 						{
-							needToBreakTheloop = SelectableItem(i, infos, selected, "%s", infos.fileModifDate.c_str());
+							ImGui::Text("%s", infos.fileModifDate.c_str());
 						}
 
 						if (showColor)
@@ -1954,6 +1986,7 @@ namespace IGFD
 		if (vSortingField != SortingFieldEnum::FIELD_NONE)
 		{
 			m_HeaderFileName = tableHeaderFileNameString;
+			m_HeaderFileType = tableHeaderFileTypeString;
 			m_HeaderFileSize = tableHeaderFileSizeString;
 			m_HeaderFileDate = tableHeaderFileDateString;
 		}
@@ -1988,12 +2021,42 @@ namespace IGFD
 					});
 			}
 		}
-		else if (vSortingField == SortingFieldEnum::FIELD_SIZE)
+		else if (vSortingField == SortingFieldEnum::FIELD_TYPE)
 		{
 			if (vCanChangeOrder && m_SortingField == vSortingField)
 				m_SortingDirection[1] = !m_SortingDirection[1];
 
 			if (m_SortingDirection[1])
+			{
+#ifdef USE_CUSTOM_SORTING_ICON
+				m_HeaderFileType = tableHeaderDescendingIcon + m_HeaderFileType;
+#endif // USE_CUSTOM_SORTING_ICON
+				std::sort(m_FileList.begin(), m_FileList.end(),
+					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					{
+						if (a.type != b.type) return (a.type == 'd'); // directory in first
+						return (a.ext < b.ext); // else
+					});
+			}
+			else
+			{
+#ifdef USE_CUSTOM_SORTING_ICON
+				m_HeaderFileType = tableHeaderAscendingIcon + m_HeaderFileType;
+#endif // USE_CUSTOM_SORTING_ICON
+				std::sort(m_FileList.begin(), m_FileList.end(),
+					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					{
+						if (a.type != b.type) return (a.type != 'd'); // directory in last
+						return (a.ext > b.ext); // else
+					});
+			}
+		}
+		else if (vSortingField == SortingFieldEnum::FIELD_SIZE)
+		{
+			if (vCanChangeOrder && m_SortingField == vSortingField)
+				m_SortingDirection[2] = !m_SortingDirection[2];
+
+			if (m_SortingDirection[2])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileSize = tableHeaderDescendingIcon + m_HeaderFileSize;
@@ -2021,9 +2084,9 @@ namespace IGFD
 		else if (vSortingField == SortingFieldEnum::FIELD_DATE)
 		{
 			if (vCanChangeOrder && m_SortingField == vSortingField)
-				m_SortingDirection[2] = !m_SortingDirection[2];
+				m_SortingDirection[3] = !m_SortingDirection[3];
 
-			if (m_SortingDirection[2])
+			if (m_SortingDirection[3])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
 				m_HeaderFileDate = tableHeaderDescendingIcon + m_HeaderFileDate;
