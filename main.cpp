@@ -122,6 +122,8 @@ inline bool RadioButtonLabeled(const char* label, bool active, bool disabled)
 
 int main(int, char**)
 {
+	setlocale(LC_ALL, ".UTF8");
+
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
