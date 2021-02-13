@@ -7,7 +7,7 @@
 
 #include <GLFW/glfw3.h>
 
-#define USE_EXPLORATION_BY_KEYS
+//#define USE_EXPLORATION_BY_KEYS
 // Up key for explore to the top
 #define IGFD_KEY_UP GLFW_KEY_UP
 // Down key for explore to the bottom
@@ -63,10 +63,11 @@ Comment theses line if you not want to have customization, like icon font here
 //#define DateTimeFormat "%Y/%m/%d %i:%M%p"
 
 // theses icons will appear in table headers
-#define USE_CUSTOM_SORTING_ICON
+//#define USE_CUSTOM_SORTING_ICON
 #define tableHeaderAscendingIcon ICON_IGFD_CHEVRON_UP
 #define tableHeaderDescendingIcon ICON_IGFD_CHEVRON_DOWN
 #define tableHeaderFileNameString " File name"
+#define tableHeaderFileTypeString " Type"
 #define tableHeaderFileSizeString " Size"
 #define tableHeaderFileDateString " Date"
 
