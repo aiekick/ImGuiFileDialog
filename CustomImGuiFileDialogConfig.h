@@ -5,9 +5,20 @@
 //#define MAX_FILE_DIALOG_NAME_BUFFER 1024
 //#define MAX_PATH_BUFFER_SIZE 1024
 
+#define USE_THUMBNAILS
+//#define IMGUI_RADIO_BUTTON RadioButton
+//#define DisplayMode_FilesList_ButtonString "FL"
+//#define DisplayMode_FilesList_ButtonHelp "File List"
+//#define DisplayMode_ThumbailsList_ButtonString "TL"
+//#define DisplayMode_ThumbailsList_ButtonHelp "Thumbnails List"
+//#define DisplayMode_ThumbailsSmall_ButtonString "ST"
+//#define DisplayMode_ThumbailsSmall_ButtonHelp "Small Thumbnails"
+//#define DisplayMode_ThumbailsBig_ButtonString "BT"
+//#define DisplayMode_ThumbailsBig_ButtonHelp "Big Thumbnails"
+
 #include <GLFW/glfw3.h>
 
-//#define USE_EXPLORATION_BY_KEYS
+#define USE_EXPLORATION_BY_KEYS
 // Up key for explore to the top
 #define IGFD_KEY_UP GLFW_KEY_UP
 // Down key for explore to the bottom
@@ -16,6 +27,10 @@
 #define IGFD_KEY_ENTER GLFW_KEY_ENTER
 // BackSpace for comming back to the last directory
 #define IGFD_KEY_BACKSPACE GLFW_KEY_BACKSPACE
+
+// by ex you can quit the dialog by pressing the key excape
+#define USE_DIALOG_EXIT_WITH_KEY
+#define IGFD_EXIT_KEY GLFW_KEY_ESCAPE
 
 // widget
 // filter combobox width
@@ -63,7 +78,7 @@ Comment theses line if you not want to have customization, like icon font here
 //#define DateTimeFormat "%Y/%m/%d %i:%M%p"
 
 // theses icons will appear in table headers
-//#define USE_CUSTOM_SORTING_ICON
+#define USE_CUSTOM_SORTING_ICON
 #define tableHeaderAscendingIcon ICON_IGFD_CHEVRON_UP
 #define tableHeaderDescendingIcon ICON_IGFD_CHEVRON_DOWN
 #define tableHeaderFileNameString " File name"
