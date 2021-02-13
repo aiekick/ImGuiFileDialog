@@ -322,31 +322,18 @@ namespace IGFD
 		std::vector<std::string> res;
 
 #ifdef WIN32
-		DWORD mydrives = 128;
-		wchar_t wlpBuffer[128];
+		const DWORD mydrives = 2048;
+		char lpBuffer[2048];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
-		DWORD countChars = mini(GetLogicalDriveStringsW(mydrives, wlpBuffer), 128 - 1);
+		const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
 #undef mini
 		if (countChars > 0)
 		{
-			std::wstring var = std::wstring(wlpBuffer, (size_t)countChars);
-			wreplaceString(var, L"\\", L"");
-			auto arr = wsplitStringToVector(var, '\0', false);
-			size_t n = 0;
-			char lpBuffer[128];
-			for (auto a : arr)
-			{
-				int error = dirent_wcstombs_s(&n, lpBuffer, 128 - 1, a.data(), a.size());
-				if (!error && n)
-				{
-					res.push_back(std::string(lpBuffer, n));
-				}
-			}
+			std::string var = std::string(lpBuffer, (size_t)countChars);
+			replaceString(var, "\\", "");
+			res = splitStringToVector(var, '\0', false);
 		}
 #endif // WIN32
-
-		if (res.empty())
-			std::cout << "fail to obtain Logical Drives" << std::endl;
 
 		return res;
 	}
@@ -369,6 +356,20 @@ namespace IGFD
 		return bExists;    // this is not a directory!
 	}
 
+#ifdef WIN32
+	inline std::wstring wGetString(const char* str)
+	{
+		std::wstring ret;
+		size_t sz;
+		if (!dirent_mbstowcs_s(&sz, nullptr, 0, str, 0))
+		{
+			ret.resize(sz);
+			dirent_mbstowcs_s(nullptr, (wchar_t*)ret.data(), sz, str, sz - 1);
+		}
+		return ret;
+	}
+#endif
+
 	inline bool CreateDirectoryIfNotExist(const std::string& name)
 	{
 		bool res = false;
@@ -377,33 +378,30 @@ namespace IGFD
 		{
 			if (!IsDirectoryExist(name))
 			{
-				res = true;
-
 #ifdef WIN32
-				//CreateDirectoryA(name.c_str(), nullptr);
-				size_t n;
-				std::vector<wchar_t> wn(name.size() + 1);
-				int error = dirent_mbstowcs_s(&n, wn.data(), wn.size(), name.c_str(), wn.size());
-				if (error || !CreateDirectoryW(wn.data(), nullptr)) 
+				std::wstring wname = wGetString(name.c_str());
+				if (CreateDirectoryW(wname.c_str(), nullptr))
 				{
-					std::cout << "Error creating directory " << name << std::endl;
-					res = false;
+					res = true;
 				}
 #elif defined(__EMSCRIPTEN__)
-				std::string str = std::string("FS.mkdir('") + name.c_str() + "');";
+				std::string str = std::string("FS.mkdir('") + name + "');";
 				emscripten_run_script(str.c_str());
+				res = true;
 #elif defined(UNIX)
 				char buffer[PATH_MAX] = {};
 				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
 				const int dir_err = std::system(buffer);
-				if (dir_err == -1)
+				if (dir_err != -1)
 				{
-					std::cout << "Error creating directory " << name << std::endl;
-					res = false;
+					res = true;
 				}
 #endif // defined(UNIX)
-			}
+				if (!res) {
+					std::cout << "Error creating directory " << name << std::endl;
+				}
 		}
+	}
 
 		return res;
 	}
@@ -2164,23 +2162,17 @@ namespace IGFD
 		if (dir != nullptr)
 		{
 #ifdef WIN32
-			// numchar = GetFullPathNameA(path.c_str(), PATH_MAX - 1, real_path, nullptr);
-			size_t numchar = 0;
-			size_t n = 0;
-			wchar_t wreal_path[PATH_MAX];
-			std::vector<wchar_t> wn(path.size() + 1);
-			int error = dirent_mbstowcs_s(&n, wn.data(), wn.size(), path.c_str(), wn.size());
-			if (!error)
-				numchar = GetFullPathNameW(wn.data(), PATH_MAX - 1, wreal_path, nullptr);
-			if (error || !numchar)
+			DWORD numchar = 0;
+			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
+			std::wstring wpath = wGetString(path.c_str());
+			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
+			std::wstring fpath(numchar, 0);
+			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
+			int error = dirent_wcstombs_s(nullptr, real_path, PATH_MAX, fpath.c_str(), PATH_MAX - 1);
+			if (error)numchar = 0;
+			if (!numchar)
 			{
 				std::cout << "fail to obtain FullPathName " << path << std::endl;
-			}
-			else
-			{
-				error = dirent_wcstombs_s(&n, real_path, PATH_MAX - 1, wreal_path, numchar);
-				if (error)
-					std::cout << "fail to obtain FullPathName " << path << std::endl;
 			}
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 			char* numchar = realpath(path.c_str(), real_path);
