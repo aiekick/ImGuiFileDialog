@@ -192,7 +192,7 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_with_pane.gif)
 
 ## Custom icons and colors by extension
 
