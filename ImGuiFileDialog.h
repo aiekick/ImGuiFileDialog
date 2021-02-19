@@ -659,8 +659,8 @@ namespace IGFD
 	public: 
 		static FileDialog* Instance()								// Singleton for easier accces form anywhere but only one dialog at a time
 		{
-			static auto* _instance = new FileDialog();
-			return _instance;
+			static FileDialog _instance;
+			return &_instance;
 		}
 
 	public:
