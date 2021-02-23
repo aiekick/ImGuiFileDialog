@@ -665,7 +665,7 @@ namespace IGFD
 
 	public:
 		FileDialog();												// ImGuiFileDialog Constructor. can be used for have many dialog at same tiem (not possible with singleton)
-		~FileDialog();												// ImGuiFileDialog Destructor
+		virtual ~FileDialog();										// ImGuiFileDialog Destructor
 
 		// standard dialog
 		void OpenDialog(											// open simple dialog (path and fileName can be specified)
