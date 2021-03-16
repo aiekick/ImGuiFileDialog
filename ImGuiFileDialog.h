@@ -288,7 +288,6 @@ Example code :
 Load => ImGuiFileDialog::Instance()->DeserializeBookmarks(bookmarString);
 Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks();
 
-
 -----------------------------------------------------------------------------------------------------------------
 ## Path Edition :
 -----------------------------------------------------------------------------------------------------------------
@@ -342,6 +341,14 @@ Example code :
 #define OverWriteDialogMessageString "Would you like to OverWrite it ?"
 #define OverWriteDialogConfirmButtonString "Confirm"
 #define OverWriteDialogCancelButtonString "Cancel"
+
+-----------------------------------------------------------------------------------------------------------------
+## Flags :
+-----------------------------------------------------------------------------------------------------------------
+
+flag must be specified in OpenDialog or OpenModal
+* ImGuiFileDialogFlags_ConfirmOverwrite 	=> show confirm to overwrite dialog
+* ImGuiFileDialogFlags_DontShowHiddenFiles 	=> dont show hidden file (file starting with a .)
 
 -----------------------------------------------------------------------------------------------------------------
 ## Open / Save dialog Behavior :
