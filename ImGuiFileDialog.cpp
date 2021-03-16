@@ -2154,45 +2154,45 @@ namespace IGFD
 					infos.fileName = ent->d_name;
 					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
 
-					if (infos.fileName != "." 
-						|| dlg_filters.empty()) // in directory mode we must display the curent dir "."
+					if (infos.fileName.empty() || infos.fileName == ".") continue; // filename empty or filename is the current dir '.'
+					if (infos.fileName != ".." && (dlg_flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos.fileName[0] == '.') continue; // dont show hidden files
+					if (dlg_filters.empty()) continue; // in directory mode we must display the curent dir ".")
+
+					switch (ent->d_type)
 					{
-						switch (ent->d_type)
-						{
-						case DT_REG:
-							infos.type = 'f'; break;
-						case DT_DIR:
-							infos.type = 'd'; break;
-						case DT_LNK:
-							infos.type = 'l'; break;
-						}
-
-						if (infos.type == 'f' ||
-							infos.type == 'l') // link can have the same extention of a file
-						{
-							size_t lpt = infos.fileName.find_last_of('.');
-							if (lpt != std::string::npos)
-							{
-								infos.ext = infos.fileName.substr(lpt);
-							}
-
-							if (!dlg_filters.empty())
-							{
-								// check if current file extention is covered by current filter
-								// we do that here, for avoid doing that during filelist display
-								// for better fps
-								if (!m_SelectedFilter.empty() && // selected filter exist
-									(!m_SelectedFilter.filterExist(infos.ext) && // filter not found
-										m_SelectedFilter.filter != ".*"))
-								{
-									continue;
-								}
-							}
-						}
-
-						CompleteFileInfos(&infos);
-						m_FileList.push_back(infos);
+					case DT_REG:
+						infos.type = 'f'; break;
+					case DT_DIR:
+						infos.type = 'd'; break;
+					case DT_LNK:
+						infos.type = 'l'; break;
 					}
+
+					if (infos.type == 'f' ||
+						infos.type == 'l') // link can have the same extention of a file
+					{
+						size_t lpt = infos.fileName.find_last_of('.');
+						if (lpt != std::string::npos)
+						{
+							infos.ext = infos.fileName.substr(lpt);
+						}
+
+						if (!dlg_filters.empty())
+						{
+							// check if current file extention is covered by current filter
+							// we do that here, for avoid doing that during filelist display
+							// for better fps
+							if (!m_SelectedFilter.empty() && // selected filter exist
+								(!m_SelectedFilter.filterExist(infos.ext) && // filter not found
+									m_SelectedFilter.filter != ".*"))
+							{
+								continue;
+							}
+						}
+					}
+
+					CompleteFileInfos(&infos);
+					m_FileList.push_back(infos);
 				}
 
 				for (i = 0; i < n; i++)

@@ -484,7 +484,8 @@ typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_
 {
 	ImGuiFileDialogFlags_None = 0,
-	ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,
+	ImGuiFileDialogFlags_ConfirmOverwrite = 1 << 0,		// show confirm to overwrite dialog
+	ImGuiFileDialogFlags_DontShowHiddenFiles = 1 << 1	// dont show hidden file (file starting with a .)
 };
 
 #ifdef __cplusplus
