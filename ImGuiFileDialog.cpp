@@ -2154,10 +2154,11 @@ namespace IGFD
 					infos.fileName = ent->d_name;
 					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
 
-					if (infos.fileName.empty() || infos.fileName == ".") continue; // filename empty or filename is the current dir '.'
-					if (infos.fileName != ".." && (dlg_flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos.fileName[0] == '.') continue; // dont show hidden files
-					if (dlg_filters.empty()) continue; // in directory mode we must display the curent dir ".")
-
+					if (infos.fileName.empty() || (infos.fileName == "." && !dlg_filters.empty())) continue; // filename empty or filename is the current dir '.'
+					if (infos.fileName != ".." && (dlg_flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos.fileName[0] == '.') // dont show hidden files
+						if (!dlg_filters.empty() || (dlg_filters.empty() && infos.fileName != ".")) // except "." if in directory mode
+							continue;
+					
 					switch (ent->d_type)
 					{
 					case DT_REG:
