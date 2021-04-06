@@ -724,7 +724,9 @@ namespace IGFD
 		if (ps.isOk)
 		{
 			dlg_path = ps.path;
-			SetDefaultFileName(vFilePathName);
+			SetDefaultFileName(ps.name + "." + ps.ext);
+			m_SelectedFileNames.clear();
+			m_SelectedFileNames.emplace(ps.name + "." + ps.ext);
 			dlg_defaultExt = "." + ps.ext;
 		}
 		else
@@ -812,7 +814,9 @@ namespace IGFD
 		if (ps.isOk)
 		{
 			dlg_path = ps.path;
-			SetDefaultFileName(vFilePathName);
+			SetDefaultFileName(ps.name + "." + ps.ext);
+			m_SelectedFileNames.clear();
+			m_SelectedFileNames.emplace(ps.name + "." + ps.ext);
 			dlg_defaultExt = "." + ps.ext;
 		}
 		else
