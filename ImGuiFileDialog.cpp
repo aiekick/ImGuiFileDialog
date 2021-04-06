@@ -1324,9 +1324,9 @@ namespace IGFD
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
 			ImGui::TableSetupColumn(m_HeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
-			ImGui::TableSetupColumn(m_HeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 1);
-			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 2);
-			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 3);
+			ImGui::TableSetupColumn(m_HeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed | ((dlg_flags & ImGuiFileDialogFlags_HideColumnType) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 1);
+			ImGui::TableSetupColumn(m_HeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed | ((dlg_flags & ImGuiFileDialogFlags_HideColumnSize) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 2);
+			ImGui::TableSetupColumn(m_HeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed | ((dlg_flags & ImGuiFileDialogFlags_HideColumnDate) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 3);
 
 #ifndef USE_CUSTOM_SORTING_ICON
 			// Sort our data if sort specs have been changed!
