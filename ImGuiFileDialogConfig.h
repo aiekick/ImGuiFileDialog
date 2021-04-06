@@ -22,7 +22,7 @@
 //#define FILTER_COMBO_WIDTH 120.0f
 // button widget use for compose path
 //#define IMGUI_PATH_BUTTON ImGui::Button
-// standar button
+// standard button
 //#define IMGUI_BUTTON ImGui::Button
 
 // locales string

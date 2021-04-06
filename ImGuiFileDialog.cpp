@@ -638,7 +638,7 @@ namespace IGFD
 			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
-		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
+		if ((held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld)) || vFlashing)
 			hovered = true;
 		if (hovered || selected)
 		{
@@ -1415,7 +1415,7 @@ namespace IGFD
 							}
 							else
 							{
-								ImGui::Text("");
+								ImGui::Text("%s ", "");
 							}
 						}
 						if (ImGui::TableNextColumn()) // file date + time
@@ -2007,6 +2007,15 @@ namespace IGFD
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
+					  	if (a.fileName[0] == '.' && b.fileName[0] != '.') return true;
+					  	if (a.fileName[0] != '.' && b.fileName[0] == '.') return false;
+					  	if (a.fileName[0] == '.' && b.fileName[0] == '.')
+					  	{
+						  	if (a.fileName.length() == 1) return false;
+						  	if (b.fileName.length() == 1) return true;
+						  	return (stricmp(a.fileName.c_str() + 1, b.fileName.c_str() + 1) < 0);
+					  	}
+
 						if (a.type != b.type) return (a.type == 'd'); // directory in first
 						return (stricmp(a.fileName.c_str(), b.fileName.c_str()) < 0); // sort in insensitive case
 					});
@@ -2019,6 +2028,15 @@ namespace IGFD
 				std::sort(m_FileList.begin(), m_FileList.end(),
 					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
 					{
+					  	if (a.fileName[0] == '.' && b.fileName[0] != '.') return false;
+					  	if (a.fileName[0] != '.' && b.fileName[0] == '.') return true;
+					  	if (a.fileName[0] == '.' && b.fileName[0] == '.')
+					  	{
+						  	if (a.fileName.length() == 1) return true;
+						  	if (b.fileName.length() == 1) return false;
+						  	return (stricmp(a.fileName.c_str() + 1, b.fileName.c_str() + 1) > 0);
+					  	}
+
 						if (a.type != b.type) return (a.type != 'd'); // directory in last
 						return (stricmp(a.fileName.c_str(), b.fileName.c_str()) > 0); // sort in insensitive case
 					});
