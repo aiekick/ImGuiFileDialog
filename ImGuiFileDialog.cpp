@@ -1611,13 +1611,16 @@ namespace IGFD
 			// if not a collection we can replace the filter by the extention we want
 			if (m_SelectedFilter.collectionfilters.empty())
 			{
-				size_t lastPoint = result.find_last_of('.');
-				if (lastPoint != std::string::npos)
+				if (m_SelectedFilter.filter.find('*') == std::string::npos && result != m_SelectedFilter.filter)
 				{
-					result = result.substr(0, lastPoint);
-				}
+					size_t lastPoint = result.find_last_of('.');
+					if (lastPoint != std::string::npos)
+					{
+						result = result.substr(0, lastPoint);
+					}
 
-				result += m_SelectedFilter.filter;
+					result += m_SelectedFilter.filter;
+				}
 			}
 
 			return result;
