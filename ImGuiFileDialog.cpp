@@ -1598,9 +1598,11 @@ namespace IGFD
 		if (dlg_filters.empty()) // if directory mode
 		{
 			std::string selectedDirectory = FileNameBuffer;
-			if (!selectedDirectory.empty() && 
-				selectedDirectory != ".")
-				path += PATH_SEP + selectedDirectory;
+			if (!selectedDirectory.empty() && selectedDirectory != ".")
+				if (path.empty())
+					path = selectedDirectory;
+				else
+					path += PATH_SEP + selectedDirectory;
 		}
 
 		return path;
