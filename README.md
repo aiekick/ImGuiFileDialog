@@ -263,6 +263,12 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
+for retrieve the selection you must use :
+
+```cpp
+ImGuiFileDialog::Instance()->GetSelection();
+```
+
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
 
 ## File Dialog Constraints
