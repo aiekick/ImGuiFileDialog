@@ -962,7 +962,8 @@ namespace IGFD
 				m_CurrentPath_Decomposition.clear();
 			}
 
-			m_IsOk = false;	 // reset dialog result
+			m_IsOk = false;			// reset dialog result
+			m_WantToQuit = false;	// reset var used for start the dialog quit process from anywhere
 
 			ResetEvents();
 
@@ -1159,6 +1160,11 @@ namespace IGFD
 		}
 
 		m_FooterHeight = ImGui::GetCursorPosY() - posY;
+
+		if (m_WantToQuit && m_IsOk)
+		{
+			res = true;
+		}
 
 		return res;
 	}
@@ -1373,6 +1379,7 @@ namespace IGFD
 				}
 			}
 #endif // USE_CUSTOM_SORTING_ICON
+			
 			if (!m_FilteredFileList.empty())
 			{
 				m_FileListClipper.Begin((int)m_FilteredFileList.size(), ImGui::GetTextLineHeightWithSpacing());
@@ -1514,6 +1521,12 @@ namespace IGFD
 			else
 			{
 				SelectFileName(vInfos);
+
+				if (ImGui::IsMouseDoubleClicked(0))
+				{
+					m_WantToQuit = true;
+					m_IsOk = true;
+				}
 			}
 		}
 

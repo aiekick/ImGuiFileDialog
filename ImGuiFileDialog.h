@@ -618,6 +618,7 @@ namespace IGFD
 		std::string m_HeaderFileDate;						// detail view column date + time
 		bool m_SortingDirection[4] = { true, true, true, true };	// detail view // true => Descending, false => Ascending
 		SortingFieldEnum m_SortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
+		bool m_WantToQuit = false;							// set to true for start the quit process of the dialog, specific behavior for select a file by double click for the moment
 
 		std::string dlg_key;
 		std::string dlg_title;
