@@ -1174,6 +1174,9 @@ namespace IGFD
 
 	void IGFD::FileDialog::DrawDirectoryCreation()
 	{
+		if (dlg_flags & ImGuiFileDialogFlags_DisableCreateDirectoryButton)
+			return;
+
 		if (IMGUI_BUTTON(createDirButtonString))
 		{
 			if (!m_CreateDirectoryMode)
@@ -1405,7 +1408,7 @@ namespace IGFD
 
 						if (ImGui::TableNextColumn()) // file name
 						{
-							needToBreakTheloop = SelectableItem(i, infos, selected, str.c_str());
+							needToBreakTheloop = SelectableItem(i, infos, selected, "%s", str.c_str());
 						}
 						if (ImGui::TableNextColumn()) // file type
 						{
