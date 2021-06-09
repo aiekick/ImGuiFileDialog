@@ -1510,13 +1510,12 @@ namespace IGFD
 				if (ImGui::IsMouseDoubleClicked(0)) // 0 -> left mouse button double click
 				{
 					m_PathClicked = SelectDirectory(vInfos); 
+					return true; // needToBreakTheloop
 				}
 				else if (dlg_filters.empty()) // directory chooser
 				{
 					SelectFileName(vInfos);
 				}
-
-				return true; // needToBreakTheloop
 			}
 			else
 			{
@@ -1615,10 +1614,12 @@ namespace IGFD
 		{
 			std::string selectedDirectory = FileNameBuffer;
 			if (!selectedDirectory.empty() && selectedDirectory != ".")
+			{
 				if (path.empty())
 					path = selectedDirectory;
 				else
 					path += PATH_SEP + selectedDirectory;
+			}
 		}
 
 		return path;
