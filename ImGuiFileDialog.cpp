@@ -1614,10 +1614,12 @@ namespace IGFD
 		{
 			std::string selectedDirectory = FileNameBuffer;
 			if (!selectedDirectory.empty() && selectedDirectory != ".")
+			{
 				if (path.empty())
 					path = selectedDirectory;
 				else
 					path += PATH_SEP + selectedDirectory;
+			}
 		}
 
 		return path;
