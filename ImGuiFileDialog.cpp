@@ -576,10 +576,10 @@ namespace IGFD
 		bool item_add;
 		if (flags & ImGuiSelectableFlags_Disabled)
 		{
-			ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
-			window->DC.ItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
+			ImGuiItemFlags backup_item_flags = g.CurrentItemFlags;
+			g.CurrentItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
 			item_add = ItemAdd(bb, id);
-			window->DC.ItemFlags = backup_item_flags;
+			g.CurrentItemFlags = backup_item_flags;
 		}
 		else
 		{
@@ -657,10 +657,10 @@ namespace IGFD
 		if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
 
 		// Automatically close popups
-		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(window->DC.ItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
+		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.CurrentItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
 			CloseCurrentPopup();
 
-		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
+		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.LastItemStatusFlags);
 		return pressed;
 	}
 #endif // USE_EXPLORATION_BY_KEYS
