@@ -538,7 +538,7 @@ namespace IGFD
 		ItemSize(size, 0.0f);
 
 		// Fill horizontal space
-		// We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitely right-aligned sizes not visibly match other widgets.
+		// We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitly right-aligned sizes not visibly match other widgets.
 		const bool span_all_columns = (flags & ImGuiSelectableFlags_SpanAllColumns) != 0;
 		const float min_x = span_all_columns ? window->ParentWorkRect.Min.x : pos.x;
 		const float max_x = span_all_columns ? window->ParentWorkRect.Max.x : window->WorkRect.Max.x;
@@ -576,10 +576,10 @@ namespace IGFD
 		bool item_add;
 		if (flags & ImGuiSelectableFlags_Disabled)
 		{
-			ImGuiItemFlags backup_item_flags = g.CurrentItemFlags;
-			g.CurrentItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
+			ImGuiItemFlags backup_item_flags = window->DC.ItemFlags;
+			window->DC.ItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
 			item_add = ItemAdd(bb, id);
-			g.CurrentItemFlags = backup_item_flags;
+			window->DC.ItemFlags = backup_item_flags;
 		}
 		else
 		{
@@ -638,7 +638,7 @@ namespace IGFD
 			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
-		if ((held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld)) || vFlashing)
+		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
 			hovered = true;
 		if (hovered || selected)
 		{
@@ -657,7 +657,7 @@ namespace IGFD
 		if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
 
 		// Automatically close popups
-		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.CurrentItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
+		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(window->DC.ItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
 			CloseCurrentPopup();
 
 		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.ItemFlags);
@@ -1449,7 +1449,7 @@ namespace IGFD
 
 			if (m_InputPathActivated)
 			{
-				auto gio = ImGui::GetIO();
+				ImGuiIO gio = ImGui::GetIO();
 				if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Enter]))
 				{
 					SetPath(std::string(InputPathBuffer));
