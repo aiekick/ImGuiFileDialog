@@ -574,10 +574,11 @@ namespace IGFD
 		}
 
 		bool item_add;
-		if (flags & ImGuiSelectableFlags_Disabled)
+		const bool disabled_item = (flags & ImGuiSelectableFlags_Disabled) != 0;
+		if (disabled_item)
 		{
 			ImGuiItemFlags backup_item_flags = g.CurrentItemFlags;
-			g.CurrentItemFlags |= ImGuiItemFlags_Disabled | ImGuiItemFlags_NoNavDefaultFocus;
+			g.CurrentItemFlags |= ImGuiItemFlags_Disabled;
 			item_add = ItemAdd(bb, id);
 			g.CurrentItemFlags = backup_item_flags;
 		}
@@ -595,6 +596,10 @@ namespace IGFD
 		if (!item_add)
 			return false;
 
+		const bool disabled_global = (g.CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
+		if (disabled_item && !disabled_global)
+			PushDisabled(true);
+
 		// FIXME: We can standardize the behavior of those two, we could also keep the fast path of override ClipRect + full push on render only,
 		// which would be advantageous since most selectable are not selected.
 		if (span_all_columns && window->DC.CurrentColumns)
@@ -607,16 +612,23 @@ namespace IGFD
 		if (flags & ImGuiSelectableFlags_NoHoldingActiveID) { button_flags |= ImGuiButtonFlags_NoHoldingActiveId; }
 		if (flags & ImGuiSelectableFlags_SelectOnClick) { button_flags |= ImGuiButtonFlags_PressedOnClick; }
 		if (flags & ImGuiSelectableFlags_SelectOnRelease) { button_flags |= ImGuiButtonFlags_PressedOnRelease; }
-		if (flags & ImGuiSelectableFlags_Disabled) { button_flags |= ImGuiButtonFlags_Disabled; }
 		if (flags & ImGuiSelectableFlags_AllowDoubleClick) { button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick; }
 		if (flags & ImGuiSelectableFlags_AllowItemOverlap) { button_flags |= ImGuiButtonFlags_AllowItemOverlap; }
-
-		if (flags & ImGuiSelectableFlags_Disabled)
-			selected = false;
 
 		const bool was_selected = selected;
 		bool hovered, held;
 		bool pressed = ButtonBehavior(bb, id, &hovered, &held, button_flags);
+
+		// Auto-select when moved into
+		// - This will be more fully fleshed in the range-select branch
+		// - This is not exposed as it won't nicely work with some user side handling of shift/control
+		// - We cannot do 'if (g.NavJustMovedToId != id) { selected = false; pressed = was_selected; }' for two reasons
+		//   - (1) it would require focus scope to be set, need exposing PushFocusScope() or equivalent (e.g. BeginSelection() calling PushFocusScope())
+		//   - (2) usage will fail with clipped items
+		//   The multi-select API aim to fix those issues, e.g. may be replaced with a BeginSelection() API.
+		if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == window->DC.NavFocusScopeIdCurrent)
+			if (g.NavJustMovedToId == id)
+				selected = pressed = true;
 
 		// Update NavId when clicking or when Hovering (this doesn't happen on most widgets), so navigation can be resumed with gamepad/keyboard
 		if (pressed || (hovered && (flags & ImGuiSelectableFlags_SetNavIdOnHover)))
@@ -644,21 +656,22 @@ namespace IGFD
 		{
 			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
 			RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
-			RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 		}
+		RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 
 		if (span_all_columns && window->DC.CurrentColumns)
 			PopColumnsBackground();
 		else if (span_all_columns && g.CurrentTable)
 			TablePopBackgroundChannel();
 
-		if (flags & ImGuiSelectableFlags_Disabled) PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
 		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
-		if (flags & ImGuiSelectableFlags_Disabled) PopStyleColor();
 
 		// Automatically close popups
 		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.CurrentItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
 			CloseCurrentPopup();
+
+		if (disabled_item && !disabled_global)
+			PopDisabled();
 
 		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.LastItemStatusFlags);
 		return pressed;
