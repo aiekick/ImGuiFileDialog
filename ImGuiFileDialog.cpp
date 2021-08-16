@@ -647,7 +647,7 @@ namespace IGFD
 
 		// In this branch, Selectable() cannot toggle the selection so this will never trigger.
 		if (selected != was_selected) //-V547
-			window->DC.LastItemStatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
+			g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
 		if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld) || vFlashing)
