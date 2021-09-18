@@ -597,8 +597,8 @@ namespace IGFD
 			return false;
 
 		const bool disabled_global = (g.CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
-		if (disabled_item && !disabled_global)
-			PushDisabled(true);
+		if (disabled_item && !disabled_global) // Only testing this as an optimization
+			BeginDisabled(true);
 
 		// FIXME: We can standardize the behavior of those two, we could also keep the fast path of override ClipRect + full push on render only,
 		// which would be advantageous since most selectable are not selected.
@@ -667,14 +667,14 @@ namespace IGFD
 		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
 
 		// Automatically close popups
-		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.CurrentItemFlags & ImGuiItemFlags_SelectableDontClosePopup))
+		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.LastItemData.InFlags & ImGuiItemFlags_SelectableDontClosePopup))
 			CloseCurrentPopup();
 
 		if (disabled_item && !disabled_global)
-			PopDisabled();
+			EndDisabled();
 
-		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.LastItemStatusFlags);
-		return pressed;
+		IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+		return pressed; //-V1020
 	}
 #endif // USE_EXPLORATION_BY_KEYS
 
