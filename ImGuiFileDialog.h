@@ -497,7 +497,7 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_HideColumnType = (1 << 3),	// hide column file type
 	ImGuiFileDialogFlags_HideColumnSize = (1 << 4),	// hide column file size
 	ImGuiFileDialogFlags_HideColumnDate = (1 << 5),	// hide column file date
-	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_None // for the moment we have no default options but its comming :)
+	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
 #ifdef __cplusplus
