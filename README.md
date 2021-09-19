@@ -6,7 +6,7 @@
 
 ## Purpose
 
-ImGuiFileDialog is a file selection dialog built for (and using only) [Dear ImGui](https://github.com/ocornut/imgui).
+ImGuiFileDialog is a file selection dialog built for [Dear ImGui](https://github.com/ocornut/imgui).
 
 My primary goal was to have a custom pane with widgets according to file extension. This was not possible using other
 solutions.
