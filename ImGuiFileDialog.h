@@ -500,6 +500,21 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
+#ifdef USE_THUMBNAILS
+struct IGFD_Thumbnail_Info
+{
+	int isReadyToDisplay = 0;				// ready to be rendered, so texture created
+	int isReadyToUpload = 0;				// ready to upload to gpu
+	int isLoadingOrLoaded = 0;				// was sent to laoding or loaded
+	void* textureID = 0;					// 2d texture id (void* is like ImtextureID type) (GL, DX, VK, Etc..)
+	unsigned char* textureFileDatas = 0;	// file texture datas, will be rested to null after gpu upload
+	int textureWidth = 0;					// width of the texture to upload
+	int textureHeight = 0;					// height of the texture to upload
+	int textureChannels = 0;				// count channels of the texture to upload
+	void* userDatas = 0;					// user datas
+};
+#endif // USE_THUMBNAILS
+
 #ifdef __cplusplus
 
 #include <imgui.h>
@@ -511,12 +526,16 @@ enum ImGuiFileDialogFlags_
 #include <string>
 #include <set>
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <functional>
 #include <string>
 #include <vector>
 #include <list>
-
+#ifdef USE_THUMBNAILS
+#include <thread>
+#include <mutex>
+#endif // USE_THUMBNAILS
 namespace IGFD
 {
 	#ifndef MAX_FILE_DIALOG_NAME_BUFFER 
@@ -527,6 +546,10 @@ namespace IGFD
 	#define MAX_PATH_BUFFER_SIZE 1024
 	#endif // MAX_PATH_BUFFER_SIZE
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	struct FileExtentionInfosStruct
 	{
 		ImVec4 color = ImVec4(0, 0, 0, 0);
@@ -535,9 +558,12 @@ namespace IGFD
 		FileExtentionInfosStruct(const ImVec4& vColor, const std::string& vIcon = "") { color = vColor; icon = vIcon; }
 	};
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	typedef void* UserDatas;
 	typedef std::function<void(const char*, UserDatas, bool*)> PaneFun;
-	
 	class FileDialog
 	{
 
@@ -589,8 +615,8 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	private:
-		std::vector<FileInfoStruct> m_FileList;
-        std::vector<FileInfoStruct> m_FilteredFileList;
+		std::vector<std::shared_ptr<FileInfoStruct>> m_FileList;
+        std::vector<std::shared_ptr<FileInfoStruct>> m_FilteredFileList;
         std::unordered_map<std::string, FileExtentionInfosStruct> m_FileExtentionInfos;
 		std::string m_CurrentPath;
 		std::vector<std::string> m_CurrentPath_Decomposition;
@@ -650,7 +676,7 @@ namespace IGFD
 		bool m_BookmarkPaneShown = false;
 #endif // USE_BOOKMARK
 
-	///////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////
 	/// PUBLIC PARAMS /////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////
 
@@ -838,15 +864,16 @@ namespace IGFD
 #endif // USE_BOOKMARK
 
 		// others
-		bool SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...);					// selectable item for table
+		bool SelectableItem(const int& vidx, std::shared_ptr<FileInfoStruct> vInfos, 
+			const bool& vSelected, const char* vFmt, ...);																	// selectable item for table
 		void ResetEvents();																									// reset events (path, drives, continue)
 		void SetDefaultFileName(const std::string& vFileName);																// set default file name
-		bool SelectDirectory(const FileInfoStruct& vInfos);																	// enter directory 
-		void SelectFileName(const FileInfoStruct& vInfos);																	// select filename
+		bool SelectDirectory(std::shared_ptr<FileInfoStruct> vInfos);														// enter directory 
+		void SelectFileName(std::shared_ptr<FileInfoStruct> vInfos);														// select filename
 		void RemoveFileNameInSelection(const std::string& vFileName);														// selection : remove a file name
 		void AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);							// selection : add a file name
 		void SetPath(const std::string& vPath);																				// set the path of the dialog, will launch the directory scan for populate the file listview
-		void CompleteFileInfos(FileInfoStruct *vFileInfoStruct);															// set time and date infos of a file (detail view mode)
+		void CompleteFileInfos(std::shared_ptr<FileInfoStruct> vFileInfoStruct);											// set time and date infos of a file (detail view mode)
 		void SortFields(SortingFieldEnum vSortingField = SortingFieldEnum::FIELD_NONE, 	bool vCanChangeOrder = false);		// will sort a column
 		void ScanDir(const std::string& vPath);																				// scan the directory for retrieve the file list
 		void SetCurrentDir(const std::string& vPath);																		// define current directory for scan

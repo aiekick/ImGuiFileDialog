@@ -994,6 +994,7 @@ namespace IGFD
 			{
 				beg = ImGui::Begin(name.c_str(), (bool*)nullptr, vFlags | ImGuiWindowFlags_NoScrollbar);
 			}
+
 			if (beg)
 			{
 				m_Name = name; //-V820
@@ -1402,59 +1403,62 @@ namespace IGFD
 					{
 						if (i < 0) continue;
 
-						const FileInfoStruct& infos = m_FilteredFileList[i];
-
-						ImVec4 c;
-						std::string icon;
-						bool showColor = GetExtentionInfos(infos.ext, &c, &icon);
-						if (showColor)
-							ImGui::PushStyleColor(ImGuiCol_Text, c);
-
-						std::string str = " " + infos.fileName;
-						if (infos.type == 'd') str = dirEntryString + str;
-						else if (infos.type == 'l') str = linkEntryString + str;
-						else if (infos.type == 'f')
+						const auto infos = m_FilteredFileList[i];
+						if (infos.use_count())
 						{
-							if (showColor && !icon.empty())
-								str = icon + str;
-							else
-								str = fileEntryString + str;
-						}
-						bool selected = (m_SelectedFileNames.find(infos.fileName) != m_SelectedFileNames.end()); // found
 
-						ImGui::TableNextRow();
+							ImVec4 c;
+							std::string icon;
+							bool showColor = GetExtentionInfos(infos->ext, &c, &icon);
+							if (showColor)
+								ImGui::PushStyleColor(ImGuiCol_Text, c);
 
-						bool needToBreakTheloop = false;
-
-						if (ImGui::TableNextColumn()) // file name
-						{
-							needToBreakTheloop = SelectableItem(i, infos, selected, "%s", str.c_str());
-						}
-						if (ImGui::TableNextColumn()) // file type
-						{
-							ImGui::Text("%s", infos.ext.c_str());
-						}
-						if (ImGui::TableNextColumn()) // file size
-						{
-							if (infos.type != 'd')
+							std::string str = " " + infos->fileName;
+							if (infos->type == 'd') str = dirEntryString + str;
+							else if (infos->type == 'l') str = linkEntryString + str;
+							else if (infos->type == 'f')
 							{
-								ImGui::Text("%s ", infos.formatedFileSize.c_str());
+								if (showColor && !icon.empty())
+									str = icon + str;
+								else
+									str = fileEntryString + str;
 							}
-							else
+							bool selected = (m_SelectedFileNames.find(infos->fileName) != m_SelectedFileNames.end()); // found
+
+							ImGui::TableNextRow();
+
+							bool needToBreakTheloop = false;
+
+							if (ImGui::TableNextColumn()) // file name
 							{
-								ImGui::Text("%s ", "");
+								needToBreakTheloop = SelectableItem(i, infos, selected, "%s", str.c_str());
 							}
-						}
-						if (ImGui::TableNextColumn()) // file date + time
-						{
-							ImGui::Text("%s", infos.fileModifDate.c_str());
-						}
+							if (ImGui::TableNextColumn()) // file type
+							{
+								ImGui::Text("%s", infos->ext.c_str());
+							}
+							if (ImGui::TableNextColumn()) // file size
+							{
+								if (infos->type != 'd')
+								{
+									ImGui::Text("%s ", infos->formatedFileSize.c_str());
+								}
+								else
+								{
+									ImGui::Text("%s ", "");
+								}
+							}
+							if (ImGui::TableNextColumn()) // file date + time
+							{
+								ImGui::Text("%s", infos->fileModifDate.c_str());
+							}
 
-						if (showColor)
-							ImGui::PopStyleColor();
+							if (showColor)
+								ImGui::PopStyleColor();
 
-						if (needToBreakTheloop)
-							break;
+							if (needToBreakTheloop)
+								break;
+						}
 					}
 				}
 				m_FileListClipper.End();
@@ -1496,7 +1500,7 @@ namespace IGFD
 		ImGui::EndChild();
 	}
 
-	bool IGFD::FileDialog::SelectableItem(int vidx, const FileInfoStruct& vInfos, bool vSelected, const char* vFmt, ...)
+	bool IGFD::FileDialog::SelectableItem(const int& vidx, std::shared_ptr<FileInfoStruct> vInfos, const bool& vSelected, const char* vFmt, ...)
 	{
 		static ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick | 
 			ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
@@ -1518,26 +1522,29 @@ namespace IGFD
 #endif // USE_EXPLORATION_BY_KEYS
 		if (res)
 		{
-			if (vInfos.type == 'd')
+			if (vInfos.use_count())
 			{
-				if (ImGui::IsMouseDoubleClicked(0)) // 0 -> left mouse button double click
+				if (vInfos->type == 'd')
 				{
-					m_PathClicked = SelectDirectory(vInfos); 
-					return true; // needToBreakTheloop
+					if (ImGui::IsMouseDoubleClicked(0)) // 0 -> left mouse button double click
+					{
+						m_PathClicked = SelectDirectory(vInfos);
+						return true; // needToBreakTheloop
+					}
+					else if (dlg_filters.empty()) // directory chooser
+					{
+						SelectFileName(vInfos);
+					}
 				}
-				else if (dlg_filters.empty()) // directory chooser
+				else
 				{
 					SelectFileName(vInfos);
-				}
-			}
-			else
-			{
-				SelectFileName(vInfos);
 
-				if (ImGui::IsMouseDoubleClicked(0))
-				{
-					m_WantToQuit = true;
-					m_IsOk = true;
+					if (ImGui::IsMouseDoubleClicked(0))
+					{
+						m_WantToQuit = true;
+						m_IsOk = true;
+					}
 				}
 			}
 		}
@@ -1739,155 +1746,162 @@ namespace IGFD
 		SetBuffer(FileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, vFileName);
 	}
 
-	bool IGFD::FileDialog::SelectDirectory(const FileInfoStruct& vInfos)
+	bool IGFD::FileDialog::SelectDirectory(std::shared_ptr<FileInfoStruct> vInfos)
 	{
 		bool pathClick = false;
 
-		if (vInfos.fileName == "..")
+		if (vInfos.use_count())
 		{
-			if (m_CurrentPath_Decomposition.size() > 1)
+			if (vInfos->fileName == "..")
 			{
-				m_CurrentPath = ComposeNewPath(m_CurrentPath_Decomposition.end() - 2);
-				pathClick = true;
-			}
-		}
-		else
-		{
-			std::string newPath;
-
-			if (m_ShowDrives)
-			{
-				newPath = vInfos.fileName + PATH_SEP;
+				if (m_CurrentPath_Decomposition.size() > 1)
+				{
+					m_CurrentPath = ComposeNewPath(m_CurrentPath_Decomposition.end() - 2);
+					pathClick = true;
+				}
 			}
 			else
 			{
-#ifdef __linux__
-				if (s_fs_root == m_CurrentPath)
-					newPath = m_CurrentPath + vInfos.fileName;
-				else
-#endif // __minux__
-					newPath = m_CurrentPath + PATH_SEP + vInfos.fileName;
-			}
+				std::string newPath;
 
-			if (IsDirectoryExist(newPath))
-			{
 				if (m_ShowDrives)
 				{
-					m_CurrentPath = vInfos.fileName;
-					s_fs_root = m_CurrentPath;
+					newPath = vInfos->fileName + PATH_SEP;
 				}
 				else
 				{
-					m_CurrentPath = newPath; //-V820
+#ifdef __linux__
+					if (s_fs_root == m_CurrentPath)
+						newPath = m_CurrentPath + vInfos->fileName;
+					else
+#endif // __minux__
+						newPath = m_CurrentPath + PATH_SEP + vInfos->fileName;
 				}
-				pathClick = true;
+
+				if (IsDirectoryExist(newPath))
+				{
+					if (m_ShowDrives)
+					{
+						m_CurrentPath = vInfos->fileName;
+						s_fs_root = m_CurrentPath;
+					}
+					else
+					{
+						m_CurrentPath = newPath; //-V820
+					}
+					pathClick = true;
+				}
 			}
 		}
 
 		return pathClick;
 	}
 
-	void IGFD::FileDialog::SelectFileName(const FileInfoStruct& vInfos)
+	void IGFD::FileDialog::SelectFileName(std::shared_ptr<FileInfoStruct> vInfos)
 	{
-		if (ImGui::GetIO().KeyCtrl)
+		if (vInfos.use_count())
 		{
-			if (dlg_countSelectionMax == 0) // infinite selection
+			if (ImGui::GetIO().KeyCtrl)
 			{
-				if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+				if (dlg_countSelectionMax == 0) // infinite selection
 				{
-					AddFileNameInSelection(vInfos.fileName, true);
-				}
-				else // found +> remove
-				{
-					RemoveFileNameInSelection(vInfos.fileName);
-				}
-			}
-			else // selection limited by size
-			{
-				if (m_SelectedFileNames.size() < dlg_countSelectionMax)
-				{
-					if (m_SelectedFileNames.find(vInfos.fileName) == m_SelectedFileNames.end()) // not found +> add
+					if (m_SelectedFileNames.find(vInfos->fileName) == m_SelectedFileNames.end()) // not found +> add
 					{
-						AddFileNameInSelection(vInfos.fileName, true);
+						AddFileNameInSelection(vInfos->fileName, true);
 					}
 					else // found +> remove
 					{
-						RemoveFileNameInSelection(vInfos.fileName);
+						RemoveFileNameInSelection(vInfos->fileName);
+					}
+				}
+				else // selection limited by size
+				{
+					if (m_SelectedFileNames.size() < dlg_countSelectionMax)
+					{
+						if (m_SelectedFileNames.find(vInfos->fileName) == m_SelectedFileNames.end()) // not found +> add
+						{
+							AddFileNameInSelection(vInfos->fileName, true);
+						}
+						else // found +> remove
+						{
+							RemoveFileNameInSelection(vInfos->fileName);
+						}
 					}
 				}
 			}
-		}
-		else if (ImGui::GetIO().KeyShift)
-		{
-			if (dlg_countSelectionMax != 1)
+			else if (ImGui::GetIO().KeyShift)
+			{
+				if (dlg_countSelectionMax != 1)
+				{
+					m_SelectedFileNames.clear();
+					// we will iterate filelist and get the last selection after the start selection
+					bool startMultiSelection = false;
+					std::string fileNameToSelect = vInfos->fileName;
+					std::string savedLastSelectedFileName; // for invert selection mode
+					for (auto infos : m_FileList)
+					{
+						if (infos.use_count())
+						{
+							bool canTake = true;
+							if (!searchTag.empty() && infos->fileName.find(searchTag) == std::string::npos) canTake = false;
+							if (canTake) // if not filtered, we will take files who are filtered by the dialog
+							{
+								if (infos->fileName == m_LastSelectedFileName)
+								{
+									startMultiSelection = true;
+									AddFileNameInSelection(m_LastSelectedFileName, false);
+								}
+								else if (startMultiSelection)
+								{
+									if (dlg_countSelectionMax == 0) // infinite selection
+									{
+										AddFileNameInSelection(infos->fileName, false);
+									}
+									else // selection limited by size
+									{
+										if (m_SelectedFileNames.size() < dlg_countSelectionMax)
+										{
+											AddFileNameInSelection(infos->fileName, false);
+										}
+										else
+										{
+											startMultiSelection = false;
+											if (!savedLastSelectedFileName.empty())
+												m_LastSelectedFileName = savedLastSelectedFileName;
+											break;
+										}
+									}
+								}
+
+								if (infos->fileName == fileNameToSelect)
+								{
+									if (!startMultiSelection) // we are before the last Selected FileName, so we must inverse
+									{
+										savedLastSelectedFileName = m_LastSelectedFileName;
+										m_LastSelectedFileName = fileNameToSelect;
+										fileNameToSelect = savedLastSelectedFileName;
+										startMultiSelection = true;
+										AddFileNameInSelection(m_LastSelectedFileName, false);
+									}
+									else
+									{
+										startMultiSelection = false;
+										if (!savedLastSelectedFileName.empty())
+											m_LastSelectedFileName = savedLastSelectedFileName;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			else
 			{
 				m_SelectedFileNames.clear();
-				// we will iterate filelist and get the last selection after the start selection
-				bool startMultiSelection = false;
-				std::string fileNameToSelect = vInfos.fileName;
-				std::string savedLastSelectedFileName; // for invert selection mode
-				for (auto& it : m_FileList)
-				{
-					const FileInfoStruct& infos = it;
-
-					bool canTake = true;
-					if (!searchTag.empty() && infos.fileName.find(searchTag) == std::string::npos) canTake = false;
-					if (canTake) // if not filtered, we will take files who are filtered by the dialog
-					{
-						if (infos.fileName == m_LastSelectedFileName)
-						{
-							startMultiSelection = true;
-							AddFileNameInSelection(m_LastSelectedFileName, false);
-						}
-						else if (startMultiSelection)
-						{
-							if (dlg_countSelectionMax == 0) // infinite selection
-							{
-								AddFileNameInSelection(infos.fileName, false);
-							}
-							else // selection limited by size
-							{
-								if (m_SelectedFileNames.size() < dlg_countSelectionMax)
-								{
-									AddFileNameInSelection(infos.fileName, false);
-								}
-								else
-								{
-									startMultiSelection = false;
-									if (!savedLastSelectedFileName.empty())
-										m_LastSelectedFileName = savedLastSelectedFileName;
-									break;
-								}
-							}
-						}
-
-						if (infos.fileName == fileNameToSelect)
-						{
-							if (!startMultiSelection) // we are before the last Selected FileName, so we must inverse
-							{
-								savedLastSelectedFileName = m_LastSelectedFileName;
-								m_LastSelectedFileName = fileNameToSelect;
-								fileNameToSelect = savedLastSelectedFileName;
-								startMultiSelection = true;
-								AddFileNameInSelection(m_LastSelectedFileName, false);
-							}
-							else
-							{
-								startMultiSelection = false;
-								if (!savedLastSelectedFileName.empty())
-									m_LastSelectedFileName = savedLastSelectedFileName;
-								break;
-							}
-						}
-					}
-				}
+				ResetBuffer(FileNameBuffer);
+				AddFileNameInSelection(vInfos->fileName, true);
 			}
-		}
-		else
-		{
-			m_SelectedFileNames.clear();
-			ResetBuffer(FileNameBuffer);
-			AddFileNameInSelection(vInfos.fileName, true);
 		}
 	}
 
@@ -1961,11 +1975,11 @@ namespace IGFD
 		}
 	}
 
-	void IGFD::FileDialog::CompleteFileInfos(FileInfoStruct* vFileInfoStruct)
+	void IGFD::FileDialog::CompleteFileInfos(std::shared_ptr<FileInfoStruct> vInfos)
 	{
-		if (vFileInfoStruct && 
-			vFileInfoStruct->fileName != "." && 
-			vFileInfoStruct->fileName != "..")
+		if (vInfos.use_count() &&
+			vInfos->fileName != "." &&
+			vInfos->fileName != "..")
 		{
 			// _stat struct :
 			//dev_t     st_dev;     /* ID of device containing file */
@@ -1984,23 +1998,23 @@ namespace IGFD
 
 			std::string fpn;
 
-			if (vFileInfoStruct->type == 'f') // file
-				fpn = vFileInfoStruct->filePath + PATH_SEP + vFileInfoStruct->fileName;
-			else if (vFileInfoStruct->type == 'l') // link
-				fpn = vFileInfoStruct->filePath + PATH_SEP + vFileInfoStruct->fileName;
-			else if (vFileInfoStruct->type == 'd') // directory
-				fpn = vFileInfoStruct->filePath + PATH_SEP + vFileInfoStruct->fileName;
+			if (vInfos->type == 'f') // file
+				fpn = vInfos->filePath + PATH_SEP + vInfos->fileName;
+			else if (vInfos->type == 'l') // link
+				fpn = vInfos->filePath + PATH_SEP + vInfos->fileName;
+			else if (vInfos->type == 'd') // directory
+				fpn = vInfos->filePath + PATH_SEP + vInfos->fileName;
 
 			struct stat statInfos;
 			char timebuf[100];
 			int result = stat(fpn.c_str(), &statInfos);
 			if (!result)
 			{
-				if (vFileInfoStruct->type != 'd')
+				if (vInfos->type != 'd')
 				{
-					vFileInfoStruct->fileSize = (size_t)statInfos.st_size;
-					FormatFileSize(vFileInfoStruct->fileSize,
-						&vFileInfoStruct->formatedFileSize);
+					vInfos->fileSize = (size_t)statInfos.st_size;
+					FormatFileSize(vInfos->fileSize,
+						&vInfos->formatedFileSize);
 				}
 
 				size_t len = 0;
@@ -2014,7 +2028,7 @@ namespace IGFD
 #endif // MSVC
 				if (len)
 				{
-					vFileInfoStruct->fileModifDate = std::string(timebuf, len);
+					vInfos->fileModifDate = std::string(timebuf, len);
 				}
 			}
 		}
@@ -2041,19 +2055,19 @@ namespace IGFD
 				m_HeaderFileName = tableHeaderDescendingIcon + m_HeaderFileName;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-					  	if (a.fileName[0] == '.' && b.fileName[0] != '.') return true;
-					  	if (a.fileName[0] != '.' && b.fileName[0] == '.') return false;
-					  	if (a.fileName[0] == '.' && b.fileName[0] == '.')
+					  	if (a->fileName[0] == '.' && b->fileName[0] != '.') return true;
+					  	if (a->fileName[0] != '.' && b->fileName[0] == '.') return false;
+					  	if (a->fileName[0] == '.' && b->fileName[0] == '.')
 					  	{
-						  	if (a.fileName.length() == 1) return false;
-						  	if (b.fileName.length() == 1) return true;
-						  	return (stricmp(a.fileName.c_str() + 1, b.fileName.c_str() + 1) < 0);
+						  	if (a->fileName.length() == 1) return false;
+						  	if (b->fileName.length() == 1) return true;
+						  	return (stricmp(a->fileName.c_str() + 1, b->fileName.c_str() + 1) < 0);
 					  	}
 
-						if (a.type != b.type) return (a.type == 'd'); // directory in first
-						return (stricmp(a.fileName.c_str(), b.fileName.c_str()) < 0); // sort in insensitive case
+						if (a->type != b->type) return (a->type == 'd'); // directory in first
+						return (stricmp(a->fileName.c_str(), b->fileName.c_str()) < 0); // sort in insensitive case
 					});
 			}
 			else
@@ -2062,19 +2076,19 @@ namespace IGFD
 				m_HeaderFileName = tableHeaderAscendingIcon + m_HeaderFileName;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-					  	if (a.fileName[0] == '.' && b.fileName[0] != '.') return false;
-					  	if (a.fileName[0] != '.' && b.fileName[0] == '.') return true;
-					  	if (a.fileName[0] == '.' && b.fileName[0] == '.')
+					  	if (a->fileName[0] == '.' && b->fileName[0] != '.') return false;
+					  	if (a->fileName[0] != '.' && b->fileName[0] == '.') return true;
+					  	if (a->fileName[0] == '.' && b->fileName[0] == '.')
 					  	{
-						  	if (a.fileName.length() == 1) return true;
-						  	if (b.fileName.length() == 1) return false;
-						  	return (stricmp(a.fileName.c_str() + 1, b.fileName.c_str() + 1) > 0);
+						  	if (a->fileName.length() == 1) return true;
+						  	if (b->fileName.length() == 1) return false;
+						  	return (stricmp(a->fileName.c_str() + 1, b->fileName.c_str() + 1) > 0);
 					  	}
 
-						if (a.type != b.type) return (a.type != 'd'); // directory in last
-						return (stricmp(a.fileName.c_str(), b.fileName.c_str()) > 0); // sort in insensitive case
+						if (a->type != b->type) return (a->type != 'd'); // directory in last
+						return (stricmp(a->fileName.c_str(), b->fileName.c_str()) > 0); // sort in insensitive case
 					});
 			}
 		}
@@ -2089,10 +2103,10 @@ namespace IGFD
 				m_HeaderFileType = tableHeaderDescendingIcon + m_HeaderFileType;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type == 'd'); // directory in first
-						return (a.ext < b.ext); // else
+						if (a->type != b->type) return (a->type == 'd'); // directory in first
+						return (a->ext < b->ext); // else
 					});
 			}
 			else
@@ -2101,10 +2115,10 @@ namespace IGFD
 				m_HeaderFileType = tableHeaderAscendingIcon + m_HeaderFileType;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type != 'd'); // directory in last
-						return (a.ext > b.ext); // else
+						if (a->type != b->type) return (a->type != 'd'); // directory in last
+						return (a->ext > b->ext); // else
 					});
 			}
 		}
@@ -2119,10 +2133,10 @@ namespace IGFD
 				m_HeaderFileSize = tableHeaderDescendingIcon + m_HeaderFileSize;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type == 'd'); // directory in first
-						return (a.fileSize < b.fileSize); // else
+						if (a->type != b->type) return (a->type == 'd'); // directory in first
+						return (a->fileSize < b->fileSize); // else
 					});
 			}
 			else
@@ -2131,10 +2145,10 @@ namespace IGFD
 				m_HeaderFileSize = tableHeaderAscendingIcon + m_HeaderFileSize;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type != 'd'); // directory in last
-						return (a.fileSize > b.fileSize); // else
+						if (a->type != b->type) return (a->type != 'd'); // directory in last
+						return (a->fileSize > b->fileSize); // else
 					});
 			}
 		}
@@ -2149,10 +2163,10 @@ namespace IGFD
 				m_HeaderFileDate = tableHeaderDescendingIcon + m_HeaderFileDate;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type == 'd'); // directory in first
-						return (a.fileModifDate < b.fileModifDate); // else
+						if (a->type != b->type) return (a->type == 'd'); // directory in first
+						return (a->fileModifDate < b->fileModifDate); // else
 					});
 			}
 			else
@@ -2161,10 +2175,10 @@ namespace IGFD
 				m_HeaderFileDate = tableHeaderAscendingIcon + m_HeaderFileDate;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(m_FileList.begin(), m_FileList.end(),
-					[](const FileInfoStruct& a, const FileInfoStruct& b) -> bool
+					[](std::shared_ptr<FileInfoStruct> a, std::shared_ptr<FileInfoStruct> b) -> bool
 					{
-						if (a.type != b.type) return (a.type != 'd'); // directory in last
-						return (a.fileModifDate > b.fileModifDate); // else
+						if (a->type != b->type) return (a->type != 'd'); // directory in last
+						return (a->fileModifDate > b->fileModifDate); // else
 					});
 			}
 		}
@@ -2205,34 +2219,34 @@ namespace IGFD
 				{
 					struct dirent* ent = files[i];
 
-					FileInfoStruct infos;
+					auto infos = std::make_shared<FileInfoStruct>();
 
-					infos.filePath = path;
-					infos.fileName = ent->d_name;
-					infos.fileName_optimized = OptimizeFilenameForSearchOperations(infos.fileName);
+					infos->filePath = path;
+					infos->fileName = ent->d_name;
+					infos->fileName_optimized = OptimizeFilenameForSearchOperations(infos->fileName);
 
-					if (infos.fileName.empty() || (infos.fileName == "." && !dlg_filters.empty())) continue; // filename empty or filename is the current dir '.'
-					if (infos.fileName != ".." && (dlg_flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos.fileName[0] == '.') // dont show hidden files
-						if (!dlg_filters.empty() || (dlg_filters.empty() && infos.fileName != ".")) // except "." if in directory mode
+					if (infos->fileName.empty() || (infos->fileName == "." && !dlg_filters.empty())) continue; // filename empty or filename is the current dir '.'
+					if (infos->fileName != ".." && (dlg_flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileName[0] == '.') // dont show hidden files
+						if (!dlg_filters.empty() || (dlg_filters.empty() && infos->fileName != ".")) // except "." if in directory mode
 							continue;
 					
 					switch (ent->d_type)
 					{
 					case DT_REG:
-						infos.type = 'f'; break;
+						infos->type = 'f'; break;
 					case DT_DIR:
-						infos.type = 'd'; break;
+						infos->type = 'd'; break;
 					case DT_LNK:
-						infos.type = 'l'; break;
+						infos->type = 'l'; break;
 					}
 
-					if (infos.type == 'f' ||
-						infos.type == 'l') // link can have the same extention of a file
+					if (infos->type == 'f' ||
+						infos->type == 'l') // link can have the same extention of a file
 					{
-						size_t lpt = infos.fileName.find_last_of('.');
+						size_t lpt = infos->fileName.find_last_of('.');
 						if (lpt != std::string::npos)
 						{
-							infos.ext = infos.fileName.substr(lpt);
+							infos->ext = infos->fileName.substr(lpt);
 						}
 
 						if (!dlg_filters.empty())
@@ -2241,7 +2255,7 @@ namespace IGFD
 							// we do that here, for avoid doing that during filelist display
 							// for better fps
 							if (!m_SelectedFilter.empty() && // selected filter exist
-								(!m_SelectedFilter.filterExist(infos.ext) && // filter not found
+								(!m_SelectedFilter.filterExist(infos->ext) && // filter not found
 									m_SelectedFilter.filter != ".*"))
 							{
 								continue;
@@ -2249,7 +2263,7 @@ namespace IGFD
 						}
 					}
 
-					CompleteFileInfos(&infos);
+					CompleteFileInfos(infos);
 					m_FileList.push_back(infos);
 				}
 
@@ -2387,12 +2401,13 @@ namespace IGFD
 			m_FileList.clear();
 			for (auto& drive : drives)
 			{
-				FileInfoStruct infos;
-				infos.fileName = drive;
-				infos.fileName_optimized = OptimizeFilenameForSearchOperations(drive);
-				infos.type = 'd';
+				auto infos = std::make_shared<FileInfoStruct>();
+				
+				infos->fileName = drive;
+				infos->fileName_optimized = OptimizeFilenameForSearchOperations(drive);
+				infos->type = 'd';
 
-				if (!infos.fileName.empty())
+				if (!infos->fileName.empty())
 				{
 					m_FileList.push_back(infos);
 				}
@@ -2516,28 +2531,29 @@ namespace IGFD
 	{
 		m_FilteredFileList.clear();
 
-		for (auto& it : m_FileList)
+		for (auto infos : m_FileList)
 		{
-			const FileInfoStruct& infos = it;
-
-			bool show = true;
-
-			// if search tag
-			if (!searchTag.empty() &&
-				infos.fileName_optimized.find(searchTag) == std::string::npos && // first try wihtout case and accents
-				infos.fileName.find(searchTag) == std::string::npos) // second if searched with case and accents
+			if (infos.use_count())
 			{
-				show = false;
-			}
+				bool show = true;
 
-			if (dlg_filters.empty() && infos.type != 'd') // directory mode
-			{
-				show = false;
-			}
+				// if search tag
+				if (!searchTag.empty() &&
+					infos->fileName_optimized.find(searchTag) == std::string::npos && // first try wihtout case and accents
+					infos->fileName.find(searchTag) == std::string::npos) // second if searched with case and accents
+				{
+					show = false;
+				}
 
-			if (show)
-			{
-				m_FilteredFileList.push_back(infos);
+				if (dlg_filters.empty() && infos->type != 'd') // directory mode
+				{
+					show = false;
+				}
+
+				if (show)
+				{
+					m_FilteredFileList.push_back(infos);
+				}
 			}
 		}
 	}
@@ -2554,33 +2570,39 @@ namespace IGFD
 
 		for (size_t i =m_LocateFileByInputChar_lastFileIdx; i < m_FilteredFileList.size(); i++)
 		{
-			if (m_FilteredFileList[i].fileName_optimized[0] == vC || // lower case search
-				m_FilteredFileList[i].fileName[0] == vC) // maybe upper case search
+			auto infosFiltered = m_FilteredFileList[i];
+			if (infosFiltered.use_count())
 			{
-				//float p = ((float)i) * ImGui::GetTextLineHeightWithSpacing();
-				float p = (float)((double)i / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
-				ImGui::SetScrollY(p);
-				m_LocateFileByInputChar_lastFound = true;
-				m_LocateFileByInputChar_lastFileIdx = i;
-				StartFlashItem(m_LocateFileByInputChar_lastFileIdx);
-
-				auto infos = &m_FilteredFileList[m_LocateFileByInputChar_lastFileIdx];
-
-				if (infos->type == 'd')
+				if (infosFiltered->fileName_optimized[0] == vC || // lower case search
+					infosFiltered->fileName[0] == vC) // maybe upper case search
 				{
-					if (dlg_filters.empty()) // directory chooser
+					//float p = ((float)i) * ImGui::GetTextLineHeightWithSpacing();
+					float p = (float)((double)i / (double)m_FilteredFileList.size()) * ImGui::GetScrollMaxY();
+					ImGui::SetScrollY(p);
+					m_LocateFileByInputChar_lastFound = true;
+					m_LocateFileByInputChar_lastFileIdx = i;
+					StartFlashItem(m_LocateFileByInputChar_lastFileIdx);
+
+					auto infos = m_FilteredFileList[m_LocateFileByInputChar_lastFileIdx];
+					if (infos.use_count())
 					{
-						SelectFileName(*infos);
+						if (infos->type == 'd')
+						{
+							if (dlg_filters.empty()) // directory chooser
+							{
+								SelectFileName(infos);
+							}
+						}
+						else
+						{
+							SelectFileName(infos);
+						}
+
+						found = true;
+
+						break;
 					}
 				}
-				else
-				{
-					SelectFileName(*infos);
-				}
-
-				found = true;
-
-				break;
 			}
 		}
 
@@ -2663,58 +2685,60 @@ namespace IGFD
 				ImGui::SetScrollY(p);
 				StartFlashItem(m_LocateFileByInputChar_lastFileIdx);
 
-				auto infos = &m_FilteredFileList[m_LocateFileByInputChar_lastFileIdx];
-
-				if (infos->type == 'd')
+				auto infos = m_FilteredFileList[m_LocateFileByInputChar_lastFileIdx];
+				if (infos.use_count())
 				{
-					if (!dlg_filters.empty() || enterInDirectory)
+					if (infos->type == 'd')
 					{
-						if (enterInDirectory)
+						if (!dlg_filters.empty() || enterInDirectory)
 						{
-							if (SelectDirectory(*infos))
+							if (enterInDirectory)
 							{
-								// changement de repertoire
-								SetPath(m_CurrentPath);
-								if (m_LocateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
+								if (SelectDirectory(infos))
 								{
-									m_LocateFileByInputChar_lastFileIdx = 0;
+									// changement de repertoire
+									SetPath(m_CurrentPath);
+									if (m_LocateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
+									{
+										m_LocateFileByInputChar_lastFileIdx = 0;
+									}
 								}
 							}
 						}
-					}
-					else // directory chooser
-					{
-						SelectFileName(*infos);
-					}
-				}
-				else
-				{
-					SelectFileName(*infos);
-				}
-
-				if (exitDirectory)
-				{
-					FileInfoStruct nfo;
-					nfo.fileName = "..";
-
-					if (SelectDirectory(nfo))
-					{
-						// changement de repertoire
-						SetPath(m_CurrentPath);
-						if (m_LocateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
+						else // directory chooser
 						{
-							m_LocateFileByInputChar_lastFileIdx = 0;
+							SelectFileName(infos);
 						}
 					}
-#ifdef WIN32
 					else
 					{
-						if (m_CurrentPath_Decomposition.size() == 1)
-						{
-							GetDrives(); // display drives
-						}
+						SelectFileName(infos);
 					}
+
+					if (exitDirectory)
+					{
+						auto nfo = std::make_shared<FileInfoStruct>();
+						nfo->fileName = "..";
+
+						if (SelectDirectory(nfo))
+						{
+							// changement de repertoire
+							SetPath(m_CurrentPath);
+							if (m_LocateFileByInputChar_lastFileIdx > m_FilteredFileList.size() - 1)
+							{
+								m_LocateFileByInputChar_lastFileIdx = 0;
+							}
+						}
+#ifdef WIN32
+						else
+						{
+							if (m_CurrentPath_Decomposition.size() == 1)
+							{
+								GetDrives(); // display drives
+							}
+						}
 #endif // WIN32
+					}
 				}
 			}
 		}
