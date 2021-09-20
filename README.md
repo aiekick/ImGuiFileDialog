@@ -6,7 +6,7 @@
 
 ## Purpose
 
-ImGuiFileDialog is a file selection dialog built for [Dear ImGui](https://github.com/ocornut/imgui).
+ImGuiFileDialog is a file selection dialog built for (and using only) [Dear ImGui](https://github.com/ocornut/imgui).
 
 My primary goal was to have a custom pane with widgets according to file extension. This was not possible using other
 solutions.
@@ -14,7 +14,7 @@ solutions.
 ## Structure
 
 * The library is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-* A demo app can be found in the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+* A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
 This library is designed to be dropped into your source code rather than compiled separately.
 
@@ -192,7 +192,7 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
 
 ## Custom icons and colors by extension
 
@@ -261,12 +261,6 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose 5 File", ".*
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose many File", ".*,.cpp,.h,.hpp", ".", 0);
 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png,.jpg",
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
-```
-
-for retrieve the selection you must use :
-
-```cpp
-ImGuiFileDialog::Instance()->GetSelection();
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)

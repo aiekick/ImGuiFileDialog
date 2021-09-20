@@ -65,6 +65,7 @@ inline void InfosPane(const char* vFilter, IGFDUserDatas vUserDatas, bool* vCant
 		*vCantContinue = canValidateDialog;
 }
 
+
 inline bool RadioButtonLabeled(const char* label, const char* help, bool active, bool disabled)
 {
 	using namespace ImGui;
@@ -167,6 +168,11 @@ inline bool RadioButtonLabeled_BitWize(
 
 int main(int, char**)
 {
+#ifdef _MSC_VER
+	// active memory leak detector
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
 	setlocale(LC_ALL, ".UTF8");
 
 	// Setup window
@@ -229,6 +235,46 @@ int main(int, char**)
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
+
+#ifdef USE_THUMBNAILS
+	ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *vThumbnail_Info) -> void
+	{
+		if (vThumbnail_Info && 
+			vThumbnail_Info->isReadyToUpload && 
+			vThumbnail_Info->textureFileDatas)
+		{
+			GLuint textureId = 0;
+			glGenTextures(1, &textureId);
+			vThumbnail_Info->textureID = (void*)textureId;
+
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+				(GLsizei)vThumbnail_Info->textureWidth, (GLsizei)vThumbnail_Info->textureHeight, 
+				0, GL_RGBA, GL_UNSIGNED_BYTE, vThumbnail_Info->textureFileDatas);
+			glFinish();
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			delete[] vThumbnail_Info->textureFileDatas;
+			vThumbnail_Info->textureFileDatas = nullptr;
+
+			vThumbnail_Info->isReadyToUpload = false;
+			vThumbnail_Info->isReadyToDisplay = true;
+		}
+	});
+	ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
+	{
+		if (vThumbnail_Info)
+		{
+			GLuint texID = (GLuint)vThumbnail_Info->textureID;
+			glDeleteTextures(1, &texID);
+			glFinish();
+		}
+	});
+#endif // USE_THUMBNAILS
 
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -395,7 +441,7 @@ int main(int, char**)
 				RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Hidden Files", "Hide Hidden Files", &flags, ImGuiFileDialogFlags_DontShowHiddenFiles);
 				ImGui::SameLine();
 				RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable Directory Creation", "Disable Directory Creation button in dialog", &flags, ImGuiFileDialogFlags_DisableCreateDirectoryButton);
-				
+
 				ImGui::Text("Hide Column by default : (saved in imgui.ini, \n\tso defined when the inmgui.ini is not existing)");
 				RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Type", "Hide Column file type by default", &flags, ImGuiFileDialogFlags_HideColumnType);
 				ImGui::SameLine();
@@ -409,23 +455,23 @@ int main(int, char**)
 				{
 					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 					else
-						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters"))
 				{
 					const char* filters = "Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
 					if (standardDialogMode)
-						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 					else
-						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items"))
 				{
 					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 5, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 5, nullptr, flags);
 					else
 						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 5, nullptr, flags);
 				}
@@ -433,9 +479,9 @@ int main(int, char**)
 				{
 					const char* filters = ".*,.cpp,.h,.hpp";
 					if (standardDialogMode)
-						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
 					else
-						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
 				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with last file path name"))
 				{
@@ -448,9 +494,9 @@ int main(int, char**)
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*"))
 				{
 					if (standardDialogMode)
-						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
 					else
-						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
 				}
 				if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane"))
 				{
@@ -472,7 +518,7 @@ int main(int, char**)
 					if (standardDialogMode)
 						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 					else
-						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",	ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
 				}
 
 				ImGui::Text("Other Instance (multi dialog demo) :");
@@ -600,7 +646,7 @@ int main(int, char**)
 							std::string _filePathName = csel.table[i].filePathName;
 							selection.emplace_back(_fileName, _filePathName);
 						}
-						
+
 						// destroy
 						if (cfilePathName) delete[] cfilePathName;
 						if (cfilePath) delete[] cfilePath;
@@ -676,8 +722,16 @@ int main(int, char**)
 			ImGui::End();
 		}
 
-		// Rendering
+		// Cpu Zone : prepare
 		ImGui::Render();
+
+		// GPU Zone : Rendering
+		glfwMakeContextCurrent(window);
+
+#ifdef USE_THUMBNAILS
+		ImGuiFileDialog::Instance()->ManageGPUThumbnails();
+#endif
+
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
