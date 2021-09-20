@@ -905,7 +905,9 @@ namespace IGFD
 			puHeaderFileType = tableHeaderFileTypeString;
 			puHeaderFileSize = tableHeaderFileSizeString;
 			puHeaderFileDate = tableHeaderFileDateString;
+#ifdef USE_THUMBNAILS
 			puHeaderFileThumbnails = tableHeaderFileThumbnailsString;
+#endif // #ifdef USE_THUMBNAILS
 		}
 
 		if (vSortingField == SortingFieldEnum::FIELD_FILENAME)
