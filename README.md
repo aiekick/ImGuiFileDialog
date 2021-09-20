@@ -647,6 +647,11 @@ feature : USE_BOOKMARK
 std::string SerializeBookmarks();                  // serialize bookmarks : return bookmark buffer to save in a file
 void DeserializeBookmarks(                         // deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
     const std::string& vBookmarks);                // bookmark buffer to load
+
+feature : USE_THUMBNAILS
+void SetCreateThumbnailCallback(const CreateThumbnailFun vCreateThumbnailFun);		// define the texture creation callback
+void SetDestroyThumbnailCallback(const DestroyThumbnailFun vCreateThumbnailFun);	// define the texture destroy callback
+void ManageGPUThumbnails();															// in gpu rendering zone, whill create or destroy textures
 ```
 
 ### C Api
@@ -850,4 +855,16 @@ feature : USE_BOOKMARK
     IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(                 // deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
         ImGuiFileDialog* vContext,                                      // ImGuiFileDialog context 
         const char* vBookmarks);                                        // bookmark buffer to load 
+
+feature : USE_THUMBNAILS
+	IMGUIFILEDIALOG_API void SetCreateThumbnailCallback(				// define the callback for create the thumbnails texture
+		ImGuiFileDialog* vContext,										// ImGuiFileDialog context 
+		const IGFD_CreateThumbnailFun vCreateThumbnailFun);				// the callback for create the thumbnails texture
+
+	IMGUIFILEDIALOG_API void SetDestroyThumbnailCallback(				// define the callback for destroy the thumbnails texture
+		ImGuiFileDialog* vContext,										// ImGuiFileDialog context 
+		const IGFD_DestroyThumbnailFun vDestroyThumbnailFun);			// the callback for destroy the thumbnails texture
+
+	IMGUIFILEDIALOG_API void ManageGPUThumbnails(						// must be call in gpu zone, possibly a thread, will call the callback for create / destroy the textures
+		ImGuiFileDialog* vContext);										// ImGuiFileDialog context 
 ```
