@@ -69,6 +69,7 @@ included in the Lib_Only branch for your convenience.
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
 - C Api (succesfully tested with CimGui)
+- Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 
 ## Singleton Pattern vs. Multiple Instances
 
