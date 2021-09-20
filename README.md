@@ -68,8 +68,8 @@ included in the Lib_Only branch for your convenience.
 - Directory bookmarks
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
-- C Api (succesfully tested with CimGui)
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
+- C Api (succesfully tested with CimGui)
 
 ## Singleton Pattern vs. Multiple Instances
 
@@ -414,6 +414,71 @@ std::string GetCurrentPath();                      // Returns current path only
 std::string GetCurrentFilter();                    // The file extension
 ```
 
+## Thumbnails Display
+
+You can now, display thumbnails of pictures.
+The file resize use stb/image so the following files extentions are supported : (.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
+
+Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
+* the first is a callback who will be called by ImGuiFileDialog for create the backend texture
+* the second is a callback who will be called by ImGuiFileDialog for destroy the backend texture
+
+After that you need to call the function who is responsible to create / destroy the textures.
+this function must be called in your GPU Rendering zone for avoid destroying of used texture.
+if you do that at the same place of your imgui code, some backend can crash your app, by ex with vulkan.
+
+ex, for opengl :
+
+```cpp
+// Create thumbnails texture
+ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *vThumbnail_Info) -> void
+{
+	if (vThumbnail_Info && 
+		vThumbnail_Info->isReadyToUpload && 
+		vThumbnail_Info->textureFileDatas)
+	{
+		GLuint textureId = 0;
+		glGenTextures(1, &textureId);
+		vThumbnail_Info->textureID = (void*)textureId;
+
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+			(GLsizei)vThumbnail_Info->textureWidth, (GLsizei)vThumbnail_Info->textureHeight, 
+			0, GL_RGBA, GL_UNSIGNED_BYTE, vThumbnail_Info->textureFileDatas);
+		glFinish();
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		delete[] vThumbnail_Info->textureFileDatas;
+		vThumbnail_Info->textureFileDatas = nullptr;
+
+		vThumbnail_Info->isReadyToUpload = false;
+		vThumbnail_Info->isReadyToDisplay = true;
+	}
+});
+```
+
+```cpp
+// Destroy thumbnails texture
+ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
+{
+	if (vThumbnail_Info)
+	{
+		GLuint texID = (GLuint)vThumbnail_Info->textureID;
+		glDeleteTextures(1, &texID);
+		glFinish();
+	}
+});
+```
+
+```cpp
+// GPU Rendering Zone // To call for Create/ Destroy Textures
+ImGuiFileDialog::Instance()->ManageGPUThumbnails();
+```
+
 ## How to Integrate ImGuiFileDialog in your project
 
 ### Customize ImGuiFileDialog :
@@ -556,7 +621,7 @@ std::string GetCurrentPath();                      // will return current path
 std::string GetCurrentFilter();                    // will return selected filter
 UserDatas GetUserDatas();                          // will return user datas send with Open Dialog/Modal
         
-           // extentions displaying
+// extentions displaying
 void SetExtentionInfos(                            // SetExtention datas for have custom display of particular file type
     const std::string& vFilter,                    // extention filter to tune
     const FileExtentionInfosStruct& vInfos);       // Filter Extention Struct who contain Color and Icon/Text for the display of the file with extention filter
