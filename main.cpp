@@ -133,6 +133,8 @@ inline bool RadioButtonLabeled_BitWize(
 	bool vDisableSelection = false,
 	ImFont* vLabelFont = nullptr) // radio witl use only theses flags
 {
+	vLabelFont; // remove unused warnings
+
 	bool selected = (*vContainer) & vFlag;
 	const bool res = RadioButtonLabeled(vLabel, vHelp, selected, vDisableSelection);
 	if (res) {
@@ -245,7 +247,7 @@ int main(int, char**)
 		{
 			GLuint textureId = 0;
 			glGenTextures(1, &textureId);
-			vThumbnail_Info->textureID = (void*)textureId;
+			vThumbnail_Info->textureID = (void*)(size_t)textureId;
 
 			glBindTexture(GL_TEXTURE_2D, textureId);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -269,7 +271,7 @@ int main(int, char**)
 	{
 		if (vThumbnail_Info)
 		{
-			GLuint texID = (GLuint)vThumbnail_Info->textureID;
+			GLuint texID = (GLuint)(size_t)vThumbnail_Info->textureID;
 			glDeleteTextures(1, &texID);
 			glFinish();
 		}
