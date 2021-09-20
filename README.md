@@ -417,7 +417,11 @@ std::string GetCurrentFilter();                    // The file extension
 ## Thumbnails Display
 
 You can now, display thumbnails of pictures.
-The file resize use stb/image so the following files extentions are supported : (.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
+
+![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/thumbnails.gif)
+
+The file resize use stb/image so the following files extentions are supported : 
+(.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
 
 Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
 * the first is a callback who will be called by ImGuiFileDialog for create the backend texture
