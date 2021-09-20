@@ -2248,11 +2248,13 @@ namespace IGFD
 			prDisplayMode = DisplayModeEnum::THUMBNAILS_LIST;
 		if (ImGui::IsItemHovered())	ImGui::SetTooltip(DisplayMode_ThumbailsList_ButtonHelp);
 		ImGui::SameLine();
+		/* todo
 		if (IMGUI_RADIO_BUTTON(DisplayMode_ThumbailsGrid_ButtonString,
 			prDisplayMode == DisplayModeEnum::THUMBNAILS_GRID))
 			prDisplayMode = DisplayModeEnum::THUMBNAILS_GRID;
 		if (ImGui::IsItemHovered())	ImGui::SetTooltip(DisplayMode_ThumbailsGrid_ButtonHelp);
 		ImGui::SameLine();
+		*/
 		prDrawThumbnailGenerationProgress();
 	}
 
@@ -3879,7 +3881,7 @@ namespace IGFD
 	{
 		if (ImGui::BeginChild("##thumbnailsGridsFiles", vSize))
 		{
-
+			// todo
 		}
 
 		ImGui::EndChild();

@@ -17,6 +17,7 @@
 //#define DisplayMode_FilesList_ButtonHelp "File List"
 //#define DisplayMode_ThumbailsList_ButtonString "TL"
 //#define DisplayMode_ThumbailsList_ButtonHelp "Thumbnails List"
+// todo
 //#define DisplayMode_ThumbailsGrid_ButtonString "TG"
 //#define DisplayMode_ThumbailsGrid_ButtonHelp "Thumbnails Grid"
 
