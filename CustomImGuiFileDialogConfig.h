@@ -16,7 +16,7 @@
 //#define DONT_DEFINE_AGAIN__STB_IMAGE_RESIZE_IMPLEMENTATION
 //#define IMGUI_RADIO_BUTTON RadioButton
 //#define DisplayMode_ThumbailsList_ImageHeight 32.0f
-//#define tableHeaderFileThumbnailsString "Thumbnails"
+//#define tableHeaderFileThumbnailsString " Thumbnails"
 #define DisplayMode_FilesList_ButtonString ICON_IGFD_FILE_LIST
 //#define DisplayMode_FilesList_ButtonHelp "File List"
 #define DisplayMode_ThumbailsList_ButtonString ICON_IGFD_FILE_LIST_THUMBNAILS
