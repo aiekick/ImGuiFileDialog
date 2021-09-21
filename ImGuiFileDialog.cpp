@@ -183,11 +183,6 @@ namespace IGFD
 #ifndef tableHeaderFileDateString
 #define tableHeaderFileDateString "Date"
 #endif // tableHeaderFileDateString
-#ifdef USE_THUMBNAILS
-#ifndef tableHeaderFileThumbnailsString
-#define tableHeaderFileThumbnailsString "Thumbnails"
-#endif // tableHeaderFileThumbnailsString
-#endif // USE_THUMBNAILS
 #ifndef OverWriteDialogTitleString
 #define OverWriteDialogTitleString "The file Already Exist !"
 #endif // OverWriteDialogTitleString
@@ -206,6 +201,9 @@ namespace IGFD
 #endif // DateTimeFormat
 
 #ifdef USE_THUMBNAILS
+#ifndef tableHeaderFileThumbnailsString
+#define tableHeaderFileThumbnailsString "Thumbnails"
+#endif // tableHeaderFileThumbnailsString
 #ifndef DisplayMode_FilesList_ButtonString
 #define DisplayMode_FilesList_ButtonString "FL"
 #endif // DisplayMode_FilesList_ButtonString
@@ -224,6 +222,9 @@ namespace IGFD
 #ifndef DisplayMode_ThumbailsGrid_ButtonHelp
 #define DisplayMode_ThumbailsGrid_ButtonHelp "Thumbnails Grid"
 #endif // DisplayMode_ThumbailsGrid_ButtonHelp
+#ifndef DisplayMode_ThumbailsList_ImageHeight 
+#define DisplayMode_ThumbailsList_ImageHeight 32.0f
+#endif // DisplayMode_ThumbailsList_ImageHeight
 #ifndef IMGUI_RADIO_BUTTON
 	inline bool inRadioButton(const char* vLabel, bool vToggled)
 	{
@@ -250,11 +251,6 @@ namespace IGFD
 	}
 #define IMGUI_RADIO_BUTTON inRadioButton
 #endif // IMGUI_RADIO_BUTTON
-#ifndef DisplayMode_ThumbailsList_ImageHeight 
-#define DisplayMode_ThumbailsList_ImageHeight 32.0f
-#endif // DisplayMode_ThumbailsList_ImageHeight
-	static IGFD::CreateThumbnailFun sCreateThumbnailFun = nullptr;
-	static IGFD::DestroyThumbnailFun sDestroyThumbnailFun = nullptr;
 #endif  // USE_THUMBNAILS
 
 #ifdef USE_BOOKMARK
@@ -404,12 +400,12 @@ namespace IGFD
 #ifdef WIN32
 		const DWORD mydrives = 2048;
 		char lpBuffer[2048];
-		const DWORD countChars = GetLogicalDriveStringsA(mydrives, lpBuffer);
+#define mini(a,b) (((a) < (b)) ? (a) : (b))
+		const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+#undef mini
 		if (countChars > 0)
 		{
-#define mini(a,b) (((a) < (b)) ? (a) : (b))
-			std::string var = std::string(lpBuffer, (size_t)mini(countChars, 2047));
-#undef mini
+			std::string var = std::string(lpBuffer, (size_t)countChars);
 			inReplaceString(var, "\\", "");
 			res = inSplitStringToVector(var, '\0', false);
 		}
