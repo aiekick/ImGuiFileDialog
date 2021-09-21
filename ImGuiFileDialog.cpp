@@ -652,7 +652,7 @@ namespace IGFD
 		return filter.empty() && collectionfilters.empty();
 	}
 
-	bool IGFD::FilterManager::FilterInfosStruct::filterExist(const std::string& vFilter) const
+	bool IGFD::FilterManager::FilterInfosStruct::exist(const std::string& vFilter) const
 	{
 		return filter == vFilter || (collectionfilters.find(vFilter) != collectionfilters.end());
 	}
@@ -802,7 +802,7 @@ namespace IGFD
 			// check if current file extention is covered by current filter
 			// we do that here, for avoid doing that during filelist display
 			// for better fps
-			if (prSelectedFilter.filterExist(vTag) || prSelectedFilter.filter == ".*")
+			if (prSelectedFilter.exist(vTag) || prSelectedFilter.filter == ".*")
 			{
 				return true;
 			}
@@ -856,7 +856,7 @@ namespace IGFD
 		return prSelectedFilter;
 	}
 
-	std::string IGFD::FilterManager::ReplaceExtenstionWithCurrentFilter(const std::string vFile)
+	std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(const std::string vFile)
 	{
 		auto result = vFile;
 
@@ -876,6 +876,13 @@ namespace IGFD
 		}
 
 		return result;
+	}
+	
+	void IGFD::FilterManager::SetDefaultFilterIfNotDefined()
+	{
+		if (prSelectedFilter.empty() && // no filter selected
+			!prParsedFilters.empty()) // filter exist
+			prSelectedFilter = *prParsedFilters.begin(); // we take the first filter
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -1870,7 +1877,7 @@ namespace IGFD
 	{
 		if (!puDLGDirectoryMode) // if not directory mode
 		{
-			return vFileDialogInternal.puFilterManager.ReplaceExtenstionWithCurrentFilter(std::string(puFileNameBuffer));
+			return vFileDialogInternal.puFilterManager.ReplaceExtentionWithCurrentFilter(std::string(puFileNameBuffer));
 		}
 
 		return ""; // directory mode
@@ -3276,6 +3283,8 @@ namespace IGFD
 
 				if (fdFile.puDLGpath.empty())
 					fdFile.puDLGpath = "."; // defaut path is '.'
+
+				fdFilter.SetDefaultFilterIfNotDefined();
 
 				// init list of files
 				if (fdFile.IsFileListEmpty() && !fdFile.puShowDrives)
