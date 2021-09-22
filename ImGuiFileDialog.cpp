@@ -1614,7 +1614,7 @@ namespace IGFD
 #ifdef WIN32
 				res = *vIter + std::string(1u, PATH_SEP) + res;
 #elif defined(UNIX) // UNIX is LINUX or APPLE
-				if (*vIter == s_fs_root)
+				if (*vIter == puFsRoot)
 					res = *vIter + res;
 				else
 					res = *vIter + PATH_SEP + res;
@@ -1702,7 +1702,7 @@ namespace IGFD
 			else
 			{
 #ifdef __linux__
-				if (s_fs_root == prCurrentPath)
+				if (puFsRoot == prCurrentPath)
 					newPath = prCurrentPath + vInfos->fileName;
 				else
 #endif // __linux__
@@ -1990,7 +1990,7 @@ namespace IGFD
 		if (!filename.empty())
 		{
 #ifdef UNIX
-			if (s_fs_root != result)
+			if (puFsRoot != result)
 #endif // UNIX
 				result += std::string(1u, PATH_SEP);
 
@@ -2009,7 +2009,7 @@ namespace IGFD
 			std::string result = GetResultingPath();
 
 #ifdef UNIX
-			if (s_fs_root != result)
+			if (puFsRoot != result)
 #endif // UNIX
 				result += std::string(1u, PATH_SEP);
 
