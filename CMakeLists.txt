@@ -10,11 +10,9 @@ option(USE_STD_FILESYSTEM "Enable std::fielsystem use for path and ImGuiFileDial
 include(cmake/3rdparty.cmake)
 
 if(MSVC)
-    # Ignore 4055 for glad
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /IGNORE:4055")
     add_definitions(-DMSVC)
 else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
 endif ()
 
 if (USE_STD_FILESYSTEM)
