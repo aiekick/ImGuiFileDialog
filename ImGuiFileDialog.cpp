@@ -479,8 +479,12 @@ namespace IGFD
 		{
 #ifdef USE_STD_FILESYSTEM
 			namespace fs = std::filesystem;
+#ifdef WIN32
 			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
 			fs::path pathName = fs::path(wname);
+#else
+			fs::path pathName = fs::path(name);
+#endif
 			bExists = fs::is_directory(pathName);
 #else
 			DIR* pDir = nullptr;
