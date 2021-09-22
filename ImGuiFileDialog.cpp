@@ -47,7 +47,12 @@ SOFTWARE.
 #define stat _stat
 #define stricmp _stricmp
 #include <cctype>
+// this option need c++17
+#ifdef USE_STD_FILESYSTEM
+#include <filesystem>
+#else
 #include "dirent/dirent.h" // directly open the dirent file attached to this lib
+#endif // USE_STD_FILESYSTEM
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
@@ -56,7 +61,12 @@ SOFTWARE.
 #define UNIX
 #define stricmp strcasecmp
 #include <sys/types.h>
-#include <dirent.h>
+// this option need c++17
+#ifdef USE_STD_FILESYSTEM
+#include <filesystem>
+#else
+#include <dirent.h> 
+#endif // USE_STD_FILESYSTEM
 #define PATH_SEP '/'
 #endif // defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 
@@ -87,19 +97,17 @@ SOFTWARE.
 
 namespace IGFD
 {
-	// float comparisons
+// float comparisons
 #ifndef IS_FLOAT_DIFFERENT
 #define IS_FLOAT_DIFFERENT(a,b) (fabs((a) - (b)) > FLT_EPSILON)
 #endif // IS_FLOAT_DIFFERENT
 #ifndef IS_FLOAT_EQUAL
 #define IS_FLOAT_EQUAL(a,b) (fabs((a) - (b)) < FLT_EPSILON)
 #endif // IS_FLOAT_EQUAL
-
 // width of filter combobox
 #ifndef FILTER_COMBO_WIDTH
 #define FILTER_COMBO_WIDTH 150.0f
 #endif // FILTER_COMBO_WIDTH
-
 // for lets you define your button widget
 // if you have like me a special bi-color button
 #ifndef IMGUI_PATH_BUTTON
@@ -108,7 +116,6 @@ namespace IGFD
 #ifndef IMGUI_BUTTON
 #define IMGUI_BUTTON ImGui::Button
 #endif // IMGUI_BUTTON
-
 // locales
 #ifndef createDirButtonString
 #define createDirButtonString "+"
@@ -195,7 +202,6 @@ namespace IGFD
 #ifndef DateTimeFormat
 #define DateTimeFormat "%Y/%m/%d %H:%M"
 #endif // DateTimeFormat
-
 #ifdef USE_THUMBNAILS
 #ifndef tableHeaderFileThumbnailsString
 #define tableHeaderFileThumbnailsString "Thumbnails"
@@ -248,7 +254,6 @@ namespace IGFD
 #define IMGUI_RADIO_BUTTON inRadioButton
 #endif // IMGUI_RADIO_BUTTON
 #endif  // USE_THUMBNAILS
-
 #ifdef USE_BOOKMARK
 #ifndef defaultBookmarkPaneWith
 #define defaultBookmarkPaneWith 150.0f
@@ -298,8 +303,36 @@ namespace IGFD
 #endif // IMGUI_TOGGLE_BUTTON
 #endif // USE_BOOKMARK
 
+	/////////////////////////////////////////////////////////////////////////////////////
+	//// INLINE FUNCTIONS ///////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	inline int inAlphaSort(const struct dirent** a, const struct dirent** b)
+	{
+		return strcoll((*a)->d_name, (*b)->d_name);
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+
+	IGFD::FileExtentionInfos::FileExtentionInfos() : color(0, 0, 0, 0)
+	{ 
+
+	}
+
+	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon)
+	{ 
+		color = vColor; 
+		icon = vIcon; 
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	//// FILE INFOS /////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////
+
 	// https://github.com/ocornut/imgui/issues/1720
-	bool inSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f)
+	bool IGFD::Utils::Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size)
 	{
 		using namespace ImGui;
 		ImGuiContext& g = *GImGui;
@@ -311,14 +344,8 @@ namespace IGFD
 		return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f);
 	}
 
-	static std::string s_fs_root = std::string(1u, PATH_SEP);
-	inline int inAlphaSort(const struct dirent** a, const struct dirent** b)
-	{
-		return strcoll((*a)->d_name, (*b)->d_name);
-	}
-
 #ifdef WIN32
-	inline bool inWReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
+	bool IGFD::Utils::WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
 	{
 		bool found = false;
 		size_t pos = 0;
@@ -331,7 +358,7 @@ namespace IGFD
 		return found;
 	}
 
-	inline std::vector<std::wstring> inWSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty)
+	std::vector<std::wstring> IGFD::Utils::WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty)
 	{
 		std::vector<std::wstring> arr;
 		if (!text.empty())
@@ -354,7 +381,7 @@ namespace IGFD
 	}
 #endif
 
-	inline bool inReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
+	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
 		bool found = false;
 		size_t pos = 0;
@@ -367,7 +394,7 @@ namespace IGFD
 		return found;
 	}
 
-	inline std::vector<std::string> inSplitStringToVector(const std::string& text, char delimiter, bool pushEmpty)
+	std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty)
 	{
 		std::vector<std::string> arr;
 		if (!text.empty())
@@ -389,7 +416,7 @@ namespace IGFD
 		return arr;
 	}
 
-	inline std::vector<std::string> inGetDrivesList()
+	std::vector<std::string> IGFD::Utils::GetDrivesList()
 	{
 		std::vector<std::string> res;
 
@@ -402,15 +429,15 @@ namespace IGFD
 		if (countChars > 0)
 		{
 			std::string var = std::string(lpBuffer, (size_t)countChars);
-			inReplaceString(var, "\\", "");
-			res = inSplitStringToVector(var, '\0', false);
+			IGFD::Utils::ReplaceString(var, "\\", "");
+			res = IGFD::Utils::SplitStringToVector(var, '\0', false);
 		}
 #endif // WIN32
 
 		return res;
 	}
 
-	inline bool inIsDirectoryExist(const std::string& name)
+	bool IGFD::Utils::IsDirectoryExist(const std::string& name)
 	{
 		bool bExists = false;
 
@@ -429,7 +456,7 @@ namespace IGFD
 	}
 
 #ifdef WIN32
-	inline std::wstring inWGetString(const char* str)
+	std::wstring IGFD::Utils::WGetString(const char* str)
 	{
 		std::wstring ret;
 		size_t sz;
@@ -442,16 +469,16 @@ namespace IGFD
 	}
 #endif
 
-	inline bool inCreateDirectoryIfNotExist(const std::string& name)
+	bool IGFD::Utils::CreateDirectoryIfNotExist(const std::string& name)
 	{
 		bool res = false;
 
 		if (!name.empty())
 		{
-			if (!inIsDirectoryExist(name))
+			if (!IsDirectoryExist(name))
 			{
 #ifdef WIN32
-				std::wstring wname = inWGetString(name.c_str());
+				std::wstring wname = WGetString(name.c_str());
 				if (CreateDirectoryW(wname.c_str(), nullptr))
 				{
 					res = true;
@@ -478,19 +505,7 @@ namespace IGFD
 		return res;
 	}
 
-	struct PathStruct
-	{
-		std::string path;
-		std::string name;
-		std::string ext;
-		bool isOk;
-		PathStruct()
-		{
-			isOk = false;
-		}
-	};
-
-	inline PathStruct inParsePathFileName(const std::string& vPathFileName)
+	IGFD::Utils::PathStruct IGFD::Utils::ParsePathFileName(const std::string& vPathFileName)
 	{
 		PathStruct res;
 
@@ -498,8 +513,8 @@ namespace IGFD
 		{
 			std::string pfn = vPathFileName;
 			std::string separator(1u, PATH_SEP);
-			inReplaceString(pfn, "\\", separator);
-			inReplaceString(pfn, "/", separator);
+			IGFD::Utils::ReplaceString(pfn, "\\", separator);
+			IGFD::Utils::ReplaceString(pfn, "/", separator);
 
 			size_t lastSlash = pfn.find_last_of(separator);
 			if (lastSlash != std::string::npos)
@@ -518,7 +533,7 @@ namespace IGFD
 					res.isOk = true;
 				}
 				res.ext = pfn.substr(lastPoint + 1);
-				inReplaceString(res.name, "." + res.ext, "");
+				IGFD::Utils::ReplaceString(res.name, "." + res.ext, "");
 			}
 
 			if (!res.isOk)
@@ -531,7 +546,7 @@ namespace IGFD
 		return res;
 	}
 
-	inline void inAppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
+	void IGFD::Utils::AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
 	{
 		std::string st = vStr;
 		size_t len = vBufferLen - 1u;
@@ -539,8 +554,8 @@ namespace IGFD
 
 		if (!st.empty() && st != "\n")
 		{
-			inReplaceString(st, "\n", "");
-			inReplaceString(st, "\r", "");
+			IGFD::Utils::ReplaceString(st, "\n", "");
+			IGFD::Utils::ReplaceString(st, "\r", "");
 		}
 		vBuffer[slen] = '\0';
 		std::string str = std::string(vBuffer);
@@ -555,30 +570,15 @@ namespace IGFD
 		vBuffer[len] = '\0';
 	}
 
-	inline void inResetBuffer(char* vBuffer)
+	void IGFD::Utils::ResetBuffer(char* vBuffer)
 	{
 		vBuffer[0] = '\0';
 	}
 
-	inline void inSetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
+	void IGFD::Utils::SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
 	{
-		inResetBuffer(vBuffer);
-		inAppendToBuffer(vBuffer, vBufferLen, vStr);
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////
-	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////
-
-	IGFD::FileExtentionInfos::FileExtentionInfos() : color(0, 0, 0, 0)
-	{ 
-
-	}
-
-	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon)
-	{ 
-		color = vColor; 
-		icon = vIcon; 
+		ResetBuffer(vBuffer);
+		AppendToBuffer(vBuffer, vBufferLen, vStr);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -605,7 +605,7 @@ namespace IGFD
 	void IGFD::SearchManager::Clear()
 	{
 		puSearchTag.clear();
-		inResetBuffer(puSearchBuffer);
+		IGFD::Utils::ResetBuffer(puSearchBuffer);
 	}
 
 	void IGFD::SearchManager::DrawSearchBar(FileDialogInternal& vFileDialogInternal)
@@ -687,7 +687,7 @@ namespace IGFD
 					if (lp != nan)
 					{
 						std::string fs = puDLGFilters.substr(p, lp - p);
-						auto arr = inSplitStringToVector(fs, ',', false);
+						auto arr = IGFD::Utils::SplitStringToVector(fs, ',', false);
 						for (auto a : arr)
 						{
 							infos.collectionfilters.emplace(a);
@@ -884,6 +884,11 @@ namespace IGFD
 	/////////////////////////////////////////////////////////////////////////////////////
 	//// FILE MANAGER ///////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
+
+	IGFD::FileManager::FileManager()
+	{
+		puFsRoot = std::string(1u, PATH_SEP);
+	}
 
 	void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInternal)
 	{
@@ -1140,7 +1145,7 @@ namespace IGFD
 		if (!prCurrentPathDecomposition.empty())
 		{
 #ifdef WIN32
-			if (path == s_fs_root)
+			if (path == puFsRoot)
 				path += PATH_SEP;
 #endif // WIN32
 			n = scandir(path.c_str(), &files, nullptr, inAlphaSort);
@@ -1206,7 +1211,7 @@ namespace IGFD
 
 	bool IGFD::FileManager::GetDrives()
 	{
-		auto drives = inGetDrivesList();
+		auto drives = IGFD::Utils::GetDrivesList();
 		if (!drives.empty())
 		{
 			prCurrentPath.clear();
@@ -1434,7 +1439,7 @@ namespace IGFD
 	{
 		std::string path = vPath;
 #ifdef WIN32
-		if (s_fs_root == path)
+		if (puFsRoot == path)
 			path += PATH_SEP;
 #endif // WIN32
 		char real_path[PATH_MAX];
@@ -1450,7 +1455,7 @@ namespace IGFD
 #ifdef WIN32
 			DWORD numchar = 0;
 			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
-			std::wstring wpath = inWGetString(path.c_str());
+			std::wstring wpath = IGFD::Utils::WGetString(path.c_str());
 			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
 			std::wstring fpath(numchar, 0);
 			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
@@ -1470,15 +1475,15 @@ namespace IGFD
 				{
 					prCurrentPath = prCurrentPath.substr(0, prCurrentPath.size() - 1);
 				}
-				inSetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
-				prCurrentPathDecomposition = inSplitStringToVector(prCurrentPath, PATH_SEP, false);
+				IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
+				prCurrentPathDecomposition = IGFD::Utils::SplitStringToVector(prCurrentPath, PATH_SEP, false);
 #ifdef UNIX // UNIX is LINUX or APPLE
 				prCurrentPathDecomposition.insert(prCurrentPathDecomposition.begin(), std::string(1u, PATH_SEP));
 #endif // UNIX
 				if (!prCurrentPathDecomposition.empty())
 				{
 #ifdef WIN32
-					s_fs_root = prCurrentPathDecomposition[0];
+					puFsRoot = prCurrentPathDecomposition[0];
 #endif // WIN32
 				}
 			}
@@ -1494,7 +1499,7 @@ namespace IGFD
 		{
 			std::string path = prCurrentPath + PATH_SEP + vPath;
 
-			res = inCreateDirectoryIfNotExist(path);
+			res = IGFD::Utils::CreateDirectoryIfNotExist(path);
 		}
 
 		return res;
@@ -1571,7 +1576,7 @@ namespace IGFD
 	void IGFD::FileManager::SetDefaultFileName(const std::string& vFileName)
 	{
 		puDLGDefaultFileName = vFileName;
-		inSetBuffer(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, vFileName);
+		IGFD::Utils::SetBuffer(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, vFileName);
 	}
 
 	bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos)
@@ -1603,12 +1608,12 @@ namespace IGFD
 					newPath = prCurrentPath + PATH_SEP + vInfos->fileName;
 			}
 
-			if (inIsDirectoryExist(newPath))
+			if (IGFD::Utils::IsDirectoryExist(newPath))
 			{
 				if (puShowDrives)
 				{
 					prCurrentPath = vInfos->fileName;
-					s_fs_root = prCurrentPath;
+					puFsRoot = prCurrentPath;
 				}
 				else
 				{
@@ -1724,7 +1729,7 @@ namespace IGFD
 		else
 		{
 			prSelectedFileNames.clear();
-			inResetBuffer(puFileNameBuffer);
+			IGFD::Utils::ResetBuffer(puFileNameBuffer);
 			prAddFileNameInSelection(vInfos->fileName, true);
 		}
 	}
@@ -1739,7 +1744,7 @@ namespace IGFD
 			if (!prCreateDirectoryMode)
 			{
 				prCreateDirectoryMode = true;
-				inResetBuffer(puDirectoryNameBuffer);
+				IGFD::Utils::ResetBuffer(puDirectoryNameBuffer);
 			}
 		}
 		if (ImGui::IsItemHovered())
@@ -1842,7 +1847,7 @@ namespace IGFD
 					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{
 						ComposeNewPath(itPathDecomp);
-						inSetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
+						IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
 						puInputPathActivated = true;
 						break;
 					}
@@ -2132,12 +2137,6 @@ namespace IGFD
 								else
 								{
 									printf("image loading fail : w:%i h:%i c:%i\n", w, h, 4);
-#ifdef _MSC_VER
-									if (IsDebuggerPresent())
-									{
-										__debugbreak();
-									}
-#endif
 								}
 
 								stbi_image_free(datas);
@@ -2406,8 +2405,8 @@ namespace IGFD
 							bookmark.path == vFileDialogInternal.puFileManager.GetCurrentPath())) // select if path is current
 					{
 						selectedBookmarkForEdition = i;
-						inResetBuffer(prBookmarkEditBuffer);
-						inAppendToBuffer(prBookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER, bookmark.name);
+						IGFD::Utils::ResetBuffer(prBookmarkEditBuffer);
+						IGFD::Utils::AppendToBuffer(prBookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER, bookmark.name);
 
 						if (ImGui::IsMouseDoubleClicked(0)) // apply path
 						{
@@ -2449,7 +2448,7 @@ namespace IGFD
 		if (!vBookmarks.empty())
 		{
 			prBookmarks.clear();
-			auto arr = inSplitStringToVector(vBookmarks, '#', false);
+			auto arr = IGFD::Utils::SplitStringToVector(vBookmarks, '#', false);
 			for (size_t i = 0; i < arr.size(); i += 2)
 			{
 				BookmarkStruct bookmark;
@@ -2969,7 +2968,7 @@ namespace IGFD
 		prFileDialogInternal.puDLGflags = vFlags;
 		prFileDialogInternal.puDLGmodal = false;
 
-		auto ps = inParsePathFileName(vFilePathName);
+		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
@@ -3069,7 +3068,7 @@ namespace IGFD
 		prFileDialogInternal.puDLGflags = vFlags;
 		prFileDialogInternal.puDLGmodal = false;
 
-		auto ps = inParsePathFileName(vFilePathName);
+		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
@@ -3276,7 +3275,7 @@ namespace IGFD
 				// init list of files
 				if (fdFile.IsFileListEmpty() && !fdFile.puShowDrives)
 				{
-					inReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, ""); // local path
+					IGFD::Utils::ReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, ""); // local path
 					if (!fdFile.puDLGDefaultFileName.empty())
 					{
 						fdFile.SetDefaultFileName(fdFile.puDLGDefaultFileName);
@@ -3366,7 +3365,7 @@ namespace IGFD
 			//size.x -= prBookmarkWidth;
 			float otherWidth = size.x - prBookmarkWidth;
 			ImGui::PushID("##splitterbookmark");
-			inSplitter(true, 4.0f,
+			IGFD::Utils::Splitter(true, 4.0f,
 				&prBookmarkWidth, &otherWidth, 10.0f,
 				10.0f + prFileDialogInternal.puDLGoptionsPaneWidth, size.y);
 			ImGui::PopID();
@@ -3381,7 +3380,7 @@ namespace IGFD
 		if (prFileDialogInternal.puDLGoptionsPane)
 		{
 			ImGui::PushID("##splittersidepane");
-			inSplitter(true, 4.0f, &size.x, &prFileDialogInternal.puDLGoptionsPaneWidth, 10.0f, 10.0f, size.y);
+			IGFD::Utils::Splitter(true, 4.0f, &size.x, &prFileDialogInternal.puDLGoptionsPaneWidth, 10.0f, 10.0f, size.y);
 			ImGui::PopID();
 		}
 

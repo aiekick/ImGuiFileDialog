@@ -653,6 +653,39 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	class Utils
+	{
+	public:
+		struct PathStruct
+		{
+			std::string path;
+			std::string name;
+			std::string ext;
+			bool isOk = false;
+		};
+
+	public:
+		static bool Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
+		static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr);
+		static std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
+		static std::vector<std::string> GetDrivesList();
+		static bool IsDirectoryExist(const std::string& name);
+		static bool CreateDirectoryIfNotExist(const std::string& name);
+		static PathStruct ParsePathFileName(const std::string& vPathFileName);
+		static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
+		static void ResetBuffer(char* vBuffer);
+		static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
+#ifdef WIN32
+		static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
+		static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
+		static std::wstring WGetString(const char* str);
+#endif
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	class FilterManager
 	{
 	public:
@@ -768,6 +801,8 @@ namespace IGFD
 		size_t puDLGcountSelectionMax = 1U; // 0 for infinite				// base max selection count set by user when OpenDialog/OpenModal was called
 		bool puDLGDirectoryMode = false;									// is directory mode (defiend like : puDLGDirectoryMode = (filters.empty()))
 
+		std::string puFsRoot;
+
 	private:
 		static std::string prRoundNumber(double vvalue, int n);												// custom rounding number
 		static std::string prFormatFileSize(size_t vByteSize);													// format file size field
@@ -777,6 +812,7 @@ namespace IGFD
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
 		
 	public:
+		FileManager();
 		bool IsComposerEmpty();
 		size_t GetComposerSize();
 		bool IsFileListEmpty();
@@ -792,11 +828,9 @@ namespace IGFD
 		void ClearAll();
 		void ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal);
 		void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);							// set the path of the dialog, will launch the directory scan for populate the file listview
-		void ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);			// scan the directory for retrieve the file list
 		void SortFields(const FileDialogInternal& vFileDialogInternal, 
 			const SortingFieldEnum& vSortingField, const bool& vCanChangeOrder);						// will sort a column
 		bool GetDrives();																				// list drives on windows platform
-		void SetCurrentDir(const std::string& vPath);													// define current directory for scan
 		bool CreateDir(const std::string& vPath);														// create a directory on the file system
 		void ComposeNewPath(std::vector<std::string>::iterator vIter);									// compose a path from the compose path widget
 		bool SetPathOnParentDirectoryIfAny();															// compose paht on parent directory
@@ -808,6 +842,10 @@ namespace IGFD
 		void SelectFileName(const FileDialogInternal& vFileDialogInternal, 
 			const std::shared_ptr<FileInfos>& vInfos);															// select filename
 		
+		//depend of dirent.h
+		void SetCurrentDir(const std::string& vPath);													// define current directory for scan
+		void ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);			// scan the directory for retrieve the file list
+
 	public:
 		std::string GetResultingPath();
 		std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal);
