@@ -422,6 +422,7 @@ You can now, display thumbnails of pictures.
 
 The file resize use stb/image so the following files extentions are supported : 
 (.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
+only tested with .png, .bmp, .tga, .jpg, .jpeg and .gif by the way
 
 Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
 * the first is a callback who will be called by ImGuiFileDialog for create the backend texture
