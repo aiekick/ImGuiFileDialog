@@ -50,6 +50,7 @@ SOFTWARE.
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
 #include <filesystem>
+#include <Windows.h>
 #else
 #include "dirent/dirent.h" // directly open the dirent file attached to this lib
 #endif // USE_STD_FILESYSTEM
@@ -307,10 +308,12 @@ namespace IGFD
 	//// INLINE FUNCTIONS ///////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
+#ifndef USE_STD_FILESYSTEM
 	inline int inAlphaSort(const struct dirent** a, const struct dirent** b)
 	{
 		return strcoll((*a)->d_name, (*b)->d_name);
 	}
+#endif
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
@@ -379,7 +382,37 @@ namespace IGFD
 		}
 		return arr;
 	}
-#endif
+
+	std::wstring IGFD::Utils::string_to_wstring(const std::string& str)
+	{
+		std::wstring ret;
+		if (!str.empty())
+		{
+			size_t sz = std::mbstowcs(nullptr, str.c_str(), str.size());
+			if (sz)
+			{
+				ret.resize(sz);
+				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
+			}
+		}
+		return ret;
+	}
+
+	std::string IGFD::Utils::wstring_to_string(const std::wstring& str)
+	{
+		std::string ret;
+		if (!str.empty())
+		{
+			size_t sz = std::wcstombs(nullptr, str.c_str(), str.size());
+			if (sz)
+			{
+				ret.resize(sz);
+				std::wcstombs((char*)ret.data(), str.c_str(), sz);
+			}
+		}
+		return ret;
+	}
+#endif // WIN32
 
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
@@ -399,17 +432,17 @@ namespace IGFD
 		std::vector<std::string> arr;
 		if (!text.empty())
 		{
-			std::string::size_type start = 0;
-			std::string::size_type end = text.find(delimiter, start);
+			size_t start = 0;
+			size_t end = text.find(delimiter, start);
 			while (end != std::string::npos)
 			{
-				std::string token = text.substr(start, end - start);
+				auto token = text.substr(start, end - start);
 				if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 					arr.push_back(token);
 				start = end + 1;
 				end = text.find(delimiter, start);
 			}
-			std::string token = text.substr(start);
+			auto token = text.substr(start);
 			if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 				arr.push_back(token);
 		}
@@ -443,6 +476,12 @@ namespace IGFD
 
 		if (!name.empty())
 		{
+#ifdef USE_STD_FILESYSTEM
+			namespace fs = std::filesystem;
+			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
+			fs::path pathName = fs::path(wname);
+			bExists = fs::is_directory(pathName);
+#else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
 			if (pDir != nullptr)
@@ -450,24 +489,11 @@ namespace IGFD
 				bExists = true;
 				(void)closedir(pDir);
 			}
+#endif // USE_STD_FILESYSTEM
 		}
 
 		return bExists;    // this is not a directory!
 	}
-
-#ifdef WIN32
-	std::wstring IGFD::Utils::WGetString(const char* str)
-	{
-		std::wstring ret;
-		size_t sz;
-		if (!dirent_mbstowcs_s(&sz, nullptr, 0, str, 0))
-		{
-			ret.resize(sz);
-			dirent_mbstowcs_s(nullptr, (wchar_t*)ret.data(), sz, str, sz - 1);
-		}
-		return ret;
-	}
-#endif
 
 	bool IGFD::Utils::CreateDirectoryIfNotExist(const std::string& name)
 	{
@@ -478,11 +504,18 @@ namespace IGFD
 			if (!IsDirectoryExist(name))
 			{
 #ifdef WIN32
-				std::wstring wname = WGetString(name.c_str());
+#ifdef USE_STD_FILESYSTEM
+				namespace fs = std::filesystem;
+				std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
+				fs::path pathName = fs::path(wname);
+				res = fs::create_directory(pathName);
+#else
+				std::wstring wname = IGFD::Utils::string_to_wstring(name);
 				if (CreateDirectoryW(wname.c_str(), nullptr))
 				{
 					res = true;
 				}
+#endif // USE_STD_FILESYSTEM
 #elif defined(__EMSCRIPTEN__)
 				std::string str = std::string("FS.mkdir('") + name + "');";
 				emscripten_run_script(str.c_str());
@@ -505,6 +538,26 @@ namespace IGFD
 		return res;
 	}
 
+#ifdef USE_STD_FILESYSTEM
+	// https://github.com/aiekick/ImGuiFileDialog/issues/54
+	IGFD::Utils::PathStruct IGFD::Utils::ParsePathFileName(const std::string& vPathFileName)
+	{
+		namespace fs = std::filesystem;
+		PathStruct res;
+		if (vPathFileName.empty())
+			return res;
+
+		auto fsPath = fs::path(vPathFileName);
+
+		if (fs::is_regular_file(fsPath)) {
+			res.name = fsPath.string();
+			res.path = fsPath.parent_path().string();
+			res.isOk = true;
+		}
+
+		return res;
+	}
+#else
 	IGFD::Utils::PathStruct IGFD::Utils::ParsePathFileName(const std::string& vPathFileName)
 	{
 		PathStruct res;
@@ -545,7 +598,7 @@ namespace IGFD
 
 		return res;
 	}
-
+#endif // USE_STD_FILESYSTEM
 	void IGFD::Utils::AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
 	{
 		std::string st = vStr;
@@ -1130,12 +1183,43 @@ namespace IGFD
 		return fileName;
 	}
 
+	void IGFD::FileManager::AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const char& vFileType)
+	{
+		auto infos = std::make_shared<FileInfos>();
+
+		infos->filePath = vPath;
+		infos->fileName = vFileName;
+		infos->fileName_optimized = prOptimizeFilenameForSearchOperations(infos->fileName);
+
+		if (infos->fileName.empty() || (infos->fileName == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return; // filename empty or filename is the current dir '.'
+		if (infos->fileName != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileName[0] == '.') // dont show hidden files
+			if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileName != ".")) // except "." if in directory mode
+				return;
+
+		infos->fileType = vFileType;
+
+		if (infos->fileType == 'f' ||
+			infos->fileType == 'l') // link can have the same extention of a file
+		{
+			size_t lpt = infos->fileName.find_last_of('.');
+			if (lpt != std::string::npos)
+			{
+				infos->fileExt = infos->fileName.substr(lpt);
+			}
+
+			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt))
+			{
+				return;
+			}
+		}
+
+		prCompleteFileInfos(infos);
+		prFileList.push_back(infos);
+	}
+
 	void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath)
 	{
-		struct dirent** files = nullptr;
-		int          i = 0;
-		int          n = 0;
-		std::string		path = vPath;
+		std::string	path = vPath;
 
 		if (prCurrentPathDecomposition.empty())
 		{
@@ -1146,65 +1230,62 @@ namespace IGFD
 		{
 #ifdef WIN32
 			if (path == puFsRoot)
-				path += PATH_SEP;
+				path += std::string(1u, PATH_SEP);
 #endif // WIN32
-			n = scandir(path.c_str(), &files, nullptr, inAlphaSort);
 
 			ClearFileLists();
 
+#ifdef USE_STD_FILESYSTEM
+			//const auto wpath = IGFD::Utils::WGetString(path.c_str());
+			const std::filesystem::path fspath(path);
+			const auto dir_iter = std::filesystem::directory_iterator(fspath);
+			AddFile(vFileDialogInternal, path, "..", 'd');
+			for (const auto& file : dir_iter)
+			{
+				char fileType = 0;
+				if (file.is_symlink())
+					fileType = 'l';
+				else if (file.is_directory())
+					fileType = 'd';
+				else
+					fileType = 'f';
+				auto fileName = file.path().filename().string();
+				AddFile(vFileDialogInternal, path, fileName, fileType);
+			}
+#else // dirent
+			struct dirent** files = nullptr;
+			int n = scandir(path.c_str(), &files, nullptr, inAlphaSort);
 			if (n > 0)
 			{
-				for (i = 0; i < n; i++)
+				for (int i = 0; i < n; i++)
 				{
 					struct dirent* ent = files[i];
 
-					auto infos = std::make_shared<FileInfos>();
-
-					infos->filePath = path;
-					infos->fileName = ent->d_name;
-					infos->fileName_optimized = prOptimizeFilenameForSearchOperations(infos->fileName);
-
-					if (infos->fileName.empty() || (infos->fileName == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) continue; // filename empty or filename is the current dir '.'
-					if (infos->fileName != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileName[0] == '.') // dont show hidden files
-						if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileName != ".")) // except "." if in directory mode
-							continue;
-
+					char fileType = 0;
 					switch (ent->d_type)
 					{
 					case DT_REG:
-						infos->fileType = 'f'; break;
+						fileType = 'f'; break;
 					case DT_DIR:
-						infos->fileType = 'd'; break;
+						fileType = 'd'; break;
 					case DT_LNK:
-						infos->fileType = 'l'; break;
+						fileType = 'l'; break;
 					}
 
-					if (infos->fileType == 'f' ||
-						infos->fileType == 'l') // link can have the same extention of a file
-					{
-						size_t lpt = infos->fileName.find_last_of('.');
-						if (lpt != std::string::npos)
-						{
-							infos->fileExt = infos->fileName.substr(lpt);
-						}
+					auto fileName = ent->d_name;
 
-						if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt))
-						{
-							continue;
-						}
-					}
-
-					prCompleteFileInfos(infos);
-					prFileList.push_back(infos);
+					AddFile(vFileDialogInternal, path, fileName, fileType);
 				}
 
-				for (i = 0; i < n; i++)
+				for (int i = 0; i < n; i++)
 				{
 					free(files[i]);
 				}
 
 				free(files);
 			}
+#endif // USE_STD_FILESYSTEM
+
 			SortFields(vFileDialogInternal, puSortingField, false);
 		}
 	}
@@ -1374,7 +1455,7 @@ namespace IGFD
 			std::string fpn;
 
 			if (vInfos->fileType == 'f' || vInfos->fileType == 'l' || vInfos->fileType == 'd') // file
-				fpn = vInfos->filePath + PATH_SEP + vInfos->fileName;
+				fpn = vInfos->filePath + std::string(1u, PATH_SEP) + vInfos->fileName;
 
 			struct stat statInfos = {};
 			char timebuf[100];
@@ -1440,9 +1521,19 @@ namespace IGFD
 		std::string path = vPath;
 #ifdef WIN32
 		if (puFsRoot == path)
-			path += PATH_SEP;
+			path += std::string(1u, PATH_SEP);
 #endif // WIN32
-		char real_path[PATH_MAX];
+		
+#ifdef USE_STD_FILESYSTEM
+		namespace fs = std::filesystem;
+		bool dir_opened = fs::is_directory(vPath);
+		if (!dir_opened)
+		{
+			path = ".";
+			dir_opened = fs::is_directory(vPath);
+		}
+		if (dir_opened)
+#else
 		DIR* dir = opendir(path.c_str());
 		if (dir == nullptr)
 		{
@@ -1451,24 +1542,24 @@ namespace IGFD
 		}
 
 		if (dir != nullptr)
+#endif // USE_STD_FILESYSTEM
 		{
 #ifdef WIN32
 			DWORD numchar = 0;
 			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
-			std::wstring wpath = IGFD::Utils::WGetString(path.c_str());
+			std::wstring wpath = IGFD::Utils::string_to_wstring(path);
 			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
 			std::wstring fpath(numchar, 0);
 			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
-			int error = dirent_wcstombs_s(nullptr, real_path, PATH_MAX, fpath.c_str(), PATH_MAX - 1);
-			if (error)numchar = 0;
-			if (!numchar)
-			{
-				std::cout << "fail to obtain FullPathName " << path << std::endl;
-			}
+			std::string real_path = IGFD::Utils::wstring_to_string(fpath);
+			if (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
+				real_path = real_path.substr(0, real_path.size() - 1U);
+			if (!real_path.empty())
 #elif defined(UNIX) // UNIX is LINUX or APPLE
+			char real_path[PATH_MAX]; 
 			char* numchar = realpath(path.c_str(), real_path);
+			if (numchar != nullptr)
 #endif // WIN32
-			if (numchar != 0)
 			{
 				prCurrentPath = real_path;
 				if (prCurrentPath[prCurrentPath.size() - 1] == PATH_SEP)
@@ -1487,23 +1578,26 @@ namespace IGFD
 #endif // WIN32
 				}
 			}
-
+#ifndef USE_STD_FILESYSTEM
 			closedir(dir);
+#endif
 		}
 	}
+
 	bool IGFD::FileManager::CreateDir(const std::string& vPath)
 	{
 		bool res = false;
 
 		if (!vPath.empty())
 		{
-			std::string path = prCurrentPath + PATH_SEP + vPath;
+			std::string path = prCurrentPath + std::string(1u, PATH_SEP) + vPath;
 
 			res = IGFD::Utils::CreateDirectoryIfNotExist(path);
 		}
 
 		return res;
 	}
+
 	void IGFD::FileManager::ComposeNewPath(std::vector<std::string>::iterator vIter)
 	{
 		std::string res;
@@ -1513,7 +1607,7 @@ namespace IGFD
 			if (!res.empty())
 			{
 #ifdef WIN32
-				res = *vIter + PATH_SEP + res;
+				res = *vIter + std::string(1u, PATH_SEP) + res;
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 				if (*vIter == s_fs_root)
 					res = *vIter + res;
@@ -1538,6 +1632,7 @@ namespace IGFD
 
 		prCurrentPath = res;
 	}
+
 	bool IGFD::FileManager::SetPathOnParentDirectoryIfAny()
 	{
 		if (prCurrentPathDecomposition.size() > 1)
@@ -1547,6 +1642,7 @@ namespace IGFD
 		}
 		return false;
 	}
+
 	std::string IGFD::FileManager::GetCurrentPath()
 	{
 		if (prCurrentPath.empty())
@@ -1596,7 +1692,7 @@ namespace IGFD
 
 			if (puShowDrives)
 			{
-				newPath = vInfos->fileName + PATH_SEP;
+				newPath = vInfos->fileName + std::string(1u, PATH_SEP);
 			}
 			else
 			{
@@ -1605,7 +1701,7 @@ namespace IGFD
 					newPath = prCurrentPath + vInfos->fileName;
 				else
 #endif // __linux__
-					newPath = prCurrentPath + PATH_SEP + vInfos->fileName;
+					newPath = prCurrentPath + std::string(1u, PATH_SEP) + vInfos->fileName;
 			}
 
 			if (IGFD::Utils::IsDirectoryExist(newPath))
@@ -1765,7 +1861,7 @@ namespace IGFD
 				std::string newDir = std::string(puDirectoryNameBuffer);
 				if (CreateDir(newDir))
 				{
-					SetCurrentPath(prCurrentPath + PATH_SEP + newDir);
+					SetCurrentPath(prCurrentPath + std::string(1u, PATH_SEP) + newDir);
 					OpenCurrentPath(vFileDialogInternal);
 				}
 
@@ -1865,7 +1961,7 @@ namespace IGFD
 			std::string selectedDirectory = puFileNameBuffer;
 			if (!selectedDirectory.empty() &&
 				selectedDirectory != ".")
-				path += PATH_SEP + selectedDirectory;
+				path += std::string(1u, PATH_SEP) + selectedDirectory;
 		}
 
 		return path;
@@ -1891,7 +1987,7 @@ namespace IGFD
 #ifdef UNIX
 			if (s_fs_root != result)
 #endif // UNIX
-				result += PATH_SEP;
+				result += std::string(1u, PATH_SEP);
 
 			result += filename;
 		}
@@ -1910,7 +2006,7 @@ namespace IGFD
 #ifdef UNIX
 			if (s_fs_root != result)
 #endif // UNIX
-				result += PATH_SEP;
+				result += std::string(1u, PATH_SEP);
 
 			result += selectedFileName;
 
@@ -2093,7 +2189,7 @@ namespace IGFD
 							//|| file->fileExt == ".hdr" => format float so in few times
 							)
 						{
-							auto fpn = file->filePath + PATH_SEP + file->fileName;
+							auto fpn = file->filePath + std::string(1u, PATH_SEP) + file->fileName;
 
 							int w = 0;
 							int h = 0;

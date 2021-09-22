@@ -510,6 +510,14 @@ if (IGFD_DisplayDialog(cfiledialog, "filedlg", ImGuiWindowFlags_NoCollapse, minS
 IGFD_Destroy(cfiledialog);
 
 -----------------------------------------------------------------------------------------------------------------
+## Std::filesystem (c++17) can be used instead of dirent.h
+-----------------------------------------------------------------------------------------------------------------
+
+you just need to uncomment that in the config file
+
+#define USE_STD_FILESYSTEM
+
+-----------------------------------------------------------------------------------------------------------------
 ## How to Integrate ImGuiFileDialog in your project
 -----------------------------------------------------------------------------------------------------------------
 
@@ -667,8 +675,6 @@ namespace IGFD
 	public:
 		static bool Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
 		static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr);
-		static std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
-		static std::vector<std::string> GetDrivesList();
 		static bool IsDirectoryExist(const std::string& name);
 		static bool CreateDirectoryIfNotExist(const std::string& name);
 		static PathStruct ParsePathFileName(const std::string& vPathFileName);
@@ -678,8 +684,11 @@ namespace IGFD
 #ifdef WIN32
 		static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
 		static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
-		static std::wstring WGetString(const char* str);
+		static std::string wstring_to_string(const std::wstring& wstr);
+		static std::wstring string_to_wstring(const std::string& mbstr);
 #endif
+		static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
+		static std::vector<std::string> GetDrivesList();
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -804,13 +813,15 @@ namespace IGFD
 		std::string puFsRoot;
 
 	private:
-		static std::string prRoundNumber(double vvalue, int n);												// custom rounding number
-		static std::string prFormatFileSize(size_t vByteSize);													// format file size field
-		static std::string prOptimizeFilenameForSearchOperations(const std::string& vFileName);				// turn all text in lower case for search facilitie
-		static void prCompleteFileInfos(const std::shared_ptr<FileInfos>& FileInfos);									// set time and date infos of a file (detail view mode)
+		static std::string prRoundNumber(double vvalue, int n);											// custom rounding number
+		static std::string prFormatFileSize(size_t vByteSize);											// format file size field
+		static std::string prOptimizeFilenameForSearchOperations(const std::string& vFileName);			// turn all text in lower case for search facilitie
+		static void prCompleteFileInfos(const std::shared_ptr<FileInfos>& FileInfos);					// set time and date infos of a file (detail view mode)
 		void prRemoveFileNameInSelection(const std::string& vFileName);									// selection : remove a file name
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
-		
+		void AddFile(const FileDialogInternal& vFileDialogInternal, 
+			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+
 	public:
 		FileManager();
 		bool IsComposerEmpty();
