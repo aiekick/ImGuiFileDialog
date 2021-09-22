@@ -420,9 +420,17 @@ You can now, display thumbnails of pictures.
 
 ![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/thumbnails.gif)
 
-The file resize use stb/image so the following files extentions are supported : 
-(.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
-only tested with .png, .bmp, .tga, .jpg, .jpeg and .gif by the way
+The file resize use stb/image so the following files extentions are supported :
+ * .png (tested sucessfully)
+ * .bmp (tested sucessfully)
+ * .tga (tested sucessfully)
+ * .jpg (tested sucessfully)
+ * .jpeg (tested sucessfully)
+ * .gif (tested sucessfully_ but not animation just first frame)
+ * .psd (not tested)
+ * .pic (not tested)
+ * .ppm (not tested)
+ * .pgm (not tested)
 
 Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
 * the first is a callback who will be called by ImGuiFileDialog for create the backend texture
