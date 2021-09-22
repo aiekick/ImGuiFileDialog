@@ -5,6 +5,8 @@ set(PROJECT ImGuiFileDialog)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
+option(USE_STD_FILESYSTEM "Enable std::fielsystem use for path and ImGuiFileDialog" ON)
+
 include(cmake/3rdparty.cmake)
 
 if(MSVC)
@@ -14,6 +16,15 @@ if(MSVC)
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
 endif ()
+
+if (USE_STD_FILESYSTEM)
+add_definitions(-DUSE_STD_FILESYSTEM)
+set(CMAKE_CXX_STANDARD 17)
+else()
+set(CMAKE_CXX_STANDARD 14)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
