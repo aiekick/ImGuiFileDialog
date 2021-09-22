@@ -371,6 +371,73 @@ std::string GetCurrentFilter();                    // get selected filter
 UserDatas GetUserDatas();                          // get user datas send with Open Dialog
 
 -----------------------------------------------------------------------------------------------------------------
+## Thumbnails Display
+-----------------------------------------------------------------------------------------------------------------
+
+You can now, display thumbnails of pictures.
+
+The file resize use stb/image so the following files extentions are supported :
+(.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
+only tested with .png, .bmp, .tga, .jpg, .jpeg and .gif by the way
+
+Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
+* the first is a callback who will be called by ImGuiFileDialog for create the backend texture
+* the second is a callback who will be called by ImGuiFileDialog for destroy the backend texture
+
+After that you need to call the function who is responsible to create / destroy the textures.
+this function must be called in your GPU Rendering zone for avoid destroying of used texture.
+if you do that at the same place of your imgui code, some backend can crash your app, by ex with vulkan.
+
+ex, for opengl :
+
+Example code :
+// Create thumbnails texture
+ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *vThumbnail_Info) -> void
+{
+	if (vThumbnail_Info &&
+		vThumbnail_Info->isReadyToUpload &&
+		vThumbnail_Info->textureFileDatas)
+	{
+		GLuint textureId = 0;
+		glGenTextures(1, &textureId);
+		vThumbnail_Info->textureID = (void*)textureId;
+
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+			(GLsizei)vThumbnail_Info->textureWidth, (GLsizei)vThumbnail_Info->textureHeight,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, vThumbnail_Info->textureFileDatas);
+		glFinish();
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		delete[] vThumbnail_Info->textureFileDatas;
+		vThumbnail_Info->textureFileDatas = nullptr;
+
+		vThumbnail_Info->isReadyToUpload = false;
+		vThumbnail_Info->isReadyToDisplay = true;
+	}
+});
+
+Example code :
+// Destroy thumbnails texture
+ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
+{
+	if (vThumbnail_Info)
+	{
+		GLuint texID = (GLuint)vThumbnail_Info->textureID;
+		glDeleteTextures(1, &texID);
+		glFinish();
+	}
+});
+
+Example code :
+// GPU Rendering Zone // To call for Create/ Destroy Textures
+ImGuiFileDialog::Instance()->ManageGPUThumbnails();
+
+-----------------------------------------------------------------------------------------------------------------
 ## C API
 -----------------------------------------------------------------------------------------------------------------
 
@@ -620,7 +687,7 @@ namespace IGFD
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
 		FilterInfosStruct GetSelectedFilter();																	// get the current selected filter
-		std::string ReplaceExtentionWithCurrentFilter(const std::string vFile);									// replace the extention of the current file by the selected filter
+		std::string ReplaceExtentionWithCurrentFilter(const std::string vFile) const;									// replace the extention of the current file by the selected filter
 		void SetDefaultFilterIfNotDefined();																	// define the first filter if no filter is selected
 	};
 
@@ -644,7 +711,7 @@ namespace IGFD
 #endif // USE_THUMBNAILS
 
 	public:
-		bool IsTagFound(const std::string& vTag);
+		bool IsTagFound(const std::string& vTag) const;
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -702,10 +769,10 @@ namespace IGFD
 		bool puDLGDirectoryMode = false;									// is directory mode (defiend like : puDLGDirectoryMode = (filters.empty()))
 
 	private:
-		std::string prRoundNumber(double vvalue, int n);												// custom rounding number
-		std::string prFormatFileSize(size_t vByteSize);													// format file size field
-		std::string prOptimizeFilenameForSearchOperations(const std::string& vFileName);				// turn all text in lower case for search facilitie
-		void prCompleteFileInfos(std::shared_ptr<FileInfos> FileInfos);									// set time and date infos of a file (detail view mode)
+		static std::string prRoundNumber(double vvalue, int n);												// custom rounding number
+		static std::string prFormatFileSize(size_t vByteSize);													// format file size field
+		static std::string prOptimizeFilenameForSearchOperations(const std::string& vFileName);				// turn all text in lower case for search facilitie
+		static void prCompleteFileInfos(const std::shared_ptr<FileInfos>& FileInfos);									// set time and date infos of a file (detail view mode)
 		void prRemoveFileNameInSelection(const std::string& vFileName);									// selection : remove a file name
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
 		
@@ -718,7 +785,7 @@ namespace IGFD
 		std::shared_ptr<FileInfos> GetFullFileAt(size_t vIdx);
 		size_t GetFilteredListSize();
 		std::shared_ptr<FileInfos> GetFilteredFileAt(size_t vIdx);
-		bool IsFileNameSelected(const std::string vFileName);
+		bool IsFileNameSelected(const std::string& vFileName);
 		std::string GetBack();
 		void ClearComposer();
 		void ClearFileLists();																			// clear file list, will destroy thumbnail textures
@@ -735,11 +802,11 @@ namespace IGFD
 		bool SetPathOnParentDirectoryIfAny();															// compose paht on parent directory
 		std::string GetCurrentPath();																	// get the current path
 		void SetCurrentPath(const std::string& vCurrentPath);											// set the current path
-		bool IsFileExist(const std::string& vFile);
+		static bool IsFileExist(const std::string& vFile);
 		void SetDefaultFileName(const std::string& vFileName);
-		bool SelectDirectory(std::shared_ptr<FileInfos> vInfos);										// enter directory 
+		bool SelectDirectory(const std::shared_ptr<FileInfos>& vInfos);										// enter directory
 		void SelectFileName(const FileDialogInternal& vFileDialogInternal, 
-			std::shared_ptr<FileInfos> vInfos);															// select filename
+			const std::shared_ptr<FileInfos>& vInfos);															// select filename
 		
 	public:
 		std::string GetResultingPath();
@@ -802,15 +869,15 @@ namespace IGFD
 		bool prStopThumbnailFileDatasExtraction();								// stop the thread who will get byte buffer from image files
 		void prThreadThumbnailFileDatasExtractionFunc();						// the thread who will get byte buffer from image files
 		void prDrawThumbnailGenerationProgress();								// a little progressbar who will display the texture gen status
-		void prAddThumbnailToLoad(std::shared_ptr<FileInfos> vFileInfos);		// add texture to load in the thread
-		void prAddThumbnailToCreate(std::shared_ptr<FileInfos> vFileInfos);
+		void prAddThumbnailToLoad(const std::shared_ptr<FileInfos>& vFileInfos);		// add texture to load in the thread
+		void prAddThumbnailToCreate(const std::shared_ptr<FileInfos>& vFileInfos);
 		void prAddThumbnailToDestroy(IGFD_Thumbnail_Info vIGFD_Thumbnail_Info);
 		void prDrawDisplayModeToolBar();										// draw display mode toolbar (file list, thumbnails list, small thumbnails grid, big thumbnails grid)
 		void prClearThumbnails(FileDialogInternal& vFileDialogInternal);
 
 	public:
-		void SetCreateThumbnailCallback(const CreateThumbnailFun vCreateThumbnailFun);
-		void SetDestroyThumbnailCallback(const DestroyThumbnailFun vCreateThumbnailFun);
+		void SetCreateThumbnailCallback(const CreateThumbnailFun& vCreateThumbnailFun);
+		void SetDestroyThumbnailCallback(const DestroyThumbnailFun& vCreateThumbnailFun);
 		
 		// must be call in gpu zone (rendering, possibly one rendering thread)
 		void ManageGPUThumbnails();	// in gpu rendering zone, whill create or destroy texture
@@ -880,12 +947,12 @@ namespace IGFD
 		void prLocateByInputKey(FileDialogInternal& vFileDialogInternal);						// select a file line in listview according to char key
 		bool prLocateItem_Loop(FileDialogInternal& vFileDialogInternal, ImWchar vC);			// restrat for start of list view if not found a corresponding file
 		void prExploreWithkeys(FileDialogInternal& vFileDialogInternal, ImGuiID vListViewID);	// select file/directory line in listview accroding to up/down enter/backspace keys
-		bool prFlashableSelectable(																// custom flashing selectable widgets, for flash the selected line in a short time
+		static bool prFlashableSelectable(																// custom flashing selectable widgets, for flash the selected line in a short time
 			const char* label, bool selected = false, ImGuiSelectableFlags flags = 0,
 			bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));
 		void prStartFlashItem(size_t vIdx);														// define than an item must be flashed
 		bool prBeginFlashItem(size_t vIdx);														// start the flashing of a line in lsit view
-		void prEndFlashItem();																	// end the fleshing accrdoin to var prFlashAlphaAttenInSecs
+		static void prEndFlashItem();																	// end the fleshing accrdoin to var prFlashAlphaAttenInSecs
 
 	public:
 		void SetFlashingAttenuationInSeconds(													// set the flashing time of the line in file list when use exploration keys
@@ -957,7 +1024,7 @@ namespace IGFD
 
 	public:
 		FileDialog();												// ImGuiFileDialog Constructor. can be used for have many dialog at same tiem (not possible with singleton)
-		~FileDialog();												// ImGuiFileDialog Destructor
+		virtual ~FileDialog();										// ImGuiFileDialog Destructor
 
 		// standard dialog
 		void OpenDialog(											// open simple dialog (path and fileName can be specified)
@@ -1056,20 +1123,20 @@ namespace IGFD
 		void Close();												// close dialog
 
 		// queries
-		bool WasOpenedThisFrame(const std::string& vKey);			// say if the dialog key was already opened this frame
-		bool WasOpenedThisFrame();									// say if the dialog was already opened this frame
-		bool IsOpened(const std::string& vKey);						// say if the key is opened
-		bool IsOpened();											// say if the dialog is opened somewhere	
-		std::string GetOpenedKey();									// return the dialog key who is opened, return nothing if not opened
+		bool WasOpenedThisFrame(const std::string& vKey) const;			// say if the dialog key was already opened this frame
+		bool WasOpenedThisFrame() const;									// say if the dialog was already opened this frame
+		bool IsOpened(const std::string& vKey) const;						// say if the key is opened
+		bool IsOpened() const;											// say if the dialog is opened somewhere
+		std::string GetOpenedKey() const;									// return the dialog key who is opened, return nothing if not opened
 
 		// get result
-		bool IsOk();												// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
+		bool IsOk() const;												// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
 		std::map<std::string, std::string> GetSelection();			// Open File behavior : will return selection via a map<FileName, FilePathName>
 		std::string GetFilePathName();								// Save File behavior : will always return the content of the field with current filter extention and current path
 		std::string GetCurrentFileName();							// Save File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();								// will return current path
 		std::string GetCurrentFilter();								// will return selected filter
-		UserDatas GetUserDatas();									// will return user datas send with Open Dialog/Modal
+		UserDatas GetUserDatas() const;									// will return user datas send with Open Dialog/Modal
 
 		// extentions displaying
 		void SetExtentionInfos(										// SetExtention datas for have custom display of particular file type
@@ -1090,6 +1157,10 @@ namespace IGFD
 		void EndFrame();											// end frame just at end of display
 		void QuitFrame();											// quit frame when qui quit the dialog
 
+		// others
+		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);	// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
+	
+	public:
 		// dialog parts
 		virtual void prDrawHeader();								// draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
 		virtual void prDrawContent();								// draw content part of the dialog (bookmark pane, file list, side pane)
@@ -1104,9 +1175,6 @@ namespace IGFD
 		virtual void prDrawThumbnailsListView(ImVec2 vSize);		// draw file list view with small thumbnails on the same line
 		virtual void prDrawThumbnailsGridView(ImVec2 vSize);		// draw a grid of small thumbnails
 #endif
-
-		// others
-		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);	// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
 	};
 }
 
@@ -1352,11 +1420,11 @@ IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(			// deserialize bookmarks :
 #ifdef USE_THUMBNAILS
 IMGUIFILEDIALOG_API void SetCreateThumbnailCallback(		// define the callback for create the thumbnails texture
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
-	const IGFD_CreateThumbnailFun vCreateThumbnailFun);		// the callback for create the thumbnails texture
+	IGFD_CreateThumbnailFun vCreateThumbnailFun);			// the callback for create the thumbnails texture
 
 IMGUIFILEDIALOG_API void SetDestroyThumbnailCallback(		// define the callback for destroy the thumbnails texture
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
-	const IGFD_DestroyThumbnailFun vDestroyThumbnailFun);	// the callback for destroy the thumbnails texture
+	IGFD_DestroyThumbnailFun vDestroyThumbnailFun);			// the callback for destroy the thumbnails texture
 
 IMGUIFILEDIALOG_API void ManageGPUThumbnails(				// must be call in gpu zone, possibly a thread, will call the callback for create / destroy the textures
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context 
