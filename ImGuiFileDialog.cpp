@@ -37,43 +37,44 @@ SOFTWARE.
 #include <ctime>
 #include <sys/stat.h>
 #include <cstdio>
+// this option need c++17
+#ifdef USE_STD_FILESYSTEM
+	#include <filesystem>
+#endif
 #if defined (__EMSCRIPTEN__) // EMSCRIPTEN
-#include <emscripten.h>
+	#include <emscripten.h>
 #endif // EMSCRIPTEN
 #if defined(__WIN32__) || defined(_WIN32)
-#ifndef WIN32
-#define WIN32
-#endif // WIN32
-#define stat _stat
-#define stricmp _stricmp
-#include <cctype>
-// this option need c++17
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#include <Windows.h>
-#else
-#include "dirent/dirent.h" // directly open the dirent file attached to this lib
-#endif // USE_STD_FILESYSTEM
-#define PATH_SEP '\\'
-#ifndef PATH_MAX
-#define PATH_MAX 260
-#endif // PATH_MAX
+	#ifndef WIN32
+		#define WIN32
+	#endif // WIN32
+	#define stat _stat
+	#define stricmp _stricmp
+	#include <cctype>
+	// this option need c++17
+	#ifdef USE_STD_FILESYSTEM
+		#include <Windows.h>
+	#else
+		#include "dirent/dirent.h" // directly open the dirent file attached to this lib
+	#endif // USE_STD_FILESYSTEM
+	#define PATH_SEP '\\'
+	#ifndef PATH_MAX
+		#define PATH_MAX 260
+	#endif // PATH_MAX
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
-#define UNIX
-#define stricmp strcasecmp
-#include <sys/types.h>
-// this option need c++17
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <dirent.h> 
-#endif // USE_STD_FILESYSTEM
-#define PATH_SEP '/'
+	#define UNIX
+	#define stricmp strcasecmp
+	#include <sys/types.h>
+	// this option need c++17
+	#ifndef USE_STD_FILESYSTEM
+		#include <dirent.h> 
+	#endif // USE_STD_FILESYSTEM
+	#define PATH_SEP '/'
 #endif // defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
+	#define IMGUI_DEFINE_MATH_OPERATORS
 #endif // IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
