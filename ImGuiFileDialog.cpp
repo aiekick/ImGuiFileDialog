@@ -647,6 +647,8 @@ namespace IGFD
 	{
 		if (!vTag.empty())
 		{
+			if (fileName_optimized == "..") return true;
+
 			return
 				fileName_optimized.find(vTag) != std::string::npos ||	// first try wihtout case and accents
 				fileName.find(vTag) != std::string::npos;				// second if searched with case and accents
