@@ -1042,6 +1042,11 @@ namespace IGFD
 		bool puDLGmodal = false;
 		bool puNeedToExitDialog = false;
 
+		bool puUseCustomLocale = false;
+		int puLocaleCategory = LC_ALL;	// locale category to use
+		std::string puLocaleBegin; // the locale who will be applied at start of the display dialog
+		std::string puLocaleEnd; // the locale who will be applaied at end of the display dialog
+
 	public:
 		void NewFrame();			// new frame, so maybe neded to do somethings, like reset events
 		void EndFrame();			// end frame, so maybe neded to do somethings fater all
@@ -1200,6 +1205,11 @@ namespace IGFD
 			ImVec4* vOutColor,										// color to retrieve
 			std::string* vOutIcon = 0);								// icon or text to retrieve
 		void ClearExtentionInfos();									// clear extentions setttings
+
+		void SetLocales(											// set locales to use before and after the dialog display
+			const int& vLocaleCategory,									// set local category
+			const std::string& vLocaleBegin,						// locale to use at begining of the dialog display
+			const std::string& vLocaleEnd);							// locale to use at the end of the dialog display
 
 	protected:
 		void NewFrame();											// new frame just at begining of display
@@ -1450,6 +1460,12 @@ IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(
 
 IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(			// clear extentions setttings
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context
+
+IMGUIFILEDIALOG_API void SetLocales(						// set locales to use before and after display
+	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
+	const int vCategory,									// set local category
+	const char* vBeginLocale,								// locale to use at begining of the dialog display
+	const char* vEndLocale);								// locale to set at end of the dialog display
 
 #ifdef USE_EXPLORATION_BY_KEYS
 IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(	// set the flashing time of the line in file list when use exploration keys

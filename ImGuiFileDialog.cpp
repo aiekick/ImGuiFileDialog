@@ -3293,9 +3293,12 @@ namespace IGFD
 
 	bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize)
 	{
+		bool res = false;
+
 		if (prFileDialogInternal.puShowDialog && prFileDialogInternal.puDLGkey == vKey)
 		{
-			bool res = false;
+			if (prFileDialogInternal.puUseCustomLocale)
+				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleBegin.c_str());
 
 			auto& fdFile = prFileDialogInternal.puFileManager;
 			auto& fdFilter = prFileDialogInternal.puFilterManager;
@@ -3405,10 +3408,13 @@ namespace IGFD
 				ImGui::End();
 
 			// confirm the result and show the confirm to overwrite dialog if needed
-			return prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
+			res =  prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
+			
+			if (prFileDialogInternal.puUseCustomLocale)
+				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleEnd.c_str());
 		}
 
-		return false;
+		return res;
 	}
 
 	void IGFD::FileDialog::NewFrame()
@@ -4088,6 +4094,13 @@ namespace IGFD
 		prFileDialogInternal.puFilterManager.ClearExtentionInfos();
 	}
 
+	void IGFD::FileDialog::SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd)
+	{
+		prFileDialogInternal.puUseCustomLocale = true;
+		prFileDialogInternal.puLocaleBegin = vLocaleBegin;
+		prFileDialogInternal.puLocaleEnd = vLocaleEnd;
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	//// OVERWRITE DIALOG ////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -4675,6 +4688,13 @@ IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(ImGuiFileDialog* vContext)
 	if (vContext)
 	{
 		vContext->ClearExtentionInfos();
+	}
+}
+IMGUIFILEDIALOG_API void SetLocales(ImGuiFileDialog* vContext, const int vCategory, const char* vBeginLocale, const char* vEndLocale)
+{
+	if (vContext)
+	{
+		vContext->SetLocales(vCategory, (vBeginLocale ? vBeginLocale : ""), (vEndLocale ? vEndLocale : ""));
 	}
 }
 
