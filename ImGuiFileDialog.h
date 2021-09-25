@@ -572,6 +572,9 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_HideColumnType = (1 << 3),								// hide column file type
 	ImGuiFileDialogFlags_HideColumnSize = (1 << 4),								// hide column file size
 	ImGuiFileDialogFlags_HideColumnDate = (1 << 5),								// hide column file date
+#ifdef USE_THUMBNAILS
+	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
+#endif
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
@@ -1177,20 +1180,20 @@ namespace IGFD
 		void Close();												// close dialog
 
 		// queries
-		bool WasOpenedThisFrame(const std::string& vKey) const;			// say if the dialog key was already opened this frame
-		bool WasOpenedThisFrame() const;									// say if the dialog was already opened this frame
-		bool IsOpened(const std::string& vKey) const;						// say if the key is opened
-		bool IsOpened() const;											// say if the dialog is opened somewhere
-		std::string GetOpenedKey() const;									// return the dialog key who is opened, return nothing if not opened
+		bool WasOpenedThisFrame(const std::string& vKey) const;		// say if the dialog key was already opened this frame
+		bool WasOpenedThisFrame() const;							// say if the dialog was already opened this frame
+		bool IsOpened(const std::string& vKey) const;				// say if the key is opened
+		bool IsOpened() const;										// say if the dialog is opened somewhere
+		std::string GetOpenedKey() const;							// return the dialog key who is opened, return nothing if not opened
 
 		// get result
-		bool IsOk() const;												// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
+		bool IsOk() const;											// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
 		std::map<std::string, std::string> GetSelection();			// Open File behavior : will return selection via a map<FileName, FilePathName>
 		std::string GetFilePathName();								// Save File behavior : will always return the content of the field with current filter extention and current path
 		std::string GetCurrentFileName();							// Save File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();								// will return current path
 		std::string GetCurrentFilter();								// will return selected filter
-		UserDatas GetUserDatas() const;									// will return user datas send with Open Dialog/Modal
+		UserDatas GetUserDatas() const;								// will return user datas send with Open Dialog/Modal
 
 		// extentions displaying
 		void SetExtentionInfos(										// SetExtention datas for have custom display of particular file type
@@ -1207,7 +1210,7 @@ namespace IGFD
 		void ClearExtentionInfos();									// clear extentions setttings
 
 		void SetLocales(											// set locales to use before and after the dialog display
-			const int& vLocaleCategory,									// set local category
+			const int& vLocaleCategory,								// set local category
 			const std::string& vLocaleBegin,						// locale to use at begining of the dialog display
 			const std::string& vLocaleEnd);							// locale to use at the end of the dialog display
 
@@ -1217,7 +1220,8 @@ namespace IGFD
 		void QuitFrame();											// quit frame when qui quit the dialog
 
 		// others
-		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);	// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
+		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(
+			bool vLastAction, ImGuiWindowFlags vFlags);				// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
 	
 	public:
 		// dialog parts
@@ -1227,7 +1231,9 @@ namespace IGFD
 
 		// widgets components
 		virtual void prDrawSidePane(float vHeight);					// draw side pane
-		virtual bool prSelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...);
+		virtual bool prSelectableItem(int vidx, 
+			std::shared_ptr<FileInfos> vInfos, 
+			bool vSelected, const char* vFmt, ...);					// draw a custom selectable behavior item
 		virtual void prDrawFileListView(ImVec2 vSize);				// draw file list view (default mode)
 
 #ifdef USE_THUMBNAILS

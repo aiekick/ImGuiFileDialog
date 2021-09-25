@@ -3453,10 +3453,13 @@ namespace IGFD
 		prFileDialogInternal.puFileManager.DrawPathComposer(prFileDialogInternal);
 
 #ifdef USE_THUMBNAILS
-		prDrawDisplayModeToolBar();
-		ImGui::SameLine();
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		ImGui::SameLine();
+		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableThumbnailMode))
+		{
+			prDrawDisplayModeToolBar();
+			ImGui::SameLine();
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
+		}
 #endif // USE_THUMBNAILS
 
 		prFileDialogInternal.puSearchManager.DrawSearchBar(prFileDialogInternal);
@@ -3492,16 +3495,23 @@ namespace IGFD
 		}
 
 #ifdef USE_THUMBNAILS
-		switch (prDisplayMode)
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableThumbnailMode)
 		{
-		case DisplayModeEnum::FILE_LIST:
 			prDrawFileListView(size);
-			break;
-		case DisplayModeEnum::THUMBNAILS_LIST:
-			prDrawThumbnailsListView(size);
-			break;
-		case DisplayModeEnum::THUMBNAILS_GRID:
-			prDrawThumbnailsGridView(size);
+		}
+		else
+		{
+			switch (prDisplayMode)
+			{
+			case DisplayModeEnum::FILE_LIST:
+				prDrawFileListView(size);
+				break;
+			case DisplayModeEnum::THUMBNAILS_LIST:
+				prDrawThumbnailsListView(size);
+				break;
+			case DisplayModeEnum::THUMBNAILS_GRID:
+				prDrawThumbnailsGridView(size);
+			}
 		}
 #else
 		prDrawFileListView(size);
