@@ -37,43 +37,44 @@ SOFTWARE.
 #include <ctime>
 #include <sys/stat.h>
 #include <cstdio>
+// this option need c++17
+#ifdef USE_STD_FILESYSTEM
+	#include <filesystem>
+#endif
 #if defined (__EMSCRIPTEN__) // EMSCRIPTEN
-#include <emscripten.h>
+	#include <emscripten.h>
 #endif // EMSCRIPTEN
 #if defined(__WIN32__) || defined(_WIN32)
-#ifndef WIN32
-#define WIN32
-#endif // WIN32
-#define stat _stat
-#define stricmp _stricmp
-#include <cctype>
-// this option need c++17
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#include <Windows.h>
-#else
-#include "dirent/dirent.h" // directly open the dirent file attached to this lib
-#endif // USE_STD_FILESYSTEM
-#define PATH_SEP '\\'
-#ifndef PATH_MAX
-#define PATH_MAX 260
-#endif // PATH_MAX
+	#ifndef WIN32
+		#define WIN32
+	#endif // WIN32
+	#define stat _stat
+	#define stricmp _stricmp
+	#include <cctype>
+	// this option need c++17
+	#ifdef USE_STD_FILESYSTEM
+		#include <Windows.h>
+	#else
+		#include "dirent/dirent.h" // directly open the dirent file attached to this lib
+	#endif // USE_STD_FILESYSTEM
+	#define PATH_SEP '\\'
+	#ifndef PATH_MAX
+		#define PATH_MAX 260
+	#endif // PATH_MAX
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
-#define UNIX
-#define stricmp strcasecmp
-#include <sys/types.h>
-// this option need c++17
-#ifdef USE_STD_FILESYSTEM
-#include <filesystem>
-#else
-#include <dirent.h> 
-#endif // USE_STD_FILESYSTEM
-#define PATH_SEP '/'
+	#define UNIX
+	#define stricmp strcasecmp
+	#include <sys/types.h>
+	// this option need c++17
+	#ifndef USE_STD_FILESYSTEM
+		#include <dirent.h> 
+	#endif // USE_STD_FILESYSTEM
+	#define PATH_SEP '/'
 #endif // defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
+	#define IMGUI_DEFINE_MATH_OPERATORS
 #endif // IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
@@ -478,8 +479,12 @@ namespace IGFD
 		{
 #ifdef USE_STD_FILESYSTEM
 			namespace fs = std::filesystem;
+#ifdef WIN32
 			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
 			fs::path pathName = fs::path(wname);
+#else
+			fs::path pathName = fs::path(name);
+#endif
 			bExists = fs::is_directory(pathName);
 #else
 			DIR* pDir = nullptr;
@@ -1609,7 +1614,7 @@ namespace IGFD
 #ifdef WIN32
 				res = *vIter + std::string(1u, PATH_SEP) + res;
 #elif defined(UNIX) // UNIX is LINUX or APPLE
-				if (*vIter == s_fs_root)
+				if (*vIter == puFsRoot)
 					res = *vIter + res;
 				else
 					res = *vIter + PATH_SEP + res;
@@ -1697,7 +1702,7 @@ namespace IGFD
 			else
 			{
 #ifdef __linux__
-				if (s_fs_root == prCurrentPath)
+				if (puFsRoot == prCurrentPath)
 					newPath = prCurrentPath + vInfos->fileName;
 				else
 #endif // __linux__
@@ -1985,7 +1990,7 @@ namespace IGFD
 		if (!filename.empty())
 		{
 #ifdef UNIX
-			if (s_fs_root != result)
+			if (puFsRoot != result)
 #endif // UNIX
 				result += std::string(1u, PATH_SEP);
 
@@ -2004,7 +2009,7 @@ namespace IGFD
 			std::string result = GetResultingPath();
 
 #ifdef UNIX
-			if (s_fs_root != result)
+			if (puFsRoot != result)
 #endif // UNIX
 				result += std::string(1u, PATH_SEP);
 
