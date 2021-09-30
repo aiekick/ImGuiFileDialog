@@ -991,9 +991,11 @@ namespace IGFD
 						if (!a.use_count() || !b.use_count())
 							return false;
 
+						// this code fail in c:\\Users with the link "All users". got a invalid comparator
+						/*
 						// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
-							// strict ordering for file/directory types beginning in '.'
-							// common on Linux platforms
+						// strict ordering for file/directory types beginning in '.'
+						// common on Linux platforms
 						if (a->fileName[0] == '.' && b->fileName[0] != '.')
 							return false;
 						if (a->fileName[0] != '.' && b->fileName[0] == '.')
@@ -1002,6 +1004,7 @@ namespace IGFD
 						{
 							return (stricmp(a->fileName.c_str(), b->fileName.c_str()) < 0); // sort in insensitive case
 						}
+						*/
 						if (a->fileType != b->fileType) return (a->fileType == 'd'); // directory in first
 						return (stricmp(a->fileName.c_str(), b->fileName.c_str()) < 0); // sort in insensitive case
 					});
@@ -1017,6 +1020,8 @@ namespace IGFD
 						if (!a.use_count() || !b.use_count())
 							return false;
 
+						// this code fail in c:\\Users with the link "All users". got a invalid comparator
+						/*
 						// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
 						// strict ordering for file/directory types beginning in '.'
 						// common on Linux platforms
@@ -1028,14 +1033,7 @@ namespace IGFD
 						{
 							return (stricmp(a->fileName.c_str(), b->fileName.c_str()) > 0); // sort in insensitive case
 						}
-						if (a->fileType != b->fileType)
-						{
-							// this code fail in c:^^Userd with the link "All users". got a invalid comparator
-							// but dont know why...
-							// if i comment that all is ok..
-							bool res = (b->fileType != 'd'); // directory in last
-							return res; // directory in last
-						}
+						*/
 						return (stricmp(a->fileName.c_str(), b->fileName.c_str()) > 0); // sort in insensitive case
 					});
 			}
