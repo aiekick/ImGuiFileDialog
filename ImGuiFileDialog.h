@@ -572,6 +572,9 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_HideColumnType = (1 << 3),								// hide column file type
 	ImGuiFileDialogFlags_HideColumnSize = (1 << 4),								// hide column file size
 	ImGuiFileDialogFlags_HideColumnDate = (1 << 5),								// hide column file date
+#ifdef USE_THUMBNAILS
+	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
+#endif
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
@@ -1042,6 +1045,11 @@ namespace IGFD
 		bool puDLGmodal = false;
 		bool puNeedToExitDialog = false;
 
+		bool puUseCustomLocale = false;
+		int puLocaleCategory = LC_ALL;	// locale category to use
+		std::string puLocaleBegin; // the locale who will be applied at start of the display dialog
+		std::string puLocaleEnd; // the locale who will be applaied at end of the display dialog
+
 	public:
 		void NewFrame();			// new frame, so maybe neded to do somethings, like reset events
 		void EndFrame();			// end frame, so maybe neded to do somethings fater all
@@ -1172,20 +1180,20 @@ namespace IGFD
 		void Close();												// close dialog
 
 		// queries
-		bool WasOpenedThisFrame(const std::string& vKey) const;			// say if the dialog key was already opened this frame
-		bool WasOpenedThisFrame() const;									// say if the dialog was already opened this frame
-		bool IsOpened(const std::string& vKey) const;						// say if the key is opened
-		bool IsOpened() const;											// say if the dialog is opened somewhere
-		std::string GetOpenedKey() const;									// return the dialog key who is opened, return nothing if not opened
+		bool WasOpenedThisFrame(const std::string& vKey) const;		// say if the dialog key was already opened this frame
+		bool WasOpenedThisFrame() const;							// say if the dialog was already opened this frame
+		bool IsOpened(const std::string& vKey) const;				// say if the key is opened
+		bool IsOpened() const;										// say if the dialog is opened somewhere
+		std::string GetOpenedKey() const;							// return the dialog key who is opened, return nothing if not opened
 
 		// get result
-		bool IsOk() const;												// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
+		bool IsOk() const;											// true => Dialog Closed with Ok result / false : Dialog closed with cancel result
 		std::map<std::string, std::string> GetSelection();			// Open File behavior : will return selection via a map<FileName, FilePathName>
 		std::string GetFilePathName();								// Save File behavior : will always return the content of the field with current filter extention and current path
 		std::string GetCurrentFileName();							// Save File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();								// will return current path
 		std::string GetCurrentFilter();								// will return selected filter
-		UserDatas GetUserDatas() const;									// will return user datas send with Open Dialog/Modal
+		UserDatas GetUserDatas() const;								// will return user datas send with Open Dialog/Modal
 
 		// extentions displaying
 		void SetExtentionInfos(										// SetExtention datas for have custom display of particular file type
@@ -1201,13 +1209,19 @@ namespace IGFD
 			std::string* vOutIcon = 0);								// icon or text to retrieve
 		void ClearExtentionInfos();									// clear extentions setttings
 
+		void SetLocales(											// set locales to use before and after the dialog display
+			const int& vLocaleCategory,								// set local category
+			const std::string& vLocaleBegin,						// locale to use at begining of the dialog display
+			const std::string& vLocaleEnd);							// locale to use at the end of the dialog display
+
 	protected:
 		void NewFrame();											// new frame just at begining of display
 		void EndFrame();											// end frame just at end of display
 		void QuitFrame();											// quit frame when qui quit the dialog
 
 		// others
-		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);	// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
+		bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(
+			bool vLastAction, ImGuiWindowFlags vFlags);				// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
 	
 	public:
 		// dialog parts
@@ -1217,7 +1231,9 @@ namespace IGFD
 
 		// widgets components
 		virtual void prDrawSidePane(float vHeight);					// draw side pane
-		virtual bool prSelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...);
+		virtual bool prSelectableItem(int vidx, 
+			std::shared_ptr<FileInfos> vInfos, 
+			bool vSelected, const char* vFmt, ...);					// draw a custom selectable behavior item
 		virtual void prDrawFileListView(ImVec2 vSize);				// draw file list view (default mode)
 
 #ifdef USE_THUMBNAILS
@@ -1450,6 +1466,12 @@ IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(
 
 IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(			// clear extentions setttings
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context
+
+IMGUIFILEDIALOG_API void SetLocales(						// set locales to use before and after display
+	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
+	const int vCategory,									// set local category
+	const char* vBeginLocale,								// locale to use at begining of the dialog display
+	const char* vEndLocale);								// locale to set at end of the dialog display
 
 #ifdef USE_EXPLORATION_BY_KEYS
 IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(	// set the flashing time of the line in file list when use exploration keys

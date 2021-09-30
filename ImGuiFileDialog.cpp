@@ -647,6 +647,8 @@ namespace IGFD
 	{
 		if (!vTag.empty())
 		{
+			if (fileName_optimized == "..") return true;
+
 			return
 				fileName_optimized.find(vTag) != std::string::npos ||	// first try wihtout case and accents
 				fileName.find(vTag) != std::string::npos;				// second if searched with case and accents
@@ -3327,9 +3329,12 @@ namespace IGFD
 
 	bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize)
 	{
+		bool res = false;
+
 		if (prFileDialogInternal.puShowDialog && prFileDialogInternal.puDLGkey == vKey)
 		{
-			bool res = false;
+			if (prFileDialogInternal.puUseCustomLocale)
+				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleBegin.c_str());
 
 			auto& fdFile = prFileDialogInternal.puFileManager;
 			auto& fdFilter = prFileDialogInternal.puFilterManager;
@@ -3439,10 +3444,13 @@ namespace IGFD
 				ImGui::End();
 
 			// confirm the result and show the confirm to overwrite dialog if needed
-			return prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
+			res =  prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
+			
+			if (prFileDialogInternal.puUseCustomLocale)
+				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleEnd.c_str());
 		}
 
-		return false;
+		return res;
 	}
 
 	void IGFD::FileDialog::NewFrame()
@@ -3476,10 +3484,13 @@ namespace IGFD
 		prFileDialogInternal.puFileManager.DrawPathComposer(prFileDialogInternal);
 
 #ifdef USE_THUMBNAILS
-		prDrawDisplayModeToolBar();
-		ImGui::SameLine();
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		ImGui::SameLine();
+		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableThumbnailMode))
+		{
+			prDrawDisplayModeToolBar();
+			ImGui::SameLine();
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
+		}
 #endif // USE_THUMBNAILS
 
 		prFileDialogInternal.puSearchManager.DrawSearchBar(prFileDialogInternal);
@@ -3515,16 +3526,23 @@ namespace IGFD
 		}
 
 #ifdef USE_THUMBNAILS
-		switch (prDisplayMode)
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableThumbnailMode)
 		{
-		case DisplayModeEnum::FILE_LIST:
 			prDrawFileListView(size);
-			break;
-		case DisplayModeEnum::THUMBNAILS_LIST:
-			prDrawThumbnailsListView(size);
-			break;
-		case DisplayModeEnum::THUMBNAILS_GRID:
-			prDrawThumbnailsGridView(size);
+		}
+		else
+		{
+			switch (prDisplayMode)
+			{
+			case DisplayModeEnum::FILE_LIST:
+				prDrawFileListView(size);
+				break;
+			case DisplayModeEnum::THUMBNAILS_LIST:
+				prDrawThumbnailsListView(size);
+				break;
+			case DisplayModeEnum::THUMBNAILS_GRID:
+				prDrawThumbnailsGridView(size);
+			}
 		}
 #else
 		prDrawFileListView(size);
@@ -4122,6 +4140,13 @@ namespace IGFD
 		prFileDialogInternal.puFilterManager.ClearExtentionInfos();
 	}
 
+	void IGFD::FileDialog::SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd)
+	{
+		prFileDialogInternal.puUseCustomLocale = true;
+		prFileDialogInternal.puLocaleBegin = vLocaleBegin;
+		prFileDialogInternal.puLocaleEnd = vLocaleEnd;
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	//// OVERWRITE DIALOG ////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -4709,6 +4734,13 @@ IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(ImGuiFileDialog* vContext)
 	if (vContext)
 	{
 		vContext->ClearExtentionInfos();
+	}
+}
+IMGUIFILEDIALOG_API void SetLocales(ImGuiFileDialog* vContext, const int vCategory, const char* vBeginLocale, const char* vEndLocale)
+{
+	if (vContext)
+	{
+		vContext->SetLocales(vCategory, (vBeginLocale ? vBeginLocale : ""), (vEndLocale ? vEndLocale : ""));
 	}
 }
 
