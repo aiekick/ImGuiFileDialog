@@ -556,13 +556,17 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
-#define IMGUIFILEDIALOG_VERSION "v0.6.2"
+#define IMGUIFILEDIALOG_VERSION "v0.6.3"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include "ImGuiFileDialogConfig.h"
 #else // CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include CUSTOM_IMGUIFILEDIALOG_CONFIG
 #endif // CUSTOM_IMGUIFILEDIALOG_CONFIG
+
+#define DIR_FILTER_STRING "d"
+#define LINK_FILTER_STRING "l"
+#define FILE_FILTER_STRING "f"
 
 typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_
@@ -625,9 +629,6 @@ namespace IGFD
 #define MAX_PATH_BUFFER_SIZE 1024
 #endif // MAX_PATH_BUFFER_SIZE
 
-#define DIR_FILTER_STRING "\0d"
-#define LINK_FILTER_STRING "\0l"
-
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -663,7 +664,7 @@ namespace IGFD
 
 	public:
 		FileExtentionInfos();
-		FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon = "", ImFont *f=nullptr);
+		FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -732,8 +733,16 @@ namespace IGFD
 		void ParseFilters(const char* vFilters);																// Parse filter syntax, detect and parse filter collection
 		void SetSelectedFilterWithExt(const std::string& vFilter);												// Select filter
 		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfos& vInfos);					// link filter to ExtentionInfos
-		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont);// link filter to Color and Icon and Font
-		bool GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon, ImFont **vOutFont);			// get Color and Icon for Filter
+		void SetExtentionInfos(
+			const std::string& vFilter,
+			const ImVec4& vColor,
+			const std::string& vIcon,
+			ImFont* vFont);																						// link filter to Color and Icon and Font
+		bool GetExtentionInfos(
+			const std::string& vFilter,
+			ImVec4* vOutColor,
+			std::string* vOutIcon,
+			ImFont** vOutFont);																					// get Color and Icon for Filter
 		void ClearExtentionInfos();																				// clear prFileExtentionInfos
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
@@ -1248,6 +1257,19 @@ namespace IGFD
 		virtual void prDrawThumbnailsListView(ImVec2 vSize);		// draw file list view with small thumbnails on the same line
 		virtual void prDrawThumbnailsGridView(ImVec2 vSize);		// draw a grid of small thumbnails
 #endif
+
+		// to be called only by these function and theirs overrides
+		// - prDrawFileListView
+		// - prDrawThumbnailsListView
+		// - prDrawThumbnailsGridView
+		void prBeginFileColorIconStyle(
+			std::shared_ptr<FileInfos> vFileInfos, 
+			bool& vOutShowColor, 
+			std::string& vOutStr, 
+			ImFont** vOutFont);										// begin style apply of filter with color an icon if any
+		void prEndFileColorIconStyle(
+			bool& vShowColor, 
+			ImFont* vFont);											// end style apply of filter
 	};
 }
 
@@ -1458,19 +1480,22 @@ IMGUIFILEDIALOG_API void IGFD_SetExtentionInfos(			// SetExtention datas for hav
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
 	const char* vFilter,									// extention filter to tune
 	ImVec4 vColor,											// wanted color for the display of the file with extention filter
-	const char* vIconText);									// wanted text or icon of the file with extention filter (can be sued with font icon)
+	const char* vIconText,									// wanted text or icon of the file with extention filter (can be sued with font icon)
+	ImFont* vFont);											// wanted font pointer
 
 IMGUIFILEDIALOG_API void IGFD_SetExtentionInfos2(			// SetExtention datas for have custom display of particular file type
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
 	const char* vFilter,									// extention filter to tune
 	float vR, float vG, float vB, float vA,					// wanted color channels RGBA for the display of the file with extention filter
-	const char* vIconText);									// wanted text or icon of the file with extention filter (can be sued with font icon)
+	const char* vIconText,									// wanted text or icon of the file with extention filter (can be sued with font icon)
+	ImFont* vFont);											// wanted font pointer
 
 IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
 	const char* vFilter,									// extention filter (same as used in SetExtentionInfos)
 	ImVec4* vOutColor,										// color to retrieve
-	char** vOutIconText);									// icon or text to retrieve
+	char** vOutIconText,									// icon or text to retrieve
+	ImFont** vOutFont);										// font pointer to retrived
 
 IMGUIFILEDIALOG_API void IGFD_ClearExtentionInfos(			// clear extentions setttings
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context

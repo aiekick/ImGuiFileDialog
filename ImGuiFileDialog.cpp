@@ -325,11 +325,11 @@ namespace IGFD
 
 	}
 
-	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon, ImFont* f)
+	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 	{ 
 		color = vColor; 
 		icon = vIcon; 
-		font = f;
+		font = vFont;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -3680,6 +3680,50 @@ namespace IGFD
 		return false;
 	}
 
+	void IGFD::FileDialog::prBeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr, ImFont** vOutFont)
+	{
+		ImVec4 _color;
+		std::string _icon;
+
+		vOutFont = nullptr;
+		vOutStr.clear();
+		vOutShowColor = false;
+
+		//Directory and Link infos override the one specified by extension
+		
+		if (vFileInfos->fileType == 'd')
+			vOutShowColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(DIR_FILTER_STRING, &_color, &_icon, vOutFont);
+		else if (vFileInfos->fileType == 'l')
+			vOutShowColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(LINK_FILTER_STRING, &_color, &_icon, vOutFont);
+		//else
+		//	vOutShowColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(vFileInfos->fileExt, &_color, &_icon, vOutFont);
+		
+		//prFileDialogInternal.puFilterManager.GetExtentionInfos(FILE_FILTER_STRING, &_color, &_icon, vOutFont);
+		
+		if (!vOutShowColor)
+			vOutShowColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(vFileInfos->fileExt, &_color, &_icon, vOutFont);
+
+		if (vOutShowColor && !_icon.empty()) vOutStr = _icon;
+		else if (vFileInfos->fileType == 'd') vOutStr = dirEntryString;
+		else if (vFileInfos->fileType == 'l') vOutStr = linkEntryString;
+		else if (vFileInfos->fileType == 'f') vOutStr = fileEntryString;
+
+		vOutStr += " " + vFileInfos->fileName;
+
+		if (vOutShowColor)
+			ImGui::PushStyleColor(ImGuiCol_Text, _color);
+		if (vOutFont)
+			ImGui::PushFont(*vOutFont);
+	}
+
+	void IGFD::FileDialog::prEndFileColorIconStyle(bool& vShowColor, ImFont* vFont)
+	{
+		if (vFont)
+			ImGui::PopFont();
+		if (vShowColor)
+			ImGui::PopStyleColor();
+	}
+
 	void IGFD::FileDialog::prDrawFileListView(ImVec2 vSize)
 	{
 		auto& fdi = prFileDialogInternal.puFileManager;
@@ -3749,6 +3793,10 @@ namespace IGFD
 #endif // USE_CUSTOM_SORTING_ICON
 			if (!fdi.IsFilteredListEmpty())
 			{
+				std::string _str;
+				ImFont* _font = nullptr;
+				bool _showColor = false;
+				
 				prFileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing());
 				while (prFileListClipper.Step())
 				{
@@ -3760,33 +3808,8 @@ namespace IGFD
 						if (!infos.use_count())
 							continue;
 
-						ImVec4 c;
-						std::string icon;
-						ImFont* font = 0;
-						//Directory and Link infos override the one specified by extension
-						bool showColor;
-						if (infos->fileType == 'd') 
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(DIR_FILTER_STRING, &c, &icon, &font);
-						else if (infos->fileType == 'l') 
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(LINK_FILTER_STRING, &c, &icon, &font);
-						else 
-							showColor = false;
-						if (!showColor)
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon, &font);
-						
-						if (showColor)
-							ImGui::PushStyleColor(ImGuiCol_Text, c);
-						if (font)
-							ImGui::PushFont(font);
-
-						std::string str;// = " " + infos->fileName;
-						if (showColor && !icon.empty()) str = icon;
-						else if (infos->fileType == 'd') str = dirEntryString;
-						else if (infos->fileType == 'l') str = linkEntryString;
-						else if (infos->fileType == 'f') str = fileEntryString;
-
-						str += " " + infos->fileName;
-						
+						prBeginFileColorIconStyle(infos, _showColor, _str, &_font);
+					
 						bool selected = fdi.IsFileNameSelected(infos->fileName); // found
 
 						ImGui::TableNextRow();
@@ -3795,7 +3818,7 @@ namespace IGFD
 
 						if (ImGui::TableNextColumn()) // file name
 						{
-							needToBreakTheloop = prSelectableItem(i, infos, selected, str.c_str());
+							needToBreakTheloop = prSelectableItem(i, infos, selected, _str.c_str());
 						}
 						if (ImGui::TableNextColumn()) // file type
 						{
@@ -3817,10 +3840,7 @@ namespace IGFD
 							ImGui::Text("%s", infos->fileModifDate.c_str());
 						}
 
-						if (font)
-							ImGui::PopFont();
-						if (showColor)
-							ImGui::PopStyleColor();
+						prEndFileColorIconStyle(_showColor, _font);
 
 						if (needToBreakTheloop)
 							break;
@@ -3924,6 +3944,10 @@ namespace IGFD
 #endif // USE_CUSTOM_SORTING_ICON
 			if (!fdi.IsFilteredListEmpty())
 			{
+				std::string _str;
+				ImFont* _font = nullptr;
+				bool _showColor = false;
+
 				ImGuiContext& g = *GImGui;
 				const float itemHeight = ImMax(g.FontSize, DisplayMode_ThumbailsList_ImageHeight) + g.Style.ItemSpacing.y;
 
@@ -3938,23 +3962,8 @@ namespace IGFD
 						if (!infos.use_count())
 							continue;
 
-						ImVec4 c;
-						std::string icon;
-						bool showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon);
-						if (showColor)
-							ImGui::PushStyleColor(ImGuiCol_Text, c);
+						prBeginFileColorIconStyle(infos, _showColor, _str, &_font);
 
-						std::string str;
-						if (infos->fileType == 'd') str = dirEntryString;
-						else if (infos->fileType == 'l') str = linkEntryString;
-						else if (infos->fileType == 'f')
-						{
-							if (showColor && !icon.empty())
-								str = icon;
-							else
-								str = fileEntryString;
-						}
-						str += " " + infos->fileName;
 						bool selected = fdi.IsFileNameSelected(infos->fileName); // found
 
 						ImGui::TableNextRow();
@@ -3963,7 +3972,7 @@ namespace IGFD
 
 						if (ImGui::TableNextColumn()) // file name
 						{
-							needToBreakTheloop = prSelectableItem(i, infos, selected, str.c_str());
+							needToBreakTheloop = prSelectableItem(i, infos, selected, _str.c_str());
 						}
 						if (ImGui::TableNextColumn()) // file type
 						{
@@ -3999,8 +4008,7 @@ namespace IGFD
 							}
 						}
 
-						if (showColor)
-							ImGui::PopStyleColor();
+						prEndFileColorIconStyle(_showColor, _font);
 
 						if (needToBreakTheloop)
 							break;
@@ -4702,30 +4710,30 @@ IMGUIFILEDIALOG_API void* IGFD_GetUserDatas(ImGuiFileDialog* vContext)
 }
 
 IMGUIFILEDIALOG_API void IGFD_SetExtentionInfos(ImGuiFileDialog* vContext,
-	const char* vFilter, ImVec4 vColor, const char* vIcon)
+	const char* vFilter, ImVec4 vColor, const char* vIcon, ImFont* vFont)
 {
 	if (vContext)
 	{
-		vContext->SetExtentionInfos(vFilter, vColor, vIcon);
+		vContext->SetExtentionInfos(vFilter, vColor, vIcon, vFont);
 	}
 }
 
 IMGUIFILEDIALOG_API void IGFD_SetExtentionInfos2(ImGuiFileDialog* vContext,
-	const char* vFilter, float vR, float vG, float vB, float vA, const char* vIcon)
+	const char* vFilter, float vR, float vG, float vB, float vA, const char* vIcon, ImFont* vFont)
 {
 	if (vContext)
 	{
-		vContext->SetExtentionInfos(vFilter, ImVec4(vR, vG, vB, vA), vIcon);
+		vContext->SetExtentionInfos(vFilter, ImVec4(vR, vG, vB, vA), vIcon, vFont);
 	}
 }
 
 IMGUIFILEDIALOG_API bool IGFD_GetExtentionInfos(ImGuiFileDialog* vContext,
-	const char* vFilter, ImVec4* vOutColor, char** vOutIcon)
+	const char* vFilter, ImVec4* vOutColor, char** vOutIcon, ImFont** vOutFont)
 {
 	if (vContext)
 	{
 		std::string icon;
-		bool res = vContext->GetExtentionInfos(vFilter, vOutColor, &icon);
+		bool res = vContext->GetExtentionInfos(vFilter, vOutColor, &icon, vOutFont);
 		if (!icon.empty() && vOutIcon)
 		{
 			size_t siz = icon.size() + 1U;
