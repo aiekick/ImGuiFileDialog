@@ -3757,20 +3757,26 @@ namespace IGFD
 
 						ImVec4 c;
 						std::string icon;
-						bool showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon);
+						//Directory and Link infos override the one specified by extension
+						bool showColor;
+						if (infos->fileType == 'd') 
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(DIR_FILTER_STRING, &c, &icon);
+						else if (infos->fileType == 'l') 
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(LINK_FILTER_STRING, &c, &icon);
+						else 
+							showColor = false;
+						if (!showColor)
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon);
+						
 						if (showColor)
 							ImGui::PushStyleColor(ImGuiCol_Text, c);
 
 						std::string str;// = " " + infos->fileName;
-						if (infos->fileType == 'd') str = dirEntryString;
+						if (showColor && !icon.empty()) str = icon;
+						else if (infos->fileType == 'd') str = dirEntryString;
 						else if (infos->fileType == 'l') str = linkEntryString;
-						else if (infos->fileType == 'f')
-						{
-							if (showColor && !icon.empty())
-								str = icon;
-							else
-								str = fileEntryString;
-						}
+						else if (infos->fileType == 'f') str = fileEntryString;
+
 						str += " " + infos->fileName;
 						
 						bool selected = fdi.IsFileNameSelected(infos->fileName); // found
