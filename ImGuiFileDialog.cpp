@@ -325,10 +325,11 @@ namespace IGFD
 
 	}
 
-	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon)
+	IGFD::FileExtentionInfos::FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon, ImFont* f)
 	{ 
 		color = vColor; 
 		icon = vIcon; 
+		font = f;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -824,12 +825,12 @@ namespace IGFD
 		prFileExtentionInfos[vFilter] = vInfos;
 	}
 
-	void IGFD::FilterManager::SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon)
+	void IGFD::FilterManager::SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 	{
-		prFileExtentionInfos[vFilter] = FileExtentionInfos(vColor, vIcon);
+		prFileExtentionInfos[vFilter] = FileExtentionInfos(vColor, vIcon, vFont);
 	}
 
-	bool IGFD::FilterManager::GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon)
+	bool IGFD::FilterManager::GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon, ImFont **vOutFont)
 	{
 		if (vOutColor)
 		{
@@ -839,6 +840,10 @@ namespace IGFD
 				if (vOutIcon)
 				{
 					*vOutIcon = prFileExtentionInfos[vFilter].icon;
+				}
+				if (vOutFont) 
+				{
+					*vOutFont = prFileExtentionInfos[vFilter].font;
 				}
 				return true;
 			}
@@ -3757,19 +3762,22 @@ namespace IGFD
 
 						ImVec4 c;
 						std::string icon;
+						ImFont* font = 0;
 						//Directory and Link infos override the one specified by extension
 						bool showColor;
 						if (infos->fileType == 'd') 
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(DIR_FILTER_STRING, &c, &icon);
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(DIR_FILTER_STRING, &c, &icon, &font);
 						else if (infos->fileType == 'l') 
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(LINK_FILTER_STRING, &c, &icon);
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(LINK_FILTER_STRING, &c, &icon, &font);
 						else 
 							showColor = false;
 						if (!showColor)
-							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon);
+							showColor = prFileDialogInternal.puFilterManager.GetExtentionInfos(infos->fileExt, &c, &icon, &font);
 						
 						if (showColor)
 							ImGui::PushStyleColor(ImGuiCol_Text, c);
+						if (font)
+							ImGui::PushFont(font);
 
 						std::string str;// = " " + infos->fileName;
 						if (showColor && !icon.empty()) str = icon;
@@ -3809,6 +3817,8 @@ namespace IGFD
 							ImGui::Text("%s", infos->fileModifDate.c_str());
 						}
 
+						if (font)
+							ImGui::PopFont();
 						if (showColor)
 							ImGui::PopStyleColor();
 
@@ -4129,14 +4139,14 @@ namespace IGFD
 		prFileDialogInternal.puFilterManager.SetExtentionInfos(vFilter, vInfos);
 	}
 
-	void IGFD::FileDialog::SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon)
+	void IGFD::FileDialog::SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 	{
-		prFileDialogInternal.puFilterManager.SetExtentionInfos(vFilter, vColor, vIcon);
+		prFileDialogInternal.puFilterManager.SetExtentionInfos(vFilter, vColor, vIcon, vFont);
 	}
 
-	bool IGFD::FileDialog::GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon)
+	bool IGFD::FileDialog::GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon, ImFont **vOutFont)
 	{
-		return prFileDialogInternal.puFilterManager.GetExtentionInfos(vFilter, vOutColor, vOutIcon);
+		return prFileDialogInternal.puFilterManager.GetExtentionInfos(vFilter, vOutColor, vOutIcon, vOutFont);
 	}
 
 	void IGFD::FileDialog::ClearExtentionInfos()

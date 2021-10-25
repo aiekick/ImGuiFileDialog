@@ -659,10 +659,11 @@ namespace IGFD
 	public:
 		ImVec4 color = ImVec4(0, 0, 0, 0);
 		std::string icon;
+		ImFont* font = nullptr;
 
 	public:
 		FileExtentionInfos();
-		FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon = "");
+		FileExtentionInfos(const ImVec4& vColor, const std::string& vIcon = "", ImFont *f=nullptr);
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -731,13 +732,13 @@ namespace IGFD
 		void ParseFilters(const char* vFilters);																// Parse filter syntax, detect and parse filter collection
 		void SetSelectedFilterWithExt(const std::string& vFilter);												// Select filter
 		void SetExtentionInfos(const std::string& vFilter, const FileExtentionInfos& vInfos);					// link filter to ExtentionInfos
-		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon);		// link filter to Color and Icon
-		bool GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon);			// get Color and Icon for Filter
+		void SetExtentionInfos(const std::string& vFilter, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont);// link filter to Color and Icon and Font
+		bool GetExtentionInfos(const std::string& vFilter, ImVec4* vOutColor, std::string* vOutIcon, ImFont **vOutFont);			// get Color and Icon for Filter
 		void ClearExtentionInfos();																				// clear prFileExtentionInfos
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
 		FilterInfosStruct GetSelectedFilter();																	// get the current selected filter
-		std::string ReplaceExtentionWithCurrentFilter(const std::string vFile) const;									// replace the extention of the current file by the selected filter
+		std::string ReplaceExtentionWithCurrentFilter(const std::string vFile) const;							// replace the extention of the current file by the selected filter
 		void SetDefaultFilterIfNotDefined();																	// define the first filter if no filter is selected
 	};
 
@@ -1207,11 +1208,13 @@ namespace IGFD
 		void SetExtentionInfos(										// SetExtention datas for have custom display of particular file type
 			const std::string& vFilter,								// extention filter to tune
 			const ImVec4& vColor,									// wanted color for the display of the file with extention filter
-			const std::string& vIcon = "");							// wanted text or icon of the file with extention filter
+			const std::string& vIcon = "",							// wanted text or icon of the file with extention filter
+			ImFont *vFont = nullptr);                               // wantes font
 		bool GetExtentionInfos(										// GetExtention datas. return true is extention exist
 			const std::string& vFilter,								// extention filter (same as used in SetExtentionInfos)
 			ImVec4* vOutColor,										// color to retrieve
-			std::string* vOutIcon = 0);								// icon or text to retrieve
+			std::string* vOutIcon = nullptr,						// icon or text to retrieve
+            ImFont** vOutFont = nullptr);                           // font to retreive
 		void ClearExtentionInfos();									// clear extentions setttings
 
 		void SetLocales(											// set locales to use before and after the dialog display
