@@ -53,7 +53,7 @@ included in the Lib_Only branch for your convenience.
 - Can create a custom pane with any widgets via function binding
     - This pane can block the validation of the dialog
     - Can also display different things according to current filter and UserDatas
-- Custom coloring / icons / text per file extension
+- Advanced file style for file/dir/link coloring / icons / font
 - Multi-selection (ctrl/shift + click) :
     - 0 => Infinite
     - 1 => One file (default)
@@ -195,15 +195,24 @@ void drawGui()
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
 
-## Custom icons and colors by extension
+## File Style : Custom icons and colors by extension
 
-You can define a color for a filter type
+You can define style for files/dirs/links in many ways :
 
+the style can be colors, icons and fonts
+
+the general form is :
 ```cpp
-ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1,1,0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0,1,0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0,0,1, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
+ImGuiFileDialog::Instance()->SetFileStyle(styleType, criteria, color, icon, font);
+
+styleType can be thoses :
+
+IGFD_FileStyleByTypeFile				// define style for all files
+IGFD_FileStyleByTypeDir					// define style for all dir
+IGFD_FileStyleByTypeLink				// define style for all link
+IGFD_FileStyleByExtention				// define style by extention, for files or links
+IGFD_FileStyleByFullName				// define style for particular file/dir/link full name (filename + extention)
+IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when criteria is contained in full name
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
@@ -216,12 +225,54 @@ custom icon sets for use with Dear ImGui.
 It is inspired by [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders), which can also be used with 
 ImGuiFileDialog.
 
-```cpp
-// Add an icon for .png files 
-ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0, 1, 1, 0.9), ICON_IMFDLG_FILE_TYPE_PIC);
+samples :
 
-// Add custom text for .gif files (the default value is [File] 
-ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
+```cpp
+// define style by file extention and Add an icon for .png files 
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");
+
+// define style for all directories
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);
+// can be for a specific directory
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, ".git", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);
+
+// define style for all files
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FILE);
+// can be for a specific file
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, ".git", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FILE);
+
+// define style for all links
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeLink, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+// can be for a specific link
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeLink, "Readme.md", ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+
+// define style for any files/dirs/links by fullname
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+
+// define style by file who are containing this string
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+
+all of theses can be miwed with IGFD_FileStyleByTypeDir / IGFD_FileStyleByTypeFile / IGFD_FileStyleByTypeLink
+like theses by ex :
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByFullName, "cmake", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+```
+
+this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
+
+```cpp
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER); // for all dirs
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/filter_Icon.png)
@@ -420,8 +471,17 @@ You can now, display thumbnails of pictures.
 
 ![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/thumbnails.gif)
 
-The file resize use stb/image so the following files extentions are supported : 
-(.png, .bmp, .tga, .jpg, .jpeg, .gif, .psd, .pic, .ppm, .pgm)
+The file resize use stb/image so the following files extentions are supported :
+ * .png (tested sucessfully)
+ * .bmp (tested sucessfully)
+ * .tga (tested sucessfully)
+ * .jpg (tested sucessfully)
+ * .jpeg (tested sucessfully)
+ * .gif (tested sucessfully_ but not animation just first frame)
+ * .psd (not tested)
+ * .pic (not tested)
+ * .ppm (not tested)
+ * .pgm (not tested)
 
 Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
 * the first is a callback who will be called by ImGuiFileDialog for create the backend texture
