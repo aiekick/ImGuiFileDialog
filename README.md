@@ -215,8 +215,6 @@ IGFD_FileStyleByFullName				// define style for particular file/dir/link full na
 IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when criteria is contained in full name
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
-
 ImGuiFileDialog accepts icon font macros as well as text tags for file types.
 
 [ImGuIFontStudio](https://github.com/aiekick/ImGuiFontStudio) is useful here. I wrote it to make it easy to create 
@@ -275,7 +273,7 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileSty
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/filter_Icon.png)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
 ## Filter Collections
 
