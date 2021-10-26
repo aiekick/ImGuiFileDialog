@@ -793,7 +793,7 @@ namespace IGFD
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
 		FilterInfosStruct GetSelectedFilter();																	// get the current selected filter
-		std::string ReplaceExtentionWithCurrentFilter(const std::string vFile) const;							// replace the extention of the current file by the selected filter
+		std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;							// replace the extention of the current file by the selected filter
 		void SetDefaultFilterIfNotDefined();																	// define the first filter if no filter is selected
 	};
 
@@ -985,7 +985,7 @@ namespace IGFD
 		void prDrawThumbnailGenerationProgress();								// a little progressbar who will display the texture gen status
 		void prAddThumbnailToLoad(const std::shared_ptr<FileInfos>& vFileInfos);		// add texture to load in the thread
 		void prAddThumbnailToCreate(const std::shared_ptr<FileInfos>& vFileInfos);
-		void prAddThumbnailToDestroy(IGFD_Thumbnail_Info vIGFD_Thumbnail_Info);
+		void prAddThumbnailToDestroy(const IGFD_Thumbnail_Info& vIGFD_Thumbnail_Info);
 		void prDrawDisplayModeToolBar();										// draw display mode toolbar (file list, thumbnails list, small thumbnails grid, big thumbnails grid)
 		void prClearThumbnails(FileDialogInternal& vFileDialogInternal);
 
@@ -1318,7 +1318,7 @@ namespace IGFD
 			std::string& vOutStr, 
 			ImFont** vOutFont);										// begin style apply of filter with color an icon if any
 		void prEndFileColorIconStyle(
-			bool& vShowColor, 
+			const bool& vShowColor,
 			ImFont* vFont);											// end style apply of filter
 	};
 }
