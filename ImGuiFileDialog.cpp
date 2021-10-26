@@ -4724,7 +4724,7 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 					size_t siz = s.first.size() + 1U;
 					pair->fileName = new char[siz];
 #ifndef MSVC
-					strncpy(pair->fileNameExt, s.first.c_str(), siz);
+					strncpy(pair->fileName, s.first.c_str(), siz);
 #else
 					strncpy_s(pair->fileName, siz, s.first.c_str(), siz);
 #endif
