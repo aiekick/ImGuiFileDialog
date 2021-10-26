@@ -322,7 +322,15 @@ namespace IGFD
 
 	IGFD::FileStyle::FileStyle() : color(0, 0, 0, 0)
 	{ 
-		prEmpty = true;
+
+	}
+	
+	IGFD::FileStyle::FileStyle(const FileStyle& vStyle)
+	{
+		color = vStyle.color;
+		icon = vStyle.icon;
+		font = vStyle.font;
+		flags = vStyle.flags;
 	}
 
 	IGFD::FileStyle::FileStyle(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
@@ -330,13 +338,6 @@ namespace IGFD
 		color = vColor; 
 		icon = vIcon; 
 		font = vFont;
-
-		prEmpty = false;
-	}
-
-	bool IGFD::FileStyle::empty() const
-	{
-		return prEmpty;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -827,72 +828,150 @@ namespace IGFD
 		}
 	}
 
-	void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, const FileStyle& vInfos)
+	void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos)
 	{
-		prFilesStyle[vFlags][vCriteria] = vInfos;
-		prFilesStyle[vFlags][vCriteria].flags = vFlags;
+		std::string _criteria;
+		if (vCriteria)
+			_criteria = std::string(vCriteria);
+		prFilesStyle[vFlags][_criteria] = std::make_shared<FileStyle>(vInfos);
+		prFilesStyle[vFlags][_criteria]->flags = vFlags;
 	}
 
-	// todo : to refactor this fucking function
-	bool IGFD::FilterManager::GetFileStyle(
-		const IGFD_FileStyleFlags& vFlags,
-		const std::string& vCriteria, 
-		FileStyle& vFileStyle) const
+	// will be called internally 
+	// will not been exposed to IGFD API
+	bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const
 	{
-		if (!prFilesStyle.empty())
+		if (vFileInfos.use_count() && !prFilesStyle.empty())
 		{
-			if (prFilesStyle.find(vFlags) != prFilesStyle.end()) // found
+			for (const auto& _flag : prFilesStyle)
 			{
-				if (vFlags & IGFD_FileStyleByContainedInFullName)
+				for (const auto& _file : _flag.second)
 				{
-					// search for vCriteria who are containing the criteria
-					const auto& _files = prFilesStyle.at(vFlags);
-					for (const auto& _file : _files)
+					if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType == 'd')
 					{
-						if (vCriteria.find(_file.first) != std::string::npos)
+						if (_file.first.empty()) // for all dirs
 						{
-							vFileStyle = prFilesStyle.at(vFlags).at(_file.first);
-							return true;
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileNameExt) // for dirs who are equal to style criteria
+						{
+							vFileInfos->fileStyle = _file.second;
 						}
 					}
-				}
-				else
-				{
-					if (prFilesStyle.at(vFlags).find(vCriteria) != prFilesStyle.at(vFlags).end()) // found
+					else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType == 'f')
 					{
-						vFileStyle = prFilesStyle.at(vFlags).at(vCriteria);
+						if (_file.first.empty()) // for all files
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileNameExt) // for files who are equal to style criteria
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+					}
+					else if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType == 'l')
+					{
+						if (_file.first.empty()) // for all links
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileNameExt) // for links who are equal to style criteria
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+					}
+
+					if (_flag.first & IGFD_FileStyleByExtention)
+					{
+						if (_file.first == vFileInfos->fileExt)
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+
+						// can make sense for some dirs like the hidden by ex ".git"
+						if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType == 'd')
+						{
+							if (_file.first == vFileInfos->fileExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType == 'f')
+						{
+							if (_file.first == vFileInfos->fileExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType == 'l')
+						{
+							if (_file.first == vFileInfos->fileExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+					}
+					if (_flag.first & IGFD_FileStyleByFullName)
+					{
+						if (_file.first == vFileInfos->fileNameExt)
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+
+						if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType == 'd')
+						{
+							if (_file.first == vFileInfos->fileNameExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType == 'f')
+						{
+							if (_file.first == vFileInfos->fileNameExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType == 'l')
+						{
+							if (_file.first == vFileInfos->fileNameExt)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+					}
+					if (_flag.first & IGFD_FileStyleByContainedInFullName)
+					{
+						if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+
+						if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType == 'd')
+						{
+							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType == 'f')
+						{
+							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+						else if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType == 'l')
+						{
+							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
+							{
+								vFileInfos->fileStyle = _file.second;
+							}
+						}
+					}
+
+					if (vFileInfos->fileStyle.use_count())
 						return true;
-					}
-				}
-			}
-			else
-			{
-				// search for flag composition
-				for (const auto& _flag : prFilesStyle)
-				{
-					if (_flag.first & vFlags)
-					{
-						if (_flag.first & IGFD_FileStyleByContainedInFullName)
-						{
-							// search for vCriteria who are containing the criteria
-							for (const auto& _file : _flag.second)
-							{
-								if (vCriteria.find(_file.first) != std::string::npos)
-								{
-									vFileStyle = prFilesStyle.at(_flag.first).at(_file.first);
-									return true;
-								}
-							}
-						}
-						else
-						{
-							if (prFilesStyle.at(_flag.first).find(vCriteria) != prFilesStyle.at(_flag.first).end()) // found
-							{
-								vFileStyle = prFilesStyle.at(_flag.first).at(vCriteria);
-								return true;
-							}
-						}
-					}
 				}
 			}
 		}
@@ -900,10 +979,13 @@ namespace IGFD
 		return false;
 	}
 
-	void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
+	void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 	{
-		prFilesStyle[vFlags][vCriteria] = FileStyle(vColor, vIcon, vFont);
-		prFilesStyle[vFlags][vCriteria].flags = vFlags;
+		std::string _criteria;
+		if (vCriteria)
+			_criteria = std::string(vCriteria);
+		prFilesStyle[vFlags][_criteria] = std::make_shared<FileStyle>(vColor, vIcon, vFont);
+		prFilesStyle[vFlags][_criteria]->flags = vFlags;
 	}
 
 	// todo : to refactor this fucking function
@@ -922,12 +1004,15 @@ namespace IGFD
 						{
 							if (vCriteria.find(_file.first) != std::string::npos)
 							{
-								*vOutColor = prFilesStyle[vFlags][_file.first].color;
-								if (vOutIcon)
-									*vOutIcon = prFilesStyle[vFlags][_file.first].icon;
-								if (vOutFont)
-									*vOutFont = prFilesStyle[vFlags][_file.first].font;
-								return true;
+								if (_file.second.use_count())
+								{
+									*vOutColor = _file.second->color;
+									if (vOutIcon)
+										*vOutIcon = _file.second->icon;
+									if (vOutFont)
+										*vOutFont = _file.second->font;
+									return true;
+								}
 							}
 						}
 					}
@@ -935,11 +1020,11 @@ namespace IGFD
 					{
 						if (prFilesStyle.at(vFlags).find(vCriteria) != prFilesStyle.at(vFlags).end()) // found
 						{
-							*vOutColor = prFilesStyle[vFlags][vCriteria].color;
+							*vOutColor = prFilesStyle[vFlags][vCriteria]->color;
 							if (vOutIcon)
-								*vOutIcon = prFilesStyle[vFlags][vCriteria].icon;
+								*vOutIcon = prFilesStyle[vFlags][vCriteria]->icon;
 							if (vOutFont)
-								*vOutFont = prFilesStyle[vFlags][vCriteria].font;
+								*vOutFont = prFilesStyle[vFlags][vCriteria]->font;
 							return true;
 						}
 					}
@@ -958,12 +1043,15 @@ namespace IGFD
 								{
 									if (vCriteria.find(_file.first) != std::string::npos)
 									{
-										*vOutColor = prFilesStyle[vFlags][_file.first].color;
-										if (vOutIcon)
-											*vOutIcon = prFilesStyle[vFlags][_file.first].icon;
-										if (vOutFont)
-											*vOutFont = prFilesStyle[vFlags][_file.first].font;
-										return true;
+										if (_file.second.use_count())
+										{
+											*vOutColor = _file.second->color;
+											if (vOutIcon)
+												*vOutIcon = _file.second->icon;
+											if (vOutFont)
+												*vOutFont = _file.second->font;
+											return true;
+										}
 									}
 								}
 							}
@@ -971,11 +1059,11 @@ namespace IGFD
 							{
 								if (prFilesStyle.at(_flag.first).find(vCriteria) != prFilesStyle.at(_flag.first).end()) // found
 								{
-									*vOutColor = prFilesStyle[vFlags][vCriteria].color;
+									*vOutColor = prFilesStyle[_flag.first][vCriteria]->color;
 									if (vOutIcon)
-										*vOutIcon = prFilesStyle[vFlags][vCriteria].icon;
+										*vOutIcon = prFilesStyle[_flag.first][vCriteria]->icon;
 									if (vOutFont)
-										*vOutFont = prFilesStyle[vFlags][vCriteria].font;
+										*vOutFont = prFilesStyle[_flag.first][vCriteria]->font;
 									return true;
 								}
 							}
@@ -1367,28 +1455,6 @@ namespace IGFD
 		infos->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(infos->fileNameExt);
 		infos->fileType = vFileType;
 
-		// file style
-
-		static std::string emptyString;
-
-		if (infos->fileType == 'd')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeDir, emptyString, infos->fileStyle);
-		else if (infos->fileType == 'f')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeFile, emptyString, infos->fileStyle);
-		else if (infos->fileType == 'l')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeLink, emptyString, infos->fileStyle);
-
-		vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByExtention, infos->fileExt, infos->fileStyle);
-		vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByFullName, infos->fileNameExt, infos->fileStyle);
-		vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByContainedInFullName, infos->fileNameExt, infos->fileStyle);
-
-		if (infos->fileType == 'd')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, infos->fileNameExt, infos->fileStyle);
-		else if (infos->fileType == 'f')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, infos->fileNameExt, infos->fileStyle);
-		else if (infos->fileType == 'l')
-			vFileDialogInternal.puFilterManager.GetFileStyle(IGFD_FileStyleByTypeLink | IGFD_FileStyleByContainedInFullName, infos->fileNameExt, infos->fileStyle);
-
 		if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return; // filename empty or filename is the current dir '.'
 		if (infos->fileNameExt != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileNameExt[0] == '.') // dont show hidden files
 			if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != ".")) // except "." if in directory mode
@@ -1408,6 +1474,8 @@ namespace IGFD
 				return;
 			}
 		}
+
+		vFileDialogInternal.puFilterManager.prFillFileStyle(infos);
 
 		prCompleteFileInfos(infos);
 		prFileList.push_back(infos);
@@ -3842,13 +3910,14 @@ namespace IGFD
 		vOutStr.clear();
 		vOutShowColor = false;
 
-		//Directory and Link infos override the one specified by extension
-		
-		vOutShowColor = !vFileInfos->fileStyle.empty();
+		if (vFileInfos->fileStyle.use_count())
+		{
+			vOutShowColor = true;
 
-		*vOutFont = vFileInfos->fileStyle.font;
+			*vOutFont = vFileInfos->fileStyle->font;
+		}
 
-		if (vOutShowColor && !vFileInfos->fileStyle.icon.empty()) vOutStr = vFileInfos->fileStyle.icon;
+		if (vOutShowColor && !vFileInfos->fileStyle->icon.empty()) vOutStr = vFileInfos->fileStyle->icon;
 		else if (vFileInfos->fileType == 'd') vOutStr = dirEntryString;
 		else if (vFileInfos->fileType == 'l') vOutStr = linkEntryString;
 		else if (vFileInfos->fileType == 'f') vOutStr = fileEntryString;
@@ -3856,7 +3925,7 @@ namespace IGFD
 		vOutStr += " " + vFileInfos->fileNameExt;
 
 		if (vOutShowColor)
-			ImGui::PushStyleColor(ImGuiCol_Text, vFileInfos->fileStyle.color);
+			ImGui::PushStyleColor(ImGuiCol_Text, vFileInfos->fileStyle->color);
 		if (*vOutFont)
 			ImGui::PushFont(*vOutFont);
 	}
@@ -4287,12 +4356,12 @@ namespace IGFD
 		return prFileDialogInternal.puIsOk;
 	}
 
-	void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, const FileStyle& vInfos)
+	void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos)
 	{
 		prFileDialogInternal.puFilterManager.SetFileStyle(vFlags, vCriteria, vInfos);
 	}
 
-	void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
+	void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 	{
 		prFileDialogInternal.puFilterManager.SetFileStyle(vFlags, vCriteria, vColor, vIcon, vFont);
 	}

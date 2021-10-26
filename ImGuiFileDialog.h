@@ -159,29 +159,54 @@ void drawGui()
 }
 
 -----------------------------------------------------------------------------------------------------------------
-## Filter Infos
+## File Style
 -----------------------------------------------------------------------------------------------------------------
 
-You can define color for a filter type
-Example code :
-ImGuiFileDialog::Instance()->SetExtentionInfos(".cpp", ImVec4(1,1,0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".h", ImVec4(0,1,0, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".hpp", ImVec4(0,0,1, 0.9));
-ImGuiFileDialog::Instance()->SetExtentionInfos(".md", ImVec4(1,0,1, 0.9));
+You can define style for files/dirs/links in many ways :
 
+the style can be colors, icons and fonts
 
-![alt text](doc/color_filter.png)
+the general form is :
+ImGuiFileDialog::Instance()->SetFileStyle(styleType, criteria, color, icon, font);
 
-and also specific icons (with icon font files) or file type names :
+styleType can be thoses :
+IGFD_FileStyle_None						// define none style
+IGFD_FileStyleByTypeFile				// define style for all files
+IGFD_FileStyleByTypeDir					// define style for all dir
+IGFD_FileStyleByTypeLink				// define style for all link
+IGFD_FileStyleByExtention				// define style by extention, for files or links
+IGFD_FileStyleByFullName				// define style for particular file/dir/link full name (filename + extention)
+IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when criteria is contained in full name
 
-Example code :
-// add an icon for png files
-ImGuiFileDialog::Instance()->SetExtentionInfos(".png", ImVec4(0,1,1,0.9), ICON_IMFDLG_FILE_TYPE_PIC);
-// add a text for gif files (the default value is [File]
-ImGuiFileDialog::Instance()->SetExtentionInfos(".gif", ImVec4(0, 1, 0.5, 0.9), "[GIF]");
+samples :
 
+define style by file extention
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");
 
-![alt text](doc/filter_Icon.png)
+define style for all directories
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);
+can be for a specific directory
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, ".git", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);
+
+define style for all files
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FILE);
+can be for a specific file
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, ".git", ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FILE);
+
+define style for all links
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeLink, "", ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+can be for a specific link
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeLink, "Readme.md", ImVec4(0.5f, 1.0f, 0.9f, 0.9f));
+
+define style for any files/dirs/links by fullname
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+
+define style for any dirs by file who are containing this string
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+
+define style for any files by file who are containing this string
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 
 -----------------------------------------------------------------------------------------------------------------
 ## Filter Collections
@@ -672,13 +697,10 @@ namespace IGFD
 		ImFont* font = nullptr;
 		IGFD_FileStyleFlags flags = 0;
 
-	private:
-		bool prEmpty = true;
-
 	public:
 		FileStyle();
+		FileStyle(const FileStyle& vStyle);
 		FileStyle(const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
-		bool empty() const; // return is empty
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -719,6 +741,7 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	class FileInfos;
 	class FilterManager
 	{
 	public:
@@ -736,7 +759,7 @@ namespace IGFD
 
 	private:
 		std::vector<FilterInfosStruct> prParsedFilters;
-		std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, FileStyle>> prFilesStyle;		// file infos for file extention only
+		std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, std::shared_ptr<FileStyle>>> prFilesStyle;		// file infos for file extention only
 		FilterInfosStruct prSelectedFilter;
 
 	public:
@@ -747,25 +770,24 @@ namespace IGFD
 		void ParseFilters(const char* vFilters);															// Parse filter syntax, detect and parse filter collection
 		void SetSelectedFilterWithExt(const std::string& vFilter);											// Select filter
 		
+		bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)  const;									// fill fille with the good style
+		
 		void SetFileStyle(
 			const IGFD_FileStyleFlags& vFlags,
-			const std::string& vCriteria, 
+			const char* vCriteria,
 			const FileStyle& vInfos);																		// Set FileStyle
 		void SetFileStyle(
 			const IGFD_FileStyleFlags& vFlags,
-			const std::string& vCriteria,
+			const char* vCriteria,
 			const ImVec4& vColor,
 			const std::string& vIcon,
 			ImFont* vFont);																					// link file style to Color and Icon and Font
 		bool GetFileStyle(
 			const IGFD_FileStyleFlags& vFlags,
-			const std::string& vCriteria, FileStyle& vFileStyle)  const;															// Get FileStyle
-		bool GetFileStyle(
-			const IGFD_FileStyleFlags& vFlags,
 			const std::string& vCriteria,
 			ImVec4* vOutColor,
 			std::string* vOutIcon,
-			ImFont** vOutFont);																		// Get Color and Icon for Filter
+			ImFont** vOutFont);																				// Get Color and Icon for Filter
 		void ClearFilesStyle();																				// clear prFileStyle
 
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
@@ -782,15 +804,15 @@ namespace IGFD
 	class FileInfos
 	{
 	public:
-		char fileType = ' ';					// dirent fileType (f:file, d:directory, l:link)				
-		std::string filePath;					// path of the file
-		std::string fileNameExt;				// filename of the file (file name + extention) (but no path)
-		std::string fileNameExt_optimized;		// optimized for search => insensitivecase
-		std::string fileExt;					// extention of the file
-		size_t fileSize = 0;					// for sorting operations
-		std::string formatedFileSize;			// file size formated (10 o, 10 ko, 10 mo, 10 go)
-		std::string fileModifDate;				// file user defined format of the date (data + time by default)
-		FileStyle fileStyle;					// style of the file
+		char fileType = ' ';								// dirent fileType (f:file, d:directory, l:link)				
+		std::string filePath;								// path of the file
+		std::string fileNameExt;							// filename of the file (file name + extention) (but no path)
+		std::string fileNameExt_optimized;					// optimized for search => insensitivecase
+		std::string fileExt;								// extention of the file
+		size_t fileSize = 0;								// for sorting operations
+		std::string formatedFileSize;						// file size formated (10 o, 10 ko, 10 mo, 10 go)
+		std::string fileModifDate;							// file user defined format of the date (data + time by default)
+		std::shared_ptr<FileStyle> fileStyle = nullptr;		// style of the file
 #ifdef USE_THUMBNAILS
 		IGFD_Thumbnail_Info thumbnailInfo;		// structre for the display for image file tetxure
 #endif // USE_THUMBNAILS
@@ -1237,18 +1259,18 @@ namespace IGFD
 
 		// file style by extentions
 		void SetFileStyle(											// SetExtention datas for have custom display of particular file type
-			const IGFD_FileStyleFlags& vFlags,							// file style
-			const std::string& vFilter,								// extention filter to tune
+			const IGFD_FileStyleFlags& vFlags,						// file style
+			const char* vCriteria,									// extention filter to tune
 			const FileStyle& vInfos);								// Filter Extention Struct who contain Color and Icon/Text for the display of the file with extention filter
 		void SetFileStyle(											// SetExtention datas for have custom display of particular file type
 			const IGFD_FileStyleFlags& vFlags,							// file style
-			const std::string& vFilter,								// extention filter to tune
+			const char* vCriteria,									// extention filter to tune
 			const ImVec4& vColor,									// wanted color for the display of the file with extention filter
 			const std::string& vIcon = "",							// wanted text or icon of the file with extention filter
 			ImFont *vFont = nullptr);                               // wantes font
 		bool GetFileStyle(											// GetExtention datas. return true is extention exist
 			const IGFD_FileStyleFlags& vFlags,							// file style
-			const std::string& vFilter,								// extention filter (same as used in SetExtentionInfos)
+			const std::string& vCriteria,									// extention filter (same as used in SetExtentionInfos)
 			ImVec4* vOutColor,										// color to retrieve
 			std::string* vOutIcon = nullptr,						// icon or text to retrieve
             ImFont** vOutFont = nullptr);                           // font to retreive
