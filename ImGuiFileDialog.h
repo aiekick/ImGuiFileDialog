@@ -581,7 +581,7 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
-#define IMGUIFILEDIALOG_VERSION "v0.6.3"
+#define IMGUIFILEDIALOG_VERSION "v0.6.4"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include "ImGuiFileDialogConfig.h"
@@ -689,24 +689,6 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	class FileStyle
-	{
-	public:
-		ImVec4 color = ImVec4(0, 0, 0, 0);
-		std::string icon;
-		ImFont* font = nullptr;
-		IGFD_FileStyleFlags flags = 0;
-
-	public:
-		FileStyle();
-		FileStyle(const FileStyle& vStyle);
-		FileStyle(const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
-	};
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	class Utils
 	{
 	public:
@@ -741,11 +723,29 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	class FileStyle
+	{
+	public:
+		ImVec4 color = ImVec4(0, 0, 0, 0);
+		std::string icon;
+		ImFont* font = nullptr;
+		IGFD_FileStyleFlags flags = 0;
+
+	public:
+		FileStyle();
+		FileStyle(const FileStyle& vStyle);
+		FileStyle(const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	class FileInfos;
 	class FilterManager
 	{
 	public:
-		class FilterInfosStruct
+		class FilterInfos
 		{
 		public:
 			std::string filter;
@@ -758,9 +758,9 @@ namespace IGFD
 		};
 
 	private:
-		std::vector<FilterInfosStruct> prParsedFilters;
+		std::vector<FilterInfos> prParsedFilters;
 		std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, std::shared_ptr<FileStyle>>> prFilesStyle;		// file infos for file extention only
-		FilterInfosStruct prSelectedFilter;
+		FilterInfos prSelectedFilter;
 
 	public:
 		std::string puDLGFilters;
@@ -770,7 +770,7 @@ namespace IGFD
 		void ParseFilters(const char* vFilters);															// Parse filter syntax, detect and parse filter collection
 		void SetSelectedFilterWithExt(const std::string& vFilter);											// Select filter
 		
-		bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)  const;									// fill fille with the good style
+		bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)  const;									// fill with the good style
 		
 		void SetFileStyle(
 			const IGFD_FileStyleFlags& vFlags,
@@ -792,7 +792,7 @@ namespace IGFD
 
 		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
-		FilterInfosStruct GetSelectedFilter();																	// get the current selected filter
+		FilterInfos GetSelectedFilter();																	// get the current selected filter
 		std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;							// replace the extention of the current file by the selected filter
 		void SetDefaultFilterIfNotDefined();																	// define the first filter if no filter is selected
 	};
