@@ -41,7 +41,7 @@ jobs:
       uses: actions/checkout@v2
     - name: checkout submodules
       run : git submodule update --init --recursive 
-    - name: Install OpenGL lib  / Requirement for Glfw3
+    - name: Install OpenGL lib  / Requirement for Glfw3 lib
       run : sudo apt-get update && sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
     
     # Initializes the CodeQL tools for scanning.
