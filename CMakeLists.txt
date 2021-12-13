@@ -5,7 +5,7 @@ set(PROJECT ImGuiFileDialog)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
-option(USE_STD_FILESYSTEM "Enable std::fielsystem use for path and ImGuiFileDialog" ON)
+option(USE_STD_FILESYSTEM "Enable std::fielsystem use for path and ImGuiFileDialog" OFF)
 
 include(cmake/3rdparty.cmake)
 
