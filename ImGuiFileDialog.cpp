@@ -3894,7 +3894,7 @@ namespace IGFD
 					}
 				}
 
-				return true; // needToBreakTheloop
+				//return true; // needToBreakTheloop
 			}
 			else
 			{
