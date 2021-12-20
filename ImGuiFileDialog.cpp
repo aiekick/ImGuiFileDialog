@@ -2932,7 +2932,7 @@ namespace IGFD
 
 			if (g.NavId && g.NavId == vListViewID)
 			{
-				if (ImGui::IsKeyPressedMap(IGFD_KEY_ENTER) ||
+				if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) ||
 					ImGui::IsKeyPressedMap(ImGuiKey_KeyPadEnter) ||
 					ImGui::IsKeyPressedMap(ImGuiKey_Space))
 				{
@@ -3870,7 +3870,7 @@ namespace IGFD
 		{
 			if (vInfos->fileType == 'd')
 			{
-				// nav system, selectebale cause open directory or select directory
+				// nav system, selectable cause open directory or select directory
 				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard)
 				{
 					if (fdi.puDLGDirectoryMode) // directory chooser
