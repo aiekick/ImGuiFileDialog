@@ -3866,7 +3866,7 @@ namespace IGFD
 		{
 			if (vInfos->fileType == 'd')
 			{
-				// nav system, selectebale cause open directory or select directory
+				// nav system, selectable cause open directory or select directory
 				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard)
 				{
 					if (fdi.puDLGDirectoryMode) // directory chooser
