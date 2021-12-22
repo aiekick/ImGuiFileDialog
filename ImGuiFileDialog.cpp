@@ -476,7 +476,7 @@ namespace IGFD
 			fs::path pathName = fs::u8path(name);
 #endif
 			std::error_code ec;
-			bExists = fs::is_directory(pathName, ec);
+			bExists = fs::is_directory(pathName.u8string(), ec) || pathName.u8string() == fs::u8path(pathName.u8string()).root_name().u8string() + "\\";
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
@@ -1487,13 +1487,8 @@ namespace IGFD
 			const std::filesystem::path fspath = std::filesystem::u8path(path);
 			
 			std::error_code ec;
-			const auto dir_iter = std::filesystem::directory_iterator(fspath, ec);
-			if (ec) { 
-				SetCurrentPath(".");
-				OpenCurrentPath(vFileDialogInternal);
-				return;
-			}
-			AddFile(vFileDialogInternal, path, "..", 'd');
+			const auto dir_iter = std::filesystem::directory_iterator(fspath.u8string(), ec);
+			AddFile(vFileDialogInternal, fspath.u8string(), "..", 'd');
 			for (const auto& file : dir_iter)
 			{
 				char fileType = 0;
@@ -1503,13 +1498,9 @@ namespace IGFD
 					fileType = 'd';
 				else
 					fileType = 'f';
-				if (ec) { 
-					SetCurrentPath(".");
-					OpenCurrentPath(vFileDialogInternal);
-					return;
-				}
+
 				auto fileNameExt = file.path().filename().u8string();
-				AddFile(vFileDialogInternal, path, fileNameExt, fileType);
+				AddFile(vFileDialogInternal, fspath.u8string(), fileNameExt, fileType);
 			}
 #else // dirent
 			struct dirent** files = nullptr;
