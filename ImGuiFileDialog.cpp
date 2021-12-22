@@ -3299,13 +3299,15 @@ namespace IGFD
 		else
 		#ifdef USE_STD_FILESYSTEM
 			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(vPath).u8string();
+			prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
+			prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
 			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFileName).u8string());
 		#else
 			prFileDialogInternal.puFileManager.puDLGpath = vPath;
+			prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
+			prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
 			prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
 		#endif
-		prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
-		prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
 
 		prFileDialogInternal.puFileManager.ClearAll();
 		
