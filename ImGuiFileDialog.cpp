@@ -1487,8 +1487,9 @@ namespace IGFD
 			const std::filesystem::path fspath = std::filesystem::u8path(path);
 			
 			std::error_code ec;
-			const auto dir_iter = std::filesystem::directory_iterator(fspath.u8string(), ec);
+			const auto dir_iter = std::filesystem::directory_iterator(fspath, ec);
 			AddFile(vFileDialogInternal, fspath.u8string(), "..", 'd');
+			
 			for (const auto& file : dir_iter)
 			{
 				char fileType = 0;
@@ -1779,11 +1780,11 @@ namespace IGFD
 		namespace fs = std::filesystem;
 		path = fs::u8path(path).u8string();
 		std::error_code ec;
-		bool dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + "\\";
+		bool dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + std::string(1u, PATH_SEP);;
 		if (!dir_opened)
 		{
 			path = ".";
-			dir_opened = fs::is_directory(vPath);
+			dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + std::string(1u, PATH_SEP);;
 		}
 		if (dir_opened)
 #else
@@ -1900,7 +1901,11 @@ namespace IGFD
 	{
 		if (prCurrentPath.empty())
 			prCurrentPath = ".";
-		return prCurrentPath;
+		#ifdef USE_STD_FILESYSTEM
+			return std::filesystem::u8path(prCurrentPath).u8string();
+		#else
+			return prCurrentPath;
+		#endif
 	}
 
 	void IGFD::FileManager::SetCurrentPath(const std::string& vCurrentPath)
@@ -1908,11 +1913,19 @@ namespace IGFD
 		if (vCurrentPath.empty())
 			prCurrentPath = ".";
 		else
+		#ifdef USE_STD_FILESYSTEM
+			prCurrentPath = std::filesystem::u8path(vCurrentPath).u8string();
+		#else
 			prCurrentPath = vCurrentPath;
+		#endif
 	}
 
 	bool IGFD::FileManager::IsFileExist(const std::string& vFile)
 	{
+	#ifdef USE_STD_FILESYSTEM
+		std::error_code ec;
+		return std::filesystem::exists(std::filesystem::u8path(vFile), ec);
+	#else
 		std::ifstream docFile(vFile, std::ios::in);
 		if (docFile.is_open())
 		{
@@ -1920,6 +1933,7 @@ namespace IGFD
 			return true;
 		}
 		return false;
+	#endif
 	}
 
 	void IGFD::FileManager::SetDefaultFileName(const std::string& vFileName)
@@ -3283,10 +3297,15 @@ namespace IGFD
 		if (vPath.empty())
 			prFileDialogInternal.puFileManager.puDLGpath = prFileDialogInternal.puFileManager.GetCurrentPath();
 		else
+		#ifdef USE_STD_FILESYSTEM
+			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(vPath).u8string();
+			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFileName).u8string());
+		#else
 			prFileDialogInternal.puFileManager.puDLGpath = vPath;
+			prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
+		#endif
 		prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
 		prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
-		prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
 
 		prFileDialogInternal.puFileManager.ClearAll();
 		
@@ -3319,9 +3338,15 @@ namespace IGFD
 		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
+		#ifdef USE_STD_FILESYSTEM
+			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(ps.path).u8string();
+			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFilePathName).u8string());
+			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + std::filesystem::u8path(ps.ext).u8string();
+		#else
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
 			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
+		#endif
 		}
 		else
 		{
@@ -3379,7 +3404,11 @@ namespace IGFD
 		if (vPath.empty())
 			prFileDialogInternal.puFileManager.puDLGpath = prFileDialogInternal.puFileManager.GetCurrentPath();
 		else
+		#ifdef USE_STD_FILESYSTEM
+			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(vPath).u8string();
+		#else
 			prFileDialogInternal.puFileManager.puDLGpath = vPath;
+		#endif
 
 		prFileDialogInternal.puFileManager.SetCurrentPath(prFileDialogInternal.puFileManager.puDLGpath);
 
@@ -3419,9 +3448,15 @@ namespace IGFD
 		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
+		#ifdef USE_STD_FILESYSTEM
+			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(ps.path).u8string();
+			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFilePathName).u8string());
+			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + std::filesystem::u8path(ps.ext).u8string();
+		#else
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
 			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
+		#endif
 		}
 		else
 		{
