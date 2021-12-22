@@ -1485,7 +1485,8 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 			//const auto wpath = IGFD::Utils::WGetString(path.c_str());
 			const std::filesystem::path fspath = std::filesystem::u8path(path);
-            std::error_code ec;
+			
+			std::error_code ec;
 			const auto dir_iter = std::filesystem::directory_iterator(fspath, ec);
 			if (ec) { 
 				SetCurrentPath(".");
