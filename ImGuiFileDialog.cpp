@@ -395,32 +395,14 @@ namespace IGFD
 
 	std::wstring IGFD::Utils::string_to_wstring(const std::string& str)
 	{
-		std::wstring ret;
-		if (!str.empty())
-		{
-			size_t sz = std::mbstowcs(nullptr, str.c_str(), str.size());
-			if (sz)
-			{
-				ret.resize(sz);
-				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
-			}
-		}
-		return ret;
+		size_t wchar_count = str.size() + 1; std::vector<wchar_t> buf(wchar_count);
+		return std::wstring { buf.data(), (size_t)MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, buf.data(), (int)wchar_count) };
 	}
 
 	std::string IGFD::Utils::wstring_to_string(const std::wstring& str)
 	{
-		std::string ret;
-		if (!str.empty())
-		{
-			size_t sz = std::wcstombs(nullptr, str.c_str(), str.size());
-			if (sz)
-			{
-				ret.resize(sz);
-				std::wcstombs((char*)ret.data(), str.c_str(), sz);
-			}
-		}
-		return ret;
+		int nbytes = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.length(), nullptr, 0, nullptr, nullptr); std::vector<char> buf(nbytes);
+		return std::string { buf.data(), (size_t)WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.length(), buf.data(), nbytes, nullptr, nullptr) };
 	}
 #endif // WIN32
 
@@ -489,12 +471,12 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 			namespace fs = std::filesystem;
 #ifdef WIN32
-			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
-			fs::path pathName = fs::path(wname);
+			fs::path pathName = fs::u8path(name);
 #else
-			fs::path pathName = fs::path(name);
+			fs::path pathName = fs::u8path(name);
 #endif
-			bExists = fs::is_directory(pathName);
+			std::error_code ec;
+			bExists = fs::is_directory(pathName, ec);
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
@@ -519,10 +501,10 @@ namespace IGFD
 			{
 #ifdef WIN32
 #ifdef USE_STD_FILESYSTEM
+				std::error_code ec;
 				namespace fs = std::filesystem;
-				std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
-				fs::path pathName = fs::path(wname);
-				res = fs::create_directory(pathName);
+				fs::path pathName = fs::u8path(name);
+				res = fs::create_directory(pathName, ec);
 #else
 				std::wstring wname = IGFD::Utils::string_to_wstring(name);
 				if (CreateDirectoryW(wname.c_str(), nullptr))
@@ -561,11 +543,12 @@ namespace IGFD
 		if (vPathFileName.empty())
 			return res;
 
-		auto fsPath = fs::path(vPathFileName);
+		auto fsPath = fs::u8path(vPathFileName);
 
-		if (fs::is_regular_file(fsPath)) {
-			res.name = fsPath.string();
-			res.path = fsPath.parent_path().string();
+		std::error_code ec;
+		if (fs::is_regular_file(fsPath, ec)) {
+			res.name = fsPath.u8string();
+			res.path = fsPath.parent_path().u8string();
 			res.isOk = true;
 		}
 
@@ -629,11 +612,11 @@ namespace IGFD
 		//if (!str.empty()) str += "\n";
 		str += vStr;
 		if (len > str.size()) len = str.size();
-#ifdef MSVC
+#ifdef WIN32
 		strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
-#else // MSVC
+#else // WIN32
 		strncpy(vBuffer, str.c_str(), len);
-#endif // MSVC
+#endif // WIN32
 		vBuffer[len] = '\0';
 	}
 
@@ -1501,19 +1484,30 @@ namespace IGFD
 
 #ifdef USE_STD_FILESYSTEM
 			//const auto wpath = IGFD::Utils::WGetString(path.c_str());
-			const std::filesystem::path fspath(path);
-			const auto dir_iter = std::filesystem::directory_iterator(fspath);
+			const std::filesystem::path fspath = std::filesystem::u8path(path);
+            std::error_code ec;
+			const auto dir_iter = std::filesystem::directory_iterator(fspath, ec);
+			if (ec) { 
+				SetCurrentPath(".");
+				OpenCurrentPath(vFileDialogInternal);
+				return;
+			}
 			AddFile(vFileDialogInternal, path, "..", 'd');
 			for (const auto& file : dir_iter)
 			{
 				char fileType = 0;
-				if (file.is_symlink())
+				if (file.is_symlink(ec))
 					fileType = 'l';
-				else if (file.is_directory())
+				else if (file.is_directory(ec))
 					fileType = 'd';
 				else
 					fileType = 'f';
-				auto fileNameExt = file.path().filename().string();
+				if (ec) { 
+					SetCurrentPath(".");
+					OpenCurrentPath(vFileDialogInternal);
+					return;
+				}
+				auto fileNameExt = file.path().filename().u8string();
 				AddFile(vFileDialogInternal, path, fileNameExt, fileType);
 			}
 #else // dirent
@@ -1734,14 +1728,14 @@ namespace IGFD
 				}
 
 				size_t len = 0;
-#ifdef MSVC
+#ifdef WIN32
 				struct tm _tm;
 				errno_t err = localtime_s(&_tm, &statInfos.st_mtime);
 				if (!err) len = strftime(timebuf, 99, DateTimeFormat, &_tm);
-#else // MSVC
+#else // WIN32
 				struct tm* _tm = localtime(&statInfos.st_mtime);
 				if (_tm) len = strftime(timebuf, 99, DateTimeFormat, _tm);
-#endif // MSVC
+#endif // WIN32
 				if (len)
 				{
 					vInfos->fileModifDate = std::string(timebuf, len);
@@ -1791,7 +1785,9 @@ namespace IGFD
 		
 #ifdef USE_STD_FILESYSTEM
 		namespace fs = std::filesystem;
-		bool dir_opened = fs::is_directory(vPath);
+		path = fs::u8path(path).u8string();
+		std::error_code ec;
+		bool dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + "\\";
 		if (!dir_opened)
 		{
 			path = ".";
@@ -2932,7 +2928,7 @@ namespace IGFD
 
 			if (g.NavId && g.NavId == vListViewID)
 			{
-				if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) ||
+				if (ImGui::IsKeyPressedMap(IGFD_KEY_ENTER) ||
 					ImGui::IsKeyPressedMap(ImGuiKey_KeyPadEnter) ||
 					ImGui::IsKeyPressedMap(ImGuiKey_Space))
 				{
@@ -3870,7 +3866,7 @@ namespace IGFD
 		{
 			if (vInfos->fileType == 'd')
 			{
-				// nav system, selectable cause open directory or select directory
+				// nav system, selectebale cause open directory or select directory
 				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard)
 				{
 					if (fdi.puDLGDirectoryMode) // directory chooser
@@ -4794,7 +4790,7 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->fileName = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 					strncpy(pair->fileName, s.first.c_str(), siz);
 #else
 					strncpy_s(pair->fileName, siz, s.first.c_str(), siz);
@@ -4807,7 +4803,7 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->filePathName = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 					strncpy(pair->filePathName, s.first.c_str(), siz);
 #else
 					strncpy_s(pair->filePathName, siz, s.first.c_str(), siz);
@@ -4834,7 +4830,7 @@ IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
 			strncpy_s(res, siz, s.c_str(), siz);
