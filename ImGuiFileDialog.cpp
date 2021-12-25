@@ -578,7 +578,6 @@ namespace IGFD
 				emscripten_run_script(str.c_str());
 				res = true;
 #elif defined(UNIX)
-				char buffer[PATH_MAX] = {};
 				const int dir_err = mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 				if (dir_err != -1)
 				{
