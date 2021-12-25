@@ -51,10 +51,9 @@ SOFTWARE.
 	#define stat _stat
 	#define stricmp _stricmp
 	#include <cctype>
+	#include <Windows.h>
 	// this option need c++17
-	#ifdef USE_STD_FILESYSTEM
-		#include <Windows.h>
-	#else
+	#ifndef USE_STD_FILESYSTEM
 		#include "dirent/dirent.h" // directly open the dirent file attached to this lib
 	#endif // USE_STD_FILESYSTEM
 	#define PATH_SEP '\\'
@@ -404,7 +403,42 @@ namespace IGFD
 		int nbytes = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.length(), nullptr, 0, nullptr, nullptr); std::vector<char> buf(nbytes);
 		return std::string { buf.data(), (size_t)WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.length(), buf.data(), nbytes, nullptr, nullptr) };
 	}
+
+	errno_t utf8cpy(char* dst, size_t numb, const char* src, size_t count) 
+	{
+		std::wstring wsrc = IGFD::Utils::string_to_wstring(src);
+		std::wstring wdst; wdst.resize(count, L'\0'); wchar_t *wbuf = wdst.data();
+		errno_t err = wcsncpy_s(wbuf, numb, wsrc.c_str(), count);
+		if (!err) {
+			static std::string buf;
+			buf = IGFD::Utils::wstring_to_string(wbuf); 
+			memcpy_s(dst, numb, buf.c_str(), numb);
+		}
+		return err;
+	}	
 #endif // WIN32
+
+	#ifdef USE_STD_FILESYSTEM
+	std::filesystem::path utf8path(std::string str)
+	{
+		return std::filesystem::u8path(str);
+	}
+	#endif
+
+	std::string utf8string(std::string str)
+	{
+	#ifdef WIN32
+		std::string dst; 
+		dst.resize(str.length() + 1, '\0');
+		char *buf = dst.data();
+		utf8cpy(buf, str.length() + 1, str.c_str(), str.length() + 1);
+		static std::string res;
+		res = buf;
+		return res;
+	#else
+		return str;
+	#endif
+	}
 
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
@@ -447,13 +481,17 @@ namespace IGFD
 
 #ifdef WIN32
 		const DWORD mydrives = 2048;
-		char lpBuffer[2048];
+		wchar_t lpBuffer[2048];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
-		const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+		const DWORD countChars = mini(GetLogicalDriveStringsW(mydrives, lpBuffer), 2048);
+		std::wstring wdst; wdst.resize(countChars, L'\0');
+		if (lpBuffer) 
+			wcsncpy_s(wdst.data(), countChars, lpBuffer, countChars);
+		std::string dst = IGFD::Utils::wstring_to_string(wdst);
 #undef mini
 		if (countChars > 0)
 		{
-			std::string var = std::string(lpBuffer, (size_t)countChars);
+			std::string var = std::string(dst.data(), (size_t)countChars);
 			IGFD::Utils::ReplaceString(var, "\\", "");
 			res = IGFD::Utils::SplitStringToVector(var, '\0', false);
 		}
@@ -469,14 +507,10 @@ namespace IGFD
 		if (!name.empty())
 		{
 #ifdef USE_STD_FILESYSTEM
-			namespace fs = std::filesystem;
-#ifdef WIN32
-			fs::path pathName = fs::u8path(name);
-#else
-			fs::path pathName = fs::u8path(name);
-#endif
 			std::error_code ec;
-			bExists = fs::is_directory(pathName.u8string(), ec) || pathName.u8string() == fs::u8path(pathName.u8string()).root_name().u8string() + "\\";
+			namespace fs = std::filesystem;
+			fs::path p = utf8path(name);
+			bExists = fs::is_directory(name, ec) || name == p.root_name().u8string() + std::string(1u, PATH_SEP);
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
@@ -502,9 +536,9 @@ namespace IGFD
 #ifdef WIN32
 #ifdef USE_STD_FILESYSTEM
 				std::error_code ec;
+				std::string p = utf8string(name);
 				namespace fs = std::filesystem;
-				fs::path pathName = fs::u8path(name);
-				res = fs::create_directory(pathName, ec);
+				res = fs::create_directory(p, ec);
 #else
 				std::wstring wname = IGFD::Utils::string_to_wstring(name);
 				if (CreateDirectoryW(wname.c_str(), nullptr))
@@ -518,8 +552,7 @@ namespace IGFD
 				res = true;
 #elif defined(UNIX)
 				char buffer[PATH_MAX] = {};
-				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
-				const int dir_err = std::system(buffer);
+				const int dir_err = mkdir(name.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 				if (dir_err != -1)
 				{
 					res = true;
@@ -543,10 +576,10 @@ namespace IGFD
 		if (vPathFileName.empty())
 			return res;
 
-		auto fsPath = fs::u8path(vPathFileName);
+		auto fsPath = utf8path(vPathFileName);
 
 		std::error_code ec;
-		if (fs::is_regular_file(fsPath, ec)) {
+		if (fs::is_regular_file(fsPath.u8string(), ec)) {
 			res.name = fsPath.u8string();
 			res.path = fsPath.parent_path().u8string();
 			res.isOk = true;
@@ -561,7 +594,7 @@ namespace IGFD
 
 		if (!vPathFileName.empty())
 		{
-			std::string pfn = vPathFileName;
+			std::string pfn = utf8string(vPathFileName);
 			std::string separator(1u, PATH_SEP);
 			IGFD::Utils::ReplaceString(pfn, "\\", separator);
 			IGFD::Utils::ReplaceString(pfn, "/", separator);
@@ -613,7 +646,7 @@ namespace IGFD
 		str += vStr;
 		if (len > str.size()) len = str.size();
 #ifdef WIN32
-		strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
+		IGFD::utf8cpy(vBuffer, vBufferLen, str.c_str(), len);
 #else // WIN32
 		strncpy(vBuffer, str.c_str(), len);
 #endif // WIN32
@@ -1433,9 +1466,9 @@ namespace IGFD
 	{
 		auto infos = std::make_shared<FileInfos>();
 
-		infos->filePath = vPath;
-		infos->fileNameExt = vFileName;
-		infos->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(infos->fileNameExt);
+		infos->filePath = utf8string(vPath);
+		infos->fileNameExt = utf8string(vFileName);
+		infos->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(utf8string(infos->fileNameExt));
 		infos->fileType = vFileType;
 
 		if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return; // filename empty or filename is the current dir '.' //-V807
@@ -1466,7 +1499,7 @@ namespace IGFD
 
 	void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath)
 	{
-		std::string	path = vPath;
+		std::string	path = utf8string(vPath);
 
 		if (prCurrentPathDecomposition.empty())
 		{
@@ -1483,12 +1516,9 @@ namespace IGFD
 			ClearFileLists();
 
 #ifdef USE_STD_FILESYSTEM
-			//const auto wpath = IGFD::Utils::WGetString(path.c_str());
-			const std::filesystem::path fspath = std::filesystem::u8path(path);
-			
 			std::error_code ec;
-			const auto dir_iter = std::filesystem::directory_iterator(fspath, ec);
-			AddFile(vFileDialogInternal, fspath.u8string(), "..", 'd');
+			const auto dir_iter = std::filesystem::directory_iterator(path, ec);
+			AddFile(vFileDialogInternal, path, "..", 'd');
 			
 			for (const auto& file : dir_iter)
 			{
@@ -1501,7 +1531,7 @@ namespace IGFD
 					fileType = 'f';
 
 				auto fileNameExt = file.path().filename().u8string();
-				AddFile(vFileDialogInternal, fspath.u8string(), fileNameExt, fileType);
+				AddFile(vFileDialogInternal, path, fileNameExt, fileType);
 			}
 #else // dirent
 			struct dirent** files = nullptr;
@@ -1736,18 +1766,51 @@ namespace IGFD
 			}
 		}
 	}
+	
+	int utf8snprintfs(char *buffer, size_t count, const char *format, const char *argument) 
+	{
+	#ifdef WIN32
+		wchar_t *wdst = new wchar_t[count]();
+		std::wstring wsrc = IGFD::Utils::string_to_wstring(argument);
+		int result = _snwprintf_s(wdst, count, count, L"%s", wsrc.c_str());
+		std::string buf = IGFD::Utils::wstring_to_string(wdst); 
+		memcpy_s(buffer, count, buf.c_str(), count);
+		delete[] wdst;
+		return result;
+	#else
+		return snprintf(buffer, count, format, argument);
+	#endif
+	}
+
+	int utf8snprintfzu(char *buffer, size_t count, const char *format, size_t argument) 
+	{
+	#ifdef WIN32
+		wchar_t *wdst = new wchar_t[count]();
+		int result = _snwprintf_s(wdst, count, count, L"%zu files Selected", argument);
+		std::string buf = IGFD::Utils::wstring_to_string(wdst);
+		memcpy_s(buffer, count, buf.c_str(), count);
+		delete[] wdst;
+		return result;
+	#else
+		return snprintf(buffer, count, format, argument);
+	#endif
+	}
 
 	void IGFD::FileManager::prRemoveFileNameInSelection(const std::string& vFileName)
 	{
 		prSelectedFileNames.erase(vFileName);
 
-		if (prSelectedFileNames.size() == 1)
+		if (prSelectedFileNames.size() == 0)
 		{
-			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+		}
+		else if (prSelectedFileNames.size() == 1)
+		{
+			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
 		}
 		else
 		{
-			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
+			IGFD::utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 	}
 	
@@ -1755,13 +1818,17 @@ namespace IGFD
 	{
 		prSelectedFileNames.emplace(vFileName);
 
-		if (prSelectedFileNames.size() == 1)
+		if (prSelectedFileNames.size() == 0)
 		{
-			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+		}
+		else if (prSelectedFileNames.size() == 1)
+		{
+			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
 		}
 		else
 		{
-			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
+			utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 
 		if (vSetLastSelectionFileName)
@@ -1770,21 +1837,21 @@ namespace IGFD
 
 	void IGFD::FileManager::SetCurrentDir(const std::string& vPath)
 	{
-		std::string path = vPath;
+		std::string path = utf8string(vPath);
 #ifdef WIN32
 		if (puFsRoot == path)
 			path += std::string(1u, PATH_SEP);
 #endif // WIN32
 		
 #ifdef USE_STD_FILESYSTEM
-		namespace fs = std::filesystem;
-		path = fs::u8path(path).u8string();
 		std::error_code ec;
-		bool dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + std::string(1u, PATH_SEP);;
+		namespace fs = std::filesystem;
+		fs::path p = utf8path(vPath);
+		bool dir_opened = fs::is_directory(path, ec) || path == p.root_name().u8string() + std::string(1u, PATH_SEP);
 		if (!dir_opened)
 		{
 			path = ".";
-			dir_opened = fs::is_directory(vPath, ec) || path == fs::u8path(path).root_name().u8string() + std::string(1u, PATH_SEP);;
+			dir_opened = fs::is_directory(path, ec) || path == p.root_name().u8string() + std::string(1u, PATH_SEP);
 		}
 		if (dir_opened)
 #else
@@ -1804,7 +1871,7 @@ namespace IGFD
 			std::wstring wpath = IGFD::Utils::string_to_wstring(path);
 			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
 			std::wstring fpath(numchar, 0);
-			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
+			GetFullPathNameW(wpath.c_str(), numchar, fpath.data(), nullptr);
 			std::string real_path = IGFD::Utils::wstring_to_string(fpath);
 			if (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
 				real_path = real_path.substr(0, real_path.size() - 1U);
@@ -1861,7 +1928,7 @@ namespace IGFD
 			if (!res.empty())
 			{
 #ifdef WIN32
-				res = *vIter + std::string(1u, PATH_SEP) + res;
+				res = utf8string(*vIter + std::string(1u, PATH_SEP) + res);
 #elif defined(UNIX) // UNIX is LINUX or APPLE
 				if (*vIter == puFsRoot)
 					res = *vIter + res;
@@ -1870,7 +1937,7 @@ namespace IGFD
 #endif // WIN32
 			}
 			else
-				res = *vIter;
+				res = utf8string(*vIter);
 
 			if (vIter == prCurrentPathDecomposition.begin())
 			{
@@ -1901,11 +1968,7 @@ namespace IGFD
 	{
 		if (prCurrentPath.empty())
 			prCurrentPath = ".";
-		#ifdef USE_STD_FILESYSTEM
-			return std::filesystem::u8path(prCurrentPath).u8string();
-		#else
-			return prCurrentPath;
-		#endif
+			return utf8string(prCurrentPath);
 	}
 
 	void IGFD::FileManager::SetCurrentPath(const std::string& vCurrentPath)
@@ -1913,18 +1976,14 @@ namespace IGFD
 		if (vCurrentPath.empty())
 			prCurrentPath = ".";
 		else
-		#ifdef USE_STD_FILESYSTEM
-			prCurrentPath = std::filesystem::u8path(vCurrentPath).u8string();
-		#else
-			prCurrentPath = vCurrentPath;
-		#endif
+			prCurrentPath = utf8string(vCurrentPath);
 	}
 
 	bool IGFD::FileManager::IsFileExist(const std::string& vFile)
 	{
 	#ifdef USE_STD_FILESYSTEM
 		std::error_code ec;
-		return std::filesystem::exists(std::filesystem::u8path(vFile), ec);
+		return std::filesystem::exists(utf8string(vFile), ec);
 	#else
 		std::ifstream docFile(vFile, std::ios::in);
 		if (docFile.is_open())
@@ -1963,11 +2022,11 @@ namespace IGFD
 			}
 			else
 			{
-#ifdef __linux__
+#ifdef UNIX
 				if (puFsRoot == prCurrentPath)
 					newPath = prCurrentPath + vInfos->fileNameExt;
 				else
-#endif // __linux__
+#endif // UNIX
 					newPath = prCurrentPath + std::string(1u, PATH_SEP) + vInfos->fileNameExt;
 			}
 
@@ -3282,8 +3341,8 @@ namespace IGFD
 
 		prFileDialogInternal.ResetForNewDialog();
 
-		prFileDialogInternal.puDLGkey = vKey;
-		prFileDialogInternal.puDLGtitle = vTitle;
+		prFileDialogInternal.puDLGkey = utf8string(vKey);
+		prFileDialogInternal.puDLGtitle = utf8string(vTitle);
 		prFileDialogInternal.puDLGuserDatas = vUserDatas;
 		prFileDialogInternal.puDLGflags = vFlags;
 		prFileDialogInternal.puDLGoptionsPane = nullptr;
@@ -3295,19 +3354,12 @@ namespace IGFD
 
 		prFileDialogInternal.puFileManager.puDLGDirectoryMode = (vFilters == nullptr);
 		if (vPath.empty())
-			prFileDialogInternal.puFileManager.puDLGpath = prFileDialogInternal.puFileManager.GetCurrentPath();
+			prFileDialogInternal.puFileManager.puDLGpath = utf8string(prFileDialogInternal.puFileManager.GetCurrentPath());
 		else
-		#ifdef USE_STD_FILESYSTEM
-			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(vPath).u8string();
-			prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
-			prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFileName).u8string());
-		#else
-			prFileDialogInternal.puFileManager.puDLGpath = vPath;
-			prFileDialogInternal.puFileManager.SetCurrentPath(vPath);
-			prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
-		#endif
+			prFileDialogInternal.puFileManager.puDLGpath = utf8string(vPath);
+		prFileDialogInternal.puFileManager.SetCurrentPath(utf8string(vPath));
+		prFileDialogInternal.puFileManager.puDLGcountSelectionMax = (size_t)vCountSelectionMax;
+		prFileDialogInternal.puFileManager.SetDefaultFileName(utf8string(vFileName));
 
 		prFileDialogInternal.puFileManager.ClearAll();
 		
@@ -3329,8 +3381,8 @@ namespace IGFD
 
 		prFileDialogInternal.ResetForNewDialog();
 
-		prFileDialogInternal.puDLGkey = vKey;
-		prFileDialogInternal.puDLGtitle = vTitle;
+		prFileDialogInternal.puDLGkey = utf8string(vKey);
+		prFileDialogInternal.puDLGtitle = utf8string(vTitle);
 		prFileDialogInternal.puDLGoptionsPane = nullptr;
 		prFileDialogInternal.puDLGoptionsPaneWidth = 0.0f;
 		prFileDialogInternal.puDLGuserDatas = vUserDatas;
@@ -3340,15 +3392,9 @@ namespace IGFD
 		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
-		#ifdef USE_STD_FILESYSTEM
-			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(ps.path).u8string();
-			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFilePathName).u8string());
-			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + std::filesystem::u8path(ps.ext).u8string();
-		#else
-			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
-			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
-		#endif
+			prFileDialogInternal.puFileManager.puDLGpath = utf8string(ps.path);
+			prFileDialogInternal.puFileManager.SetDefaultFileName(utf8string(vFilePathName));
+			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + utf8string(ps.ext);
 		}
 		else
 		{
@@ -3390,8 +3436,8 @@ namespace IGFD
 
 		prFileDialogInternal.ResetForNewDialog();
 
-		prFileDialogInternal.puDLGkey = vKey;
-		prFileDialogInternal.puDLGtitle = vTitle;
+		prFileDialogInternal.puDLGkey = utf8string(vKey);
+		prFileDialogInternal.puDLGtitle = utf8string(vTitle);
 		prFileDialogInternal.puDLGuserDatas = vUserDatas;
 		prFileDialogInternal.puDLGflags = vFlags;
 		prFileDialogInternal.puDLGoptionsPane = vSidePane;
@@ -3406,15 +3452,9 @@ namespace IGFD
 		if (vPath.empty())
 			prFileDialogInternal.puFileManager.puDLGpath = prFileDialogInternal.puFileManager.GetCurrentPath();
 		else
-		#ifdef USE_STD_FILESYSTEM
-			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(vPath).u8string();
-		#else
-			prFileDialogInternal.puFileManager.puDLGpath = vPath;
-		#endif
-
-		prFileDialogInternal.puFileManager.SetCurrentPath(prFileDialogInternal.puFileManager.puDLGpath);
-
-		prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
+			prFileDialogInternal.puFileManager.puDLGpath = utf8string(vPath);
+		prFileDialogInternal.puFileManager.SetCurrentPath(utf8string(prFileDialogInternal.puFileManager.puDLGpath));
+		prFileDialogInternal.puFileManager.SetDefaultFileName(utf8string(vFileName));
 
 		prFileDialogInternal.puFileManager.ClearAll();
 		
@@ -3439,8 +3479,8 @@ namespace IGFD
 
 		prFileDialogInternal.ResetForNewDialog();
 
-		prFileDialogInternal.puDLGkey = vKey;
-		prFileDialogInternal.puDLGtitle = vTitle;
+		prFileDialogInternal.puDLGkey = utf8string(vKey);
+		prFileDialogInternal.puDLGtitle = utf8string(vTitle);
 		prFileDialogInternal.puDLGoptionsPane = vSidePane;
 		prFileDialogInternal.puDLGoptionsPaneWidth = vSidePaneWidth;
 		prFileDialogInternal.puDLGuserDatas = vUserDatas;
@@ -3450,15 +3490,9 @@ namespace IGFD
 		auto ps = IGFD::Utils::ParsePathFileName(vFilePathName);
 		if (ps.isOk)
 		{
-		#ifdef USE_STD_FILESYSTEM
-			prFileDialogInternal.puFileManager.puDLGpath = std::filesystem::u8path(ps.path).u8string();
-			prFileDialogInternal.puFileManager.SetDefaultFileName(std::filesystem::u8path(vFilePathName).u8string());
-			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + std::filesystem::u8path(ps.ext).u8string();
-		#else
-			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
-			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
-		#endif
+			prFileDialogInternal.puFileManager.puDLGpath = utf8string(ps.path);
+			prFileDialogInternal.puFileManager.SetDefaultFileName(utf8string(vFilePathName));
+			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + utf8string(ps.ext);
 		}
 		else
 		{
@@ -4822,7 +4856,7 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 #ifndef WIN32
 					strncpy(pair->fileName, s.first.c_str(), siz);
 #else
-					strncpy_s(pair->fileName, siz, s.first.c_str(), siz);
+					IGFD::utf8cpy(pair->fileName, siz, s.first.c_str(), siz);
 #endif
 					pair->fileName[siz - 1U] = '\0';
 				}
@@ -4835,7 +4869,7 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 #ifndef WIN32
 					strncpy(pair->filePathName, s.first.c_str(), siz);
 #else
-					strncpy_s(pair->filePathName, siz, s.first.c_str(), siz);
+					IGFD::utf8cpy(pair->filePathName, siz, s.first.c_str(), siz);
 #endif
 					pair->filePathName[siz - 1U] = '\0';
 				}
@@ -4862,7 +4896,7 @@ IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext)
 #ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
-			strncpy_s(res, siz, s.c_str(), siz);
+			IGFD::utf8cpy(res, siz, s.c_str(), siz);
 #endif
 			res[siz - 1U] = '\0';
 		}
@@ -4882,10 +4916,10 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFileName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
-			strncpy_s(res, siz, s.c_str(), siz);
+			IGFD::utf8cpy(res, siz, s.c_str(), siz);
 #endif
 			res[siz - 1U] = '\0';
 		}
@@ -4905,10 +4939,10 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
-			strncpy_s(res, siz, s.c_str(), siz);
+			IGFD::utf8cpy(res, siz, s.c_str(), siz);
 #endif
 			res[siz - 1U] = '\0';
 		}
@@ -4928,10 +4962,10 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
-			strncpy_s(res, siz, s.c_str(), siz);
+			IGFD::utf8cpy(res, siz, s.c_str(), siz);
 #endif
 			res[siz - 1U] = '\0';
 		}
@@ -4979,10 +5013,10 @@ IMGUIFILEDIALOG_API bool IGFD_GetFileStyle(ImGuiFileDialog* vContext,
 		{
 			size_t siz = icon.size() + 1U;
 			*vOutIcon = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(*vOutIcon, icon.c_str(), siz);
 #else
-			strncpy_s(*vOutIcon, siz, icon.c_str(), siz);
+			IGFD::utf8cpy(*vOutIcon, siz, icon.c_str(), siz);
 #endif
 			(*vOutIcon)[siz - 1U] = '\0';
 		}
@@ -5030,10 +5064,10 @@ IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef WIN32
 			strncpy(res, s.c_str(), siz);
 #else
-			strncpy_s(res, siz, s.c_str(), siz);
+			IGFD::utf8cpy(res, siz, s.c_str(), siz);
 #endif
 			res[siz - 1U] = '\0';
 		}
