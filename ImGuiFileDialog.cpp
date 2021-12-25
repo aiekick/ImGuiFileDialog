@@ -415,15 +415,8 @@ namespace IGFD
 			memcpy_s(dst, numb, buf.c_str(), numb);
 		}
 		return err;
-	}	
-#endif // WIN32
-
-	#ifdef USE_STD_FILESYSTEM
-	std::filesystem::path utf8path(std::string str)
-	{
-		return std::filesystem::u8path(str);
 	}
-	#endif
+#endif // WIN32
 
 	std::string utf8string(std::string str)
 	{
@@ -438,6 +431,40 @@ namespace IGFD
 	#else
 		return str;
 	#endif
+	}
+
+	std::string filename_name(std::string fname) 
+	{
+	#if defined(_WIN32)
+		size_t fp = fname.find_last_of("\\/");
+	#else
+		size_t fp = fname.find_last_of("/");
+	#endif
+		if (fp == std::string::npos) return fname;
+		return fname.substr(fp + 1);
+	}
+
+	std::string filename_drive(std::string fname)
+	{
+	#if defined(_WIN32)
+		size_t fp = fname.find_first_of("\\/");
+	#else
+		size_t fp = fname.find_first_of("/");
+	#endif
+		if (!fp || fp == std::string::npos || fname[fp - 1] != ':')
+			return "";
+		return fname.substr(0, fp);
+	}
+
+	std::string filename_dir(std::string fname) 
+	{
+	#if defined(_WIN32)
+		size_t fp = fname.find_last_of("\\/");
+	#else
+		size_t fp = fname.find_last_of("/");
+	#endif
+		if (fp == std::string::npos) return fname;
+		return fname.substr(0, fp);
 	}
 
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
@@ -509,8 +536,8 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 			std::error_code ec;
 			namespace fs = std::filesystem;
-			fs::path p = utf8path(name);
-			bExists = fs::is_directory(name, ec) || name == p.root_name().u8string() + std::string(1u, PATH_SEP);
+			std::string p = utf8string(name);
+			bExists = fs::is_directory(p, ec) || p == filename_drive(p) + std::string(1u, PATH_SEP);
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
@@ -576,12 +603,12 @@ namespace IGFD
 		if (vPathFileName.empty())
 			return res;
 
-		auto fsPath = utf8path(vPathFileName);
+		std::string p = utf8string(vPathFileName);
 
 		std::error_code ec;
-		if (fs::is_regular_file(fsPath.u8string(), ec)) {
-			res.name = fsPath.u8string();
-			res.path = fsPath.parent_path().u8string();
+		if (fs::is_regular_file(p, ec)) {
+			res.name = p;
+			res.path = filename_drive(p);
 			res.isOk = true;
 		}
 
@@ -1846,12 +1873,11 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 		std::error_code ec;
 		namespace fs = std::filesystem;
-		fs::path p = utf8path(vPath);
-		bool dir_opened = fs::is_directory(path, ec) || path == p.root_name().u8string() + std::string(1u, PATH_SEP);
+		bool dir_opened = fs::is_directory(path, ec) || path == filename_drive(path) + std::string(1u, PATH_SEP);
 		if (!dir_opened)
 		{
 			path = ".";
-			dir_opened = fs::is_directory(path, ec) || path == p.root_name().u8string() + std::string(1u, PATH_SEP);
+			dir_opened = fs::is_directory(path, ec) || path == filename_drive(path) + std::string(1u, PATH_SEP);
 		}
 		if (dir_opened)
 #else
