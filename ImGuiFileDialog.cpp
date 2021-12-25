@@ -1802,15 +1802,15 @@ namespace IGFD
 
 		if (prSelectedFileNames.size() == 0)
 		{
-			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
 		}
 		else if (prSelectedFileNames.size() == 1)
 		{
-			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
 		}
 		else
 		{
-			IGFD::utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
+			utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 	}
 	
@@ -1820,7 +1820,7 @@ namespace IGFD
 
 		if (prSelectedFileNames.size() == 0)
 		{
-			IGFD::utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
 		}
 		else if (prSelectedFileNames.size() == 1)
 		{
