@@ -481,17 +481,13 @@ namespace IGFD
 
 #ifdef WIN32
 		const DWORD mydrives = 2048;
-		wchar_t lpBuffer[2048];
+		char lpBuffer[2048];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
-		const DWORD countChars = mini(GetLogicalDriveStringsW(mydrives, lpBuffer), 2048);
-		std::wstring wdst; wdst.resize(countChars, L'\0');
-		if (lpBuffer) 
-			wcsncpy_s(wdst.data(), countChars, lpBuffer, countChars);
-		std::string dst = IGFD::Utils::wstring_to_string(wdst);
+		const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
 #undef mini
 		if (countChars > 0)
 		{
-			std::string var = std::string(dst.data(), (size_t)countChars);
+			std::string var = std::string(lpBuffer, (size_t)countChars);
 			IGFD::Utils::ReplaceString(var, "\\", "");
 			res = IGFD::Utils::SplitStringToVector(var, '\0', false);
 		}
