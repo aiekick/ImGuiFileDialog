@@ -1767,16 +1767,6 @@ namespace IGFD
 			}
 		}
 	}
-	
-	int utf8snprintfs(char *buffer, size_t count, const char *format, const char *argument) 
-	{
-		return snprintf(buffer, count, format, argument);
-	}
-
-	int utf8snprintfzu(char *buffer, size_t count, const char *format, size_t argument) 
-	{
-		return snprintf(buffer, count, format, argument);
-	}
 
 	void IGFD::FileManager::prRemoveFileNameInSelection(const std::string& vFileName)
 	{
@@ -1784,11 +1774,11 @@ namespace IGFD
 
 		if (prSelectedFileNames.size() == 0)
 		{
-			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
 		}
 		else if (prSelectedFileNames.size() == 1)
 		{
-			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
 		}
 		else
 		{
@@ -1802,11 +1792,11 @@ namespace IGFD
 
 		if (prSelectedFileNames.size() == 0)
 		{
-			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", "");
 		}
 		else if (prSelectedFileNames.size() == 1)
 		{
-			utf8snprintfs(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vFileName.c_str());
 		}
 		else
 		{
