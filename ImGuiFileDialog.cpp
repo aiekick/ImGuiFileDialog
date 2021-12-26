@@ -1782,7 +1782,7 @@ namespace IGFD
 		}
 		else
 		{
-			utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 	}
 	
@@ -1800,7 +1800,7 @@ namespace IGFD
 		}
 		else
 		{
-			utf8snprintfzu(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
+			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 
 		if (vSetLastSelectionFileName)
