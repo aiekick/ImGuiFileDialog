@@ -1936,7 +1936,7 @@ namespace IGFD
 	{
 		if (prCurrentPath.empty())
 			prCurrentPath = ".";
-			return prCurrentPath;
+		return prCurrentPath;
 	}
 
 	void IGFD::FileManager::SetCurrentPath(const std::string& vCurrentPath)
