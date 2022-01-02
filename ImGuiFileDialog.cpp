@@ -1836,7 +1836,7 @@ namespace IGFD
 #ifdef WIN32
 			DWORD numchar = 0;
 			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
-			std::wstring wpath = IGFD::Utils::string_to_wstring(p.u8string());
+			std::wstring wpath = IGFD::Utils::string_to_wstring(path);
 			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
 			std::wstring fpath(numchar, 0);
 			GetFullPathNameW(wpath.c_str(), numchar, fpath.data(), nullptr);
