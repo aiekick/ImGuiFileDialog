@@ -563,8 +563,13 @@ namespace IGFD
 
 		auto fsPath = fs::path(vPathFileName);
 
-		if (fs::is_regular_file(fsPath)) {
-			res.name = fsPath.string();
+		if (fs::is_directory(fsPath)) {
+			res.name = "";
+			res.path = fsPath.string();
+			res.isOk = true;
+
+		} else if (fs::is_regular_file(fsPath)) {
+			res.name = fsPath.filename().string();
 			res.path = fsPath.parent_path().string();
 			res.isOk = true;
 		}
@@ -3332,7 +3337,7 @@ namespace IGFD
 		if (ps.isOk)
 		{
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
+			prFileDialogInternal.puFileManager.SetDefaultFileName(ps.name);
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
 		}
 		else
