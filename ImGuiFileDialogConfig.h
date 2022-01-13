@@ -87,6 +87,10 @@
 //#define tableHeaderFileTypeString " Type"
 //#define tableHeaderFileSizeString " Size"
 //#define tableHeaderFileDateTimeString " Date"
+//#define fileSizeBytes "o"
+//#define fileSizeKiloBytes "Ko"
+//#define fileSizeMegaBytes "Mo"
+//#define fileSizeGigaBytes "Go"
 
 // default table sort field (must be FIELD_FILENAME, FIELD_TYPE, FIELD_SIZE, FIELD_DATE or FIELD_THUMBNAILS)
 //#define defaultSortField FIELD_FILENAME

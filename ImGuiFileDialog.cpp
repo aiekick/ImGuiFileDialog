@@ -188,6 +188,18 @@ namespace IGFD
 #ifndef tableHeaderFileDateString
 #define tableHeaderFileDateString "Date"
 #endif // tableHeaderFileDateString
+#ifndef fileSizeBytes
+#define fileSizeBytes "o"
+#endif // fileSizeBytes
+#ifndef fileSizeKiloBytes
+#define fileSizeKiloBytes "Ko"
+#endif // fileSizeKiloBytes
+#ifndef fileSizeMegaBytes
+#define fileSizeMegaBytes "Mo"
+#endif // fileSizeMegaBytes
+#ifndef fileSizeGigaBytes
+#define fileSizeGigaBytes "Go"
+#endif // fileSizeGigaBytes
 #ifndef OverWriteDialogTitleString
 #define OverWriteDialogTitleString "The file Already Exist !"
 #endif // OverWriteDialogTitleString
@@ -1687,13 +1699,13 @@ namespace IGFD
 			auto v = (double)vByteSize;
 
 			if (v < lo)
-				return prRoundNumber(v, 0) + " o"; // octet
+				return prRoundNumber(v, 0) + " " + fileSizeBytes; // octet
 			else if (v < ko)
-				return prRoundNumber(v / lo, 2) + " Ko"; // ko
+				return prRoundNumber(v / lo, 2) + " " + fileSizeKiloBytes; // ko
 			else  if (v < mo)
-				return prRoundNumber(v / ko, 2) + " Mo"; // Mo 
+				return prRoundNumber(v / ko, 2) + " " + fileSizeMegaBytes; // Mo
 			else
-				return prRoundNumber(v / mo, 2) + " Go"; // Go 
+				return prRoundNumber(v / mo, 2) + " " + fileSizeGigaBytes; // Go
 		}
 
 		return "";
