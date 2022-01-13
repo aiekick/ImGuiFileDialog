@@ -615,6 +615,8 @@ enum ImGuiFileDialogFlags_
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
 #endif
+	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field
+																				// for file open style dialogs
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
@@ -655,6 +657,26 @@ struct IGFD_Thumbnail_Info
 
 namespace IGFD
 {
+#ifndef defaultSortField
+#define defaultSortField FIELD_FILENAME
+#endif // defaultSortField
+
+#ifndef defaultSortOrderFilename
+#define defaultSortOrderFilename true
+#endif // defaultSortOrderFilename
+#ifndef defaultSortOrderType
+#define defaultSortOrderType true
+#endif // defaultSortOrderType
+#ifndef defaultSortOrderSize
+#define defaultSortOrderSize true
+#endif // defaultSortOrderSize
+#ifndef defaultSortOrderDate
+#define defaultSortOrderDate true
+#endif // defaultSortOrderDate
+#ifndef defaultSortOrderThumbnails
+#define defaultSortOrderThumbnails true
+#endif // defaultSortOrderThumbnails
+
 #ifndef MAX_FILE_DIALOG_NAME_BUFFER 
 #define MAX_FILE_DIALOG_NAME_BUFFER 1024
 #endif // MAX_FILE_DIALOG_NAME_BUFFER
@@ -863,9 +885,18 @@ namespace IGFD
 		std::string puHeaderFileDate;										// detail view name of column date + time
 #ifdef USE_THUMBNAILS
 		std::string puHeaderFileThumbnails;									// detail view name of column thumbnails
-		bool puSortingDirection[5] = { true, true, true, true, true };		// detail view // true => Descending, false => Ascending
+		bool puSortingDirection[5] = {										// detail view // true => Descending, false => Ascending
+			defaultSortOrderFilename,
+			defaultSortOrderType,
+			defaultSortOrderSize,
+			defaultSortOrderDate,
+			defaultSortOrderThumbnails };
 #else
-		bool puSortingDirection[4] = { true, true, true, true };			// detail view // true => Descending, false => Ascending
+		bool puSortingDirection[4] = {										// detail view // true => Descending, false => Ascending
+			defaultSortOrderFilename,
+			defaultSortOrderType,
+			defaultSortOrderSize,
+			defaultSortOrderDate };
 #endif
 		SortingFieldEnum puSortingField = SortingFieldEnum::FIELD_FILENAME;	// detail view sorting column
 		bool puShowDrives = false;											// drives are shown (only on os windows)

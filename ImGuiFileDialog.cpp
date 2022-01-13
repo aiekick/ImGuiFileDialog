@@ -188,6 +188,18 @@ namespace IGFD
 #ifndef tableHeaderFileDateString
 #define tableHeaderFileDateString "Date"
 #endif // tableHeaderFileDateString
+#ifndef fileSizeBytes
+#define fileSizeBytes "o"
+#endif // fileSizeBytes
+#ifndef fileSizeKiloBytes
+#define fileSizeKiloBytes "Ko"
+#endif // fileSizeKiloBytes
+#ifndef fileSizeMegaBytes
+#define fileSizeMegaBytes "Mo"
+#endif // fileSizeMegaBytes
+#ifndef fileSizeGigaBytes
+#define fileSizeGigaBytes "Go"
+#endif // fileSizeGigaBytes
 #ifndef OverWriteDialogTitleString
 #define OverWriteDialogTitleString "The file Already Exist !"
 #endif // OverWriteDialogTitleString
@@ -563,8 +575,13 @@ namespace IGFD
 
 		auto fsPath = fs::path(vPathFileName);
 
-		if (fs::is_regular_file(fsPath)) {
-			res.name = fsPath.string();
+		if (fs::is_directory(fsPath)) {
+			res.name = "";
+			res.path = fsPath.string();
+			res.isOk = true;
+
+		} else if (fs::is_regular_file(fsPath)) {
+			res.name = fsPath.filename().string();
 			res.path = fsPath.parent_path().string();
 			res.isOk = true;
 		}
@@ -1263,6 +1280,7 @@ namespace IGFD
 							return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 						}
 						*/
+						if (a->fileType != b->fileType) return (a->fileType != 'd'); // directories last
 						return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 					});
 			}
@@ -1682,13 +1700,13 @@ namespace IGFD
 			auto v = (double)vByteSize;
 
 			if (v < lo)
-				return prRoundNumber(v, 0) + " o"; // octet
+				return prRoundNumber(v, 0) + " " + fileSizeBytes; // octet
 			else if (v < ko)
-				return prRoundNumber(v / lo, 2) + " Ko"; // ko
+				return prRoundNumber(v / lo, 2) + " " + fileSizeKiloBytes; // ko
 			else  if (v < mo)
-				return prRoundNumber(v / ko, 2) + " Mo"; // Mo 
+				return prRoundNumber(v / ko, 2) + " " + fileSizeMegaBytes; // Mo
 			else
-				return prRoundNumber(v / mo, 2) + " Go"; // Go 
+				return prRoundNumber(v / mo, 2) + " " + fileSizeGigaBytes; // Go
 		}
 
 		return "";
@@ -3022,6 +3040,11 @@ namespace IGFD
 						else
 						{
 							fdi.SelectFileName(vFileDialogInternal, infos);
+
+							if (enterInDirectory)
+							{
+								vFileDialogInternal.puIsOk = true;
+							}
 						}
 
 						if (exitDirectory)
@@ -3332,7 +3355,7 @@ namespace IGFD
 		if (ps.isOk)
 		{
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
+			prFileDialogInternal.puFileManager.SetDefaultFileName(ps.name);
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
 		}
 		else
@@ -3800,7 +3823,19 @@ namespace IGFD
 		if (!fdFile.puDLGDirectoryMode)
 			width -= FILTER_COMBO_WIDTH;
 		ImGui::PushItemWidth(width);
-		ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+		
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+		
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField)
+		{
+			flags |= ImGuiInputTextFlags_ReadOnly;
+		}
+
+		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags))
+		{
+			prFileDialogInternal.puIsOk = true;
+		}
+
 		if (ImGui::GetItemID() == ImGui::GetActiveID())
 			prFileDialogInternal.puFileInputIsActive = true;
 		ImGui::PopItemWidth();
@@ -3813,7 +3848,7 @@ namespace IGFD
 		// OK Button
 		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
 		{
-			if (IMGUI_BUTTON(okButtonString "##validationdialog"))
+			if (IMGUI_BUTTON(okButtonString "##validationdialog") || prFileDialogInternal.puIsOk)
 			{
 				prFileDialogInternal.puIsOk = true;
 				res = true;
@@ -3899,6 +3934,11 @@ namespace IGFD
 			else
 			{
 				fdi.SelectFileName(prFileDialogInternal, vInfos);
+
+				if (ImGui::IsMouseDoubleClicked(0))
+				{
+					prFileDialogInternal.puIsOk = true;
+				}
 			}
 		}
 
