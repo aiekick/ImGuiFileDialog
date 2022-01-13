@@ -615,6 +615,8 @@ enum ImGuiFileDialogFlags_
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
 #endif
+	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field
+																				// for file open style dialogs
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 

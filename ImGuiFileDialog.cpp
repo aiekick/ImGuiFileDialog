@@ -3043,7 +3043,7 @@ namespace IGFD
 
 							if (enterInDirectory)
 							{
-								prFileDialogInternal.puIsOk = true;
+								vFileDialogInternal.puIsOk = true;
 							}
 						}
 
@@ -3824,8 +3824,17 @@ namespace IGFD
 			width -= FILTER_COMBO_WIDTH;
 		ImGui::PushItemWidth(width);
 		
-		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, ImGuiInputTextFlags_EnterReturnsTrue))
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+		
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField)
+		{
+			flags |= ImGuiInputTextFlags_ReadOnly;
+		}
+
+		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags))
+		{
 			prFileDialogInternal.puIsOk = true;
+		}
 
 		if (ImGui::GetItemID() == ImGui::GetActiveID())
 			prFileDialogInternal.puFileInputIsActive = true;
