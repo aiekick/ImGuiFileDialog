@@ -3800,7 +3800,10 @@ namespace IGFD
 		if (!fdFile.puDLGDirectoryMode)
 			width -= FILTER_COMBO_WIDTH;
 		ImGui::PushItemWidth(width);
-		ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+		
+		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, ImGuiInputTextFlags_EnterReturnsTrue))
+			prFileDialogInternal.puIsOk = true;
+
 		if (ImGui::GetItemID() == ImGui::GetActiveID())
 			prFileDialogInternal.puFileInputIsActive = true;
 		ImGui::PopItemWidth();
