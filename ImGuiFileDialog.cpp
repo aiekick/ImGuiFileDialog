@@ -3039,6 +3039,11 @@ namespace IGFD
 						else
 						{
 							fdi.SelectFileName(vFileDialogInternal, infos);
+
+							if (enterInDirectory)
+							{
+								prFileDialogInternal.puIsOk = true;
+							}
 						}
 
 						if (exitDirectory)
