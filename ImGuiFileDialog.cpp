@@ -3813,7 +3813,7 @@ namespace IGFD
 		// OK Button
 		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
 		{
-			if (IMGUI_BUTTON(okButtonString "##validationdialog"))
+			if (IMGUI_BUTTON(okButtonString "##validationdialog") || prFileDialogInternal.puIsOk)
 			{
 				prFileDialogInternal.puIsOk = true;
 				res = true;
@@ -3899,6 +3899,11 @@ namespace IGFD
 			else
 			{
 				fdi.SelectFileName(prFileDialogInternal, vInfos);
+
+				if (ImGui::IsMouseDoubleClicked(0))
+				{
+					prFileDialogInternal.puIsOk = true;
+				}
 			}
 		}
 
