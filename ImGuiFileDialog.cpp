@@ -1280,6 +1280,7 @@ namespace IGFD
 							return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 						}
 						*/
+						if (a->fileType != b->fileType) return (a->fileType != 'd'); // directories last
 						return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 					});
 			}
