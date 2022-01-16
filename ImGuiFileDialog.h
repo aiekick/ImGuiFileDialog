@@ -885,14 +885,14 @@ namespace IGFD
 		std::string puHeaderFileDate;										// detail view name of column date + time
 #ifdef USE_THUMBNAILS
 		std::string puHeaderFileThumbnails;									// detail view name of column thumbnails
-		bool puSortingDirection[5] = {										// detail view // true => Descending, false => Ascending
+		bool puSortingDirection[5] = {										// true => Ascending, false => Descending
 			defaultSortOrderFilename,
 			defaultSortOrderType,
 			defaultSortOrderSize,
 			defaultSortOrderDate,
 			defaultSortOrderThumbnails };
 #else
-		bool puSortingDirection[4] = {										// detail view // true => Descending, false => Ascending
+		bool puSortingDirection[4] = {										// true => Ascending, false => Descending
 			defaultSortOrderFilename,
 			defaultSortOrderType,
 			defaultSortOrderSize,
@@ -935,8 +935,7 @@ namespace IGFD
 		void ClearAll();
 		void ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal);
 		void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);							// set the path of the dialog, will launch the directory scan for populate the file listview
-		void SortFields(const FileDialogInternal& vFileDialogInternal, 
-			const SortingFieldEnum& vSortingField, const bool& vCanChangeOrder);						// will sort a column
+		void SortFields(const FileDialogInternal& vFileDialogInternal);									// will sort a column
 		bool GetDrives();																				// list drives on windows platform
 		bool CreateDir(const std::string& vPath);														// create a directory on the file system
 		void ComposeNewPath(std::vector<std::string>::iterator vIter);									// compose a path from the compose path widget
