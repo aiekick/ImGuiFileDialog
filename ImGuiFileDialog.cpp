@@ -3792,6 +3792,8 @@ namespace IGFD
 		
 		float posY = ImGui::GetCursorPos().y; // height of last bar calc
 
+		ImGui::AlignTextToFramePadding();
+
 		if (!fdFile.puDLGDirectoryMode)
 			ImGui::Text(fileNameString);
 		else // directory chooser
