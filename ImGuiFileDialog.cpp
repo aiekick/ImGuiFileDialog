@@ -2931,11 +2931,7 @@ namespace IGFD
 			if (g.NavId && g.NavId == vListViewID)
 			{
 				if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) ||
-#if IMGUI_VERSION_NUM > 18600
 					ImGui::IsKeyPressedMap(ImGuiKey_KeypadEnter) ||
-#else
-					ImGui::IsKeyPressedMap(ImGuiKey_KeyPadEnter) ||
-#endif
 					ImGui::IsKeyPressedMap(ImGuiKey_Space))
 				{
 					ImGui::ActivateItem(vListViewID);
@@ -3806,7 +3802,11 @@ namespace IGFD
 		// Input file fields
 		float width = ImGui::GetContentRegionAvail().x;
 		if (!fdFile.puDLGDirectoryMode)
-			width -= FILTER_COMBO_WIDTH;
+		{
+			ImGuiContext& g = *GImGui;
+			width -= FILTER_COMBO_WIDTH + g.Style.ItemSpacing.x;
+		}
+
 		ImGui::PushItemWidth(width);
 		
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
@@ -3973,7 +3973,6 @@ namespace IGFD
 			ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
 			ImGuiTableFlags_NoHostExtendY
 #ifndef USE_CUSTOM_SORTING_ICON
-			| ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
 			| ImGuiTableFlags_Sortable
 #endif // USE_CUSTOM_SORTING_ICON
 			;
@@ -4170,7 +4169,6 @@ namespace IGFD
 			ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollY |
 			ImGuiTableFlags_NoHostExtendY
 #ifndef USE_CUSTOM_SORTING_ICON
-			| ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
 			| ImGuiTableFlags_Sortable
 #endif // USE_CUSTOM_SORTING_ICON
 			;
