@@ -581,6 +581,7 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
+// compatible with 1.87 WIP
 #define IMGUIFILEDIALOG_VERSION "v0.6.4"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
@@ -594,9 +595,9 @@ typedef int IGFD_FileStyleFlags; // -> enum IGFD_FileStyleFlags_
 enum IGFD_FileStyleFlags_ // by evaluation / priority order
 {
 	IGFD_FileStyle_None = 0,						// define none style
-	IGFD_FileStyleByTypeFile = (1 << 0),				// define style for all files
-	IGFD_FileStyleByTypeDir = (1 << 1),					// define style for all dir
-	IGFD_FileStyleByTypeLink = (1 << 2),				// define style for all link
+	IGFD_FileStyleByTypeFile = (1 << 0),			// define style for all files
+	IGFD_FileStyleByTypeDir = (1 << 1),				// define style for all dir
+	IGFD_FileStyleByTypeLink = (1 << 2),			// define style for all link
 	IGFD_FileStyleByExtention = (1 << 3),			// define style by extention, for files or links
 	IGFD_FileStyleByFullName = (1 << 4),			// define style for particular file/dir/link full name (filename + extention)
 	IGFD_FileStyleByContainedInFullName = (1 << 5),	// define style for file/dir/link when criteria is contained in full name
