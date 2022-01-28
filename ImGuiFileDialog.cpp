@@ -187,6 +187,18 @@ namespace IGFD
 #ifndef tableHeaderFileDateString
 #define tableHeaderFileDateString "Date"
 #endif // tableHeaderFileDateString
+#ifndef fileSizeBytes
+#define fileSizeBytes "o"
+#endif // fileSizeBytes
+#ifndef fileSizeKiloBytes
+#define fileSizeKiloBytes "Ko"
+#endif // fileSizeKiloBytes
+#ifndef fileSizeMegaBytes
+#define fileSizeMegaBytes "Mo"
+#endif // fileSizeMegaBytes
+#ifndef fileSizeGigaBytes
+#define fileSizeGigaBytes "Go"
+#endif // fileSizeGigaBytes
 #ifndef OverWriteDialogTitleString
 #define OverWriteDialogTitleString "The file Already Exist !"
 #endif // OverWriteDialogTitleString
@@ -563,7 +575,6 @@ namespace IGFD
 	}
 
 #ifdef USE_STD_FILESYSTEM
-	// https://github.com/aiekick/ImGuiFileDialog/issues/54
 	IGFD::Utils::PathStruct IGFD::Utils::ParsePathFileName(const std::string& vPathFileName)
 	{
 		std::error_code ec;
@@ -573,10 +584,15 @@ namespace IGFD
 		PathStruct res;
 		if (p.u8string().empty())
 			return res;
-		
-		if (fs::is_regular_file(p, ec)) {
-			res.name = p.u8string();
-			res.path = filename_drive(p.u8string());
+
+		if (fs::is_directory(p)) {
+			res.name = "";
+			res.path = p.u8string();
+			res.isOk = true;
+
+		} else if (fs::is_regular_file(fsPath)) {
+			res.name = p.filename().u8string();
+			res.path = p.parent_path().u8string();
 			res.isOk = true;
 		}
 
@@ -1202,9 +1218,9 @@ namespace IGFD
 		ScanDir(vFileDialogInternal, GetCurrentPath());
 	}
 
-	void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal, const SortingFieldEnum& vSortingField, const bool& vCanChangeOrder)
+	void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal)
 	{
-		if (vSortingField != SortingFieldEnum::FIELD_NONE)
+		if (puSortingField != SortingFieldEnum::FIELD_NONE)
 		{
 			puHeaderFileName = tableHeaderFileNameString;
 			puHeaderFileType = tableHeaderFileTypeString;
@@ -1215,15 +1231,12 @@ namespace IGFD
 #endif // #ifdef USE_THUMBNAILS
 		}
 
-		if (vSortingField == SortingFieldEnum::FIELD_FILENAME)
+		if (puSortingField == SortingFieldEnum::FIELD_FILENAME)
 		{
-			if (vCanChangeOrder && puSortingField == vSortingField)
-				puSortingDirection[0] = !puSortingDirection[0];
-
 			if (puSortingDirection[0])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileName = tableHeaderDescendingIcon + puHeaderFileName;
+				puHeaderFileName = tableHeaderAscendingIcon + puHeaderFileName;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1252,7 +1265,7 @@ namespace IGFD
 			else
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileName = tableHeaderAscendingIcon + puHeaderFileName;
+				puHeaderFileName = tableHeaderDescendingIcon + puHeaderFileName;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1274,19 +1287,17 @@ namespace IGFD
 							return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 						}
 						*/
+						if (a->fileType != b->fileType) return (a->fileType != 'd'); // directories last
 						return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive case
 					});
 			}
 		}
-		else if (vSortingField == SortingFieldEnum::FIELD_TYPE)
+		else if (puSortingField == SortingFieldEnum::FIELD_TYPE)
 		{
-			if (vCanChangeOrder && puSortingField == vSortingField)
-				puSortingDirection[1] = !puSortingDirection[1];
-
 			if (puSortingDirection[1])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileType = tableHeaderDescendingIcon + puHeaderFileType;
+				puHeaderFileType = tableHeaderAscendingIcon + puHeaderFileType;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1301,7 +1312,7 @@ namespace IGFD
 			else
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileType = tableHeaderAscendingIcon + puHeaderFileType;
+				puHeaderFileType = tableHeaderDescendingIcon + puHeaderFileType;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1314,15 +1325,12 @@ namespace IGFD
 					});
 			}
 		}
-		else if (vSortingField == SortingFieldEnum::FIELD_SIZE)
+		else if (puSortingField == SortingFieldEnum::FIELD_SIZE)
 		{
-			if (vCanChangeOrder && puSortingField == vSortingField)
-				puSortingDirection[2] = !puSortingDirection[2];
-
 			if (puSortingDirection[2])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileSize = tableHeaderDescendingIcon + puHeaderFileSize;
+				puHeaderFileSize = tableHeaderAscendingIcon + puHeaderFileSize;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1337,7 +1345,7 @@ namespace IGFD
 			else
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileSize = tableHeaderAscendingIcon + puHeaderFileSize;
+				puHeaderFileSize = tableHeaderDescendingIcon + puHeaderFileSize;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1350,15 +1358,12 @@ namespace IGFD
 					});
 			}
 		}
-		else if (vSortingField == SortingFieldEnum::FIELD_DATE)
+		else if (puSortingField == SortingFieldEnum::FIELD_DATE)
 		{
-			if (vCanChangeOrder && puSortingField == vSortingField)
-				puSortingDirection[3] = !puSortingDirection[3];
-
 			if (puSortingDirection[3])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileDate = tableHeaderDescendingIcon + puHeaderFileDate;
+				puHeaderFileDate = tableHeaderAscendingIcon + puHeaderFileDate;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1373,7 +1378,7 @@ namespace IGFD
 			else
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileDate = tableHeaderAscendingIcon + puHeaderFileDate;
+				puHeaderFileDate = tableHeaderDescendingIcon + puHeaderFileDate;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1387,11 +1392,8 @@ namespace IGFD
 			}
 		}
 #ifdef USE_THUMBNAILS
-		else if (vSortingField == SortingFieldEnum::FIELD_THUMBNAILS)
+		else if (puSortingField == SortingFieldEnum::FIELD_THUMBNAILS)
 		{
-			if (vCanChangeOrder && puSortingField == vSortingField)
-				puSortingDirection[4] = !puSortingDirection[4];
-
 			// we will compare thumbnails by :
 			// 1) width 
 			// 2) height
@@ -1399,7 +1401,7 @@ namespace IGFD
 			if (puSortingDirection[4])
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileThumbnails = tableHeaderDescendingIcon + puHeaderFileThumbnails;
+				puHeaderFileThumbnails = tableHeaderAscendingIcon + puHeaderFileThumbnails;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1417,7 +1419,7 @@ namespace IGFD
 			else
 			{
 #ifdef USE_CUSTOM_SORTING_ICON
-				puHeaderFileThumbnails = tableHeaderAscendingIcon + puHeaderFileThumbnails;
+				puHeaderFileThumbnails = tableHeaderDescendingIcon + puHeaderFileThumbnails;
 #endif // USE_CUSTOM_SORTING_ICON
 				std::sort(prFileList.begin(), prFileList.end(),
 					[](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool
@@ -1433,11 +1435,6 @@ namespace IGFD
 			}
 		}
 #endif // USE_THUMBNAILS
-
-		if (vSortingField != SortingFieldEnum::FIELD_NONE)
-		{
-			puSortingField = vSortingField;
-		}
 
 		ApplyFilteringOnFileList(vFileDialogInternal);
 	}
@@ -1566,7 +1563,7 @@ namespace IGFD
 			}
 #endif // USE_STD_FILESYSTEM
 
-			SortFields(vFileDialogInternal, puSortingField, false);
+			SortFields(vFileDialogInternal);
 		}
 	}
 
@@ -1696,13 +1693,13 @@ namespace IGFD
 			auto v = (double)vByteSize;
 
 			if (v < lo)
-				return prRoundNumber(v, 0) + " o"; // octet
+				return prRoundNumber(v, 0) + " " + fileSizeBytes; // octet
 			else if (v < ko)
-				return prRoundNumber(v / lo, 2) + " Ko"; // ko
+				return prRoundNumber(v / lo, 2) + " " + fileSizeKiloBytes; // ko
 			else  if (v < mo)
-				return prRoundNumber(v / ko, 2) + " Mo"; // Mo 
+				return prRoundNumber(v / ko, 2) + " " + fileSizeMegaBytes; // Mo
 			else
-				return prRoundNumber(v / mo, 2) + " Go"; // Go 
+				return prRoundNumber(v / mo, 2) + " " + fileSizeGigaBytes; // Go
 		}
 
 		return "";
@@ -2964,7 +2961,7 @@ namespace IGFD
 			if (g.NavId && g.NavId == vListViewID)
 			{
 				if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) ||
-					ImGui::IsKeyPressedMap(ImGuiKey_KeyPadEnter) ||
+					ImGui::IsKeyPressedMap(ImGuiKey_KeypadEnter) ||
 					ImGui::IsKeyPressedMap(ImGuiKey_Space))
 				{
 					ImGui::ActivateItem(vListViewID);
@@ -3053,6 +3050,11 @@ namespace IGFD
 						else
 						{
 							fdi.SelectFileName(vFileDialogInternal, infos);
+
+							if (enterInDirectory)
+							{
+								vFileDialogInternal.puIsOk = true;
+							}
 						}
 
 						if (exitDirectory)
@@ -3363,7 +3365,7 @@ namespace IGFD
 		if (ps.isOk)
 		{
 			prFileDialogInternal.puFileManager.puDLGpath = ps.path;
-			prFileDialogInternal.puFileManager.SetDefaultFileName(vFilePathName);
+			prFileDialogInternal.puFileManager.SetDefaultFileName(ps.name);
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt = "." + ps.ext;
 		}
 		else
@@ -3732,6 +3734,7 @@ namespace IGFD
 #ifdef USE_BOOKMARK
 		prDrawBookmarkButton();
 		ImGui::SameLine();
+
 #endif // USE_BOOKMARK
 
 		prFileDialogInternal.puFileManager.DrawDirectoryCreation(prFileDialogInternal);
@@ -3817,6 +3820,8 @@ namespace IGFD
 		
 		float posY = ImGui::GetCursorPos().y; // height of last bar calc
 
+		ImGui::AlignTextToFramePadding();
+
 		if (!fdFile.puDLGDirectoryMode)
 			ImGui::Text(fileNameString);
 		else // directory chooser
@@ -3827,9 +3832,25 @@ namespace IGFD
 		// Input file fields
 		float width = ImGui::GetContentRegionAvail().x;
 		if (!fdFile.puDLGDirectoryMode)
-			width -= FILTER_COMBO_WIDTH;
+		{
+			ImGuiContext& g = *GImGui;
+			width -= FILTER_COMBO_WIDTH + g.Style.ItemSpacing.x;
+		}
+
 		ImGui::PushItemWidth(width);
-		ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER);
+		
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+		
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField)
+		{
+			flags |= ImGuiInputTextFlags_ReadOnly;
+		}
+
+		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags))
+		{
+			prFileDialogInternal.puIsOk = true;
+		}
+
 		if (ImGui::GetItemID() == ImGui::GetActiveID())
 			prFileDialogInternal.puFileInputIsActive = true;
 		ImGui::PopItemWidth();
@@ -3842,7 +3863,7 @@ namespace IGFD
 		// OK Button
 		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
 		{
-			if (IMGUI_BUTTON(okButtonString "##validationdialog"))
+			if (IMGUI_BUTTON(okButtonString "##validationdialog") || prFileDialogInternal.puIsOk)
 			{
 				prFileDialogInternal.puIsOk = true;
 				res = true;
@@ -3928,6 +3949,11 @@ namespace IGFD
 			else
 			{
 				fdi.SelectFileName(prFileDialogInternal, vInfos);
+
+				if (ImGui::IsMouseDoubleClicked(0))
+				{
+					prFileDialogInternal.puIsOk = true;
+				}
 			}
 		}
 
@@ -3984,12 +4010,16 @@ namespace IGFD
 		if (ImGui::BeginTableEx("##FileDialog_fileTable", listViewID, 4, flags, vSize, 0.0f)) //-V112
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
-			ImGui::TableSetupColumn(fdi.puHeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
-			ImGui::TableSetupColumn(fdi.puHeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed | 
+			ImGui::TableSetupColumn(fdi.puHeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch |
+				(defaultSortOrderFilename ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending), -1, 0);
+			ImGui::TableSetupColumn(fdi.puHeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderType ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnType) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 1);
-			ImGui::TableSetupColumn(fdi.puHeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed | 
+			ImGui::TableSetupColumn(fdi.puHeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderSize ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnSize) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 2);
-			ImGui::TableSetupColumn(fdi.puHeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed | 
+			ImGui::TableSetupColumn(fdi.puHeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderDate ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnDate) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 3);
 
 #ifndef USE_CUSTOM_SORTING_ICON
@@ -3998,14 +4028,32 @@ namespace IGFD
 			{
 				if (sorts_specs->SpecsDirty && !fdi.IsFileListEmpty())
 				{
+					bool direction = sorts_specs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+
 					if (sorts_specs->Specs->ColumnUserID == 0)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
+						fdi.puSortingDirection[0] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (sorts_specs->Specs->ColumnUserID == 1)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_TYPE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_TYPE;
+						fdi.puSortingDirection[1] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (sorts_specs->Specs->ColumnUserID == 2)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_SIZE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
+						fdi.puSortingDirection[2] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else //if (sorts_specs->Specs->ColumnUserID == 3) => alwayd true for the moment, to uncomment if we add a fourth column
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_DATE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
+						fdi.puSortingDirection[3] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 
 					sorts_specs->SpecsDirty = false;
 				}
@@ -4024,13 +4072,41 @@ namespace IGFD
 				if (ImGui::IsItemClicked())
 				{
 					if (column == 0)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME)
+							fdi.puSortingDirection[0] = !fdi.puSortingDirection[0];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
+
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (column == 1)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_TYPE, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_TYPE)
+							fdi.puSortingDirection[1] = !fdi.puSortingDirection[1];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_TYPE;
+
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (column == 2)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_SIZE, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_SIZE)
+							fdi.puSortingDirection[2] = !fdi.puSortingDirection[2];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else //if (column == 3) => alwayd true for the moment, to uncomment if we add a fourth column
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_DATE, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_DATE)
+							fdi.puSortingDirection[3] = !fdi.puSortingDirection[3];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 				}
 			}
 #endif // USE_CUSTOM_SORTING_ICON
@@ -4130,15 +4206,20 @@ namespace IGFD
 		if (ImGui::BeginTableEx("##FileDialog_fileTable", listViewID, 5, flags, vSize, 0.0f))
 		{
 			ImGui::TableSetupScrollFreeze(0, 1); // Make header always visible
-			ImGui::TableSetupColumn(fdi.puHeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch, -1, 0);
+			ImGui::TableSetupColumn(fdi.puHeaderFileName.c_str(), ImGuiTableColumnFlags_WidthStretch |
+				(defaultSortOrderFilename ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending), -1, 0);
 			ImGui::TableSetupColumn(fdi.puHeaderFileType.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderType ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnType) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 1);
 			ImGui::TableSetupColumn(fdi.puHeaderFileSize.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderSize ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnSize) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 2);
 			ImGui::TableSetupColumn(fdi.puHeaderFileDate.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderDate ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending) |
 				((prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_HideColumnDate) ? ImGuiTableColumnFlags_DefaultHide : 0), -1, 3);
 			// not needed to have an option for hide the thumbnails since this is why this view is used
-			ImGui::TableSetupColumn(fdi.puHeaderFileThumbnails.c_str(), ImGuiTableColumnFlags_WidthFixed, -1, 4); //-V112
+			ImGui::TableSetupColumn(fdi.puHeaderFileThumbnails.c_str(), ImGuiTableColumnFlags_WidthFixed |
+				(defaultSortOrderThumbnails ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending), -1, 4); //-V112
 
 #ifndef USE_CUSTOM_SORTING_ICON
 			// Sort our data if sort specs have been changed!
@@ -4146,16 +4227,39 @@ namespace IGFD
 			{
 				if (sorts_specs->SpecsDirty && !fdi.IsFileListEmpty())
 				{
+					bool direction = sorts_specs->Specs->SortDirection == ImGuiSortDirection_Ascending;
+					
 					if (sorts_specs->Specs->ColumnUserID == 0)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
+						fdi.puSortingDirection[0] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (sorts_specs->Specs->ColumnUserID == 1)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_TYPE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_TYPE;
+						fdi.puSortingDirection[1] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (sorts_specs->Specs->ColumnUserID == 2)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_SIZE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
+						fdi.puSortingDirection[2] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (sorts_specs->Specs->ColumnUserID == 3)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_DATE, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
+						fdi.puSortingDirection[3] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else // if (sorts_specs->Specs->ColumnUserID == 4) = > always true for the moment, to uncomment if we add another column
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS, true);
+					{
+						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS;
+						fdi.puSortingDirection[4] = direction;
+						fdi.SortFields(prFileDialogInternal);
+					}
+
 					sorts_specs->SpecsDirty = false;
 				}
 			}
@@ -4173,15 +4277,50 @@ namespace IGFD
 				if (ImGui::IsItemClicked())
 				{
 					if (column == 0)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME)
+							fdi.puSortingDirection[0] = !fdi.puSortingDirection[0];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (column == 1)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_TYPE, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_TYPE)
+							fdi.puSortingDirection[1] = !fdi.puSortingDirection[1];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_TYPE;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (column == 2)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_SIZE, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_SIZE)
+							fdi.puSortingDirection[2] = !fdi.puSortingDirection[2];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 					else if (column == 3)
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_DATE, true);
-					else // if (column == 4) = > always true for the moment, to uncomment if we add another column
-						fdi.SortFields(prFileDialogInternal, IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS, true);
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_DATE)
+							fdi.puSortingDirection[3] = !fdi.puSortingDirection[3];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
+					else // if (sorts_specs->Specs->ColumnUserID == 4) = > always true for the moment, to uncomment if we add another column
+					{
+						if (fdi.puSortingField == IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS)
+							fdi.puSortingDirection[4] = !fdi.puSortingDirection[4];
+						else
+							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS;
+						
+						fdi.SortFields(prFileDialogInternal);
+					}
 				}
 			}
 #endif // USE_CUSTOM_SORTING_ICON
