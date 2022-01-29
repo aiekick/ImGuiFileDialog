@@ -39,7 +39,7 @@ SOFTWARE.
 #include <cstdio>
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
-	#include <filesystem>
+	#include "filesystem.hpp"
 #endif
 #if defined (__EMSCRIPTEN__) // EMSCRIPTEN
 	#include <emscripten.h>
@@ -516,9 +516,9 @@ namespace IGFD
 		{
 #ifdef USE_STD_FILESYSTEM
 			std::error_code ec;
-			namespace fs = std::filesystem;
-			fs::path p = fs::u8path(name);
-			bExists = fs::is_directory(p, ec) || p == filename_drive(p.u8string()) + std::string(1u, PATH_SEP);
+			namespace fs = ghc::filesystem;
+			fs::path p = fs::path(name);
+			bExists = fs::is_directory(p, ec) || p == filename_drive(p.string()) + std::string(1u, PATH_SEP);
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
@@ -544,8 +544,8 @@ namespace IGFD
 #ifdef WIN32
 #ifdef USE_STD_FILESYSTEM
 				std::error_code ec;
-				namespace fs = std::filesystem;
-				fs::path p = fs::u8path(name);
+				namespace fs = ghc::filesystem;
+				fs::path p = fs::path(name);
 				res = fs::create_directory(p, ec);
 #else
 				std::wstring wname = IGFD::Utils::string_to_wstring(name);
@@ -578,21 +578,21 @@ namespace IGFD
 	IGFD::Utils::PathStruct IGFD::Utils::ParsePathFileName(const std::string& vPathFileName)
 	{
 		std::error_code ec;
-		namespace fs = std::filesystem;
-		fs::path p = fs::u8path(vPathFileName);
+		namespace fs = ghc::filesystem;
+		fs::path p = fs::path(vPathFileName);
 		
 		PathStruct res;
-		if (p.u8string().empty())
+		if (p.string().empty())
 			return res;
 
 		if (fs::is_directory(p)) {
 			res.name = "";
-			res.path = p.u8string();
+			res.path = p.string();
 			res.isOk = true;
 
-		} else if (fs::is_regular_file(fsPath)) {
-			res.name = p.filename().u8string();
-			res.path = p.parent_path().u8string();
+		} else if (fs::is_regular_file(p)) {
+			res.name = p.filename().string();
+			res.path = p.parent_path().string();
 			res.isOk = true;
 		}
 
@@ -1509,10 +1509,10 @@ namespace IGFD
 
 #ifdef USE_STD_FILESYSTEM
 			std::error_code ec;
-			namespace fs = std::filesystem;
-			fs::path p = fs::u8path(path);
-			const auto dir_iter = std::filesystem::directory_iterator(p, ec);
-			AddFile(vFileDialogInternal, p.u8string(), "..", 'd');
+			namespace fs = ghc::filesystem;
+			fs::path p = fs::path(path);
+			const auto dir_iter = ghc::filesystem::directory_iterator(p, ec);
+			AddFile(vFileDialogInternal, p.string(), "..", 'd');
 			
 			for (const auto& file : dir_iter)
 			{
@@ -1524,8 +1524,8 @@ namespace IGFD
 				else
 					fileType = 'f';
 
-				auto fileNameExt = file.path().filename().u8string();
-				AddFile(vFileDialogInternal, p.u8string(), fileNameExt, fileType);
+				auto fileNameExt = file.path().filename().string();
+				AddFile(vFileDialogInternal, p.string(), fileNameExt, fileType);
 			}
 #else // dirent
 			struct dirent** files = nullptr;
@@ -1810,13 +1810,13 @@ namespace IGFD
 		
 #ifdef USE_STD_FILESYSTEM
 		std::error_code ec;
-		namespace fs = std::filesystem;
-		fs::path p = fs::u8path(path);
-		bool dir_opened = fs::is_directory(p, ec) || p.u8string() == filename_drive(p.u8string()) + std::string(1u, PATH_SEP);
+		namespace fs = ghc::filesystem;
+		fs::path p = fs::path(path);
+		bool dir_opened = fs::is_directory(p, ec) || p.string() == filename_drive(p.string()) + std::string(1u, PATH_SEP);
 		if (!dir_opened)
 		{
 			p = ".";
-			dir_opened = fs::is_directory(p, ec) || p.u8string() == filename_drive(p.u8string()) + std::string(1u, PATH_SEP);
+			dir_opened = fs::is_directory(p, ec) || p.string() == filename_drive(p.string()) + std::string(1u, PATH_SEP);
 		}
 		if (dir_opened)
 #else
@@ -1948,8 +1948,8 @@ namespace IGFD
 	{
 	#ifdef USE_STD_FILESYSTEM
 		std::error_code ec;
-		namespace fs = std::filesystem;
-		fs::path p = fs::u8path(vFile);
+		namespace fs = ghc::filesystem;
+		fs::path p = fs::path(vFile);
 		return fs::exists(p, ec);
 	#else
 		std::ifstream docFile(vFile, std::ios::in);
