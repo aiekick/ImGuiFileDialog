@@ -615,10 +615,12 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_HideColumnDate = (1 << 5),								// hide column file date
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
-#endif
-	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field
-																				// for file open style dialogs
+#endif // USE_THUMBNAILS
+	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field for file open style dialogs
 	ImGuiFileDialogFlags_NoDialog = (1 << 8),									// let the dialog embedded in your own imgui begin / end scope
+#ifdef USE_BOOKMARK
+	ImGuiFileDialogFlags_DisableBookmarkMode = (1 << 9),
+#endif // USE_BOOKMARK
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 

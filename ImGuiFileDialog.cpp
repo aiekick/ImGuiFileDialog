@@ -3717,8 +3717,11 @@ namespace IGFD
 	void IGFD::FileDialog::prDrawHeader()
 	{
 #ifdef USE_BOOKMARK
-		prDrawBookmarkButton();
-		ImGui::SameLine();
+		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableBookmarkMode))
+		{
+			prDrawBookmarkButton();
+			ImGui::SameLine();
+		}
 
 #endif // USE_BOOKMARK
 
@@ -3746,18 +3749,21 @@ namespace IGFD
 		ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2(0.0f, prFileDialogInternal.puFooterHeight);
 
 #ifdef USE_BOOKMARK
-		if (prBookmarkPaneShown)
+		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableBookmarkMode))
 		{
-			//size.x -= prBookmarkWidth;
-			float otherWidth = size.x - prBookmarkWidth;
-			ImGui::PushID("##splitterbookmark");
-			IGFD::Utils::Splitter(true, 4.0f,
-				&prBookmarkWidth, &otherWidth, 10.0f,
-				10.0f + prFileDialogInternal.puDLGoptionsPaneWidth, size.y);
-			ImGui::PopID();
-			size.x -= otherWidth;
-			prDrawBookmarkPane(prFileDialogInternal, size);
-			ImGui::SameLine();
+			if (prBookmarkPaneShown)
+			{
+				//size.x -= prBookmarkWidth;
+				float otherWidth = size.x - prBookmarkWidth;
+				ImGui::PushID("##splitterbookmark");
+				IGFD::Utils::Splitter(true, 4.0f,
+					&prBookmarkWidth, &otherWidth, 10.0f,
+					10.0f + prFileDialogInternal.puDLGoptionsPaneWidth, size.y);
+				ImGui::PopID();
+				size.x -= otherWidth;
+				prDrawBookmarkPane(prFileDialogInternal, size);
+				ImGui::SameLine();
+			}
 		}
 #endif // USE_BOOKMARK
 
@@ -3789,9 +3795,9 @@ namespace IGFD
 				prDrawThumbnailsGridView(size);
 			}
 		}
-#else
+#else	// USE_THUMBNAILS
 		prDrawFileListView(size);
-#endif // USE_THUMBNAILS
+#endif	// USE_THUMBNAILS
 
 		if (prFileDialogInternal.puDLGoptionsPane)
 		{
