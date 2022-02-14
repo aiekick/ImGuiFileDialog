@@ -3570,7 +3570,7 @@ namespace IGFD
 			auto& fdFile = prFileDialogInternal.puFileManager;
 			auto& fdFilter = prFileDialogInternal.puFilterManager;
 
-			static ImGuiWindowFlags flags;
+			static ImGuiWindowFlags flags; // todo: not a good solution for multi instance, to fix
 
 			// to be sure than only one dialog is displayed per frame
 			ImGuiContext& g = *GImGui;
@@ -3601,16 +3601,23 @@ namespace IGFD
 			ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
 
 			bool beg = false;
-			if (prFileDialogInternal.puDLGmodal &&
-				!prFileDialogInternal.puOkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
+			if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_NoDialog) // disable our own dialog system (standard or modal)
 			{
-				ImGui::OpenPopup(name.c_str());
-				beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr,
-					flags | ImGuiWindowFlags_NoScrollbar);
+				beg = true;
 			}
 			else
 			{
-				beg = ImGui::Begin(name.c_str(), (bool*)nullptr, flags | ImGuiWindowFlags_NoScrollbar);
+				if (prFileDialogInternal.puDLGmodal &&
+					!prFileDialogInternal.puOkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
+				{
+					ImGui::OpenPopup(name.c_str());
+					beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr,
+						flags | ImGuiWindowFlags_NoScrollbar);
+				}
+				else
+				{
+					beg = ImGui::Begin(name.c_str(), (bool*)nullptr, flags | ImGuiWindowFlags_NoScrollbar);
+				}
 			}
 			if (beg)
 			{
@@ -3670,10 +3677,16 @@ namespace IGFD
 					ImGui::EndPopup();
 			}
 
-			// same things here regarding prOkResultToConfirm
-			if (!prFileDialogInternal.puDLGmodal || prFileDialogInternal.puOkResultToConfirm)
-				ImGui::End();
+			if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_NoDialog) // disable our own dialog system (standard or modal)
+			{
 
+			}
+			else
+			{
+				// same things here regarding prOkResultToConfirm
+				if (!prFileDialogInternal.puDLGmodal || prFileDialogInternal.puOkResultToConfirm)
+					ImGui::End();
+			}
 			// confirm the result and show the confirm to overwrite dialog if needed
 			res =  prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
 			

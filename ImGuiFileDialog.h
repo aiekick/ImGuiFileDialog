@@ -618,6 +618,7 @@ enum ImGuiFileDialogFlags_
 #endif
 	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field
 																				// for file open style dialogs
+	ImGuiFileDialogFlags_NoDialog = (1 << 8),									// let the dialog embedded in your own imgui begin / end scope
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
 
