@@ -581,7 +581,7 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
-// compatible with 1.87 WIP
+// compatible with 1.88 WIP
 #define IMGUIFILEDIALOG_VERSION "v0.6.4"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
@@ -594,32 +594,32 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 typedef int IGFD_FileStyleFlags; // -> enum IGFD_FileStyleFlags_
 enum IGFD_FileStyleFlags_ // by evaluation / priority order
 {
-	IGFD_FileStyle_None = 0,						// define none style
-	IGFD_FileStyleByTypeFile = (1 << 0),			// define style for all files
-	IGFD_FileStyleByTypeDir = (1 << 1),				// define style for all dir
-	IGFD_FileStyleByTypeLink = (1 << 2),			// define style for all link
-	IGFD_FileStyleByExtention = (1 << 3),			// define style by extention, for files or links
-	IGFD_FileStyleByFullName = (1 << 4),			// define style for particular file/dir/link full name (filename + extention)
+	IGFD_FileStyle_None					= 0,		// define none style
+	IGFD_FileStyleByTypeFile			= (1 << 0),	// define style for all files
+	IGFD_FileStyleByTypeDir				= (1 << 1),	// define style for all dir
+	IGFD_FileStyleByTypeLink			= (1 << 2),	// define style for all link
+	IGFD_FileStyleByExtention			= (1 << 3),	// define style by extention, for files or links
+	IGFD_FileStyleByFullName			= (1 << 4),	// define style for particular file/dir/link full name (filename + extention)
 	IGFD_FileStyleByContainedInFullName = (1 << 5),	// define style for file/dir/link when criteria is contained in full name
 };
 
 typedef int ImGuiFileDialogFlags; // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_
 {
-	ImGuiFileDialogFlags_None = 0,
-	ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),							// show confirm to overwrite dialog
-	ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),						// dont show hidden file (file starting with a .)
-	ImGuiFileDialogFlags_DisableCreateDirectoryButton = (1 << 2),				// disable the create directory button
-	ImGuiFileDialogFlags_HideColumnType = (1 << 3),								// hide column file type
-	ImGuiFileDialogFlags_HideColumnSize = (1 << 4),								// hide column file size
-	ImGuiFileDialogFlags_HideColumnDate = (1 << 5),								// hide column file date
+	ImGuiFileDialogFlags_None							= 0,		// define none default flag
+	ImGuiFileDialogFlags_ConfirmOverwrite				= (1 << 0),	// show confirm to overwrite dialog
+	ImGuiFileDialogFlags_DontShowHiddenFiles			= (1 << 1),	// dont show hidden file (file starting with a .)
+	ImGuiFileDialogFlags_DisableCreateDirectoryButton	= (1 << 2),	// disable the create directory button
+	ImGuiFileDialogFlags_HideColumnType					= (1 << 3),	// hide column file type
+	ImGuiFileDialogFlags_HideColumnSize					= (1 << 4),	// hide column file size
+	ImGuiFileDialogFlags_HideColumnDate					= (1 << 5),	// hide column file date
+	ImGuiFileDialogFlags_NoDialog						= (1 << 6),	// let the dialog embedded in your own imgui begin / end scope
+	ImGuiFileDialogFlags_ReadOnlyFileNameField			= (1 << 7),	// don't let user type in filename field for file open style dialogs
 #ifdef USE_THUMBNAILS
-	ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 6),						// disable the thumbnail mode
+	ImGuiFileDialogFlags_DisableThumbnailMode			= (1 << 8),	// disable the thumbnail mode
 #endif // USE_THUMBNAILS
-	ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),						// don't let user type in filename field for file open style dialogs
-	ImGuiFileDialogFlags_NoDialog = (1 << 8),									// let the dialog embedded in your own imgui begin / end scope
 #ifdef USE_BOOKMARK
-	ImGuiFileDialogFlags_DisableBookmarkMode = (1 << 9),
+	ImGuiFileDialogFlags_DisableBookmarkMode			= (1 << 9),	// disable the bookmark mode
 #endif // USE_BOOKMARK
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
