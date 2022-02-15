@@ -2334,13 +2334,13 @@ namespace IGFD
 		if (puFileManager.puInputPathActivated)
 		{
 			auto gio = ImGui::GetIO();
-			if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Enter]))
+			if (ImGui::IsKeyReleased(ImGuiKey_Enter))
 			{
 				puFileManager.SetCurrentPath(std::string(puFileManager.puInputPathBuffer));
 				puFileManager.OpenCurrentPath(*this);
 				puFileManager.puInputPathActivated = false;
 			}
-			if (ImGui::IsKeyReleased(gio.KeyMap[ImGuiKey_Escape]))
+			if (ImGui::IsKeyReleased(ImGuiKey_Escape))
 			{
 				puFileManager.puInputPathActivated = false;
 			}
@@ -2930,9 +2930,9 @@ namespace IGFD
 
 			if (g.NavId && g.NavId == vListViewID)
 			{
-				if (ImGui::IsKeyPressedMap(ImGuiKey_Enter) ||
-					ImGui::IsKeyPressedMap(ImGuiKey_KeypadEnter) ||
-					ImGui::IsKeyPressedMap(ImGuiKey_Space))
+				if (ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+					ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) ||
+					ImGui::IsKeyPressed(ImGuiKey_Space))
 				{
 					ImGui::ActivateItem(vListViewID);
 					ImGui::SetActiveID(vListViewID, g.CurrentWindow);
@@ -2944,7 +2944,7 @@ namespace IGFD
 
 			if (canWeExplore)
 			{
-				if (ImGui::IsKeyPressedMap(ImGuiKey_Escape))
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 				{
 					ImGui::ClearActiveID();
 					g.LastActiveId = 0;
@@ -2957,7 +2957,7 @@ namespace IGFD
 				bool enterInDirectory = false;
 				bool exitDirectory = false;
 
-				if ((hasNav && ImGui::IsKeyPressedMap(ImGuiKey_UpArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_UP)))
+				if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_UP)))
 				{
 					exploreByKey = true;
 					if (prLocateFileByInputChar_lastFileIdx > 0)
@@ -2965,7 +2965,7 @@ namespace IGFD
 					else
 						prLocateFileByInputChar_lastFileIdx = countFiles - 1U;
 				}
-				else if ((hasNav && ImGui::IsKeyPressedMap(ImGuiKey_DownArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_DOWN)))
+				else if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_DownArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_DOWN)))
 				{
 					exploreByKey = true;
 					if (prLocateFileByInputChar_lastFileIdx < countFiles - 1U)
