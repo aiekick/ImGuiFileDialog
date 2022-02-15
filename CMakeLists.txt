@@ -5,7 +5,7 @@ set(PROJECT ImGuiFileDialog)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
-option(USE_STD_FILESYSTEM "Enable std::fielsystem use for path and ImGuiFileDialog" OFF)
+option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 
 include(cmake/3rdparty.cmake)
 
@@ -17,6 +17,7 @@ endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
+##add_definitions(-DIMGUI_DISABLE_OBSOLETE_KEYIO)
 
 file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
 file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)

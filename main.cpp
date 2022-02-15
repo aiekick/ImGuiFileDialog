@@ -369,10 +369,10 @@ int main(int, char**)
 	}
 #endif
 
-	static std::string filePathName = "";
-	static std::string filePath = "";
-	static std::string filter = "";
-	static std::string userDatas = "";
+	static std::string filePathName;
+	static std::string filePath;
+	static std::string filter;
+	static std::string userDatas;
 	static std::vector<std::pair<std::string, std::string>> selection = {};
 
 	// Main loop
