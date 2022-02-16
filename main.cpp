@@ -238,6 +238,9 @@ int main(int, char**)
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+	ImGuiFileDialog fileDialog2;
+	ImGuiFileDialog fileDialogEmbedded3;
+
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *vThumbnail_Info) -> void
 	{
@@ -267,7 +270,44 @@ int main(int, char**)
 			vThumbnail_Info->isReadyToDisplay = true;
 		}
 	});
+	fileDialogEmbedded3.SetCreateThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) -> void
+	{
+		if (vThumbnail_Info &&
+			vThumbnail_Info->isReadyToUpload &&
+			vThumbnail_Info->textureFileDatas)
+		{
+			GLuint textureId = 0;
+			glGenTextures(1, &textureId);
+			vThumbnail_Info->textureID = (void*)(size_t)textureId;
+
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+				(GLsizei)vThumbnail_Info->textureWidth, (GLsizei)vThumbnail_Info->textureHeight,
+				0, GL_RGBA, GL_UNSIGNED_BYTE, vThumbnail_Info->textureFileDatas);
+			glFinish();
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			delete[] vThumbnail_Info->textureFileDatas;
+			vThumbnail_Info->textureFileDatas = nullptr;
+
+			vThumbnail_Info->isReadyToUpload = false;
+			vThumbnail_Info->isReadyToDisplay = true;
+		}
+	});
 	ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
+	{
+		if (vThumbnail_Info)
+		{
+			GLuint texID = (GLuint)(size_t)vThumbnail_Info->textureID;
+			glDeleteTextures(1, &texID);
+			glFinish();
+		}
+	});
+	fileDialogEmbedded3.SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
 	{
 		if (vThumbnail_Info)
 		{
@@ -317,7 +357,6 @@ int main(int, char**)
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 
 	// just for show multi dialog instance behavior (here use for show directory query dialog)
-	ImGuiFileDialog fileDialog2;
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -326,7 +365,6 @@ int main(int, char**)
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 	fileDialog2.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 
-	ImGuiFileDialog fileDialogEmbedded3;
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -334,6 +372,7 @@ int main(int, char**)
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
 
 	// c interface
 	auto cfileDialog = IGFD_Create();
@@ -782,6 +821,7 @@ int main(int, char**)
 
 #ifdef USE_THUMBNAILS
 		ImGuiFileDialog::Instance()->ManageGPUThumbnails();
+		fileDialogEmbedded3.ManageGPUThumbnails();
 #endif
 
 		glViewport(0, 0, display_w, display_h);

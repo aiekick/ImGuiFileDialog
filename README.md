@@ -73,6 +73,7 @@ included in the Lib_Only branch for your convenience.
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
+- The dialog can be embedded in another user frame than the standard or modal dialog
 - C Api (succesfully tested with CimGui)
 
 ## Singleton Pattern vs. Multiple Instances
@@ -564,6 +565,32 @@ with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrot
 
 ImGuiFontStudio uses ImGuiFileDialog! Check it out.
 
+## Embedded in other frames :
+
+The dialog can be embedded in another user frame than the standard or modal dialog
+
+You have to create a variable of type ImGuiFileDialog. (if you are suing the singleton, you will not have the possibility to open other dialog)
+
+ex :
+
+```cpp
+ImGuiFileDialog fileDialog;
+
+// open dialog; in this case, Bookmark, directory creation are disabled with, and also the file input field is readonly.
+// btw you can od what you want
+fileDialog.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
+	ImGuiFileDialogFlags_NoDialog | 
+	ImGuiFileDialogFlags_DisableBookmarkMode | 
+	ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
+	ImGuiFileDialogFlags_ReadOnlyFileNameField);
+// then display, here 
+// to note, when embedded the ImVec2(0,0) (MinSize) do nothing, only the ImVec2(0,350) (MaxSize) can size the dialog frame 
+fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
+```
+the result :
+
+![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
+
 ## Api's C/C++ :
 
 ### C++.
@@ -930,40 +957,3 @@ feature : USE_THUMBNAILS
 	IMGUIFILEDIALOG_API void ManageGPUThumbnails(						// must be call in gpu zone, possibly a thread, will call the callback for create / destroy the textures
 		ImGuiFileDialog* vContext);										// ImGuiFileDialog context 
 ```
-
-## How to Build the sample App :
-
-You need to use cMake.
-For the 3 Os (Win, Linux, MacOs), the cMake usage is exactly the same, 
-
-1) Choose a build directory. (called here my_build_directory for instance) and
-2) Choose a Build Mode : "Release" / "MinSizeRel" / "RelWithDebInfo" / "Debug" (called here BuildMode for instance)
-3) Run cMake in console : (the first for generate cmake build files, the second for build the binary)
-```cpp
-cmake -B my_build_directory -DCMAKE_BUILD_TYPE=BuildMode
-cmake --build my_build_directory --config BuildMode
-```
-
-Some cMake version need Build mode define via the directive CMAKE_BUILD_TYPE or via --Config when we launch the build. 
-This is why i put the boths possibilities
-
-By the way you need before, to make sure, you have needed dependencies.
-
-### On Windows :
-
-You need to have the opengl library installed
-
-### On Linux :
-
-You need many lib : (X11, xrandr, xinerama, xcursor, mesa)
-
-If you are on debian you can run :  
-
-```cpp
-sudo apt-get update 
-sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
-```
-
-### On MacOs :
-
-you need many lib : opengl and cocoa framework
