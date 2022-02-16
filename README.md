@@ -470,7 +470,7 @@ std::string GetCurrentFilter();                    // The file extension
 
 ## Thumbnails Display
 
-You can now, display thumbnails of pictures.
+You can now, display thumbnails of pictures. 
 
 ![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/thumbnails.gif)
 
@@ -493,6 +493,17 @@ Corresponding to your backend (ex : OpenGl) you need to define two callbacks :
 After that you need to call the function who is responsible to create / destroy the textures.
 this function must be called in your GPU Rendering zone for avoid destroying of used texture.
 if you do that at the same place of your imgui code, some backend can crash your app, by ex with vulkan.
+
+To Clarify :
+
+This feature is spliited in two zones : 
+ - CPU Zone : for load/destroy picture file
+ - GPU Zone : for load/destroy gpu textures.
+This modern behavior for avoid destroying of used texture, 
+was needed for vulkan. 
+
+This feature was Successfully tested on my side with Opengl and Vulkan.
+But im sure is perfectly compatible with other modern apis like DirectX and Metal
 
 ex, for opengl :
 
@@ -545,6 +556,7 @@ ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info*
 // GPU Rendering Zone // To call for Create/ Destroy Textures
 ImGuiFileDialog::Instance()->ManageGPUThumbnails();
 ```
+
 
 ## How to Integrate ImGuiFileDialog in your project
 
