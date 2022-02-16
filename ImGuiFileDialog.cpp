@@ -2139,6 +2139,8 @@ namespace IGFD
 				prCreateDirectoryMode = false;
 			}
 		}
+
+		ImGui::SameLine();
 	}
 
 	void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogInternal)
@@ -3603,8 +3605,6 @@ namespace IGFD
 			}
 #endif // IMGUI_HAS_VIEWPORT
 
-			ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
-
 			bool beg = false;
 			if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_NoDialog) // disable our own dialog system (standard or modal)
 			{
@@ -3612,6 +3612,8 @@ namespace IGFD
 			}
 			else
 			{
+				ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
+
 				if (prFileDialogInternal.puDLGmodal &&
 					!prFileDialogInternal.puOkResultToConfirm) // disable modal because the confirm dialog for overwrite is a new modal
 				{
@@ -3642,34 +3644,41 @@ namespace IGFD
 				}
 #endif // IMGUI_HAS_VIEWPORT
 
-				prFileDialogInternal.puName = name; //-V820
-				puAnyWindowsHovered |= ImGui::IsWindowHovered();
-
-				if (fdFile.puDLGpath.empty())
-					fdFile.puDLGpath = "."; // defaut path is '.'
-
-				fdFilter.SetDefaultFilterIfNotDefined();
-
-				// init list of files
-				if (fdFile.IsFileListEmpty() && !fdFile.puShowDrives)
+				ImGuiID _frameId = ImGui::GetID(name.c_str());
+				if (ImGui::BeginChild(_frameId, vMaxSize, false, flags | ImGuiWindowFlags_NoScrollbar))
 				{
-					IGFD::Utils::ReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, ""); // local path
-					if (!fdFile.puDLGDefaultFileName.empty())
+					prFileDialogInternal.puName = name; //-V820
+					puAnyWindowsHovered |= ImGui::IsWindowHovered();
+
+					if (fdFile.puDLGpath.empty())
+						fdFile.puDLGpath = "."; // defaut path is '.'
+
+					fdFilter.SetDefaultFilterIfNotDefined();
+
+					// init list of files
+					if (fdFile.IsFileListEmpty() && !fdFile.puShowDrives)
 					{
-						fdFile.SetDefaultFileName(fdFile.puDLGDefaultFileName);
-						fdFilter.SetSelectedFilterWithExt(fdFilter.puDLGdefaultExt);
+						IGFD::Utils::ReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, ""); // local path
+						if (!fdFile.puDLGDefaultFileName.empty())
+						{
+							fdFile.SetDefaultFileName(fdFile.puDLGDefaultFileName);
+							fdFilter.SetSelectedFilterWithExt(fdFilter.puDLGdefaultExt);
+						}
+						else if (fdFile.puDLGDirectoryMode) // directory mode
+							fdFile.SetDefaultFileName(".");
+						fdFile.ScanDir(prFileDialogInternal, fdFile.puDLGpath);
 					}
-					else if (fdFile.puDLGDirectoryMode) // directory mode
-						fdFile.SetDefaultFileName(".");
-					fdFile.ScanDir(prFileDialogInternal, fdFile.puDLGpath);
+
+					// draw dialog parts
+					prDrawHeader(); // bookmark, directory, path
+					prDrawContent(); // bookmark, files view, side pane 
+					res = prDrawFooter(); // file field, filter combobox, ok/cancel buttons
+
+					EndFrame();
+
+					
 				}
-
-				// draw dialog parts
-				prDrawHeader(); // bookmark, directory, path
-				prDrawContent(); // bookmark, files view, side pane 
-				res = prDrawFooter(); // file field, filter combobox, ok/cancel buttons
-
-				EndFrame();
+				ImGui::EndChild();
 
 				// for display in dialog center, the confirm to overwrite dlg
 				prFileDialogInternal.puDialogCenterPos = ImGui::GetCurrentWindowRead()->ContentRegionRect.GetCenter();
@@ -3731,9 +3740,13 @@ namespace IGFD
 #endif // USE_BOOKMARK
 
 		prFileDialogInternal.puFileManager.DrawDirectoryCreation(prFileDialogInternal);
-		ImGui::SameLine();
-		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-		ImGui::SameLine();
+
+		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableBookmarkMode) ||
+			!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableCreateDirectoryButton))
+		{
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
+		}
 		prFileDialogInternal.puFileManager.DrawPathComposer(prFileDialogInternal);
 
 #ifdef USE_THUMBNAILS
