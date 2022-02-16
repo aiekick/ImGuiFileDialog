@@ -412,11 +412,20 @@ namespace IGFD
 		std::wstring ret;
 		if (!str.empty())
 		{
-			size_t sz = std::mbstowcs(nullptr, str.c_str(), str.size());
+			size_t sz = 0U;
+#ifndef _MSC_VER
+			sz = std::mbstowcs(nullptr, str.c_str(), str.size());
+#else // _MSC_VER
+			mbstowcs_s(&sz, nullptr, 0, str.c_str(), str.size());
+#endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
+#ifndef _MSC_VER
 				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
+#else // _MSC_VER
+				mbstowcs_s(nullptr, ret.data(), sz, str.c_str(), sz);
+#endif // _MSC_VER
 			}
 		}
 		return ret;
@@ -427,11 +436,20 @@ namespace IGFD
 		std::string ret;
 		if (!str.empty())
 		{
-			size_t sz = std::wcstombs(nullptr, str.c_str(), str.size());
+			size_t sz = 0U;
+#ifndef _MSC_VER
+			sz = std::wcstombs(nullptr, str.c_str(), str.size());
+#else // _MSC_VER
+			wcstombs_s(&sz, nullptr, 0, str.c_str(), str.size());
+#endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
-				std::wcstombs((char*)ret.data(), str.c_str(), sz);
+#ifndef _MSC_VER
+				std::wcstombs((wchar_t*)ret.data(), str.c_str(), sz);
+#else // _MSC_VER
+				wcstombs_s(nullptr, ret.data(), sz, str.c_str(), sz);
+#endif // _MSC_VER
 			}
 		}
 		return ret;
@@ -482,7 +500,7 @@ namespace IGFD
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
 		const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
 #undef mini
-		if (countChars > 0)
+		if (countChars > 0U && countChars < 2049U)
 		{
 			std::string var = std::string(lpBuffer, (size_t)countChars);
 			IGFD::Utils::ReplaceString(var, "\\", "");
