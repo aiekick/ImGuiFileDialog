@@ -2165,7 +2165,13 @@ namespace IGFD
 		
 		if (IMGUI_BUTTON(editPathButtonString))
 		{
-			puInputPathActivated = true;
+			puInputPathActivated = !puInputPathActivated;
+			if (puInputPathActivated)
+			{
+				auto endIt = prCurrentPathDecomposition.end();
+				ComposeNewPath(--endIt);
+				IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
+			}
 		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(buttonEditPathString);
