@@ -326,6 +326,15 @@ int main(int, char**)
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
 	fileDialog2.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 
+	ImGuiFileDialog fileDialogEmbedded3;
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC); // add an icon for the filter type
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]"); // add an text for a filter type
+	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+
 	// c interface
 	auto cfileDialog = IGFD_Create();
 	IGFD_SetFileStyle(cfileDialog, IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "", nullptr);
@@ -572,6 +581,38 @@ int main(int, char**)
 				/////////////////////////////////////////////////////////////////
 				/////////////////////////////////////////////////////////////////
 
+				ImGui::Separator();
+
+				ImGui::Text("Embedded Dialog demo :");
+				fileDialogEmbedded3.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
+					ImGuiFileDialogFlags_NoDialog | 
+					ImGuiFileDialogFlags_DisableBookmarkMode | 
+					ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
+					ImGuiFileDialogFlags_ReadOnlyFileNameField);
+				// to note, when embedded only the vMinSize do nothing, only the vMaxSize can size the dialog frame 
+				if (fileDialogEmbedded3.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
+				{
+					if (fileDialogEmbedded3.IsOk())
+					{
+						filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+						filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+						filter = ImGuiFileDialog::Instance()->GetCurrentFilter();
+						// here convert from string because a string was passed as a userDatas, but it can be what you want
+						if (ImGuiFileDialog::Instance()->GetUserDatas())
+							userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
+						auto sel = ImGuiFileDialog::Instance()->GetSelection(); // multiselection
+						selection.clear();
+						for (auto s : sel)
+						{
+							selection.emplace_back(s.first, s.second);
+						}
+						// action
+					}
+					fileDialogEmbedded3.Close();
+				}
+
+				ImGui::Separator();
+
 				ImVec2 minSize = ImVec2(0, 0);
 				ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
@@ -729,6 +770,7 @@ int main(int, char**)
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
 			ImGui::End();
 		}
 
