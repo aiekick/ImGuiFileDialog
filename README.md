@@ -73,6 +73,7 @@ included in the Lib_Only branch for your convenience.
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
+- The dialog can be embedded in another user frame than the standard or modal dialog
 - C Api (succesfully tested with CimGui)
 
 ## Singleton Pattern vs. Multiple Instances
@@ -563,6 +564,32 @@ The custom icon font used in the example code ([CustomFont.cpp](CustomFont.cpp) 
 with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrote. :)
 
 ImGuiFontStudio uses ImGuiFileDialog! Check it out.
+
+## Embedded in other frames :
+
+The dialog can be embedded in another user frame than the standard or modal dialog
+
+You have to create a variable of type ImGuiFileDialog. (if you are suing the singleton, you will not have the possibility to open other dialog)
+
+ex :
+
+```cpp
+ImGuiFileDialog fileDialog;
+
+// open dialog; in this case, Bookmark, directory creation are disabled with, and also the file input field is readonly.
+// btw you can od what you want
+fileDialog.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
+	ImGuiFileDialogFlags_NoDialog | 
+	ImGuiFileDialogFlags_DisableBookmarkMode | 
+	ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
+	ImGuiFileDialogFlags_ReadOnlyFileNameField);
+// then display, here 
+// to note, when embedded the ImVec2(0,0) (MinSize) do nothing, only the ImVec2(0,350) (MaxSize) can size the dialog frame 
+fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
+```
+the result :
+
+![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
 
 ## Api's C/C++ :
 

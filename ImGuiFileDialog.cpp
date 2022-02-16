@@ -3645,7 +3645,11 @@ namespace IGFD
 #endif // IMGUI_HAS_VIEWPORT
 
 				ImGuiID _frameId = ImGui::GetID(name.c_str());
-				if (ImGui::BeginChild(_frameId, vMaxSize, false, flags | ImGuiWindowFlags_NoScrollbar))
+				ImVec2 frameSize = ImVec2(0, 0);
+				if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_NoDialog)
+					frameSize = vMaxSize;
+				if (ImGui::BeginChild(_frameId, frameSize,
+					false, flags | ImGuiWindowFlags_NoScrollbar))
 				{
 					prFileDialogInternal.puName = name; //-V820
 					puAnyWindowsHovered |= ImGui::IsWindowHovered();
