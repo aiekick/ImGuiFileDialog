@@ -641,6 +641,12 @@ struct IGFD_Thumbnail_Info
 
 #ifdef __cplusplus
 
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+	#define _IGFD_WIN_
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
+	#define _IGFD_UNIX_
+#endif
+
 #include <imgui.h>
 
 #include <cfloat>
@@ -735,7 +741,7 @@ namespace IGFD
 		static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
 		static void ResetBuffer(char* vBuffer);
 		static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
-#if defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64) || defined(_MSC_VER)
+#ifdef _IGFD_WIN_
 		static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
 		static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
 		static std::string wstring_to_string(const std::wstring& wstr);

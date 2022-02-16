@@ -40,14 +40,11 @@ SOFTWARE.
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
 	#include <filesystem>
-#endif
-#if defined (__EMSCRIPTEN__) // EMSCRIPTEN
+#endif // USE_STD_FILESYSTEM
+#ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
 #endif // EMSCRIPTEN
-#if defined(__WIN32__) || defined(_WIN32)
-	#ifndef WIN32
-		#define WIN32
-	#endif // WIN32
+#ifdef _IGFD_WIN_
 	#define stat _stat
 	#define stricmp _stricmp
 	#include <cctype>
@@ -61,8 +58,7 @@ SOFTWARE.
 	#ifndef PATH_MAX
 		#define PATH_MAX 260
 	#endif // PATH_MAX
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
-	#define UNIX
+#elif defined(_IGFD_UNIX_)
 	#define stricmp strcasecmp
 	#include <sys/types.h>
 	// this option need c++17
@@ -70,7 +66,7 @@ SOFTWARE.
 		#include <dirent.h> 
 	#endif // USE_STD_FILESYSTEM
 	#define PATH_SEP '/'
-#endif // defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
+#endif // _IGFD_UNIX_
 
 #include "imgui.h"
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
@@ -369,7 +365,7 @@ namespace IGFD
 		return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f);
 	}
 
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 	bool IGFD::Utils::WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
 	{
 		bool found = false;
@@ -434,7 +430,7 @@ namespace IGFD
 		}
 		return ret;
 	}
-#endif // WIN32
+#endif // WINDOWS
 
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
@@ -475,7 +471,7 @@ namespace IGFD
 	{
 		std::vector<std::string> res;
 
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 		const DWORD mydrives = 2048;
 		char lpBuffer[2048];
 #define mini(a,b) (((a) < (b)) ? (a) : (b))
@@ -487,7 +483,7 @@ namespace IGFD
 			IGFD::Utils::ReplaceString(var, "\\", "");
 			res = IGFD::Utils::SplitStringToVector(var, '\0', false);
 		}
-#endif // WIN32
+#endif // _IGFD_WIN_
 
 		return res;
 	}
@@ -500,12 +496,12 @@ namespace IGFD
 		{
 #ifdef USE_STD_FILESYSTEM
 			namespace fs = std::filesystem;
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
 			fs::path pathName = fs::path(wname);
-#else
+#else // _IGFD_WIN_
 			fs::path pathName = fs::path(name);
-#endif
+#endif // _IGFD_WIN_
 			bExists = fs::is_directory(pathName);
 #else
 			DIR* pDir = nullptr;
@@ -529,24 +525,24 @@ namespace IGFD
 		{
 			if (!IsDirectoryExist(name))
 			{
-#ifdef WIN32
-#ifdef USE_STD_FILESYSTEM
-				namespace fs = std::filesystem;
-				std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
-				fs::path pathName = fs::path(wname);
-				res = fs::create_directory(pathName);
-#else
-				std::wstring wname = IGFD::Utils::string_to_wstring(name);
-				if (CreateDirectoryW(wname.c_str(), nullptr))
-				{
-					res = true;
-				}
-#endif // USE_STD_FILESYSTEM
-#elif defined(__EMSCRIPTEN__)
+#ifdef _IGFD_WIN_
+	#ifdef USE_STD_FILESYSTEM
+					namespace fs = std::filesystem;
+					std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
+					fs::path pathName = fs::path(wname);
+					res = fs::create_directory(pathName);
+	#else // USE_STD_FILESYSTEM
+					std::wstring wname = IGFD::Utils::string_to_wstring(name);
+					if (CreateDirectoryW(wname.c_str(), nullptr))
+					{
+						res = true;
+					}
+	#endif // USE_STD_FILESYSTEM
+#elif defined(__EMSCRIPTEN__) // _IGFD_WIN_
 				std::string str = std::string("FS.mkdir('") + name + "');";
 				emscripten_run_script(str.c_str());
 				res = true;
-#elif defined(UNIX)
+#elif defined(_IGFD_UNIX_)
 				char buffer[PATH_MAX] = {};
 				snprintf(buffer, PATH_MAX, "mkdir -p %s", name.c_str());
 				const int dir_err = std::system(buffer);
@@ -554,7 +550,7 @@ namespace IGFD
 				{
 					res = true;
 				}
-#endif // WIN32
+#endif // __EMSCRIPTEN__
 				if (!res) {
 					std::cout << "Error creating directory " << name << std::endl;
 				}
@@ -646,11 +642,11 @@ namespace IGFD
 		//if (!str.empty()) str += "\n";
 		str += vStr;
 		if (len > str.size()) len = str.size();
-#ifdef MSVC
+#ifdef _MSC_VER
 		strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
-#else // MSVC
+#else // _MSC_VER
 		strncpy(vBuffer, str.c_str(), len);
-#endif // MSVC
+#endif // _MSC_VER
 		vBuffer[len] = '\0';
 	}
 
@@ -1238,7 +1234,7 @@ namespace IGFD
 						/*
 						// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
 						// strict ordering for file/directory types beginning in '.'
-						// common on Linux platforms
+						// common on _IGFD_WIN_ platforms
 						if (a->fileNameExt[0] == '.' && b->fileNameExt[0] != '.')
 							return false;
 						if (a->fileNameExt[0] != '.' && b->fileNameExt[0] == '.')
@@ -1267,7 +1263,7 @@ namespace IGFD
 						/*
 						// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
 						// strict ordering for file/directory types beginning in '.'
-						// common on Linux platforms
+						// common on _IGFD_WIN_ platforms
 						if (a->fileNameExt[0] == '.' && b->fileNameExt[0] != '.')
 							return false;
 						if (a->fileNameExt[0] != '.' && b->fileNameExt[0] == '.')
@@ -1490,10 +1486,10 @@ namespace IGFD
 
 		if (!prCurrentPathDecomposition.empty())
 		{
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 			if (path == puFsRoot)
 				path += std::string(1u, PATH_SEP);
-#endif // WIN32
+#endif // _IGFD_WIN_
 
 			ClearFileLists();
 
@@ -1732,14 +1728,14 @@ namespace IGFD
 				}
 
 				size_t len = 0;
-#ifdef MSVC
+#ifdef _MSC_VER
 				struct tm _tm;
 				errno_t err = localtime_s(&_tm, &statInfos.st_mtime);
 				if (!err) len = strftime(timebuf, 99, DateTimeFormat, &_tm);
-#else // MSVC
+#else // _MSC_VER
 				struct tm* _tm = localtime(&statInfos.st_mtime);
 				if (_tm) len = strftime(timebuf, 99, DateTimeFormat, _tm);
-#endif // MSVC
+#endif // _MSC_VER
 				if (len)
 				{
 					vInfos->fileModifDate = std::string(timebuf, len);
@@ -1782,10 +1778,10 @@ namespace IGFD
 	void IGFD::FileManager::SetCurrentDir(const std::string& vPath)
 	{
 		std::string path = vPath;
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 		if (puFsRoot == path)
 			path += std::string(1u, PATH_SEP);
-#endif // WIN32
+#endif // _IGFD_WIN_
 		
 #ifdef USE_STD_FILESYSTEM
 		namespace fs = std::filesystem;
@@ -1807,7 +1803,7 @@ namespace IGFD
 		if (dir != nullptr)
 #endif // USE_STD_FILESYSTEM
 		{
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 			DWORD numchar = 0;
 			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
 			std::wstring wpath = IGFD::Utils::string_to_wstring(path);
@@ -1818,11 +1814,11 @@ namespace IGFD
 			if (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
 				real_path = real_path.substr(0, real_path.size() - 1U);
 			if (!real_path.empty())
-#elif defined(UNIX) // UNIX is LINUX or APPLE
+#elif defined(_IGFD_UNIX_) // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
 			char real_path[PATH_MAX]; 
 			char* numchar = realpath(path.c_str(), real_path);
 			if (numchar != nullptr)
-#endif // WIN32
+#endif // _IGFD_WIN_
 			{
 				prCurrentPath = std::move(real_path);
 				if (prCurrentPath[prCurrentPath.size() - 1] == PATH_SEP)
@@ -1831,14 +1827,14 @@ namespace IGFD
 				}
 				IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
 				prCurrentPathDecomposition = IGFD::Utils::SplitStringToVector(prCurrentPath, PATH_SEP, false);
-#ifdef UNIX // UNIX is LINUX or APPLE
+#ifdef _IGFD_UNIX_ // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
 				prCurrentPathDecomposition.insert(prCurrentPathDecomposition.begin(), std::string(1u, PATH_SEP));
-#endif // UNIX
+#endif // _IGFD_UNIX_
 				if (!prCurrentPathDecomposition.empty())
 				{
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 					puFsRoot = prCurrentPathDecomposition[0];
-#endif // WIN32
+#endif // _IGFD_WIN_
 				}
 			}
 #ifndef USE_STD_FILESYSTEM
@@ -1869,24 +1865,24 @@ namespace IGFD
 		{
 			if (!res.empty())
 			{
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 				res = *vIter + std::string(1u, PATH_SEP) + res;
-#elif defined(UNIX) // UNIX is LINUX or APPLE
+#elif defined(_IGFD_UNIX_) // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
 				if (*vIter == puFsRoot)
 					res = *vIter + res;
 				else
 					res = *vIter + PATH_SEP + res;
-#endif // WIN32
+#endif // _IGFD_WIN_
 			}
 			else
 				res = *vIter;
 
 			if (vIter == prCurrentPathDecomposition.begin())
 			{
-#if defined(UNIX) // UNIX is LINUX or APPLE
+#ifdef _IGFD_UNIX_ // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
 				if (res[0] != PATH_SEP)
 					res = PATH_SEP + res;
-#endif // defined(UNIX)
+#endif // defined(_IGFD_UNIX_)
 				break;
 			}
 
@@ -2150,7 +2146,7 @@ namespace IGFD
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(buttonResetPathString);
 
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 		ImGui::SameLine();
 
 		if (IMGUI_BUTTON(drivesButtonString))
@@ -2159,7 +2155,7 @@ namespace IGFD
 		}
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(buttonDriveString);
-#endif // WIN32
+#endif // _IGFD_WIN_
 
 		ImGui::SameLine();
 		
@@ -2253,9 +2249,9 @@ namespace IGFD
 		std::string filename = GetResultingFileName(vFileDialogInternal);
 		if (!filename.empty())
 		{
-#ifdef UNIX
+#ifdef _IGFD_UNIX_
 			if (puFsRoot != result)
-#endif // UNIX
+#endif // _IGFD_UNIX_
 				result += std::string(1u, PATH_SEP);
 
 			result += filename;
@@ -2272,9 +2268,9 @@ namespace IGFD
 		{
 			std::string result = GetResultingPath();
 
-#ifdef UNIX
+#ifdef _IGFD_UNIX_
 			if (puFsRoot != result)
-#endif // UNIX
+#endif // _IGFD_UNIX_
 				result += std::string(1u, PATH_SEP);
 
 			result += selectedFileName;
@@ -2763,10 +2759,8 @@ namespace IGFD
 					if (i < 0) continue;
 					const BookmarkStruct& bookmark = prBookmarks[(size_t)i];
 					ImGui::PushID(i);
-					if (ImGui::Selectable(bookmark.name.c_str(), selectedBookmarkForEdition == i,
-						ImGuiSelectableFlags_AllowDoubleClick) |
-						(selectedBookmarkForEdition == -1 &&
-							bookmark.path == vFileDialogInternal.puFileManager.GetCurrentPath())) // select if path is current
+					if (ImGui::Selectable(bookmark.name.c_str(), selectedBookmarkForEdition == i,ImGuiSelectableFlags_AllowDoubleClick) ||
+						(selectedBookmarkForEdition == -1 && bookmark.path == vFileDialogInternal.puFileManager.GetCurrentPath())) // select if path is current
 					{
 						selectedBookmarkForEdition = i;
 						IGFD::Utils::ResetBuffer(prBookmarkEditBuffer);
@@ -3047,7 +3041,7 @@ namespace IGFD
 									prLocateFileByInputChar_lastFileIdx = 0;
 								}
 							}
-#ifdef WIN32
+#ifdef _IGFD_WIN_
 							else
 							{
 								if (fdi.GetComposerSize() == 1U)
@@ -3058,7 +3052,7 @@ namespace IGFD
 									}
 								}
 							}
-#endif // WIN32
+#endif // _IGFD_WIN_
 						}
 					}
 				}
@@ -4543,7 +4537,7 @@ namespace IGFD
 		prFileDialogInternal.puFilterManager.ClearFilesStyle();
 	}
 
-	void IGFD::FileDialog::SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd)
+	void IGFD::FileDialog::SetLocales(const int& /*vLocaleCategory*/, const std::string& vLocaleBegin, const std::string& vLocaleEnd)
 	{
 		prFileDialogInternal.puUseCustomLocale = true;
 		prFileDialogInternal.puLocaleBegin = vLocaleBegin;
@@ -4959,11 +4953,11 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->fileName = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 					strncpy(pair->fileName, s.first.c_str(), siz);
-#else
+#else // _MSC_VER
 					strncpy_s(pair->fileName, siz, s.first.c_str(), siz);
-#endif
+#endif // _MSC_VER
 					pair->fileName[siz - 1U] = '\0';
 				}
 
@@ -4972,11 +4966,11 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				{
 					size_t siz = s.first.size() + 1U;
 					pair->filePathName = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 					strncpy(pair->filePathName, s.first.c_str(), siz);
-#else
+#else // _MSC_VER
 					strncpy_s(pair->filePathName, siz, s.first.c_str(), siz);
-#endif
+#endif // _MSC_VER
 					pair->filePathName[siz - 1U] = '\0';
 				}
 			}
@@ -4999,11 +4993,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(res, s.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(res, siz, s.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -5022,11 +5016,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFileName(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(res, s.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(res, siz, s.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -5045,11 +5039,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(res, s.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(res, siz, s.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -5068,11 +5062,11 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(res, s.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(res, siz, s.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			res[siz - 1U] = '\0';
 		}
 	}
@@ -5119,11 +5113,11 @@ IMGUIFILEDIALOG_API bool IGFD_GetFileStyle(ImGuiFileDialog* vContext,
 		{
 			size_t siz = icon.size() + 1U;
 			*vOutIcon = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(*vOutIcon, icon.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(*vOutIcon, siz, icon.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			(*vOutIcon)[siz - 1U] = '\0';
 		}
 		return res;
@@ -5170,11 +5164,11 @@ IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext)
 		{
 			size_t siz = s.size() + 1U;
 			res = new char[siz];
-#ifndef MSVC
+#ifndef _MSC_VER
 			strncpy(res, s.c_str(), siz);
-#else
+#else // _MSC_VER
 			strncpy_s(res, siz, s.c_str(), siz);
-#endif
+#endif // _MSC_VER
 			res[siz - 1U] = '\0';
 		}
 	}
