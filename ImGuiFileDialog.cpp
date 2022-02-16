@@ -37,14 +37,19 @@ SOFTWARE.
 #include <ctime>
 #include <sys/stat.h>
 #include <cstdio>
+
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
 	#include <filesystem>
 #endif // USE_STD_FILESYSTEM
+
 #ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
 #endif // EMSCRIPTEN
-#ifdef _IGFD_WIN_
+
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || \
+	defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+	#define _IGFD_WIN_
 	#define stat _stat
 	#define stricmp _stricmp
 	#include <cctype>
@@ -58,7 +63,9 @@ SOFTWARE.
 	#ifndef PATH_MAX
 		#define PATH_MAX 260
 	#endif // PATH_MAX
-#elif defined(_IGFD_UNIX_)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || \
+	defined(__NetBSD__) || defined(__APPLE__) || defined (__EMSCRIPTEN__)
+	#define _IGFD_UNIX_
 	#define stricmp strcasecmp
 	#include <sys/types.h>
 	// this option need c++17
@@ -365,7 +372,6 @@ namespace IGFD
 		return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f);
 	}
 
-#ifdef _IGFD_WIN_
 	bool IGFD::Utils::WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
 	{
 		bool found = false;
@@ -430,7 +436,6 @@ namespace IGFD
 		}
 		return ret;
 	}
-#endif // WINDOWS
 
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
