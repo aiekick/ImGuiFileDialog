@@ -4182,7 +4182,7 @@ namespace IGFD
 							}
 							else
 							{
-								ImGui::Text("");
+								ImGui::TextUnformatted("");
 							}
 						}
 						if (ImGui::TableNextColumn()) // file date + time
@@ -4399,7 +4399,7 @@ namespace IGFD
 							}
 							else
 							{
-								ImGui::Text("");
+								ImGui::TextUnformatted("");
 							}
 						}
 						if (ImGui::TableNextColumn()) // file date + time
