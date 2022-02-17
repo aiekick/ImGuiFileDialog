@@ -73,11 +73,12 @@
 
 //Validation buttons
 //#define okButtonString " OK"
-//#define cancelButtonString " Cancel"
 //#define okButtonWidth 0.0f
+//#define cancelButtonString " Cancel"
 //#define cancelButtonWidth 0.0f
 //alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
 //#define okCancelButtonAlignement 0.0f
+//#define invertOkAndCancelButtons false
 
 // DateTimeFormat
 // see strftime functionin <ctime> for customize

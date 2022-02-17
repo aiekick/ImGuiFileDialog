@@ -140,6 +140,9 @@ namespace IGFD
 #ifndef okCancelButtonAlignement
 #define okCancelButtonAlignement 0.0f
 #endif // okCancelButtonAlignement
+#ifndef invertOkAndCancelButtons
+#define invertOkAndCancelButtons false
+#endif // invertOkAndCancelButtons
 #ifndef resetButtonString
 #define resetButtonString "R"
 #endif // resetButtonString
@@ -3863,34 +3866,56 @@ namespace IGFD
 		}
 	}
 
-	bool IGFD::FileDialog::prDrawValidationButtons()
+	bool IGFD::FileDialog::prDrawOkButton()
 	{
-		bool res = false;
-
 		auto& fdFile = prFileDialogInternal.puFileManager;
-		
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - prOkCancelButtonWidth) * okCancelButtonAlignement);
-
-		ImGui::BeginGroup();
-
-		// OK Button
 		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
 		{
 			if (IMGUI_BUTTON(okButtonString "##validationdialog", ImVec2(okButtonWidth, 0.0f)) || prFileDialogInternal.puIsOk)
 			{
 				prFileDialogInternal.puIsOk = true;
-				res = true;
+				return true;
 			}
 
-			ImGui::SameLine();
+			if (!invertOkAndCancelButtons)
+				ImGui::SameLine();
 		}
 
-		// Cancel Button
+		return false;
+	}
+
+	bool IGFD::FileDialog::prDrawCancelButton()
+	{
 		if (IMGUI_BUTTON(cancelButtonString "##validationdialog", ImVec2(cancelButtonWidth, 0.0f)) ||
 			prFileDialogInternal.puNeedToExitDialog) // dialog exit asked
 		{
 			prFileDialogInternal.puIsOk = false;
-			res = true;
+			return true;
+		}
+
+		if (invertOkAndCancelButtons)
+			ImGui::SameLine();
+
+		return false;
+	}
+
+	bool IGFD::FileDialog::prDrawValidationButtons()
+	{
+		bool res = false;
+
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - prOkCancelButtonWidth) * okCancelButtonAlignement);
+
+		ImGui::BeginGroup();
+
+		if (invertOkAndCancelButtons)
+		{
+			prDrawCancelButton();
+			prDrawOkButton();
+		}
+		else
+		{
+			prDrawOkButton();
+			prDrawCancelButton();
 		}
 
 		ImGui::EndGroup();

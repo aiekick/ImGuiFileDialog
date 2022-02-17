@@ -1331,6 +1331,8 @@ namespace IGFD
 
 		// widgets components
 		virtual bool prDrawValidationButtons();						// ok, cancel buttons
+		virtual bool prDrawOkButton();
+		virtual bool prDrawCancelButton();
 		virtual void prDrawSidePane(float vHeight);					// draw side pane
 		virtual void prSelectableItem(int vidx, 
 			std::shared_ptr<FileInfos> vInfos, 
