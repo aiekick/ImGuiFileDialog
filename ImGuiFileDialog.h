@@ -869,6 +869,9 @@ namespace IGFD
 		std::vector<std::string> prCurrentPathDecomposition;				// part words
 		std::vector<std::shared_ptr<FileInfos>> prFileList;					// base container
 		std::vector<std::shared_ptr<FileInfos>> prFilteredFileList;			// filtered container (search, sorting, etc..)
+		std::vector<std::shared_ptr<FileInfos>> prPathList;					// base container for path selection
+		std::vector<std::shared_ptr<FileInfos>> prFilteredPathList;			// filtered container for path selection (search, sorting, etc..)
+		std::vector<std::string>::iterator prPopupComposedPath;				// iterator on prCurrentPathDecomposition for Current Path popup
 		std::string prLastSelectedFileName;									// for shift multi selection
 		std::set<std::string> prSelectedFileNames;							// the user selection of FilePathNames
 		bool prCreateDirectoryMode = false;									// for create directory widget
@@ -919,28 +922,49 @@ namespace IGFD
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
 		void AddFile(const FileDialogInternal& vFileDialogInternal, 
 			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+		void AddPath(const FileDialogInternal& vFileDialogInternal,
+			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
 
+		void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);	// scan the directory for retrieve the path list
+		void OpenPathPopup(const FileDialogInternal& vFileDialogInternal, std::vector<std::string>::iterator vPathIter);
+		void SetCurrentPath(std::vector<std::string>::iterator vPathIter);
+		
+		void ApplyFilteringOnFileList(
+			const FileDialogInternal& vFileDialogInternal,
+			std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
+			std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);
+		void SortFields(
+			const FileDialogInternal& vFileDialogInternal,
+			std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
+			std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);									// will sort a column
+		
 	public:
 		FileManager();
 		bool IsComposerEmpty();
 		size_t GetComposerSize();
 		bool IsFileListEmpty();
+		bool IsPathListEmpty();
 		bool IsFilteredListEmpty();
+		bool IsPathFilteredListEmpty();
 		size_t GetFullFileListSize();
 		std::shared_ptr<FileInfos> GetFullFileAt(size_t vIdx);
 		size_t GetFilteredListSize();
+		size_t GetPathFilteredListSize();
 		std::shared_ptr<FileInfos> GetFilteredFileAt(size_t vIdx);
+		std::shared_ptr<FileInfos> GetFilteredPathAt(size_t vIdx);
+		std::vector<std::string>::iterator GetCurrentPopupComposedPath();
 		bool IsFileNameSelected(const std::string& vFileName);
 		std::string GetBack();
 		void ClearComposer();
 		void ClearFileLists();																			// clear file list, will destroy thumbnail textures
+		void ClearPathLists();																			// clear path list, will destroy thumbnail textures
 		void ClearAll();
 		void ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal);
-		void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);							// set the path of the dialog, will launch the directory scan for populate the file listview
 		void SortFields(const FileDialogInternal& vFileDialogInternal);									// will sort a column
+		void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);							// set the path of the dialog, will launch the directory scan for populate the file listview
 		bool GetDrives();																				// list drives on windows platform
 		bool CreateDir(const std::string& vPath);														// create a directory on the file system
-		void ComposeNewPath(std::vector<std::string>::iterator vIter);									// compose a path from the compose path widget
+		std::string ComposeNewPath(std::vector<std::string>::iterator vIter);									// compose a path from the compose path widget
 		bool SetPathOnParentDirectoryIfAny();															// compose paht on parent directory
 		std::string GetCurrentPath();																	// get the current path
 		void SetCurrentPath(const std::string& vCurrentPath);											// set the current path
@@ -953,7 +977,7 @@ namespace IGFD
 		//depend of dirent.h
 		void SetCurrentDir(const std::string& vPath);													// define current directory for scan
 		void ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);			// scan the directory for retrieve the file list
-
+		
 	public:
 		std::string GetResultingPath();
 		std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal);
@@ -1162,6 +1186,7 @@ namespace IGFD
 	private:
 		FileDialogInternal prFileDialogInternal;
 		ImGuiListClipper prFileListClipper;
+		ImGuiListClipper prPathListClipper;
 		float prOkCancelButtonWidth = 0.0f;
 
 	public:
@@ -1330,9 +1355,10 @@ namespace IGFD
 		virtual bool prDrawFooter();								// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
 		// widgets components
-		virtual bool prDrawValidationButtons();						// ok, cancel buttons
-		virtual bool prDrawOkButton();
-		virtual bool prDrawCancelButton();
+		virtual void DisplayPathPopup(ImVec2 vSize);				// draw path popup when click on a \ or /
+		virtual bool prDrawValidationButtons();						// draw validations btns, ok, cancel buttons
+		virtual bool prDrawOkButton();								// draw ok button
+		virtual bool prDrawCancelButton();							// draw cancel button
 		virtual void prDrawSidePane(float vHeight);					// draw side pane
 		virtual void prSelectableItem(int vidx, 
 			std::shared_ptr<FileInfos> vInfos, 
