@@ -78,7 +78,7 @@
 //#define cancelButtonWidth 0.0f
 //alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
 //#define okCancelButtonAlignement 0.0f
-//#define invertOkAndCancelButtons false
+//#define invertOkAndCancelButtons 0
 
 // DateTimeFormat
 // see strftime functionin <ctime> for customize

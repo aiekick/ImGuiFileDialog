@@ -141,7 +141,8 @@ namespace IGFD
 #define okCancelButtonAlignement 0.0f
 #endif // okCancelButtonAlignement
 #ifndef invertOkAndCancelButtons
-#define invertOkAndCancelButtons false
+// 0 => disabled, 1 => enabled
+#define invertOkAndCancelButtons 0
 #endif // invertOkAndCancelButtons
 #ifndef resetButtonString
 #define resetButtonString "R"
@@ -4116,8 +4117,10 @@ namespace IGFD
 				return true;
 			}
 
-			if (!invertOkAndCancelButtons)
-				ImGui::SameLine();
+#if !invertOkAndCancelButtons
+			ImGui::SameLine();
+#endif
+		
 		}
 
 		return false;
@@ -4131,9 +4134,10 @@ namespace IGFD
 			prFileDialogInternal.puIsOk = false;
 			return true;
 		}
-
-		if (invertOkAndCancelButtons)
-			ImGui::SameLine();
+		
+#if invertOkAndCancelButtons
+		ImGui::SameLine();
+#endif
 
 		return false;
 	}
