@@ -1670,10 +1670,10 @@ namespace IGFD
 				{
 					struct dirent* ent = files[i];
 
-					if (ent->d_type == 'd')
+					if (ent->d_type == DT_DIR)
 					{
 						auto fileNameExt = ent->d_name;
-						AddPath(vFileDialogInternal, path, fileNameExt, fileType);
+						AddPath(vFileDialogInternal, path, fileNameExt, 'd');
 					}
 				}
 
