@@ -32,6 +32,7 @@ SOFTWARE.
 #include <cfloat>
 #include <cstring> // stricmp / strcasecmp
 #include <cstdarg> // variadic
+#include <sstream>
 #include <iomanip>
 #include <ctime>
 #include <sys/stat.h>
@@ -386,6 +387,7 @@ namespace IGFD
 	bool IGFD::Utils::WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr)
 	{
 		bool found = false;
+#ifdef _IGFD_WIN_
 		size_t pos = 0;
 		while ((pos = str.find(oldStr, pos)) != std::wstring::npos)
 		{
@@ -393,12 +395,14 @@ namespace IGFD
 			str.replace(pos, oldStr.length(), newStr);
 			pos += newStr.length();
 		}
+#endif // _IGFD_WIN_
 		return found;
 	}
 
 	std::vector<std::wstring> IGFD::Utils::WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty)
 	{
 		std::vector<std::wstring> arr;
+#ifdef _IGFD_WIN_
 		if (!text.empty())
 		{
 			std::wstring::size_type start = 0;
@@ -415,54 +419,59 @@ namespace IGFD
 			if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 				arr.push_back(token);
 		}
+#endif // _IGFD_WIN_
 		return arr;
 	}
 
 	std::wstring IGFD::Utils::string_to_wstring(const std::string& str)
 	{
 		std::wstring ret;
+#ifdef _IGFD_WIN_
 		if (!str.empty())
 		{
 			size_t sz = 0U;
-#ifndef _MSC_VER
-			sz = std::mbstowcs(nullptr, str.c_str(), str.size());
-#else // _MSC_VER
+#ifdef _MSC_VER
 			mbstowcs_s(&sz, nullptr, 0, str.c_str(), str.size());
+#else // _MSC_VER
+			sz = std::mbstowcs(nullptr, str.c_str(), str.size());
 #endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
-#ifndef _MSC_VER
-				std::mbstowcs(ret.data(), str.c_str(), sz);
-#else // _MSC_VER
+#ifdef _MSC_VER
 				mbstowcs_s(nullptr, ret.data(), sz, str.c_str(), sz);
+#else // _MSC_VER
+				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
 #endif // _MSC_VER
 			}
 		}
+#endif // _IGFD_WIN_
 		return ret;
 	}
 
 	std::string IGFD::Utils::wstring_to_string(const std::wstring& str)
 	{
 		std::string ret;
+#ifdef _IGFD_WIN_
 		if (!str.empty())
 		{
 			size_t sz = 0U;
-#ifndef _MSC_VER
-			sz = std::wcstombs(nullptr, str.c_str(), str.size());
-#else // _MSC_VER
+#ifdef _MSC_VER
 			wcstombs_s(&sz, nullptr, 0, str.c_str(), str.size());
+#else // _MSC_VER
+			sz = std::wcstombs(nullptr, str.c_str(), str.size());
 #endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
-#ifndef _MSC_VER
-				std::wcstombs(ret.data(), str.c_str(), sz);
-#else // _MSC_VER
+#ifdef _MSC_VER
 				wcstombs_s(nullptr, ret.data(), sz, str.c_str(), sz);
+#else // _MSC_VER
+				std::wcstombs((char*)ret.data(), str.c_str(), sz);
 #endif // _MSC_VER
 			}
 		}
+#endif // _IGFD_WIN_
 		return ret;
 	}
 
