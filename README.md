@@ -72,9 +72,10 @@ included in the Lib_Only branch for your convenience.
 - Directory bookmarks
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
+- C Api (succesfully tested with CimGui)
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 - The dialog can be embedded in another user frame than the standard or modal dialog
-- C Api (succesfully tested with CimGui)
+- Can tune validation buttons (placements, widths, inversion) 
 
 ## Singleton Pattern vs. Multiple Instances
 
