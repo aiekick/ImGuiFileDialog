@@ -18,6 +18,7 @@ endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if (USE_NEW_IMGUI_KEY_SYSTEM)
 	add_definitions(-DIMGUI_DISABLE_OBSOLETE_KEYIO)
