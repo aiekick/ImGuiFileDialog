@@ -1162,10 +1162,11 @@ namespace IGFD
 	private:
 		FileDialogInternal prFileDialogInternal;
 		ImGuiListClipper prFileListClipper;
+		float prOkCancelButtonWidth = 0.0f;
 
 	public:
 		bool puAnyWindowsHovered = false;							// not remember why haha :) todo : to check if we can remove
-
+		 
 	public:
 		static FileDialog* Instance()								// Singleton for easier accces form anywhere but only one dialog at a time
 		{
@@ -1329,8 +1330,9 @@ namespace IGFD
 		virtual bool prDrawFooter();								// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
 		// widgets components
+		virtual bool prDrawValidationButtons();						// ok, cancel buttons
 		virtual void prDrawSidePane(float vHeight);					// draw side pane
-		virtual bool prSelectableItem(int vidx, 
+		virtual void prSelectableItem(int vidx, 
 			std::shared_ptr<FileInfos> vInfos, 
 			bool vSelected, const char* vFmt, ...);					// draw a custom selectable behavior item
 		virtual void prDrawFileListView(ImVec2 vSize);				// draw file list view (default mode)

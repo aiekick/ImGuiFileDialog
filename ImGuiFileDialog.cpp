@@ -128,9 +128,18 @@ namespace IGFD
 #ifndef okButtonString
 #define okButtonString "OK"
 #endif // okButtonString
+#ifndef okButtonWidth
+#define okButtonWidth 0.0f
+#endif // okButtonWidth
 #ifndef cancelButtonString
 #define cancelButtonString "Cancel"
 #endif // cancelButtonString
+#ifndef cancelButtonWidth
+#define cancelButtonWidth 0.0f
+#endif // cancelButtonWidth
+#ifndef okCancelButtonAlignement
+#define okCancelButtonAlignement 0.0f
+#endif // okCancelButtonAlignement
 #ifndef resetButtonString
 #define resetButtonString "R"
 #endif // resetButtonString
@@ -330,6 +339,15 @@ namespace IGFD
 		return strcoll((*a)->d_name, (*b)->d_name);
 	}
 #endif
+
+	inline void imAlignForWidth(float width, float alignment = 0.5f)
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		float avail = ImGui::GetContentRegionAvail().x;
+		float off = (avail - width) * alignment;
+		if (off > 0.0f)
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
@@ -3845,6 +3863,43 @@ namespace IGFD
 		}
 	}
 
+	bool IGFD::FileDialog::prDrawValidationButtons()
+	{
+		bool res = false;
+
+		auto& fdFile = prFileDialogInternal.puFileManager;
+		
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - prOkCancelButtonWidth) * okCancelButtonAlignement);
+
+		ImGui::BeginGroup();
+
+		// OK Button
+		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
+		{
+			if (IMGUI_BUTTON(okButtonString "##validationdialog", ImVec2(okButtonWidth, 0.0f)) || prFileDialogInternal.puIsOk)
+			{
+				prFileDialogInternal.puIsOk = true;
+				res = true;
+			}
+
+			ImGui::SameLine();
+		}
+
+		// Cancel Button
+		if (IMGUI_BUTTON(cancelButtonString "##validationdialog", ImVec2(cancelButtonWidth, 0.0f)) ||
+			prFileDialogInternal.puNeedToExitDialog) // dialog exit asked
+		{
+			prFileDialogInternal.puIsOk = false;
+			res = true;
+		}
+
+		ImGui::EndGroup();
+
+		prOkCancelButtonWidth = ImGui::GetItemRectSize().x;
+
+		return res;
+	}
+
 	bool IGFD::FileDialog::prDrawFooter()
 	{
 		auto& fdFile = prFileDialogInternal.puFileManager;
@@ -3891,35 +3946,17 @@ namespace IGFD
 
 		bool res = false;
 
-		// OK Button
-		if (prFileDialogInternal.puCanWeContinue && strlen(fdFile.puFileNameBuffer))
-		{
-			if (IMGUI_BUTTON(okButtonString "##validationdialog") || prFileDialogInternal.puIsOk)
-			{
-				prFileDialogInternal.puIsOk = true;
-				res = true;
-			}
-
-			ImGui::SameLine();
-		}
-
-		// Cancel Button
-		if (IMGUI_BUTTON(cancelButtonString "##validationdialog") || 
-			prFileDialogInternal.puNeedToExitDialog) // dialog exit asked
-		{
-			prFileDialogInternal.puIsOk = false;
-			res = true;
-		}
+		res = prDrawValidationButtons();
 
 		prFileDialogInternal.puFooterHeight = ImGui::GetCursorPosY() - posY;
 
 		return res;
 	}
 
-	bool IGFD::FileDialog::prSelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...)
+	void IGFD::FileDialog::prSelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...)
 	{
 		if (!vInfos.use_count())
-			return false;
+			return;
 
 		auto& fdi = prFileDialogInternal.puFileManager;
 
@@ -3974,8 +4011,6 @@ namespace IGFD
 						fdi.SelectFileName(prFileDialogInternal, vInfos);
 					}
 				}
-
-				//return true; // needToBreakTheloop
 			}
 			else
 			{
@@ -3987,8 +4022,6 @@ namespace IGFD
 				}
 			}
 		}
-
-		return false;
 	}
 
 	void IGFD::FileDialog::prBeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr, ImFont** vOutFont)
@@ -4164,11 +4197,9 @@ namespace IGFD
 
 						ImGui::TableNextRow();
 
-						bool needToBreakTheloop = false;
-
 						if (ImGui::TableNextColumn()) // file name
 						{
-							needToBreakTheloop = prSelectableItem(i, infos, selected, _str.c_str());
+							prSelectableItem(i, infos, selected, _str.c_str());
 						}
 						if (ImGui::TableNextColumn()) // file type
 						{
@@ -4191,9 +4222,6 @@ namespace IGFD
 						}
 
 						prEndFileColorIconStyle(_showColor, _font);
-
-						if (needToBreakTheloop)
-							break;
 					}
 				}
 				prFileListClipper.End();
@@ -4381,11 +4409,9 @@ namespace IGFD
 
 						ImGui::TableNextRow();
 
-						bool needToBreakTheloop = false;
-
 						if (ImGui::TableNextColumn()) // file name
 						{
-							needToBreakTheloop = prSelectableItem(i, infos, selected, _str.c_str());
+							prSelectableItem(i, infos, selected, _str.c_str());
 						}
 						if (ImGui::TableNextColumn()) // file type
 						{
@@ -4424,9 +4450,6 @@ namespace IGFD
 						}
 
 						prEndFileColorIconStyle(_showColor, _font);
-
-						if (needToBreakTheloop)
-							break;
 					}
 				}
 				prFileListClipper.End();
