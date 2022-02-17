@@ -430,19 +430,11 @@ namespace IGFD
 		if (!str.empty())
 		{
 			size_t sz = 0U;
-#ifdef _MSC_VER
-			mbstowcs_s(&sz, nullptr, 0, str.c_str(), str.size());
-#else // _MSC_VER
 			sz = std::mbstowcs(nullptr, str.c_str(), str.size());
-#endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
-#ifdef _MSC_VER
-				mbstowcs_s(nullptr, ret.data(), sz, str.c_str(), sz);
-#else // _MSC_VER
 				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
-#endif // _MSC_VER
 			}
 		}
 #endif // _IGFD_WIN_
@@ -456,19 +448,11 @@ namespace IGFD
 		if (!str.empty())
 		{
 			size_t sz = 0U;
-#ifdef _MSC_VER
-			wcstombs_s(&sz, nullptr, 0, str.c_str(), str.size());
-#else // _MSC_VER
 			sz = std::wcstombs(nullptr, str.c_str(), str.size());
-#endif // _MSC_VER
 			if (sz)
 			{
 				ret.resize(sz);
-#ifdef _MSC_VER
-				wcstombs_s(nullptr, ret.data(), sz, str.c_str(), sz);
-#else // _MSC_VER
 				std::wcstombs((char*)ret.data(), str.c_str(), sz);
-#endif // _MSC_VER
 			}
 		}
 #endif // _IGFD_WIN_
