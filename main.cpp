@@ -133,7 +133,7 @@ inline bool RadioButtonLabeled_BitWize(
 	bool vDisableSelection = false,
 	ImFont* vLabelFont = nullptr) // radio witl use only theses flags
 {
-	vLabelFont; // remove unused warnings
+	(void)vLabelFont; // remove unused warnings
 
 	bool selected = (*vContainer) & vFlag;
 	const bool res = RadioButtonLabeled(vLabel, vHelp, selected, vDisableSelection);
