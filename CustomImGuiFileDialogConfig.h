@@ -52,8 +52,6 @@
 
 // locales string
 #define createDirButtonString ICON_IGFD_ADD
-#define okButtonString ICON_IGFD_OK " OK"
-#define cancelButtonString ICON_IGFD_CANCEL " Cancel"
 #define resetButtonString ICON_IGFD_RESET
 #define drivesButtonString ICON_IGFD_DRIVES
 #define editPathButtonString ICON_IGFD_EDIT
@@ -70,6 +68,15 @@
 //#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
 #define OverWriteDialogConfirmButtonString ICON_IGFD_OK " Confirm"
 #define OverWriteDialogCancelButtonString ICON_IGFD_CANCEL " Cancel"
+
+//Validation buttons
+#define okButtonString ICON_IGFD_OK " OK"
+#define okButtonWidth 100.0f
+#define cancelButtonString ICON_IGFD_CANCEL " Cancel"
+#define cancelButtonWidth 100.0f
+//alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
+#define okCancelButtonAlignement 0.5f
+//#define invertOkAndCancelButtons false
 
 // see strftime functionin <ctime> for customize
 // "%Y/%m/%d %H:%M:%S" give 2021:01:22 11:47:10
