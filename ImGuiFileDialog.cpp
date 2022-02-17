@@ -32,7 +32,6 @@ SOFTWARE.
 #include <cfloat>
 #include <cstring> // stricmp / strcasecmp
 #include <cstdarg> // variadic
-#include <sstream>
 #include <iomanip>
 #include <ctime>
 #include <sys/stat.h>
@@ -45,7 +44,7 @@ SOFTWARE.
 
 #ifdef __EMSCRIPTEN__
 	#include <emscripten.h>
-#endif // EMSCRIPTEN
+#endif // __EMSCRIPTEN__
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || \
 	defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
@@ -343,15 +342,6 @@ namespace IGFD
 	}
 #endif
 
-	inline void imAlignForWidth(float width, float alignment = 0.5f)
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		float avail = ImGui::GetContentRegionAvail().x;
-		float off = (avail - width) * alignment;
-		if (off > 0.0f)
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-	}
-
 	/////////////////////////////////////////////////////////////////////////////////////
 	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -443,7 +433,7 @@ namespace IGFD
 			{
 				ret.resize(sz);
 #ifndef _MSC_VER
-				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
+				std::mbstowcs(ret.data(), str.c_str(), sz);
 #else // _MSC_VER
 				mbstowcs_s(nullptr, ret.data(), sz, str.c_str(), sz);
 #endif // _MSC_VER
@@ -467,7 +457,7 @@ namespace IGFD
 			{
 				ret.resize(sz);
 #ifndef _MSC_VER
-				std::wcstombs((wchar_t*)ret.data(), str.c_str(), sz);
+				std::wcstombs(ret.data(), str.c_str(), sz);
 #else // _MSC_VER
 				wcstombs_s(nullptr, ret.data(), sz, str.c_str(), sz);
 #endif // _MSC_VER
@@ -594,7 +584,7 @@ namespace IGFD
 				{
 					res = true;
 				}
-#endif // __EMSCRIPTEN__
+#endif // _IGFD_WIN_
 				if (!res) {
 					std::cout << "Error creating directory " << name << std::endl;
 				}
@@ -3909,13 +3899,13 @@ namespace IGFD
 
 		if (invertOkAndCancelButtons)
 		{
-			prDrawCancelButton();
-			prDrawOkButton();
+			res |= prDrawCancelButton();
+			res |= prDrawOkButton();
 		}
 		else
 		{
-			prDrawOkButton();
-			prDrawCancelButton();
+			res |= prDrawOkButton();
+			res |= prDrawCancelButton();
 		}
 
 		ImGui::EndGroup();
