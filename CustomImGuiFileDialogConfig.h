@@ -75,8 +75,8 @@
 #define cancelButtonString ICON_IGFD_CANCEL " Cancel"
 #define cancelButtonWidth 100.0f
 //alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
-#define okCancelButtonAlignement 0.5f
-//#define invertOkAndCancelButtons false
+#define okCancelButtonAlignement 0.0f
+#define invertOkAndCancelButtons true
 
 // see strftime functionin <ctime> for customize
 // "%Y/%m/%d %H:%M:%S" give 2021:01:22 11:47:10
