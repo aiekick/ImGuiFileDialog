@@ -76,6 +76,7 @@ included in the Lib_Only branch for your convenience.
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion) 
+- Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
 
 ## Singleton Pattern vs. Multiple Instances
 
@@ -637,6 +638,13 @@ fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(
 the result :
 
 ![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
+
+## Quick Parallel Path Selection in Path Composer
+
+you have a separator between two directories in the path composer
+when you click on it you can explore a list of parrallels directories of this point
+
+![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
 
 ## Api's C/C++ :
 
