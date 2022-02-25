@@ -10,13 +10,13 @@
 
 #include "3rdparty/imgui/backends/imgui_impl_opengl3.h"
 #include "3rdparty/imgui/backends/imgui_impl_glfw.h"
+#include "ImGuiFileDialog.h"
+#include "CustomFont.cpp"
 #include <stdio.h>
-#include <string>
 #include <sstream>
 #include <fstream>
-#include "ImGuiFileDialog.h"
-
-#include "CustomFont.cpp"
+#include <clocale>
+#include <string>
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -64,7 +64,6 @@ inline void InfosPane(const char* vFilter, IGFDUserDatas vUserDatas, bool* vCant
 	if (vCantContinue)
 		*vCantContinue = canValidateDialog;
 }
-
 
 inline bool RadioButtonLabeled(const char* label, const char* help, bool active, bool disabled)
 {
