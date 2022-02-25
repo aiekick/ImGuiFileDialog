@@ -423,43 +423,47 @@ namespace IGFD
 #endif // _IGFD_WIN_
 		return arr;
 	}
-
-	std::wstring IGFD::Utils::string_to_wstring(const std::string& str)
+	
+	// Convert a wide Unicode string to an UTF8 string
+	std::string IGFD::Utils::utf8_encode(const std::wstring &wstr)
 	{
-		std::wstring ret;
+		std::string res;
 #ifdef _IGFD_WIN_
-		if (!str.empty())
+		if(!wstr.empty())
 		{
-			size_t sz = 0U;
-			sz = std::mbstowcs(nullptr, str.c_str(), str.size());
-			if (sz)
+			int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0],
+			(int)wstr.size(), NULL, 0, NULL, NULL);
+			if (size_needed)
 			{
-				ret.resize(sz);
-				std::mbstowcs((wchar_t*)ret.data(), str.c_str(), sz);
+				res = std::string(size_needed, 0);
+				WideCharToMultiByte (CP_UTF8, 0, &wstr[0],
+					(int)wstr.size(), &res[0], size_needed, NULL, NULL);
 			}
 		}
 #endif // _IGFD_WIN_
-		return ret;
+		return res;
 	}
 
-	std::string IGFD::Utils::wstring_to_string(const std::wstring& str)
+	// Convert an UTF8 string to a wide Unicode String
+	std::wstring IGFD::Utils::utf8_decode(const std::string &str)
 	{
-		std::string ret;
+		std::wstring res;
 #ifdef _IGFD_WIN_
-		if (!str.empty())
+		if( !str.empty())
 		{
-			size_t sz = 0U;
-			sz = std::wcstombs(nullptr, str.c_str(), str.size());
-			if (sz)
+			int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0],
+				(int)str.size(), NULL, 0);
+			if (size_needed)
 			{
-				ret.resize(sz);
-				std::wcstombs((char*)ret.data(), str.c_str(), sz);
+				res = std::wstring(size_needed, 0);
+				MultiByteToWideChar(CP_UTF8, 0, &str[0],
+					(int)str.size(), &res[0], size_needed);
 			}
 		}
 #endif // _IGFD_WIN_
-		return ret;
+		return res;
 	}
-
+	
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
 		bool found = false;
@@ -525,7 +529,7 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 			namespace fs = std::filesystem;
 #ifdef _IGFD_WIN_
-			std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
+			std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
 			fs::path pathName = fs::path(wname);
 #else // _IGFD_WIN_
 			fs::path pathName = fs::path(name);
@@ -556,11 +560,11 @@ namespace IGFD
 #ifdef _IGFD_WIN_
 	#ifdef USE_STD_FILESYSTEM
 					namespace fs = std::filesystem;
-					std::wstring wname = IGFD::Utils::string_to_wstring(name.c_str());
+					std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
 					fs::path pathName = fs::path(wname);
 					res = fs::create_directory(pathName);
 	#else // USE_STD_FILESYSTEM
-					std::wstring wname = IGFD::Utils::string_to_wstring(name);
+					std::wstring wname = IGFD::Utils::utf8_decode(name);
 					if (CreateDirectoryW(wname.c_str(), nullptr))
 					{
 						res = true;
@@ -1573,7 +1577,6 @@ namespace IGFD
 			ClearFileLists();
 
 #ifdef USE_STD_FILESYSTEM
-			//const auto wpath = IGFD::Utils::WGetString(path.c_str());
 			const std::filesystem::path fspath(path);
 			const auto dir_iter = std::filesystem::directory_iterator(fspath);
 			AddFile(vFileDialogInternal, path, "..", 'd');
@@ -1629,6 +1632,7 @@ namespace IGFD
 		}
 	}
 
+#if defined(USE_QUICK_PATH_SELECT)
 	void IGFD::FileManager::ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath)
 	{
 		std::string	path = vPath;
@@ -1690,7 +1694,9 @@ namespace IGFD
 			SortFields(vFileDialogInternal, prPathList, prFilteredPathList);
 		}
 	}
+#endif // USE_QUICK_PATH_SELECT
 
+#if defined(USE_QUICK_PATH_SELECT)
 	void IGFD::FileManager::OpenPathPopup(const FileDialogInternal& vFileDialogInternal, std::vector<std::string>::iterator vPathIter)
 	{
 		const auto path = ComposeNewPath(vPathIter);
@@ -1698,6 +1704,7 @@ namespace IGFD
 		prPopupComposedPath = vPathIter;
 		ImGui::OpenPopup("IGFD_Path_Popup");
 	}
+#endif // USE_QUICK_PATH_SELECT
 
 	bool IGFD::FileManager::GetDrives()
 	{
@@ -1989,12 +1996,11 @@ namespace IGFD
 		{
 #ifdef _IGFD_WIN_
 			DWORD numchar = 0;
-			//			numchar = GetFullPathNameA(path.c_str(), PATH_MAX, real_path, nullptr);
-			std::wstring wpath = IGFD::Utils::string_to_wstring(path);
+			std::wstring wpath = IGFD::Utils::utf8_decode(path);
 			numchar = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
 			std::wstring fpath(numchar, 0);
 			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
-			std::string real_path = IGFD::Utils::wstring_to_string(fpath);
+			std::string real_path = IGFD::Utils::utf8_encode(fpath);
 			if (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
 				real_path = real_path.substr(0, real_path.size() - 1U);
 			if (!real_path.empty())
@@ -2321,13 +2327,6 @@ namespace IGFD
 
 		ImGui::SameLine();
 	}
-	
-	void IGFD::FileManager::SetCurrentPath(std::vector<std::string>::iterator vPathIter)
-	{
-		prCurrentPath = ComposeNewPath(vPathIter);
-		IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
-		puInputPathActivated = true;
-	}
 
 	void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogInternal)
 	{
@@ -2390,27 +2389,32 @@ namespace IGFD
 					{
 						ImGui::SameLine();
 
-						ImGui::PushID(_id++);
-						bool click = IMGUI_PATH_BUTTON(
-#if defined(_IGFD_WIN_)
-							"\\"
-#elif defined(_IGFD_UNIX_)
-							"/"
-#endif
-						);
-						ImGui::PopID();
-						
-						if (click)
-						{
-							OpenPathPopup(vFileDialogInternal, itPathDecomp-1);
-						}
-						else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-						{
-							SetCurrentPath(itPathDecomp-1);
-							break;
-						}
+#if defined(USE_QUICK_PATH_SELECT)
 
-						ImGui::SameLine();
+#if defined(_IGFD_WIN_)
+						const char* sep = "\\";
+#elif defined(_IGFD_UNIX_)
+						const char* sep = "/";
+						if (itPathDecomp != prCurrentPathDecomposition.begin() + 1)
+#endif
+						{
+							ImGui::PushID(_id++);
+							bool click = IMGUI_PATH_BUTTON(sep);
+							ImGui::PopID();
+
+							ImGui::SameLine();
+
+							if (click)
+							{
+								OpenPathPopup(vFileDialogInternal, itPathDecomp-1);
+							}
+							else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+							{
+								SetCurrentPath(itPathDecomp-1);
+								break;
+							}
+						}
+#endif // USE_QUICK_PATH_SELECT
 					}
 
 					ImGui::PushID(_id++);
@@ -2430,6 +2434,13 @@ namespace IGFD
 				}
 			}
 		}
+	}
+
+	void IGFD::FileManager::SetCurrentPath(std::vector<std::string>::iterator vPathIter)
+	{
+		prCurrentPath = ComposeNewPath(vPathIter);
+		IGFD::Utils::SetBuffer(puInputPathBuffer, MAX_PATH_BUFFER_SIZE, prCurrentPath);
+		puInputPathActivated = true;
 	}
 
 	std::string IGFD::FileManager::GetResultingPath()
@@ -4034,9 +4045,12 @@ namespace IGFD
 			prDrawSidePane(size.y);
 		}
 
+#if defined(USE_QUICK_PATH_SELECT)
 		DisplayPathPopup(size);
+#endif // USE_QUICK_PATH_SELECT
 	}
 
+#if defined(USE_QUICK_PATH_SELECT)
 	void IGFD::FileDialog::DisplayPathPopup(ImVec2 vSize)
 	{
 		ImVec2 size = ImVec2(vSize.x * 0.5f, vSize.y * 0.5f);
@@ -4105,6 +4119,7 @@ namespace IGFD
 			ImGui::EndPopup();
 		}
 	}
+#endif
 
 	bool IGFD::FileDialog::prDrawOkButton()
 	{

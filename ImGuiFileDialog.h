@@ -737,8 +737,8 @@ namespace IGFD
 		static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
 		static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
 		static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
-		static std::string wstring_to_string(const std::wstring& wstr);
-		static std::wstring string_to_wstring(const std::string& mbstr);
+		static std::string utf8_encode(const std::wstring& wstr);
+		static std::wstring utf8_decode(const std::string& str);
 		static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
 		static std::vector<std::string> GetDrivesList();
 	};
@@ -925,10 +925,13 @@ namespace IGFD
 		void AddPath(const FileDialogInternal& vFileDialogInternal,
 			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
 
+#if defined(USE_QUICK_PATH_SELECT)
 		void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);	// scan the directory for retrieve the path list
 		void OpenPathPopup(const FileDialogInternal& vFileDialogInternal, std::vector<std::string>::iterator vPathIter);
+#endif // USE_QUICK_PATH_SELECT
+
 		void SetCurrentPath(std::vector<std::string>::iterator vPathIter);
-		
+
 		void ApplyFilteringOnFileList(
 			const FileDialogInternal& vFileDialogInternal,
 			std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
@@ -1355,7 +1358,9 @@ namespace IGFD
 		virtual bool prDrawFooter();								// draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
 		// widgets components
+#if defined(USE_QUICK_PATH_SELECT)
 		virtual void DisplayPathPopup(ImVec2 vSize);				// draw path popup when click on a \ or /
+#endif // USE_QUICK_PATH_SELECT
 		virtual bool prDrawValidationButtons();						// draw validations btns, ok, cancel buttons
 		virtual bool prDrawOkButton();								// draw ok button
 		virtual bool prDrawCancelButton();							// draw cancel button
