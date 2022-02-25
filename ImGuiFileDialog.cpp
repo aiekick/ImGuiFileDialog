@@ -2387,8 +2387,11 @@ namespace IGFD
 				{
 					if (itPathDecomp != prCurrentPathDecomposition.begin())
 					{
+#if defined(CUSTOM_PATH_SPACING)
+						ImGui::SameLine(0, CUSTOM_PATH_SPACING);
+#else
 						ImGui::SameLine();
-
+#endif // USE_CUSTOM_PATH_SPACING
 #if defined(USE_QUICK_PATH_SELECT)
 
 #if defined(_IGFD_WIN_)
@@ -2402,7 +2405,11 @@ namespace IGFD
 							bool click = IMGUI_PATH_BUTTON(sep);
 							ImGui::PopID();
 
+#if defined(CUSTOM_PATH_SPACING)
+							ImGui::SameLine(0, CUSTOM_PATH_SPACING);
+#else
 							ImGui::SameLine();
+#endif // USE_CUSTOM_PATH_SPACING
 
 							if (click)
 							{

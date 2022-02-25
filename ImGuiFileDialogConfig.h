@@ -11,6 +11,11 @@
 // the slash's buttons in path cna be used for quick select parallles directories
 //#define USE_QUICK_PATH_SELECT
 
+// the spacing between button path's can be customized. 
+// if disabled the spacing is defined by the imgui theme
+// define the space between path buttons 
+//#define CUSTOM_PATH_SPACING 2
+
 //#define USE_THUMBNAILS
 //the thumbnail generation use the stb_image and stb_resize lib who need to define the implementation
 //btw if you already use them in your app, you can have compiler error due to "implemntation found in double"
