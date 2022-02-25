@@ -644,6 +644,13 @@ the result :
 you have a separator between two directories in the path composer
 when you click on it you can explore a list of parrallels directories of this point
 
+this feature is disabled by default
+you can enable it with the compiler flag : #define USE_QUICK_PATH_SELECT 
+
+you can also customize the spacing between path button's with and without this mode
+you can do that by define the compiler flag : #define CUSTOM_PATH_SPACING 2
+if undefined the spacing is defined by the imgui theme
+
 ![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
 
 ## Api's C/C++ :
