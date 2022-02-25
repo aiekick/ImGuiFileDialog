@@ -13,7 +13,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.87 WIP 
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.88 WIP 
 
 ## Structure
 
