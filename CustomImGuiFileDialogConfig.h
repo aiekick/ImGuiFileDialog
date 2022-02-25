@@ -12,6 +12,9 @@
 //#define MAX_FILE_DIALOG_NAME_BUFFER 1024
 //#define MAX_PATH_BUFFER_SIZE 1024
 
+// the slash's buttons in path cna be used for quick select parallles directories
+#define USE_QUICK_PATH_SELECT
+
 #define USE_THUMBNAILS
 //the thumbnail generation use the stb_image and stb_resize lib who need to define the implementation
 //btw if you already use them in your app, you can have compiler error due to "implementation found in double"

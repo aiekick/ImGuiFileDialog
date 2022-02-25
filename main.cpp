@@ -1,4 +1,4 @@
-// dear imgui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
+﻿// dear imgui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
 // If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 // (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.)
 
@@ -175,8 +175,12 @@ int main(int, char**)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	setlocale(LC_ALL, ".UTF8");
-
+	auto loc = std::setlocale(LC_ALL, ".UTF8");
+	if (!loc)
+	{
+		printf("setlocale fail to apply with this compiler. it seems the unicode will be NOK\n");
+	}
+	
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
@@ -330,8 +334,7 @@ int main(int, char**)
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
 	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != NULL);
+	//IM_ASSERT(io.Fonts->AddFontFromFileTTF("arialuni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
 
 	// load icon font file (CustomFont.cpp)
 	ImGui::GetIO().Fonts->AddFontDefault();
