@@ -1595,7 +1595,7 @@ namespace IGFD
 #else // dirent
 			struct dirent** files = nullptr;
 			size_t n = scandir(path.c_str(), &files, nullptr, inAlphaSort);
-			if (n)
+			if (n && files)
 			{
 				size_t i;
 
@@ -3175,7 +3175,7 @@ namespace IGFD
 			if (vListViewID == g.LastActiveId-1) // if listview id is the last acticated nav id (ImGui::ActivateItem(vListViewID);)
 				canWeExplore = true;
 
-			if (canWeExplore)
+			if (canWeExplore && ImGui::IsWindowFocused())
 			{
 				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 				{
