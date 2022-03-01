@@ -627,7 +627,9 @@ int main(int, char**)
 				ImGui::Text("Embedded Dialog demo :");
 				fileDialogEmbedded3.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
 					ImGuiFileDialogFlags_NoDialog | 
-					ImGuiFileDialogFlags_DisableBookmarkMode | 
+#ifdef USE_BOOKMARK
+					ImGuiFileDialogFlags_DisableBookmarkMode |
+#endif // USE_BOOKMARK
 					ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
 					ImGuiFileDialogFlags_ReadOnlyFileNameField);
 				// to note, when embedded only the vMinSize do nothing, only the vMaxSize can size the dialog frame 
