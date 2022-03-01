@@ -3971,7 +3971,10 @@ namespace IGFD
 
 		prFileDialogInternal.puFileManager.DrawDirectoryCreation(prFileDialogInternal);
 
-		if (!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableBookmarkMode) ||
+		if (
+#ifdef USE_BOOKMARK
+			!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableBookmarkMode) ||
+#endif // USE_BOOKMARK
 			!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableCreateDirectoryButton))
 		{
 			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
