@@ -1,6 +1,7 @@
-[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg" width="150"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin)
-[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg" width="165"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux)
-[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg" width="150"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
+[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin)
+[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux)
+[<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
+[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.88%20Wip-blue.svg)](https://github.com/ocornut/imgui)
 
 # ImGuiFileDialog
 
