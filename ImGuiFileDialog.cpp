@@ -1582,13 +1582,10 @@ namespace IGFD
 			AddFile(vFileDialogInternal, path, "..", 'd');
 			for (const auto& file : dir_iter)
 			{
-				char fileType = 0;
-				if (file.is_symlink())
-					fileType = 'l';
-				else if (file.is_directory())
-					fileType = 'd';
-				else
-					fileType = 'f';
+				char fileType = 0; 
+				if (file.is_directory()) { fileType = 'd'; } // directory or symlink to directory
+				else if (file.is_symlink()) { fileType = 'l'; } // file
+				else { fileType = 'f'; }
 				auto fileNameExt = file.path().filename().string();
 				AddFile(vFileDialogInternal, path, fileNameExt, fileType);
 			}
@@ -1606,12 +1603,12 @@ namespace IGFD
 					char fileType = 0;
 					switch (ent->d_type)
 					{
-					case DT_REG:
-						fileType = 'f'; break;
 					case DT_DIR:
 						fileType = 'd'; break;
 					case DT_LNK:
 						fileType = 'l'; break;
+					case DT_REG:
+						fileType = 'f'; break;
 					}
 
 					auto fileNameExt = ent->d_name;
@@ -3932,7 +3929,7 @@ namespace IGFD
 					ImGui::End();
 			}
 			// confirm the result and show the confirm to overwrite dialog if needed
-			res =  prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
+			res = prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
 			
 			if (prFileDialogInternal.puUseCustomLocale)
 				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleEnd.c_str());
