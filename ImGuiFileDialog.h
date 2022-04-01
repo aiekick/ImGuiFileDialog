@@ -825,10 +825,47 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	class FileType
+	{
+	public:
+		enum ContentType {
+			// The ordering will be used during sort.
+			Invalid = -1,
+			Directory = 0,
+			File = 1,
+			LinkToUnknown = 2, // link to something that is not a regular file or directory.
+		};
+
+	private:
+		ContentType m_Content;
+		bool m_Symlink = false;
+
+	public:
+		FileType() = default;
+		FileType(const ContentType& vContentType, const bool& vIsSymlink)
+			: m_Content(vContentType), m_Symlink(vIsSymlink)
+		{}
+
+		void SetContent(const ContentType& vContentType) { m_Content = vContentType; }
+		void SetSymLink(const bool& vIsSymlink) { m_Symlink = vIsSymlink; }
+
+		bool isValid () const { return m_Content != ContentType::Invalid; }
+		bool isDir () const { return m_Content == ContentType::Directory; }
+		bool isFile () const { return m_Content == ContentType::File; }
+		bool isLinkToUnknown () const { return m_Content == ContentType::LinkToUnknown; }
+		bool isSymLink() const { return m_Symlink; }
+
+		// Comparisons only care about the content type, ignoring whether it's a symlink or not.
+		bool operator== (const FileType& rhs) const { return m_Content == rhs.m_Content; }
+		bool operator!= (const FileType& rhs) const { return m_Content != rhs.m_Content; }
+		bool operator<  (const FileType& rhs) const { return m_Content < rhs.m_Content; }
+		bool operator>  (const FileType& rhs) const { return m_Content > rhs.m_Content; }
+	};
+
 	class FileInfos
 	{
 	public:
-		char fileType = ' ';								// dirent fileType (f:file, d:directory, l:link)				
+		FileType fileType;    								// fileType		
 		std::string filePath;								// path of the file
 		std::string fileNameExt;							// filename of the file (file name + extention) (but no path)
 		std::string fileNameExt_optimized;					// optimized for search => insensitivecase
@@ -921,9 +958,9 @@ namespace IGFD
 		void prRemoveFileNameInSelection(const std::string& vFileName);									// selection : remove a file name
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
 		void AddFile(const FileDialogInternal& vFileDialogInternal, 
-			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+			const std::string& vPath, const std::string& vFileName, const FileType& vFileType);		    // add file called by scandir
 		void AddPath(const FileDialogInternal& vFileDialogInternal,
-			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+			const std::string& vPath, const std::string& vFileName, const FileType& vFileType);			// add file called by scandir
 
 #if defined(USE_QUICK_PATH_SELECT)
 		void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);	// scan the directory for retrieve the path list
