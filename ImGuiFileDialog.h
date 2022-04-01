@@ -860,7 +860,6 @@ namespace IGFD
 		bool operator!= (const FileType& rhs) const { return m_Content != rhs.m_Content; }
 		bool operator<  (const FileType& rhs) const { return m_Content < rhs.m_Content; }
 		bool operator>  (const FileType& rhs) const { return m_Content > rhs.m_Content; }
-
 	};
 
 	class FileInfos
