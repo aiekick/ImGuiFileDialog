@@ -825,34 +825,42 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	struct FileType
+	class FileType
 	{
+	public:
 		enum ContentType {
 			// The ordering will be used during sort.
 			Invalid = -1,
 			Directory = 0,
 			File = 1,
 			LinkToUnknown = 2, // link to something that is not a regular file or directory.
-		} content;
+		};
 
-		FileType () {}
+	private:
+		ContentType m_Content;
+		bool m_Symlink = false;
 
-		FileType (ContentType contentType, bool symlink)
-		: content (contentType), symlink (symlink)
+	public:
+		FileType() = default;
+		FileType(const ContentType& vContentType, const bool& vIsSymlink)
+			: m_Content(vContentType), m_Symlink(vIsSymlink)
 		{}
 
-		bool isValid () const { return content != Invalid; }
-		bool isDir () const { return content == Directory; }
-		bool isFile () const { return content == File; }
-		bool isLinkToUnknown () const { return content == LinkToUnknown; }
+		void SetContent(const ContentType& vContentType) { m_Content = vContentType; }
+		void SetSymLink(const bool& vIsSymlink) { m_Symlink = vIsSymlink; }
+
+		bool isValid () const { return m_Content != ContentType::Invalid; }
+		bool isDir () const { return m_Content == ContentType::Directory; }
+		bool isFile () const { return m_Content == ContentType::File; }
+		bool isLinkToUnknown () const { return m_Content == ContentType::LinkToUnknown; }
+		bool isSymLink() const { return m_Symlink; }
 
 		// Comparisons only care about the content type, ignoring whether it's a symlink or not.
-		bool operator== (const FileType& rhs) const { return content == rhs.content; }
-		bool operator!= (const FileType& rhs) const { return content != rhs.content; }
-		bool operator<  (const FileType& rhs) const { return content < rhs.content; }
-		bool operator>  (const FileType& rhs) const { return content > rhs.content; }
+		bool operator== (const FileType& rhs) const { return m_Content == rhs.m_Content; }
+		bool operator!= (const FileType& rhs) const { return m_Content != rhs.m_Content; }
+		bool operator<  (const FileType& rhs) const { return m_Content < rhs.m_Content; }
+		bool operator>  (const FileType& rhs) const { return m_Content > rhs.m_Content; }
 
-		bool symlink = false;
 	};
 
 	class FileInfos
