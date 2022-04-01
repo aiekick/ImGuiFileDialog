@@ -825,10 +825,40 @@ namespace IGFD
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	struct FileType
+	{
+		enum ContentType {
+			// The ordering will be used during sort.
+			Invalid = -1,
+			Directory = 0,
+			File = 1,
+			LinkToUnknown = 2, // link to something that is not a regular file or directory.
+		} content;
+
+		FileType () {}
+
+		FileType (ContentType contentType, bool symlink)
+		: content (contentType), symlink (symlink)
+		{}
+
+		bool isValid () const { return content != Invalid; }
+		bool isDir () const { return content == Directory; }
+		bool isFile () const { return content == File; }
+		bool isLinkToUnknown () const { return content == LinkToUnknown; }
+
+		// Comparisons only care about the content type, ignoring whether it's a symlink or not.
+		bool operator== (const FileType& rhs) const { return content == rhs.content; }
+		bool operator!= (const FileType& rhs) const { return content != rhs.content; }
+		bool operator<  (const FileType& rhs) const { return content < rhs.content; }
+		bool operator>  (const FileType& rhs) const { return content > rhs.content; }
+
+		bool symlink = false;
+	};
+
 	class FileInfos
 	{
 	public:
-		char fileType = ' ';								// dirent fileType (f:file, d:directory, l:link)				
+		FileType fileType;    								// dirent fileType (f:file, d:directory, l:link)				
 		std::string filePath;								// path of the file
 		std::string fileNameExt;							// filename of the file (file name + extention) (but no path)
 		std::string fileNameExt_optimized;					// optimized for search => insensitivecase
@@ -921,9 +951,9 @@ namespace IGFD
 		void prRemoveFileNameInSelection(const std::string& vFileName);									// selection : remove a file name
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name
 		void AddFile(const FileDialogInternal& vFileDialogInternal, 
-			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+			const std::string& vPath, const std::string& vFileName, const FileType& vFileType);		    // add file called by scandir
 		void AddPath(const FileDialogInternal& vFileDialogInternal,
-			const std::string& vPath, const std::string& vFileName, const char& vFileType);				// add file called by scandir
+			const std::string& vPath, const std::string& vFileName, const FileType& vFileType);			// add file called by scandir
 
 #if defined(USE_QUICK_PATH_SELECT)
 		void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);	// scan the directory for retrieve the path list
