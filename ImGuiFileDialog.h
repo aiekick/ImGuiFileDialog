@@ -865,7 +865,7 @@ namespace IGFD
 	class FileInfos
 	{
 	public:
-		FileType fileType;    								// dirent fileType (f:file, d:directory, l:link)				
+		FileType fileType;    								// fileType		
 		std::string filePath;								// path of the file
 		std::string fileNameExt;							// filename of the file (file name + extention) (but no path)
 		std::string fileNameExt_optimized;					// optimized for search => insensitivecase

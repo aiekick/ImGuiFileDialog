@@ -886,13 +886,20 @@ namespace IGFD
 	// will not been exposed to IGFD API
 	bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const
 	{
+		// todo : better system to found regarding what style to priorize regarding other
+		// maybe with a lambda fucntion for let the user use his style
+		// according to his use case
 		if (vFileInfos.use_count() && !prFilesStyle.empty())
 		{
 			for (const auto& _flag : prFilesStyle)
 			{
 				for (const auto& _file : _flag.second)
 				{
-					if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink())
+					if ((_flag.first & IGFD_FileStyleByTypeDir && _flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isDir() && vFileInfos->fileType.isSymLink()) ||
+						(_flag.first & IGFD_FileStyleByTypeFile && _flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isFile() && vFileInfos->fileType.isSymLink()) ||
+						(_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink()) ||
+						(_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir()) ||
+						(_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile()))
 					{
 						if (_file.first.empty()) // for all links
 						{
@@ -902,29 +909,7 @@ namespace IGFD
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
-					}
-					else if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir())
-					{
-						if (_file.first.empty()) // for all dirs
-						{
-							vFileInfos->fileStyle = _file.second;
-						}
-						else if (_file.first == vFileInfos->fileNameExt) // for dirs who are equal to style criteria
-						{
-							vFileInfos->fileStyle = _file.second;
-						}
-					}
-					else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile())
-					{
-						if (_file.first.empty()) // for all files
-						{
-							vFileInfos->fileStyle = _file.second;
-						}
-						else if (_file.first == vFileInfos->fileNameExt) // for files who are equal to style criteria
-						{
-							vFileInfos->fileStyle = _file.second;
-						}
-					}					
+					}			
 
 					if (_flag.first & IGFD_FileStyleByExtention)
 					{
@@ -932,29 +917,6 @@ namespace IGFD
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
-
-						if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink())
-						{
-							if (_file.first == vFileInfos->fileExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						// can make sense for some dirs like the hidden by ex ".git"
-						else if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir())
-						{
-							if (_file.first == vFileInfos->fileExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile())
-						{
-							if (_file.first == vFileInfos->fileExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}						
 					}
 					if (_flag.first & IGFD_FileStyleByFullName)
 					{
@@ -962,56 +924,12 @@ namespace IGFD
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
-
-						if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink())
-						{
-							if (_file.first == vFileInfos->fileNameExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						else if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir())
-						{
-							if (_file.first == vFileInfos->fileNameExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile())
-						{
-							if (_file.first == vFileInfos->fileNameExt)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}						
 					}
 					if (_flag.first & IGFD_FileStyleByContainedInFullName)
 					{
 						if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
 						{
 							vFileInfos->fileStyle = _file.second;
-						}
-
-						if (_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink())
-						{
-							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						else if (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir())
-						{
-							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
-						}
-						else if (_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile())
-						{
-							if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
-							{
-								vFileInfos->fileStyle = _file.second;
-							}
 						}
 					}
 
