@@ -615,11 +615,12 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_HideColumnDate					= (1 << 5),	// hide column file date
 	ImGuiFileDialogFlags_NoDialog						= (1 << 6),	// let the dialog embedded in your own imgui begin / end scope
 	ImGuiFileDialogFlags_ReadOnlyFileNameField			= (1 << 7),	// don't let user type in filename field for file open style dialogs
+	ImGuiFileDialogFlags_CaseInsensitiveExtention		= (1 << 8), // the file extentions treatments will not take into account the case 
 #ifdef USE_THUMBNAILS
-	ImGuiFileDialogFlags_DisableThumbnailMode			= (1 << 8),	// disable the thumbnail mode
+	ImGuiFileDialogFlags_DisableThumbnailMode			= (1 << 9),	// disable the thumbnail mode
 #endif // USE_THUMBNAILS
 #ifdef USE_BOOKMARK
-	ImGuiFileDialogFlags_DisableBookmarkMode			= (1 << 9),	// disable the bookmark mode
+	ImGuiFileDialogFlags_DisableBookmarkMode			= (1 << 10),	// disable the bookmark mode
 #endif // USE_BOOKMARK
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
@@ -741,6 +742,7 @@ namespace IGFD
 		static std::wstring utf8_decode(const std::string& str);
 		static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
 		static std::vector<std::string> GetDrivesList();
+		static std::string LowerCaseString(const std::string& vString); // turn all text in lower case for search facilitie
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -774,11 +776,13 @@ namespace IGFD
 		public:
 			std::string filter;
 			std::set<std::string> collectionfilters;
+			std::string filter_optimized;																	// opitmized for case insensitive search
+			std::set<std::string> collectionfilters_optimized;												// optimized collections of filters for case insensitive search
 
 		public:
 			void clear();																					// clear the datas
 			bool empty() const;																				// is filter empty
-			bool exist(const std::string& vFilter) const;													// is filter exist
+			bool exist(const std::string& vFilter, bool vIsCaseInsensitive) const;							// is filter exist
 		};
 
 	private:
@@ -814,11 +818,11 @@ namespace IGFD
 			ImFont** vOutFont);																				// Get Color and Icon for Filter
 		void ClearFilesStyle();																				// clear prFileStyle
 
-		bool IsCoveredByFilters(const std::string& vTag) const;													// check if current file extention (vTag) is covered by current filter
-		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);										// draw the filter combobox
+		bool IsCoveredByFilters(const std::string& vTag, bool vIsCaseInsensitive) const;					// check if current file extention (vTag) is covered by current filter
+		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);									// draw the filter combobox
 		FilterInfos GetSelectedFilter();																	// get the current selected filter
-		std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;							// replace the extention of the current file by the selected filter
-		void SetDefaultFilterIfNotDefined();																	// define the first filter if no filter is selected
+		std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;						// replace the extention of the current file by the selected filter
+		void SetDefaultFilterIfNotDefined();																// define the first filter if no filter is selected
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -953,7 +957,6 @@ namespace IGFD
 	private:
 		static std::string prRoundNumber(double vvalue, int n);											// custom rounding number
 		static std::string prFormatFileSize(size_t vByteSize);											// format file size field
-		static std::string prOptimizeFilenameForSearchOperations(const std::string& vFileNameExt);		// turn all text in lower case for search facilitie
 		static void prCompleteFileInfos(const std::shared_ptr<FileInfos>& FileInfos);					// set time and date infos of a file (detail view mode)
 		void prRemoveFileNameInSelection(const std::string& vFileName);									// selection : remove a file name
 		void prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);	// selection : add a file name

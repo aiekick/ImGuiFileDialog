@@ -658,6 +658,7 @@ namespace IGFD
 		return res;
 	}
 #endif // USE_STD_FILESYSTEM
+
 	void IGFD::Utils::AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr)
 	{
 		std::string st = vStr;
@@ -691,6 +692,17 @@ namespace IGFD
 	{
 		ResetBuffer(vBuffer);
 		AppendToBuffer(vBuffer, vBufferLen, vStr);
+	}
+
+	std::string IGFD::Utils::LowerCaseString(const std::string& vString)
+	{
+		auto str = vString;
+
+		// convert to lower case
+		for (char& c : str)
+			c = (char)std::tolower(c);
+
+		return str;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -762,9 +774,18 @@ namespace IGFD
 		return filter.empty() && collectionfilters.empty();
 	}
 
-	bool IGFD::FilterManager::FilterInfos::exist(const std::string& vFilter) const
+	bool IGFD::FilterManager::FilterInfos::exist(const std::string& vFilter, bool vIsCaseInsensitive) const
 	{
-		return filter == vFilter || (collectionfilters.find(vFilter) != collectionfilters.end());
+		if (vIsCaseInsensitive)
+		{
+			auto _filter = Utils::LowerCaseString(vFilter);
+			return
+				filter_optimized == _filter ||
+				(collectionfilters_optimized.find(_filter) != collectionfilters_optimized.end());
+		}
+		return 
+			filter == vFilter || 
+			(collectionfilters.find(vFilter) != collectionfilters.end());
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -796,6 +817,7 @@ namespace IGFD
 				if (puDLGFilters[p] == '{') // {
 				{
 					infos.filter = puDLGFilters.substr(lp, p - lp);
+					infos.filter_optimized = Utils::LowerCaseString(infos.filter);
 					p++;
 					lp = puDLGFilters.find('}', p);
 					if (lp != nan)
@@ -805,6 +827,7 @@ namespace IGFD
 						for (auto a : arr)
 						{
 							infos.collectionfilters.emplace(a);
+							infos.collectionfilters_optimized.emplace(Utils::LowerCaseString(a));
 						}
 					}
 					p = lp + 1;
@@ -812,6 +835,7 @@ namespace IGFD
 				else // ,
 				{
 					infos.filter = puDLGFilters.substr(lp, p - lp);
+					infos.filter_optimized = Utils::LowerCaseString(infos.filter);
 					p++;
 				}
 
@@ -1043,14 +1067,14 @@ namespace IGFD
 		prFilesStyle.clear();
 	}
 		
-	bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vTag) const
+	bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vTag, bool vIsCaseInsensitive) const
 	{
 		if (!puDLGFilters.empty() && !prSelectedFilter.empty())
 		{
 			// check if current file extention is covered by current filter
 			// we do that here, for avoid doing that during filelist display
 			// for better fps
-			if (prSelectedFilter.exist(vTag) || prSelectedFilter.filter == ".*")
+			if (prSelectedFilter.exist(vTag, vIsCaseInsensitive) || prSelectedFilter.filter == ".*")
 			{
 				return true;
 			}
@@ -1394,22 +1418,13 @@ namespace IGFD
 		prPathList.clear();
 	}
 
-	std::string IGFD::FileManager::prOptimizeFilenameForSearchOperations(const std::string& vFileNameExt)
-	{
-		auto fileNameExt = vFileNameExt;
-		// convert to lower case
-		for (char& c : fileNameExt)
-			c = (char)std::tolower(c);
-		return fileNameExt;
-	}
-
 	void IGFD::FileManager::AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType)
 	{
 		auto infos = std::make_shared<FileInfos>();
 
 		infos->filePath = vPath;
 		infos->fileNameExt = vFileName;
-		infos->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(infos->fileNameExt);
+		infos->fileNameExt_optimized = Utils::LowerCaseString(infos->fileNameExt);
 		infos->fileType = vFileType;
 
 		if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return; // filename empty or filename is the current dir '.' //-V807
@@ -1426,7 +1441,8 @@ namespace IGFD
 				infos->fileExt = infos->fileNameExt.substr(lpt);
 			}
 
-			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt))
+			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt, 
+				(vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0))
 			{
 				return;
 			}
@@ -1447,7 +1463,7 @@ namespace IGFD
 
 		infos->filePath = vPath;
 		infos->fileNameExt = vFileName;
-		infos->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(infos->fileNameExt);
+		infos->fileNameExt_optimized = Utils::LowerCaseString(infos->fileNameExt);
 		infos->fileType = vFileType;
 
 		if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return; // filename empty or filename is the current dir '.' //-V807
@@ -1464,7 +1480,8 @@ namespace IGFD
 				infos->fileExt = infos->fileNameExt.substr(lpt);
 			}
 
-			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt))
+			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt,
+				(vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0))
 			{
 				return;
 			}
@@ -1671,7 +1688,7 @@ namespace IGFD
 			{
 				auto info = std::make_shared<FileInfos>();
 				info->fileNameExt = drive;
-				info->fileNameExt_optimized = prOptimizeFilenameForSearchOperations(drive);
+				info->fileNameExt_optimized = Utils::LowerCaseString(drive);
 				info->fileType.SetContent(FileType::Directory);
 
 				if (!info->fileNameExt.empty())
