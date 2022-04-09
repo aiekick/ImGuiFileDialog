@@ -1020,3 +1020,5 @@ feature : USE_THUMBNAILS
 	IMGUIFILEDIALOG_API void ManageGPUThumbnails(						// must be call in gpu zone, possibly a thread, will call the callback for create / destroy the textures
 		ImGuiFileDialog* vContext);										// ImGuiFileDialog context 
 ```
+
+![Alt](https://repobeats.axiom.co/api/embed/22a6eef207d0bce7c03519d94f55100973b451ca.svg "Repobeats analytics image")
