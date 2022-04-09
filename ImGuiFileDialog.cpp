@@ -1549,24 +1549,24 @@ namespace IGFD
 					switch (ent->d_type)
 					{
 					case DT_DIR:
-						fileType.SetContent(FileType::Directory); break;
+						fileType.SetContent(FileType::ContentType::Directory); break;
 					case DT_REG:
-						fileType.SetContent(FileType::File); break;
+						fileType.SetContent(FileType::ContentType::File); break;
 					case DT_LNK:
 					{
 						fileType.SetSymLink(true);
-						fileType.SetContent(FileType::LinkToUnknown); // by default if we can't figure out the target type.
+						fileType.SetContent(FileType::ContentType::LinkToUnknown); // by default if we can't figure out the target type.
 						struct stat statInfos = {};
 						int result = stat((path + PATH_SEP + ent->d_name).c_str(), &statInfos);
 						if (result == 0)
 						{
 							if (statInfos.st_mode & S_IFREG)
 							{
-								fileType.SetContent(FileType::File);
+								fileType.SetContent(FileType::ContentType::File);
 							}
 							else if (statInfos.st_mode & S_IFDIR)
 							{
-								fileType.SetContent(FileType::Directory);
+								fileType.SetContent(FileType::ContentType::Directory);
 							}
 						}
 						break;
@@ -1648,7 +1648,7 @@ namespace IGFD
 					if (ent->d_type == DT_DIR)
 					{
 						auto fileNameExt = ent->d_name;
-						AddPath(vFileDialogInternal, path, fileNameExt, FileType(FileType::Directory, false));
+						AddPath(vFileDialogInternal, path, fileNameExt, FileType(FileType::ContentType::Directory, false));
 					}
 				}
 
@@ -1689,7 +1689,7 @@ namespace IGFD
 				auto info = std::make_shared<FileInfos>();
 				info->fileNameExt = drive;
 				info->fileNameExt_optimized = Utils::LowerCaseString(drive);
-				info->fileType.SetContent(FileType::Directory);
+				info->fileType.SetContent(FileType::ContentType::Directory);
 
 				if (!info->fileNameExt.empty())
 				{
