@@ -656,7 +656,7 @@ if undefined the spacing is defined by the imgui theme
 
 ## Case Insensitive Filtering
 
-you can use this flag 'ImGuiFileDialogFlags_CaseInsensitiveExtention' when you call the display function
+you can use this flag 'ImGuiFileDialogFlags_CaseInsensitiveExtention' when you call the open functions
 
 ```
 by ex :
@@ -740,5 +740,14 @@ if (IGFD_DisplayDialog(cfiledialog, "filedlg", ImGuiWindowFlags_NoCollapse, minS
 // destroy ImGuiFileDialog
 IGFD_Destroy(cfiledialog);
 ```
+
+Thats all.
+
+You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
+- this trick was used for have custom icon font instead of labels for buttons or messages titles
+- you can also use your custom imgui button, the button call stamp must be same by the way :)
+
+The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
+ImGuiFontStudio is using also ImGuiFileDialog.$
 
 ![Alt](https://repobeats.axiom.co/api/embed/22a6eef207d0bce7c03519d94f55100973b451ca.svg "Repobeats analytics image")
