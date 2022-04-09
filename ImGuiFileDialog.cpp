@@ -1532,24 +1532,24 @@ namespace IGFD
 					switch (ent->d_type)
 					{
 					case DT_DIR:
-						fileType.content = FileType::Directory; break;
+						fileType.SetContent(FileType::Directory); break;
 					case DT_REG:
-						fileType.content = FileType::File; break;
+						fileType.SetContent(FileType::File); break;
 					case DT_LNK:
 					{
-						fileType.symlink = true;
-						fileType.content = FileType::LinkToUnknown; // by default if we can't figure out the target type.
+						fileType.SetSymLink(true);
+						fileType.SetContent(FileType::LinkToUnknown); // by default if we can't figure out the target type.
 						struct stat statInfos = {};
 						int result = stat((path + PATH_SEP + ent->d_name).c_str(), &statInfos);
 						if (result == 0)
 						{
 							if (statInfos.st_mode & S_IFREG)
 							{
-								fileType.content = FileType::File;
+								fileType.SetContent(FileType::File);
 							}
 							else if (statInfos.st_mode & S_IFDIR)
 							{
-								fileType.content = FileType::Directory;
+								fileType.SetContent(FileType::Directory);
 							}
 						}
 						break;
