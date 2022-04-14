@@ -1514,7 +1514,7 @@ namespace IGFD
 #ifdef USE_STD_FILESYSTEM
 			const std::filesystem::path fspath(path);
 			const auto dir_iter = std::filesystem::directory_iterator(fspath);
-			FileType fstype = FileType(FileType::Directory, std::filesystem::is_symlink(std::filesystem::status(fspath)));
+			FileType fstype = FileType(FileType::ContentType::Directory, std::filesystem::is_symlink(std::filesystem::status(fspath)));
 			AddFile(vFileDialogInternal, path, "..", fstype);
 			for (const auto& file : dir_iter)
 			{
@@ -1522,11 +1522,11 @@ namespace IGFD
 				if (file.is_symlink())
 				{
 					fileType.SetSymLink(file.is_symlink());
-					fileType.SetContent(FileType::LinkToUnknown);
+					fileType.SetContent(FileType::ContentType::LinkToUnknown);
 				}
 				
-				if (file.is_directory()) { fileType.SetContent(FileType::Directory); } // directory or symlink to directory
-				else if (file.is_regular_file()) { fileType.SetContent(FileType::File); }
+				if (file.is_directory()) { fileType.SetContent(FileType::ContentType::Directory); } // directory or symlink to directory
+				else if (file.is_regular_file()) { fileType.SetContent(FileType::ContentType::File); }
 
 				if (fileType.isValid())
 				{
