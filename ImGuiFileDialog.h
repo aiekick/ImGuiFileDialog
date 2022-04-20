@@ -1824,16 +1824,16 @@ IMGUIFILEDIALOG_API bool IGFD_IsOpened(						// say if the dialog is opened some
 IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(		// Open File behavior : will return selection via a map<FileName, FilePathName>
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context		
 
-IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(				// Save File behavior : will always return the content of the field with current filter extention and current path
+IMGUIFILEDIALOG_API char* IGFD_GetFilePathName(				// Save File behavior : will always return the content of the field with current filter extention and current path, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context				
 
-IMGUIFILEDIALOG_API char* IGFD_GetCurrentFileName(			// Save File behavior : will always return the content of the field with current filter extention
+IMGUIFILEDIALOG_API char* IGFD_GetCurrentFileName(			// Save File behavior : will always return the content of the field with current filter extention, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context				
 
-IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(				// will return current path
+IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(				// will return current path, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context					
 
-IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(			// will return selected filter
+IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(			// will return selected filter, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context						
 
 IMGUIFILEDIALOG_API void* IGFD_GetUserDatas(				// will return user datas send with Open Dialog/Modal
@@ -1860,7 +1860,7 @@ IMGUIFILEDIALOG_API bool IGFD_GetFileStyle(
 	IGFD_FileStyleFlags vFileStyleFlags,					// file style type
 	const char* vFilter,									// extention filter (same as used in SetExtentionInfos)
 	ImVec4* vOutColor,										// color to retrieve
-	char** vOutIconText,									// icon or text to retrieve
+	char** vOutIconText,									// icon or text to retrieve, WARNINGS you are responsible to free it
 	ImFont** vOutFont);										// font pointer to retrived
 
 IMGUIFILEDIALOG_API void IGFD_ClearFilesStyle(				// clear extentions setttings
@@ -1879,7 +1879,7 @@ IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(	// set the flashi
 #endif
 
 #ifdef USE_BOOKMARK
-IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(			// serialize bookmarks : return bookmark buffer to save in a file
+IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(			// serialize bookmarks : return bookmark buffer to save in a file, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context
 
 IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(			// deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
