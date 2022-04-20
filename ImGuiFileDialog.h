@@ -935,6 +935,7 @@ namespace IGFD
 	public:
 		static bool Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
 		static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr);
+		static bool IsDirectoryCanBeOpened(const std::string& name);			// by ex protected dirs (not user rights)
 		static bool IsDirectoryExist(const std::string& name);
 		static bool CreateDirectoryIfNotExist(const std::string& name);
 		static PathStruct ParsePathFileName(const std::string& vPathFileName);

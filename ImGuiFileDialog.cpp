@@ -37,10 +37,12 @@ SOFTWARE.
 #include <ctime>
 #include <sys/stat.h>
 #include <cstdio>
+#include <cerrno>
 
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
 	#include <filesystem>
+	#include <exception>
 #endif // USE_STD_FILESYSTEM
 
 #ifdef __EMSCRIPTEN__
@@ -520,6 +522,51 @@ namespace IGFD
 		return res;
 	}
 
+	bool IGFD::Utils::IsDirectoryCanBeOpened(const std::string& name)
+	{
+		bool bExists = false;
+
+		if (!name.empty())
+		{
+#ifdef USE_STD_FILESYSTEM
+			namespace fs = std::filesystem;
+#ifdef _IGFD_WIN_
+			std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
+			fs::path pathName = fs::path(wname);
+#else // _IGFD_WIN_
+			fs::path pathName = fs::path(name);
+#endif // _IGFD_WIN_
+			try
+			{
+				// interesting, in the case of a protected dir or for any reason the dir cant be opened
+				// this func will work but will say nothing more . not like the dirent version
+				bExists = fs::is_directory(pathName);
+				// test if can be opened, this function can thrown an exception if there is an issue with this dir
+				// here, the dir_iter is need else not exception is thrown.. 
+				const auto dir_iter = std::filesystem::directory_iterator(pathName);
+				(void)dir_iter; // for avoid unused warnings
+			}
+			catch (std::exception /*ex*/)
+			{
+				// fail so this dir cant be opened
+				bExists = false;
+			}
+#else
+			DIR* pDir = nullptr;
+			// interesting, in the case of a protected dir or for any reason the dir cant be opened
+			// this func will fail
+			pDir = opendir(name.c_str());
+			if (pDir != nullptr)
+			{
+				bExists = true;
+				(void)closedir(pDir);
+			}
+#endif // USE_STD_FILESYSTEM
+		}
+
+		return bExists;    // this is not a directory!
+	}
+
 	bool IGFD::Utils::IsDirectoryExist(const std::string& name)
 	{
 		bool bExists = false;
@@ -538,10 +585,22 @@ namespace IGFD
 #else
 			DIR* pDir = nullptr;
 			pDir = opendir(name.c_str());
-			if (pDir != nullptr)
+			if (pDir)
 			{
+				bExists = true; 
+				closedir(pDir);
+			}
+			else if (ENOENT == errno) 
+			{
+				/* Directory does not exist. */
+				//bExists = false;
+			}
+			else 
+			{
+				/* opendir() failed for some other reason. 
+				   like if a dir is protected, or not accessable with user right
+				*/
 				bExists = true;
-				(void)closedir(pDir);
 			}
 #endif // USE_STD_FILESYSTEM
 		}
@@ -1524,7 +1583,7 @@ namespace IGFD
 					fileType.SetSymLink(file.is_symlink());
 					fileType.SetContent(FileType::ContentType::LinkToUnknown);
 				}
-				
+
 				if (file.is_directory()) { fileType.SetContent(FileType::ContentType::Directory); } // directory or symlink to directory
 				else if (file.is_regular_file()) { fileType.SetContent(FileType::ContentType::File); }
 
@@ -2124,8 +2183,9 @@ namespace IGFD
 					newPath = prCurrentPath + std::string(1u, PATH_SEP) + vInfos->fileNameExt;
 			}
 
-			if (IGFD::Utils::IsDirectoryExist(newPath))
+			if (IGFD::Utils::IsDirectoryCanBeOpened(newPath))
 			{
+
 				if (puShowDrives)
 				{
 					prCurrentPath = vInfos->fileNameExt;
