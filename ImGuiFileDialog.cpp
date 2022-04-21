@@ -2972,6 +2972,7 @@ namespace IGFD
 		if (ImGui::IsItemHovered())
 			ImGui::SetTooltip(bookmarksButtonHelpString);
 	}
+
 	bool IGFD::BookMarkFeature::prDrawBookmarkPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize)
 	{
 		bool res = false;
@@ -3054,15 +3055,19 @@ namespace IGFD
 		return res;
 	}
 
-	std::string IGFD::BookMarkFeature::SerializeBookmarks()
+	std::string IGFD::BookMarkFeature::SerializeBookmarks(const bool& vDontSerializeCodeBasedBookmarks)
 	{
 		std::string res;
 
 		size_t idx = 0;
 		for (auto& it : prBookmarks)
 		{
+			if (vDontSerializeCodeBasedBookmarks && it.defined_by_code)
+				continue;
+
 			if (idx++ != 0)
 				res += "##"; // ## because reserved by imgui, so an input text cant have ##
+
 			res += it.name + "##" + it.path;
 		}
 
@@ -3077,16 +3082,45 @@ namespace IGFD
 			auto arr = IGFD::Utils::SplitStringToVector(vBookmarks, '#', false);
 			for (size_t i = 0; i < arr.size(); i += 2)
 			{
-				BookmarkStruct bookmark;
-				bookmark.name = arr[i];
 				if (i + 1 < arr.size()) // for avoid crash if arr size is impair due to user mistake after edition
 				{
+					BookmarkStruct bookmark;
+					bookmark.name = arr[i];
 					// if bad format we jump this bookmark
 					bookmark.path = arr[i + 1];
 					prBookmarks.push_back(bookmark);
 				}
 			}
 		}
+	}
+
+	void IGFD::BookMarkFeature::AddBookmark(const std::string& vBookMarkName, const std::string& vBookMarkPath)
+	{
+		if (vBookMarkName.empty() || vBookMarkPath.empty())
+			return;
+
+		BookmarkStruct bookmark;
+		bookmark.name = vBookMarkName;
+		bookmark.path = vBookMarkPath;
+		bookmark.defined_by_code = true;
+		prBookmarks.push_back(bookmark);
+	}
+
+	bool IGFD::BookMarkFeature::RemoveBookmark(const std::string& vBookMarkName)
+	{
+		if (vBookMarkName.empty())
+			return false;
+
+		for (auto bookmark_it = prBookmarks.begin(); bookmark_it != prBookmarks.end(); ++bookmark_it)
+		{
+			if ((*bookmark_it).name == vBookMarkName)
+			{
+				prBookmarks.erase(bookmark_it);
+				return true;
+			}
+		}
+
+		return false;
 	}
 #endif // USE_BOOKMARK
 
@@ -5559,13 +5593,13 @@ IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(ImGuiFileDialog* v
 #endif
 
 #ifdef USE_BOOKMARK
-IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext)
+IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext, bool& vDontSerializeCodeBasedBookmarks)
 {
 	char* res = nullptr;
 
 	if (vContext)
 	{
-		auto s = vContext->SerializeBookmarks();
+		auto s = vContext->SerializeBookmarks(vDontSerializeCodeBasedBookmarks);
 		if (!s.empty())
 		{
 			size_t siz = s.size() + 1U;
@@ -5592,6 +5626,23 @@ IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(ImGuiFileDialog* vContext, co
 		vContext->DeserializeBookmarks(vBookmarks);
 	}
 }
+
+IMGUIFILEDIALOG_API char* IGFD_AddBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName, const char* vBookMarkPath)
+{
+	if (vContext)
+	{
+		vContext->AddBookmark(vBookMarkName, vBookMarkPath);
+	}
+}
+
+IMGUIFILEDIALOG_API char* IGFD_RemoveBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName)
+{
+	if (vContext)
+	{
+		vContext->RemoveBookmark(vBookMarkName);
+	}
+}
+
 #endif
 
 #ifdef USE_THUMBNAILS

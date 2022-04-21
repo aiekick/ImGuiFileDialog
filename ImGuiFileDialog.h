@@ -422,6 +422,15 @@ Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookm
 ```
 (please see example code for details)
 
+you can also add/remove bookmark by code :
+and in this case, you can also avoid serialization of code based bookmark
+
+```cpp
+Add => ImGuiFileDialog::Instance()->AddBookmark(bookmark_name, bookmark_path);
+Remove => ImGuiFileDialog::Instance()->RemoveBookmark(bookmark_name);
+Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true); // true for prevent serialization of code based bookmarks
+```
+
 ## Path Edition :
 
 Right clicking on any path element button allows the user to manually edit the path from that portion of the tree.
@@ -1320,6 +1329,8 @@ namespace IGFD
 			
 			// todo: the path could be relative, better if the app is movedn but bookmarked path can be outside of the app
 			std::string path;			// absolute path of the bookmarked directory 
+
+			bool defined_by_code = false;	// defined by code, can be used for rpevent serialization / deserialization
 		};
 
 	private:
@@ -1336,9 +1347,16 @@ namespace IGFD
 		bool prDrawBookmarkPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize);	// draw bookmark Pane
 
 	public:
-		std::string SerializeBookmarks();							// serialize bookmarks : return bookmark buffer to save in a file
+		std::string SerializeBookmarks(								// serialize bookmarks : return bookmark buffer to save in a file
+			const bool& vDontSerializeCodeBasedBookmarks = true);	// for avoid serialization of bookmarks added by code
 		void DeserializeBookmarks(									// deserialize bookmarks : load bookmark buffer to load in the dialog (saved from previous use with SerializeBookmarks())
 			const std::string& vBookmarks);							// bookmark buffer to load
+		void AddBookmark(											// add a bookmark by code
+			const std::string& vBookMarkName,						// bookmark name
+			const std::string& vBookMarkPath);						// bookmark path
+		bool RemoveBookmark(										// remove a bookmark by code, return true if succeed
+			const std::string& vBookMarkName);						// bookmark name to remove
+
 #endif // USE_BOOKMARK
 	};
 
@@ -1880,11 +1898,21 @@ IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(	// set the flashi
 
 #ifdef USE_BOOKMARK
 IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(			// serialize bookmarks : return bookmark buffer to save in a file, WARNINGS you are responsible to free it
-	ImGuiFileDialog* vContext);								// ImGuiFileDialog context
+	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
+	bool& vDontSerializeCodeBasedBookmarks);				// for avoid serialization of bookmarks added by code
 
 IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(			// deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
 	const char* vBookmarks);								// bookmark buffer to load 
+
+IMGUIFILEDIALOG_API char* IGFD_AddBookmark(					// add a bookmark by code
+	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
+	const char* vBookMarkName,								// bookmark name
+	const char* vBookMarkPath);								// bookmark path
+
+IMGUIFILEDIALOG_API char* IGFD_RemoveBookmark(					// remove a bookmark by code, return true if succeed
+	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
+	const char* vBookMarkName);								// bookmark name to remove
 #endif
 
 #ifdef USE_THUMBNAILS
