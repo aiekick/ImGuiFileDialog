@@ -869,7 +869,7 @@ int main(int, char**)
 	std::ofstream configFileWriter_c("bookmarks_c.conf", std::ios::out);
 	if (!configFileWriter_c.bad())
 	{
-		char* s = IGFD_SerializeBookmarks(cfileDialog);
+		char* s = IGFD_SerializeBookmarks(cfileDialog, true);
 		if (s)
 		{
 			configFileWriter_c << std::string(s);
