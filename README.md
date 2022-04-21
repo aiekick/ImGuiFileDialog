@@ -404,7 +404,9 @@ and in this case, you can also avoid serialization of code based bookmark
 ```cpp
 Add => ImGuiFileDialog::Instance()->AddBookmark(bookmark_name, bookmark_path);
 Remove => ImGuiFileDialog::Instance()->RemoveBookmark(bookmark_name);
-Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true); // true for prevent serialization of code based bookmarks
+
+// true for prevent serialization of code based bookmarks
+Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true);
 ```
 
 (please see example code for details)
