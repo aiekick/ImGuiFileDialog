@@ -420,6 +420,9 @@ int main(int, char**)
 		IGFD_DeserializeBookmarks(cfileDialog, strStream.str().c_str());
 		docFile_c.close();
 	}
+
+	// add bookmark by code (why ? because we can :-) )
+	ImGuiFileDialog::Instance()->AddBookmark("Current Dir", ".");
 #endif
 
 	static std::string filePathName;
@@ -845,6 +848,9 @@ int main(int, char**)
 	}
 
 #ifdef USE_BOOKMARK
+	// remove bookmark
+	ImGuiFileDialog::Instance()->RemoveBookmark("Current Dir");
+
 	// save bookmarks dialog 1
 	std::ofstream configFileWriter_1("bookmarks_1.conf", std::ios::out);
 	if (!configFileWriter_1.bad())

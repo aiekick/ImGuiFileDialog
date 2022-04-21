@@ -100,7 +100,7 @@
 //#define tableHeaderFileSizeString " Size"
 //#define tableHeaderFileDateString " Date"
 
-//#define USE_BOOKMARK
+#define USE_BOOKMARK
 //#define bookmarkPaneWith 150.0f
 //#define IMGUI_TOGGLE_BUTTON ToggleButton
 #define bookmarksButtonString ICON_IGFD_BOOKMARK

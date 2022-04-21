@@ -394,6 +394,17 @@ You can also serialize/deserialize bookmarks (for example to load/save from/to a
 Load => ImGuiFileDialog::Instance()->DeserializeBookmarks(bookmarString);
 Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks();
 ```
+
+you can also add/remove bookmark by code :
+
+and in this case, you can also avoid serialization of code based bookmark
+
+```cpp
+Add => ImGuiFileDialog::Instance()->AddBookmark(bookmark_name, bookmark_path);
+Remove => ImGuiFileDialog::Instance()->RemoveBookmark(bookmark_name);
+Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true); // true for prevent serialization of code based bookmarks
+```
+
 (please see example code for details)
 
 ## Path Edition :
@@ -741,7 +752,39 @@ if (IGFD_DisplayDialog(cfiledialog, "filedlg", ImGuiWindowFlags_NoCollapse, minS
 IGFD_Destroy(cfiledialog);
 ```
 
-Thats all.
+## How to build [sample app](https://github.com/aiekick/ImGuiFileDialog/tree/master) :
+
+You need to use cMake. For the 3 Os (Win, Linux, MacOs), the cMake usage is exactly the same,
+
+    Choose a build directory. (called here my_build_directory for instance) and
+    Choose a Build Mode : "Release" / "MinSizeRel" / "RelWithDebInfo" / "Debug" (called here BuildMode for instance)
+    Run cMake in console : (the first for generate cmake build files, the second for build the binary)
+
+cmake -B my_build_directory -DCMAKE_BUILD_TYPE=BuildMode
+cmake --build my_build_directory --config BuildMode
+
+Some cMake version need Build mode define via the directive CMAKE_BUILD_TYPE or via --Config when we launch the build. This is why i put the boths possibilities
+
+By the way you need before, to make sure, you have needed dependencies.
+
+### On Windows :
+
+You need to have the opengl library installed
+
+### On Linux :
+
+You need many lib : (X11, xrandr, xinerama, xcursor, mesa)
+
+If you are on debian you can run :
+
+sudo apt-get update 
+sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
+
+### On MacOs :
+
+you need many lib : opengl and cocoa framework
+
+## Thats all folks :-)
 
 You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
 - this trick was used for have custom icon font instead of labels for buttons or messages titles
