@@ -1899,18 +1899,18 @@ IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(	// set the flashi
 #ifdef USE_BOOKMARK
 IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(			// serialize bookmarks : return bookmark buffer to save in a file, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	bool& vDontSerializeCodeBasedBookmarks);				// for avoid serialization of bookmarks added by code
+	bool vDontSerializeCodeBasedBookmarks);					// for avoid serialization of bookmarks added by code
 
 IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(			// deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context 
 	const char* vBookmarks);								// bookmark buffer to load 
 
-IMGUIFILEDIALOG_API char* IGFD_AddBookmark(					// add a bookmark by code
+IMGUIFILEDIALOG_API void IGFD_AddBookmark(					// add a bookmark by code
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
 	const char* vBookMarkName,								// bookmark name
 	const char* vBookMarkPath);								// bookmark path
 
-IMGUIFILEDIALOG_API char* IGFD_RemoveBookmark(					// remove a bookmark by code, return true if succeed
+IMGUIFILEDIALOG_API void IGFD_RemoveBookmark(					// remove a bookmark by code, return true if succeed
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
 	const char* vBookMarkName);								// bookmark name to remove
 #endif

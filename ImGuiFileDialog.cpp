@@ -5593,7 +5593,7 @@ IMGUIFILEDIALOG_API void IGFD_SetFlashingAttenuationInSeconds(ImGuiFileDialog* v
 #endif
 
 #ifdef USE_BOOKMARK
-IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext, bool& vDontSerializeCodeBasedBookmarks)
+IMGUIFILEDIALOG_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContext, bool vDontSerializeCodeBasedBookmarks)
 {
 	char* res = nullptr;
 
@@ -5627,7 +5627,7 @@ IMGUIFILEDIALOG_API void IGFD_DeserializeBookmarks(ImGuiFileDialog* vContext, co
 	}
 }
 
-IMGUIFILEDIALOG_API char* IGFD_AddBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName, const char* vBookMarkPath)
+IMGUIFILEDIALOG_API void IGFD_AddBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName, const char* vBookMarkPath)
 {
 	if (vContext)
 	{
@@ -5635,7 +5635,7 @@ IMGUIFILEDIALOG_API char* IGFD_AddBookmark(ImGuiFileDialog* vContext, const char
 	}
 }
 
-IMGUIFILEDIALOG_API char* IGFD_RemoveBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName)
+IMGUIFILEDIALOG_API void IGFD_RemoveBookmark(ImGuiFileDialog* vContext, const char* vBookMarkName)
 {
 	if (vContext)
 	{
