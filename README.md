@@ -82,6 +82,9 @@ included in the Lib_Only branch for your convenience.
 - Can tune validation buttons (placements, widths, inversion) 
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
 
+### WARNINGS :
+- the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
+ 
 ## Singleton Pattern vs. Multiple Instances
 
 ### Single Dialog :
