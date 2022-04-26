@@ -4353,7 +4353,12 @@ namespace IGFD
 				// nav system, selectable cause open directory or select directory
 				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard)
 				{
-					if (fdi.puDLGDirectoryMode) // directory chooser
+					// little fix for get back the mouse behavior in nav system
+					if (ImGui::IsMouseDoubleClicked(0)) // 0 -> left mouse button double click
+					{
+						fdi.puPathClicked = fdi.SelectDirectory(vInfos);
+					}
+					else if (fdi.puDLGDirectoryMode) // directory chooser
 					{
 						fdi.SelectFileName(prFileDialogInternal, vInfos);
 					}
