@@ -5324,7 +5324,7 @@ IMGUIFILEDIALOG_API bool IGFD_WasKeyOpenedThisFrame(ImGuiFileDialog* vContext,
 {
 	if (vContext)
 	{
-		vContext->WasOpenedThisFrame(vKey);
+		return vContext->WasOpenedThisFrame(vKey);
 	}
 
 	return false;
@@ -5334,7 +5334,7 @@ IMGUIFILEDIALOG_API bool IGFD_WasOpenedThisFrame(ImGuiFileDialog* vContext)
 {
 	if (vContext)
 	{
-		vContext->WasOpenedThisFrame();
+		return vContext->WasOpenedThisFrame();
 	}
 
 	return false;
@@ -5345,7 +5345,7 @@ IMGUIFILEDIALOG_API bool IGFD_IsKeyOpened(ImGuiFileDialog* vContext,
 {
 	if (vContext)
 	{
-		vContext->IsOpened(vCurrentOpenedKey);
+		return vContext->IsOpened(vCurrentOpenedKey);
 	}
 
 	return false;
@@ -5355,7 +5355,7 @@ IMGUIFILEDIALOG_API bool IGFD_IsOpened(ImGuiFileDialog* vContext)
 {
 	if (vContext)
 	{
-		vContext->IsOpened();
+		return vContext->IsOpened();
 	}
 
 	return false;
