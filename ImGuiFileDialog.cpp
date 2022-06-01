@@ -1133,7 +1133,10 @@ namespace IGFD
 			// check if current file extention is covered by current filter
 			// we do that here, for avoid doing that during filelist display
 			// for better fps
-			if (prSelectedFilter.exist(vTag, vIsCaseInsensitive) || prSelectedFilter.filter == ".*")
+			if (prSelectedFilter.exist(vTag, vIsCaseInsensitive) || 
+				prSelectedFilter.exist(".*", vIsCaseInsensitive) ||
+				prSelectedFilter.exist("*.*", vIsCaseInsensitive) ||
+				prSelectedFilter.filter == ".*")
 			{
 				return true;
 			}
@@ -1194,7 +1197,9 @@ namespace IGFD
 		if (!result.empty())
 		{
 			// if not a collection we can replace the filter by the extention we want
-			if (prSelectedFilter.collectionfilters.empty())
+			if (prSelectedFilter.collectionfilters.empty() && 
+				prSelectedFilter.filter != ".*" &&
+				prSelectedFilter.filter != "*.*")
 			{
 				size_t lastPoint = vFile.find_last_of('.');
 				if (lastPoint != std::string::npos)
