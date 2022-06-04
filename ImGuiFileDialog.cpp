@@ -4337,8 +4337,11 @@ namespace IGFD
 
 		float h = 0.0f;
 #ifdef USE_THUMBNAILS
-		if (prDisplayMode == DisplayModeEnum::THUMBNAILS_LIST)
+		if (prDisplayMode == DisplayModeEnum::THUMBNAILS_LIST &&
+			!(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DisableThumbnailMode))
+		{
 			h = DisplayMode_ThumbailsList_ImageHeight;
+		}
 #endif // USE_THUMBNAILS
 #ifdef USE_EXPLORATION_BY_KEYS
 		bool flashed = prBeginFlashItem((size_t)vidx);
