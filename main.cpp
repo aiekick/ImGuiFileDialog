@@ -508,6 +508,13 @@ int main(int, char**)
 					RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Hidden Files", "Hide Hidden Files", &flags, ImGuiFileDialogFlags_DontShowHiddenFiles);
 					ImGui::SameLine();
 					RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable Directory Creation", "Disable Directory Creation button in dialog", &flags, ImGuiFileDialogFlags_DisableCreateDirectoryButton);
+#ifdef USE_THUMBNAILS
+					RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable thumbnails mode", "Disable thumbnails display in dialo", &flags, ImGuiFileDialogFlags_DisableThumbnailMode);
+#endif // USE_THUMBNAILS
+#ifdef USE_BOOKMARK
+					ImGui::SameLine();
+					RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable bookmark mode", "Disable bookmark display in dialo", &flags, ImGuiFileDialogFlags_DisableBookmarkMode);
+#endif // USE_BOOKMARK
 
 					ImGui::Text("Hide Column by default : (saved in imgui.ini, \n\tso defined when the inmgui.ini is not existing)");
 					RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Type", "Hide Column file type by default", &flags, ImGuiFileDialogFlags_HideColumnType);
