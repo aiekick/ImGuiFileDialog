@@ -35,8 +35,11 @@
 //#define DisplayMode_ThumbailsList_ButtonHelp "Thumbnails List"
 #define DisplayMode_ThumbailsGrid_ButtonString ICON_IGFD_FILE_GRID_THUMBNAILS
 //#define DisplayMode_ThumbailsGrid_ButtonHelp "Thumbnails Grid"
+// sleep time in millisedonce to apply in the thread loop, when no datas to extract
+// the sleep time can be ssen jsut after the opening of a directory who contain pictures
+#define DisplayMode_ThumbailsGrid_ThreadSleepTimeInMS 50
 
-#define USE_EXPLORATION_BY_KEYS
+//#define USE_EXPLORATION_BY_KEYS
 // Up key for explore to the top
 #define IGFD_KEY_UP ImGuiKey_UpArrow
 // Down key for explore to the bottom
