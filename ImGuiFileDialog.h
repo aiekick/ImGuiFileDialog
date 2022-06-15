@@ -873,6 +873,7 @@ struct IGFD_Thumbnail_Info
 #include <list>
 #include <thread>
 #include <mutex>
+#include <regex>
 
 namespace IGFD
 {
@@ -989,15 +990,18 @@ namespace IGFD
 		class FilterInfos
 		{
 		public:
-			std::string filter;
-			std::set<std::string> collectionfilters;
+			std::string filter;																				// simple filter
+			std::regex filter_regex;																		// filter fo type regex
+			std::set<std::string> collectionfilters;														// collections of filters
 			std::string filter_optimized;																	// opitmized for case insensitive search
 			std::set<std::string> collectionfilters_optimized;												// optimized collections of filters for case insensitive search
+			std::vector<std::regex> collectionfilters_regex;												// collection of regex filter type
 
 		public:
 			void clear();																					// clear the datas
 			bool empty() const;																				// is filter empty
 			bool exist(const std::string& vFilter, bool vIsCaseInsensitive) const;							// is filter exist
+			bool regex_exist(const std::string& vFilter) const;												// is regex filter exist
 		};
 
 	private:
@@ -1033,7 +1037,10 @@ namespace IGFD
 			ImFont** vOutFont);																				// Get Color and Icon for Filter
 		void ClearFilesStyle();																				// clear prFileStyle
 
-		bool IsCoveredByFilters(const std::string& vTag, bool vIsCaseInsensitive) const;					// check if current file extention (vTag) is covered by current filter
+		bool IsCoveredByFilters(														// check if current file extention (vExt) is covered by current filter, ro by regex (vNameExt)
+			const std::string& vNameExt, 
+			const std::string& vExt, 
+			bool vIsCaseInsensitive) const;																	
 		bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);									// draw the filter combobox
 		FilterInfos GetSelectedFilter();																	// get the current selected filter
 		std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;						// replace the extention of the current file by the selected filter

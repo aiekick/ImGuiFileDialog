@@ -847,6 +847,27 @@ namespace IGFD
 			(collectionfilters.find(vFilter) != collectionfilters.end());
 	}
 
+	bool IGFD::FilterManager::FilterInfos::regex_exist(const std::string& vFilter) const
+	{
+		if (std::regex_search(vFilter, filter_regex))
+		{
+			return true;
+		}
+		else
+		{
+			for (auto regex : collectionfilters_regex)
+			{
+				if (std::regex_search(vFilter, regex))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	//// FILTER MANAGER /////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -887,6 +908,13 @@ namespace IGFD
 						{
 							infos.collectionfilters.emplace(a);
 							infos.collectionfilters_optimized.emplace(Utils::LowerCaseString(a));
+
+							// a regex
+							if (a.find('(') != std::string::npos) {
+								if (a.find(')') != std::string::npos) {
+									infos.collectionfilters_regex.push_back(std::regex(a));
+								}
+							}
 						}
 					}
 					p = lp + 1;
@@ -895,6 +923,14 @@ namespace IGFD
 				{
 					infos.filter = puDLGFilters.substr(lp, p - lp);
 					infos.filter_optimized = Utils::LowerCaseString(infos.filter);
+
+					// a regex
+					if (infos.filter.find('(') != std::string::npos) {
+						if (infos.filter.find(')') != std::string::npos) {
+							infos.filter_regex = std::regex(infos.filter);
+						}
+					}
+
 					p++;
 				}
 
@@ -1126,20 +1162,19 @@ namespace IGFD
 		prFilesStyle.clear();
 	}
 		
-	bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vTag, bool vIsCaseInsensitive) const
+	bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const
 	{
 		if (!puDLGFilters.empty() && !prSelectedFilter.empty())
 		{
 			// check if current file extention is covered by current filter
 			// we do that here, for avoid doing that during filelist display
 			// for better fps
-			if (prSelectedFilter.exist(vTag, vIsCaseInsensitive) || 
+			return (
+				prSelectedFilter.exist(vExt, vIsCaseInsensitive) ||
 				prSelectedFilter.exist(".*", vIsCaseInsensitive) ||
 				prSelectedFilter.exist("*.*", vIsCaseInsensitive) ||
-				prSelectedFilter.filter == ".*")
-			{
-				return true;
-			}
+				prSelectedFilter.filter == ".*" ||
+				prSelectedFilter.regex_exist(vNameExt));
 		}
 
 		return false;
@@ -1505,7 +1540,7 @@ namespace IGFD
 				infos->fileExt = infos->fileNameExt.substr(lpt);
 			}
 
-			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt, 
+			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileNameExt, infos->fileExt,
 				(vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0))
 			{
 				return;
@@ -1544,7 +1579,7 @@ namespace IGFD
 				infos->fileExt = infos->fileNameExt.substr(lpt);
 			}
 
-			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileExt,
+			if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileNameExt, infos->fileExt,
 				(vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0))
 			{
 				return;
