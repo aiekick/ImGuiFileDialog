@@ -545,6 +545,15 @@ int main(int, char**)
 					else
 						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 				}
+				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex .+[.].+N"))
+				{
+					// the regex for being recognized at regex need to be between ( and )
+					const char* filters = "Regex .*N{(.+[.].+N)}";
+					if (standardDialogMode)
+						ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+					else
+						ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+				}
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items"))
 				{
 					const char* filters = ".*,.cpp,.h,.hpp";
