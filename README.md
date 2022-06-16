@@ -81,7 +81,11 @@ included in the Lib_Only branch for your convenience.
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion) 
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
+- regex support for filters, collection of fitler and filestyle (the regex is recognized when between ( and ) in a filter
 
+### WARNINGS :
+- the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
+ 
 ## Singleton Pattern vs. Multiple Instances
 
 ### Single Dialog :
@@ -204,7 +208,7 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
 
 ## File Style : Custom icons and colors by extension
 
@@ -233,6 +237,8 @@ custom icon sets for use with Dear ImGui.
 
 It is inspired by [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders), which can also be used with 
 ImGuiFileDialog.
+
+you can also use a regex for the filtering. the regex must be betwwen the ( and ) for be recognized as a regex
 
 samples :
 
@@ -266,11 +272,16 @@ all of theses can be miwed with IGFD_FileStyleByTypeDir / IGFD_FileStyleByTypeFi
 like theses by ex :
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByFullName, "cmake", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+
+// for all these,s you can use a regex
+// ex for color files like Custom*.h
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
 ```
 
 this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
 
 ```cpp
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -290,10 +301,14 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 
 You can define a custom filter name that corresponds to a group of filters using this syntax:
 
-```custom_name1{filter1,filter2,filter3},custom_name2{filter1,filter2},filter1```
+You can also use a regex for the filtering. the regex must be betwwen the ( and ) for be recognized as a regex
+
+
+```custom_name1{filter1,filter2,filter3,(regex0),(regex1)},custom_name2{filter1,filter2,(regex0)},filter1```
 
 When you select custom_name1, filters 1 to 3 will be applied. The characters `{` and `}` are reserved. Don't use them
 for filter names.
+
 
 this code :
 
