@@ -1024,7 +1024,12 @@ namespace IGFD
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
-						else if (_file.first == vFileInfos->fileNameExt) // for links who are equal to style criteria
+						else if (_file.first.find('(') != std::string::npos &&
+							std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first)))  // for links who are equal to style criteria
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileNameExt)  // for links who are equal to style criteria
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
@@ -1032,21 +1037,38 @@ namespace IGFD
 
 					if (_flag.first & IGFD_FileStyleByExtention)
 					{
-						if (_file.first == vFileInfos->fileExt)
+						if (_file.first.find('(') != std::string::npos &&
+							std::regex_search(vFileInfos->fileExt, std::regex(_file.first)))
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileExt)
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
 					}
+
 					if (_flag.first & IGFD_FileStyleByFullName)
 					{
-						if (_file.first == vFileInfos->fileNameExt)
+						if (_file.first.find('(') != std::string::npos &&
+							std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first)))
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (_file.first == vFileInfos->fileNameExt)
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
 					}
+
 					if (_flag.first & IGFD_FileStyleByContainedInFullName)
 					{
-						if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
+						if (_file.first.find('(') != std::string::npos &&
+							std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first)))
+						{
+							vFileInfos->fileStyle = _file.second;
+						}
+						else if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos)
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
