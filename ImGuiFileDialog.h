@@ -331,7 +331,7 @@ will produce :
 
 ## Multi Selection
 
-You can define in OpenDialog/OpenModal call the count file you want to select :
+You can define in OpenDialog call the count file you want to select :
 
 - 0 => infinite
 - 1 => one file only (default)
@@ -445,7 +445,7 @@ Here's the manual entry operation in action:
 If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the
 operation.
 
-To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog/OpenModal.
+To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog.
 
 By default this flag is not set since there is no pre-defined way to define if a dialog will be for Open or Save
 behavior. (by design! :) )
@@ -461,9 +461,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
 Example code For Modal Dialog :
 
 ```cpp
-ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
 	ICON_IGFD_SAVE " Choose a File", filters,
-	".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+	".", "", 1, nullptr, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
 This dialog will only verify the file in the file field, not with `GetSelection()`.
@@ -830,11 +830,12 @@ enum ImGuiFileDialogFlags_
 	ImGuiFileDialogFlags_NoDialog						= (1 << 6),	// let the dialog embedded in your own imgui begin / end scope
 	ImGuiFileDialogFlags_ReadOnlyFileNameField			= (1 << 7),	// don't let user type in filename field for file open style dialogs
 	ImGuiFileDialogFlags_CaseInsensitiveExtention		= (1 << 8), // the file extentions treatments will not take into account the case 
+	ImGuiFileDialogFlags_Modal							= (1 << 9), // modal
 #ifdef USE_THUMBNAILS
-	ImGuiFileDialogFlags_DisableThumbnailMode			= (1 << 9),	// disable the thumbnail mode
+	ImGuiFileDialogFlags_DisableThumbnailMode			= (1 << 10),	// disable the thumbnail mode
 #endif // USE_THUMBNAILS
 #ifdef USE_BOOKMARK
-	ImGuiFileDialogFlags_DisableBookmarkMode			= (1 << 10),	// disable the bookmark mode
+	ImGuiFileDialogFlags_DisableBookmarkMode			= (1 << 11),	// disable the bookmark mode
 #endif // USE_BOOKMARK
 	ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite
 };
@@ -1169,9 +1170,9 @@ namespace IGFD
 		SortingFieldEnum puSortingField = SortingFieldEnum::FIELD_FILENAME;	// detail view sorting column
 		bool puShowDrives = false;											// drives are shown (only on os windows)
 
-		std::string puDLGpath;												// base path set by user when OpenDialog/OpenModal was called
-		std::string puDLGDefaultFileName;									// base default file path name set by user when OpenDialog/OpenModal was called
-		size_t puDLGcountSelectionMax = 1U; // 0 for infinite				// base max selection count set by user when OpenDialog/OpenModal was called
+		std::string puDLGpath;												// base path set by user when OpenDialog was called
+		std::string puDLGDefaultFileName;									// base default file path name set by user when OpenDialog was called
+		size_t puDLGcountSelectionMax = 1U; // 0 for infinite				// base max selection count set by user when OpenDialog was called
 		bool puDLGDirectoryMode = false;									// is directory mode (defiend like : puDLGDirectoryMode = (filters.empty()))
 
 		std::string puFsRoot;
@@ -1434,7 +1435,6 @@ namespace IGFD
 		UserDatas puDLGuserDatas = nullptr;
 		PaneFun puDLGoptionsPane = nullptr;
 		float puDLGoptionsPaneWidth = 0.0f;
-		bool puDLGmodal = false;
 		bool puNeedToExitDialog = false;
 
 		bool puUseCustomLocale = false;
@@ -1521,53 +1521,9 @@ namespace IGFD
 			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
 			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
 
-		// modal dialog
-		void OpenModal(												// open simple modal (path and fileName can be specified)
-			const std::string& vKey,								// key dialog
-			const std::string& vTitle,								// title
-			const char* vFilters,									// filters
-			const std::string& vPath,								// path
-			const std::string& vFileName,							// defaut file name
-			const int& vCountSelectionMax = 1,						// count selection max
-			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
-			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
-
-		void OpenModal(												// open simple modal (path and fielname are obtained from filePathName)
-			const std::string& vKey,								// key dialog
-			const std::string& vTitle,								// title
-			const char* vFilters,									// filters
-			const std::string& vFilePathName,						// file path name (will be decompsoed in path and fileName)
-			const int& vCountSelectionMax = 1,						// count selection max
-			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
-			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
-
-		// with pane
-		void OpenModal(												// open modal with custom right pane (path and filename are obtained from filePathName)
-			const std::string& vKey,								// key dialog
-			const std::string& vTitle,								// title
-			const char* vFilters,									// filters
-			const std::string& vPath,								// path
-			const std::string& vFileName,							// defaut file name
-			const PaneFun& vSidePane,								// side pane
-			const float& vSidePaneWidth = 250.0f,					// side pane width
-			const int& vCountSelectionMax = 1,						// count selection max
-			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
-			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
-
-		void OpenModal(												// open modal with custom right pane (path and fielname are obtained from filePathName)
-			const std::string& vKey,								// key dialog
-			const std::string& vTitle,								// title
-			const char* vFilters,									// filters
-			const std::string& vFilePathName,						// file path name (will be decompsoed in path and fileName)
-			const PaneFun& vSidePane,								// side pane
-			const float& vSidePaneWidth = 250.0f,					// side pane width
-			const int& vCountSelectionMax = 1,						// count selection max
-			UserDatas vUserDatas = nullptr,							// user datas (can be retrieved in pane)
-			ImGuiFileDialogFlags vFlags = 0);						// ImGuiFileDialogFlags 
-
 		// Display / Close dialog form
 		bool Display(												// Display the dialog. return true if a result was obtained (Ok or not)
-			const std::string& vKey,								// key dialog to display (if not the same key as defined by OpenDialog/Modal => no opening)
+			const std::string& vKey,								// key dialog to display (if not the same key as defined by OpenDialog => no opening)
 			ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,	// ImGuiWindowFlags
 			ImVec2 vMinSize = ImVec2(0, 0),							// mininmal size contraint for the ImGuiWindow
 			ImVec2 vMaxSize = ImVec2(FLT_MAX, FLT_MAX));			// maximal size contraint for the ImGuiWindow
@@ -1587,7 +1543,7 @@ namespace IGFD
 		std::string GetCurrentFileName();							// Save File behavior : will always return the content of the field with current filter extention
 		std::string GetCurrentPath();								// will return current path
 		std::string GetCurrentFilter();								// will return selected filter
-		UserDatas GetUserDatas() const;								// will return user datas send with Open Dialog/Modal
+		UserDatas GetUserDatas() const;								// will return user datas send with Open Dialog
 
 		// file style by extentions
 		void SetFileStyle(											// SetExtention datas for have custom display of particular file type
@@ -1771,57 +1727,11 @@ IMGUIFILEDIALOG_API void IGFD_OpenPaneDialog2(				// open a standard dialog with
 	const float vSidePaneWidth,								// side pane base width
 	const int vCountSelectionMax,							// count selection max
 	void* vUserDatas,										// user datas (can be retrieved in pane)
-	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags 
-
-IMGUIFILEDIALOG_API void IGFD_OpenModal(					// open a modal dialog
-	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	const char* vKey,										// key dialog
-	const char* vTitle,										// title
-	const char* vFilters,									// filters/filter collections. set it to null for directory mode 
-	const char* vPath,										// path
-	const char* vFileName,									// defaut file name
-	const int vCountSelectionMax,							// count selection max
-	void* vUserDatas,										// user datas (can be retrieved in pane)
-	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags 
-
-IMGUIFILEDIALOG_API void IGFD_OpenModal2(					// open a modal dialog
-	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	const char* vKey,										// key dialog
-	const char* vTitle,										// title
-	const char* vFilters,									// filters/filter collections. set it to null for directory mode 
-	const char* vFilePathName,								// defaut file name (path and filename witl be extracted from it)
-	const int vCountSelectionMax,							// count selection max
-	void* vUserDatas,										// user datas (can be retrieved in pane)
-	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags 
-
-IMGUIFILEDIALOG_API void IGFD_OpenPaneModal(				// open a modal dialog with pane
-	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	const char* vKey,										// key dialog
-	const char* vTitle,										// title
-	const char* vFilters,									// filters/filter collections. set it to null for directory mode 
-	const char* vPath,										// path
-	const char* vFileName,									// defaut file name
-	const IGFD_PaneFun vSidePane,							// side pane
-	const float vSidePaneWidth,								// side pane base width
-	const int vCountSelectionMax,							// count selection max
-	void* vUserDatas,										// user datas (can be retrieved in pane)
-	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags 
-
-IMGUIFILEDIALOG_API void IGFD_OpenPaneModal2(				// open a modal dialog with pane
-	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	const char* vKey,										// key dialog
-	const char* vTitle,										// title
-	const char* vFilters,									// filters/filter collections. set it to null for directory mode 
-	const char* vFilePathName,								// defaut file name (path and filename witl be extracted from it)
-	const IGFD_PaneFun vSidePane,							// side pane
-	const float vSidePaneWidth,								// side pane base width
-	const int vCountSelectionMax,							// count selection max
-	void* vUserDatas,										// user datas (can be retrieved in pane)
-	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags 
+	ImGuiFileDialogFlags vFlags);							// ImGuiFileDialogFlags
 
 IMGUIFILEDIALOG_API bool IGFD_DisplayDialog(				// Display the dialog
 	ImGuiFileDialog* vContext,								// ImGuiFileDialog context
-	const char* vKey,										// key dialog to display (if not the same key as defined by OpenDialog/Modal => no opening)
+	const char* vKey,										// key dialog to display (if not the same key as defined by OpenDialog => no opening)
 	ImGuiWindowFlags vFlags,								// ImGuiWindowFlags
 	ImVec2 vMinSize,										// mininmal size contraint for the ImGuiWindow
 	ImVec2 vMaxSize);										// maximal size contraint for the ImGuiWindow
@@ -1861,7 +1771,7 @@ IMGUIFILEDIALOG_API char* IGFD_GetCurrentPath(				// will return current path, W
 IMGUIFILEDIALOG_API char* IGFD_GetCurrentFilter(			// will return selected filter, WARNINGS you are responsible to free it
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context						
 
-IMGUIFILEDIALOG_API void* IGFD_GetUserDatas(				// will return user datas send with Open Dialog/Modal
+IMGUIFILEDIALOG_API void* IGFD_GetUserDatas(				// will return user datas send with Open Dialog
 	ImGuiFileDialog* vContext);								// ImGuiFileDialog context											
 
 IMGUIFILEDIALOG_API void IGFD_SetFileStyle(					// SetExtention datas for have custom display of particular file type
