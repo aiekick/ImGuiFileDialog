@@ -105,6 +105,7 @@ included in the Lib_Only branch for your convenience.
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion)
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
+- regex support for filters, collection of fitler and filestyle (the regex is recognized when between ( and ) in a filter
 
 ## Singleton Pattern vs. Multiple Instances
 
@@ -156,6 +157,21 @@ void drawGui()
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
 
+## Modal dialog :
+
+you have now a flag for open modal dialog :
+
+```cpp
+ImGuiFileDialogFlags_Modal
+```
+
+you can use it like that :
+
+```cpp
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", 
+	".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+```
+	
 ## Directory Chooser :
 
 To have a directory chooser, set the file extension filter to nullptr:
@@ -596,59 +612,6 @@ ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info*
 ImGuiFileDialog::Instance()->ManageGPUThumbnails();
 ```
 
-## How to Integrate ImGuiFileDialog in your project
-
-### Customize ImGuiFileDialog :
-
-You can customize many aspects of ImGuiFileDialog by overriding `ImGuiFileDialogConfig.h`.
-
-To enable your customizations, define the preprocessor directive CUSTOM_IMGUIFILEDIALOG_CONFIG with the path of your
-custom config file. This path must be relative to the directory where you put the ImGuiFileDialog module.
-
-This operation is demonstrated in `CustomImGuiFileDialog.h` in the example project to:
-
-* Have a custom icon font instead of labels for buttons or message titles
-* Customize the button text (the button call signature must be the same, by the way! :)
-
-The custom icon font used in the example code ([CustomFont.cpp](CustomFont.cpp) and [CustomFont.h](CustomFont.h)) was made
-with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrote. :)
-
-ImGuiFontStudio uses ImGuiFileDialog! Check it out.
-
-## Tune the validations button group
-
-You can specify :
-- the width of "ok" and "cancel" buttons, by the set the defines "okButtonWidth" and "cancelButtonWidth"
-- the alignement of the button group (left, right, middle, etc..) by set the define "okCancelButtonAlignement"
-- if you want to have the ok button on the left and cancel button on the right or inverted by set the define "invertOkAndCancelButtons"
-
-just see theses defines in the config file
-```cpp
-//Validation buttons
-//#define okButtonString " OK"
-//#define okButtonWidth 0.0f
-//#define cancelButtonString " Cancel"
-//#define cancelButtonWidth 0.0f
-//alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
-//#define okCancelButtonAlignement 0.0f
-//#define invertOkAndCancelButtons false
-```
-with Alignement 0.0 => left
-
-![alignement_0.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.0.png)
-
-with Alignement 1.0 => right
-
-![alignement_1.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_1.0.png)
-
-with Alignement 0.5 => middle
-
-![alignement_0.5.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.5.png)
-
-ok and cancel buttons inverted (cancel on the left and ok on the right)
-
-![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/validation_buttons_inverted.png)
-
 ## Embedded in other frames :
 
 The dialog can be embedded in another user frame than the standard or modal dialog
@@ -699,6 +662,59 @@ if the flag ImGuiFileDialogFlags_CaseInsensitiveExtention is used
 with filters like .jpg or .Jpg or .JPG
 all files with extentions by ex : .jpg and .JPG will be displayed
 ```
+
+## Tune the validations button group
+
+You can specify :
+- the width of "ok" and "cancel" buttons, by the set the defines "okButtonWidth" and "cancelButtonWidth"
+- the alignement of the button group (left, right, middle, etc..) by set the define "okCancelButtonAlignement"
+- if you want to have the ok button on the left and cancel button on the right or inverted by set the define "invertOkAndCancelButtons"
+
+just see theses defines in the config file
+```cpp
+//Validation buttons
+//#define okButtonString " OK"
+//#define okButtonWidth 0.0f
+//#define cancelButtonString " Cancel"
+//#define cancelButtonWidth 0.0f
+//alignement [0:1], 0.0 is left, 0.5 middle, 1.0 right, and other ratios
+//#define okCancelButtonAlignement 0.0f
+//#define invertOkAndCancelButtons false
+```
+with Alignement 0.0 => left
+
+![alignement_0.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.0.png)
+
+with Alignement 1.0 => right
+
+![alignement_1.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_1.0.png)
+
+with Alignement 0.5 => middle
+
+![alignement_0.5.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.5.png)
+
+ok and cancel buttons inverted (cancel on the left and ok on the right)
+
+![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/validation_buttons_inverted.png)
+
+## How to Integrate ImGuiFileDialog in your project
+
+### Customize ImGuiFileDialog :
+
+You can customize many aspects of ImGuiFileDialog by overriding `ImGuiFileDialogConfig.h`.
+
+To enable your customizations, define the preprocessor directive CUSTOM_IMGUIFILEDIALOG_CONFIG with the path of your
+custom config file. This path must be relative to the directory where you put the ImGuiFileDialog module.
+
+This operation is demonstrated in `CustomImGuiFileDialog.h` in the example project to:
+
+* Have a custom icon font instead of labels for buttons or message titles
+* Customize the button text (the button call signature must be the same, by the way! :)
+
+The custom icon font used in the example code ([CustomFont.cpp](CustomFont.cpp) and [CustomFont.h](CustomFont.h)) was made
+with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrote. :)
+
+ImGuiFontStudio uses ImGuiFileDialog! Check it out.
 
 ## Api's C/C++ :
 
