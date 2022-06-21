@@ -753,6 +753,45 @@ ok and cancel buttons inverted (cancel on the left and ok on the right)
 
 </blockquote></details>
 
+<details open><summary><h2>Filtering by a regex :</h2></summary><blockquote>
+
+you can use a regex for filtering and file coloring 
+
+for have a filter recognized as a regex, you must have it between a ( and a )
+
+this one will filter files who start by the word "Common" and finish by ".h" 
+```cpp
+ex : "(Custom.+[.]h)" 
+```
+
+use cases :
+
+* Simple filter : 
+```cpp
+OpenDialog("toto", "Choose File", "(Custom.+[.]h)");
+```
+
+* Collections filter : 
+for this one the filter is between "{" and "}", so you can use the "(" and ")" outside
+
+```cpp
+OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp},);
+```
+
+* file coloring :
+this one will colorized all files who start by the word "Common" and finish by ".h" 
+```cpp
+SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+```
+
+* with this feature you can by ex filter and colorize render frame pictures who have ext like .000, .001, .002, etc..
+```cpp
+OpenDialog("toto", "Choose File", "([.][0-9]{3})");
+SetFileStyle(IGFD_FileStyleByFullName, "([.][0-9]{3})", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+```
+
+</blockquote></details>
+
 <details open><summary><h2>Api's C/C++ :</h2></summary><blockquote>
 
 ### the C Api

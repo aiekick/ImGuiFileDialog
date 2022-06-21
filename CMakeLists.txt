@@ -7,6 +7,7 @@ project(${PROJECT} CXX)
 
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" OFF)
+option(USE_TEST "Enable Tests" OFF)
 
 include(cmake/3rdparty.cmake)
 
@@ -110,3 +111,22 @@ target_link_libraries(${PROJECT} PRIVATE
 	${IMGUI_LIBRARIES}
 )
 
+if(USE_TEST)
+	add_library(${PROJECT}_LIB STATIC
+			${CUSTOM_SOURCES}
+			${RES_SOURCES}
+			${IMGUIFILEDIALOG_SOURCES}
+			${IMGUIIMPL_SOURCES}
+	)
+
+	target_link_libraries(${PROJECT}_LIB PRIVATE
+		${OPENGL_LIBRARIES}
+		${GLFW_LIBRARIES}
+		${GLAD_LIBRARIES}
+		${IMGUI_LIBRARIES}
+	)
+
+	enable_testing()
+	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endif()
