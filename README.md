@@ -51,7 +51,7 @@ all.
 [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) is required to use ImGuiFileDialog under Windows. It is
 included in the Lib_Only branch for your convenience.
 
-### Android Requirements : Api 21 mini
+Android Requirements : Api 21 mini
 
 ## Features
 
@@ -135,6 +135,22 @@ void drawGui()
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
+
+## Modal Dialog
+
+you have now a flag for open modal dialog :
+
+
+```cpp
+ImGuiFileDialogFlags_Modal
+```
+
+you can use it like that :
+
+```cpp
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", 
+	".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+```
 
 ## Directory Chooser :
 
@@ -440,7 +456,7 @@ Here's the manual entry operation in action:
 If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the
 operation.
 
-To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog.
+To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog/OpenModal.
 
 By default this flag is not set since there is no pre-defined way to define if a dialog will be for Open or Save
 behavior. (by design! :) )
