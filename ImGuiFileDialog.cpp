@@ -824,8 +824,12 @@ namespace IGFD
 
 	void IGFD::FilterManager::FilterInfos::clear()
 	{
-		filter.clear(); 
+		filter.clear();
+		filter_regex = std::regex();
 		collectionfilters.clear();
+		filter_optimized.clear();
+		collectionfilters_optimized.clear();
+		collectionfilters_regex.clear();
 	}
 
 	bool IGFD::FilterManager::FilterInfos::empty() const
