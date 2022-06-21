@@ -883,8 +883,10 @@ namespace IGFD
 
 		if (!puDLGFilters.empty())
 		{
-			// ".*,.cpp,.h,.hpp"
-			// "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md"
+			// ".*,.cpp,.h,.hpp" => simple filters
+			// "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md" => collection filters
+			// "([.][0-9]{3}),.cpp,.h,.hpp" => simple filters with regex
+			// "frames files{([.][0-9]{3}),.frames}" => collection filters with regex
 
 			bool currentFilterFound = false;
 
