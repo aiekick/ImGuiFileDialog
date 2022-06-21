@@ -720,9 +720,9 @@ int main(int, char**)
 						}
 
 						// destroy
-						if (cfilePathName) delete[] cfilePathName;
-						if (cfilePath) delete[] cfilePath;
-						if (cfilter) delete[] cfilter;
+						free(cfilePathName);
+						free(cfilePath);
+						free(cfilter);
 						IGFD_Selection_DestroyContent(&csel);
 					}
 					IGFD_CloseDialog(cfileDialog);

@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 		return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
 	}
 
-	return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::CollectionFilters::1") ? 0 : 1;
+	return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::8") ? 0 : 1;
 
 	return 0;
 }
