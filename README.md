@@ -322,7 +322,7 @@ will produce :
 
 ## Multi Selection
 
-You can define in OpenDialog/OpenModal call the count file you want to select :
+You can define in OpenDialog call the count file you want to select :
 
 - 0 => infinite
 - 1 => one file only (default)
@@ -440,7 +440,7 @@ Here's the manual entry operation in action:
 If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the
 operation.
 
-To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog/OpenModal.
+To do so, define the flag ImGuiFileDialogFlags_ConfirmOverwrite in your call to OpenDialog.
 
 By default this flag is not set since there is no pre-defined way to define if a dialog will be for Open or Save
 behavior. (by design! :) )
@@ -456,9 +456,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
 Example code For Modal Dialog :
 
 ```cpp
-ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
     ICON_IGFD_SAVE " Choose a File", filters,
-    ".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+    ".", "", 1, nullptr, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
 This dialog will only verify the file in the file field, not with `GetSelection()`.
