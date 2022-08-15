@@ -723,7 +723,7 @@ OpenDialog("toto", "Choose File", "(Custom.+[.]h)");
 for this one the filter is between "{" and "}", so you can use the "(" and ")" outside
 
 ```cpp
-OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp},);
+OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp}");
 ```
 
 * file coloring :
