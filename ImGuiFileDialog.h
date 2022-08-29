@@ -1527,9 +1527,20 @@ namespace IGFD
 		bool puAnyWindowsHovered = false;							// not remember why haha :) todo : to check if we can remove
 		 
 	public:
-		static FileDialog* Instance()								// Singleton for easier accces form anywhere but only one dialog at a time
+		// Singleton for easier accces form anywhere but only one dialog at a time
+		// vCopy or vForce can be used for share a memory pointer in a new memory space like a dll module
+		static FileDialog* Instance(FileDialog* vCopy = nullptr, bool vForce = false)	
 		{
 			static FileDialog _instance;
+			static FileDialog* _instance_copy = nullptr;
+			if (vCopy || vForce)
+			{
+				_instance_copy = vCopy;
+			}
+			if (_instance_copy)
+			{
+				return _instance_copy;
+			}
 			return &_instance;
 		}
 
