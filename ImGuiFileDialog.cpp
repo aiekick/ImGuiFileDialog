@@ -72,7 +72,7 @@ SOFTWARE.
 	#include <sys/types.h>
 	// this option need c++17
 	#ifndef USE_STD_FILESYSTEM
-		#include <dirent.h> 
+		#include <dirent.h>
 	#endif // USE_STD_FILESYSTEM
 	#define PATH_SEP '/'
 #endif // _IGFD_UNIX_
@@ -256,7 +256,7 @@ namespace IGFD
 #ifndef DisplayMode_ThumbailsGrid_ButtonHelp
 #define DisplayMode_ThumbailsGrid_ButtonHelp "Thumbnails Grid"
 #endif // DisplayMode_ThumbailsGrid_ButtonHelp
-#ifndef DisplayMode_ThumbailsList_ImageHeight 
+#ifndef DisplayMode_ThumbailsList_ImageHeight
 #define DisplayMode_ThumbailsList_ImageHeight 32.0f
 #endif // DisplayMode_ThumbailsList_ImageHeight
 #ifndef IMGUI_RADIO_BUTTON
@@ -350,12 +350,12 @@ namespace IGFD
 	//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	IGFD::FileStyle::FileStyle() 
+	IGFD::FileStyle::FileStyle()
 		: color(0, 0, 0, 0)
-	{ 
+	{
 
 	}
-	
+
 	IGFD::FileStyle::FileStyle(const FileStyle& vStyle)
 	{
 		color = vStyle.color;
@@ -364,9 +364,9 @@ namespace IGFD
 		flags = vStyle.flags;
 	}
 
-	IGFD::FileStyle::FileStyle(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont) 
+	IGFD::FileStyle::FileStyle(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont)
 		: color(vColor), icon(vIcon), font(vFont)
-	{ 
+	{
 
 	}
 
@@ -425,7 +425,7 @@ namespace IGFD
 #endif // _IGFD_WIN_
 		return arr;
 	}
-	
+
 	// Convert a wide Unicode string to an UTF8 string
 	std::string IGFD::Utils::utf8_encode(const std::wstring &wstr)
 	{
@@ -465,7 +465,7 @@ namespace IGFD
 #endif // _IGFD_WIN_
 		return res;
 	}
-	
+
 	bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr)
 	{
 		bool found = false;
@@ -542,7 +542,7 @@ namespace IGFD
 				// this func will work but will say nothing more . not like the dirent version
 				bExists = fs::is_directory(pathName);
 				// test if can be opened, this function can thrown an exception if there is an issue with this dir
-				// here, the dir_iter is need else not exception is thrown.. 
+				// here, the dir_iter is need else not exception is thrown..
 				const auto dir_iter = std::filesystem::directory_iterator(pathName);
 				(void)dir_iter; // for avoid unused warnings
 			}
@@ -587,17 +587,17 @@ namespace IGFD
 			pDir = opendir(name.c_str());
 			if (pDir)
 			{
-				bExists = true; 
+				bExists = true;
 				closedir(pDir);
 			}
-			else if (ENOENT == errno) 
+			else if (ENOENT == errno)
 			{
 				/* Directory does not exist. */
 				//bExists = false;
 			}
-			else 
+			else
 			{
-				/* opendir() failed for some other reason. 
+				/* opendir() failed for some other reason.
 				   like if a dir is protected, or not accessable with user right
 				*/
 				bExists = true;
@@ -635,7 +635,7 @@ namespace IGFD
 				res = true;
 #elif defined(_IGFD_UNIX_)
 				char buffer[PATH_MAX] = {};
-				snprintf(buffer, PATH_MAX, "mkdir -p \"%s\"", name.c_str()); 
+				snprintf(buffer, PATH_MAX, "mkdir -p \"%s\"", name.c_str());
 				const int dir_err = std::system(buffer);
 				if (dir_err != -1)
 				{
@@ -846,8 +846,8 @@ namespace IGFD
 				filter_optimized == _filter ||
 				(collectionfilters_optimized.find(_filter) != collectionfilters_optimized.end());
 		}
-		return 
-			filter == vFilter || 
+		return
+			filter == vFilter ||
 			(collectionfilters.find(vFilter) != collectionfilters.end());
 	}
 
@@ -980,7 +980,7 @@ namespace IGFD
 					}
 					else
 					{
-						// maybe this ext is in an extention so we will 
+						// maybe this ext is in an extention so we will
 						// explore the collections is they are existing
 						for (const auto& filter : infos.collectionfilters)
 						{
@@ -1007,7 +1007,7 @@ namespace IGFD
 		prFilesStyle[vFlags][_criteria]->flags = vFlags;
 	}
 
-	// will be called internally 
+	// will be called internally
 	// will not been exposed to IGFD API
 	bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const
 	{
@@ -1039,7 +1039,7 @@ namespace IGFD
 						{
 							vFileInfos->fileStyle = _file.second;
 						}
-					}			
+					}
 
 					if (_flag.first & IGFD_FileStyleByExtention)
 					{
@@ -1189,7 +1189,7 @@ namespace IGFD
 	{
 		prFilesStyle.clear();
 	}
-		
+
 	bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const
 	{
 		if (!puDLGFilters.empty() && !prSelectedFilter.empty())
@@ -1260,7 +1260,7 @@ namespace IGFD
 		if (!result.empty())
 		{
 			// if not a collection we can replace the filter by the extention we want
-			if (prSelectedFilter.collectionfilters.empty() && 
+			if (prSelectedFilter.collectionfilters.empty() &&
 				prSelectedFilter.filter != ".*" &&
 				prSelectedFilter.filter != "*.*")
 			{
@@ -1276,7 +1276,7 @@ namespace IGFD
 
 		return result;
 	}
-	
+
 	void IGFD::FilterManager::SetDefaultFilterIfNotDefined()
 	{
 		if (prSelectedFilter.empty() && // no filter selected
@@ -1310,7 +1310,7 @@ namespace IGFD
 		SortFields(vFileDialogInternal, prFileList, prFilteredFileList);
 	}
 
-	void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal, 
+	void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal,
 		std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
 		std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList)
 	{
@@ -1489,7 +1489,7 @@ namespace IGFD
 		else if (puSortingField == SortingFieldEnum::FIELD_THUMBNAILS)
 		{
 			// we will compare thumbnails by :
-			// 1) width 
+			// 1) width
 			// 2) height
 
 			if (puSortingDirection[4])
@@ -1598,7 +1598,7 @@ namespace IGFD
 			if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != ".")) // except "." if in directory mode //-V728
 				return;
 
-		if (infos->fileType.isFile() 
+		if (infos->fileType.isFile()
 			|| infos->fileType.isLinkToUnknown()) // link can have the same extention of a file
 		{
 			size_t lpt = infos->fileNameExt.find_last_of('.');
@@ -1679,6 +1679,7 @@ namespace IGFD
 						fileType.SetContent(FileType::ContentType::Directory); break;
 					case DT_REG:
 						fileType.SetContent(FileType::ContentType::File); break;
+#if DT_LNK != DT_UNKNOWN
 					case DT_LNK:
 					{
 						fileType.SetSymLink(true);
@@ -1694,6 +1695,29 @@ namespace IGFD
 							else if (statInfos.st_mode & S_IFDIR)
 							{
 								fileType.SetContent(FileType::ContentType::Directory);
+							}
+						}
+						break;
+					}
+#endif
+					case DT_UNKNOWN: {
+						struct stat sb = {};
+						#ifdef _IGFD_WIN_
+						auto filePath = path + ent->d_name;
+						#else
+						auto filePath = path + std::string(1u, PATH_SEP) + ent->d_name;
+						#endif
+
+						int result = stat(filePath.c_str(), &sb);
+						if (result == 0) {
+							if (sb.st_mode & S_IFLNK) {
+								fileType.SetSymLink(true);
+								fileType.SetContent(FileType::ContentType::LinkToUnknown); // by default if we can't figure out the target type.
+							}
+							if (sb.st_mode & S_IFREG) {
+								fileType.SetContent(FileType::ContentType::File); break;
+							} else if (sb.st_mode & S_IFDIR) {
+								fileType.SetContent(FileType::ContentType::Directory); break;
 							}
 						}
 						break;
@@ -1748,7 +1772,7 @@ namespace IGFD
 			AddPath(vFileDialogInternal, path, "..", fstype);
 			for (const auto& file : dir_iter)
 			{
-				FileType fileType; 
+				FileType fileType;
 				if (file.is_symlink())
 				{
 					fileType.SetSymLink(file.is_symlink());
@@ -1771,8 +1795,19 @@ namespace IGFD
 				for (i = 0; i < n; i++)
 				{
 					struct dirent* ent = files[i];
+					struct stat sb = {};
+					int result;
+					if (ent->d_type == DT_UNKNOWN) {
+						#ifdef _IGFD_WIN_
+						auto filePath = path + ent->d_name;
+						#else
+						auto filePath = path + std::string(1u, PATH_SEP) + ent->d_name;
+						#endif
 
-					if (ent->d_type == DT_DIR)
+						result = stat(filePath.c_str(), &sb);
+					}
+
+					if (ent->d_type == DT_DIR || (ent->d_type == DT_UNKNOWN && result == 0 && sb.st_mode & S_IFDIR))
 					{
 						auto fileNameExt = ent->d_name;
 						AddPath(vFileDialogInternal, path, fileNameExt, FileType(FileType::ContentType::Directory, false));
@@ -1833,7 +1868,7 @@ namespace IGFD
 	{
 		return prCurrentPathDecomposition.empty();
 	}
-	
+
 	size_t IGFD::FileManager::GetComposerSize()
 	{
 		return prCurrentPathDecomposition.size();
@@ -2046,7 +2081,7 @@ namespace IGFD
 			snprintf(puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", prSelectedFileNames.size());
 		}
 	}
-	
+
 	void IGFD::FileManager::prAddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName)
 	{
 		prSelectedFileNames.emplace(vFileName);
@@ -2071,7 +2106,7 @@ namespace IGFD
 		if (puFsRoot == path)
 			path += std::string(1u, PATH_SEP);
 #endif // _IGFD_WIN_
-		
+
 #ifdef USE_STD_FILESYSTEM
 		namespace fs = std::filesystem;
 		bool dir_opened = fs::is_directory(vPath);
@@ -2103,7 +2138,7 @@ namespace IGFD
 				real_path = real_path.substr(0, real_path.size() - 1U);
 			if (!real_path.empty())
 #elif defined(_IGFD_UNIX_) // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
-			char real_path[PATH_MAX]; 
+			char real_path[PATH_MAX];
 			char* numchar = realpath(path.c_str(), real_path);
 			if (numchar != nullptr)
 #endif // _IGFD_WIN_
@@ -2449,7 +2484,7 @@ namespace IGFD
 #endif // _IGFD_WIN_
 
 		ImGui::SameLine();
-		
+
 		if (IMGUI_BUTTON(editPathButtonString))
 		{
 			puInputPathActivated = !puInputPathActivated;
@@ -2623,7 +2658,7 @@ namespace IGFD
 		puIsOk = false;				// reset dialog result
 		puFileManager.puDrivesClicked = false;
 		puFileManager.puPathClicked = false;
-		
+
 		puNeedToExitDialog = false;
 
 #ifdef USE_DIALOG_EXIT_WITH_KEY
@@ -2683,7 +2718,7 @@ namespace IGFD
 
 	void IGFD::FileDialogInternal::ResetForNewDialog()
 	{
-	
+
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -2752,7 +2787,7 @@ namespace IGFD
 
 		return res;
 	}
-	
+
 	void IGFD::ThumbnailFeature::prThreadThumbnailFileDatasExtractionFunc()
 	{
 		prCountFiles = 0U;
@@ -2799,14 +2834,14 @@ namespace IGFD
 									const float ratioX = (float)w / (float)h;
 									const float newX = DisplayMode_ThumbailsList_ImageHeight * ratioX;
 									float newY = w / ratioX;
-									if (newX < w) 
+									if (newX < w)
 										newY = DisplayMode_ThumbailsList_ImageHeight;
 
 									const auto newWidth = (int)newX;
 									const auto newHeight = (int)newY;
 									const auto newBufSize = (size_t)(newWidth * newHeight * 4U); //-V112 //-V1028
 									auto resizedData = new uint8_t[newBufSize];
-									
+
 									const int resizeSucceeded = stbir_resize_uint8(
 										datas, w, h, 0,
 										resizedData, newWidth, newHeight, 0,
@@ -2905,7 +2940,7 @@ namespace IGFD
 			}
 		}
 	}
-	
+
 	void IGFD::ThumbnailFeature::prAddThumbnailToCreate(const std::shared_ptr<FileInfos>& vFileInfos)
 	{
 		if (vFileInfos.use_count())
@@ -3293,7 +3328,7 @@ namespace IGFD
 		{
 			bool canWeExplore = false;
 			bool hasNav = (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard);
-			
+
 			ImGuiContext& g = *GImGui;
 			if (!hasNav && !g.ActiveId) // no nav and no activated inputs
 				canWeExplore = true;
@@ -3308,7 +3343,7 @@ namespace IGFD
 					ImGui::SetActiveID(vListViewID, g.CurrentWindow);
 				}
 			}
-			
+
 			if (vListViewID == g.LastActiveId-1) // if listview id is the last acticated nav id (ImGui::ActivateItem(vListViewID);)
 				canWeExplore = true;
 
@@ -3673,7 +3708,7 @@ namespace IGFD
 		prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
 
 		prFileDialogInternal.puFileManager.ClearAll();
-		
+
 		prFileDialogInternal.puShowDialog = true;					// open dialog
 	}
 
@@ -3716,14 +3751,14 @@ namespace IGFD
 		prFileDialogInternal.puFilterManager.ParseFilters(vFilters);
 		prFileDialogInternal.puFilterManager.SetSelectedFilterWithExt(
 			prFileDialogInternal.puFilterManager.puDLGdefaultExt);
-		
+
 		prFileDialogInternal.puFileManager.SetCurrentPath(prFileDialogInternal.puFileManager.puDLGpath);
 
 		prFileDialogInternal.puFileManager.puDLGDirectoryMode = (vFilters == nullptr);
 		prFileDialogInternal.puFileManager.puDLGcountSelectionMax = vCountSelectionMax; //-V101
 
 		prFileDialogInternal.puFileManager.ClearAll();
-		
+
 		prFileDialogInternal.puShowDialog = true;
 	}
 
@@ -3768,7 +3803,7 @@ namespace IGFD
 		prFileDialogInternal.puFileManager.SetDefaultFileName(vFileName);
 
 		prFileDialogInternal.puFileManager.ClearAll();
-		
+
 		prFileDialogInternal.puShowDialog = true;					// open dialog
 	}
 
@@ -3938,19 +3973,19 @@ namespace IGFD
 
 					// draw dialog parts
 					prDrawHeader(); // bookmark, directory, path
-					prDrawContent(); // bookmark, files view, side pane 
+					prDrawContent(); // bookmark, files view, side pane
 					res = prDrawFooter(); // file field, filter combobox, ok/cancel buttons
 
 					EndFrame();
 
-					
+
 				}
 				ImGui::EndChild();
 
 				// for display in dialog center, the confirm to overwrite dlg
 				prFileDialogInternal.puDialogCenterPos = ImGui::GetCurrentWindowRead()->ContentRegionRect.GetCenter();
 
-				// when the confirm to overwrite dialog will appear we need to 
+				// when the confirm to overwrite dialog will appear we need to
 				// disable the modal mode of the main file dialog
 				// see prOkResultToConfirm under
 				if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_Modal &&
@@ -3971,7 +4006,7 @@ namespace IGFD
 			}
 			// confirm the result and show the confirm to overwrite dialog if needed
 			res = prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(res, vFlags);
-			
+
 			if (prFileDialogInternal.puUseCustomLocale)
 				setlocale(prFileDialogInternal.puLocaleCategory, prFileDialogInternal.puLocaleEnd.c_str());
 		}
@@ -3984,12 +4019,12 @@ namespace IGFD
 		prFileDialogInternal.NewFrame();
 		NewThumbnailFrame(prFileDialogInternal);
 	}
-	
+
 	void IGFD::FileDialog::EndFrame()
 	{
 		EndThumbnailFrame(prFileDialogInternal);
 		prFileDialogInternal.EndFrame();
-		
+
 	}
 	void IGFD::FileDialog::QuitFrame()
 	{
@@ -4183,7 +4218,7 @@ namespace IGFD
 #if !invertOkAndCancelButtons
 			ImGui::SameLine();
 #endif
-		
+
 		}
 
 		return false;
@@ -4197,7 +4232,7 @@ namespace IGFD
 			prFileDialogInternal.puIsOk = false;
 			return true;
 		}
-		
+
 #if invertOkAndCancelButtons
 		ImGui::SameLine();
 #endif
@@ -4234,7 +4269,7 @@ namespace IGFD
 	bool IGFD::FileDialog::prDrawFooter()
 	{
 		auto& fdFile = prFileDialogInternal.puFileManager;
-		
+
 		float posY = ImGui::GetCursorPos().y; // height of last bar calc
 
 		ImGui::AlignTextToFramePadding();
@@ -4255,9 +4290,9 @@ namespace IGFD
 		}
 
 		ImGui::PushItemWidth(width);
-		
+
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-		
+
 		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField)
 		{
 			flags |= ImGuiInputTextFlags_ReadOnly;
@@ -4498,7 +4533,7 @@ namespace IGFD
 							fdi.puSortingDirection[2] = !fdi.puSortingDirection[2];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 					else //if (column == 3) => alwayd true for the moment, to uncomment if we add a fourth column
@@ -4507,7 +4542,7 @@ namespace IGFD
 							fdi.puSortingDirection[3] = !fdi.puSortingDirection[3];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 				}
@@ -4518,7 +4553,7 @@ namespace IGFD
 				std::string _str;
 				ImFont* _font = nullptr;
 				bool _showColor = false;
-				
+
 				prFileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing());
 				while (prFileListClipper.Step())
 				{
@@ -4531,7 +4566,7 @@ namespace IGFD
 							continue;
 
 						prBeginFileColorIconStyle(infos, _showColor, _str, &_font);
-					
+
 						bool selected = fdi.IsFileNameSelected(infos->fileNameExt); // found
 
 						ImGui::TableNextRow();
@@ -4626,7 +4661,7 @@ namespace IGFD
 				if (sorts_specs->SpecsDirty && !fdi.IsFileListEmpty())
 				{
 					bool direction = sorts_specs->Specs->SortDirection == ImGuiSortDirection_Ascending;
-					
+
 					if (sorts_specs->Specs->ColumnUserID == 0)
 					{
 						fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
@@ -4680,7 +4715,7 @@ namespace IGFD
 							fdi.puSortingDirection[0] = !fdi.puSortingDirection[0];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_FILENAME;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 					else if (column == 1)
@@ -4689,7 +4724,7 @@ namespace IGFD
 							fdi.puSortingDirection[1] = !fdi.puSortingDirection[1];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_TYPE;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 					else if (column == 2)
@@ -4698,7 +4733,7 @@ namespace IGFD
 							fdi.puSortingDirection[2] = !fdi.puSortingDirection[2];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_SIZE;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 					else if (column == 3)
@@ -4707,7 +4742,7 @@ namespace IGFD
 							fdi.puSortingDirection[3] = !fdi.puSortingDirection[3];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_DATE;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 					else // if (sorts_specs->Specs->ColumnUserID == 4) = > always true for the moment, to uncomment if we add another column
@@ -4716,7 +4751,7 @@ namespace IGFD
 							fdi.puSortingDirection[4] = !fdi.puSortingDirection[4];
 						else
 							fdi.puSortingField = IGFD::FileManager::SortingFieldEnum::FIELD_THUMBNAILS;
-						
+
 						fdi.SortFields(prFileDialogInternal);
 					}
 				}
@@ -4833,7 +4868,7 @@ namespace IGFD
 		ImGui::BeginChild("##FileTypes", ImVec2(0, vHeight));
 
 		prFileDialogInternal.puDLGoptionsPane(
-			prFileDialogInternal.puFilterManager.GetSelectedFilter().filter.c_str(), 
+			prFileDialogInternal.puFilterManager.GetSelectedFilter().filter.c_str(),
 			prFileDialogInternal.puDLGuserDatas, &prFileDialogInternal.puCanWeContinue);
 
 		ImGui::EndChild();
@@ -4970,7 +5005,7 @@ namespace IGFD
 		}
 
 		// if IsOk == true && check of overwrite => return false and show confirm to overwrite dialog
-		if ((prFileDialogInternal.puOkResultToConfirm || (prFileDialogInternal.puIsOk && vLastAction)) && 
+		if ((prFileDialogInternal.puOkResultToConfirm || (prFileDialogInternal.puIsOk && vLastAction)) &&
 			(prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ConfirmOverwrite))
 		{
 			if (prFileDialogInternal.puIsOk) // catched only one time
