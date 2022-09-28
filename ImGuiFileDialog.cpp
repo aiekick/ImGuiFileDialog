@@ -57,7 +57,7 @@ SOFTWARE.
 	#include <cctype>
 	// this option need c++17
 	#ifdef USE_STD_FILESYSTEM
-		#include <Windows.h>
+		#include <windows.h>
 	#else
 		#include "dirent/dirent.h" // directly open the dirent file attached to this lib
 	#endif // USE_STD_FILESYSTEM
