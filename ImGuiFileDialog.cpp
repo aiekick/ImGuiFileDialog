@@ -2736,10 +2736,10 @@ namespace IGFD
 
 	void IGFD::ThumbnailFeature::NewThumbnailFrame(FileDialogInternal& vFileDialogInternal)
 	{
-		(void)vFileDialogInternal;
-
 #ifdef USE_THUMBNAILS
 		prStartThumbnailFileDatasExtraction();
+#else
+		(void)vFileDialogInternal;
 #endif
 	}
 
@@ -2747,6 +2747,8 @@ namespace IGFD
 	{
 #ifdef USE_THUMBNAILS
 		prClearThumbnails(vFileDialogInternal);
+#else
+		(void)vFileDialogInternal;
 #endif
 	}
 
@@ -2755,6 +2757,8 @@ namespace IGFD
 #ifdef USE_THUMBNAILS
 		prStopThumbnailFileDatasExtraction();
 		prClearThumbnails(vFileDialogInternal);
+#else
+		(void)vFileDialogInternal;
 #endif
 	}
 
@@ -3362,7 +3366,7 @@ namespace IGFD
 				bool enterInDirectory = false;
 				bool exitDirectory = false;
 
-				if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_UP)))
+				if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_UpArrow)) || (!hasNav && ImGui::IsKeyPressed(ImGuiKey_UpArrow)))
 				{
 					exploreByKey = true;
 					if (prLocateFileByInputChar_lastFileIdx > 0)
@@ -3370,7 +3374,7 @@ namespace IGFD
 					else
 						prLocateFileByInputChar_lastFileIdx = countFiles - 1U;
 				}
-				else if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_DownArrow)) || (!hasNav && ImGui::IsKeyPressed(IGFD_KEY_DOWN)))
+				else if ((hasNav && ImGui::IsKeyPressed(ImGuiKey_DownArrow)) || (!hasNav && ImGui::IsKeyPressed(ImGuiKey_DownArrow)))
 				{
 					exploreByKey = true;
 					if (prLocateFileByInputChar_lastFileIdx < countFiles - 1U)
@@ -3378,12 +3382,12 @@ namespace IGFD
 					else
 						prLocateFileByInputChar_lastFileIdx = 0U;
 				}
-				else if (ImGui::IsKeyReleased(IGFD_KEY_ENTER))
+				else if (ImGui::IsKeyReleased(ImGuiKey_Enter))
 				{
 					exploreByKey = true;
 					enterInDirectory = true;
 				}
-				else if (ImGui::IsKeyReleased(IGFD_KEY_BACKSPACE))
+				else if (ImGui::IsKeyReleased(ImGuiKey_Backspace))
 				{
 					exploreByKey = true;
 					exitDirectory = true;
@@ -3574,7 +3578,7 @@ namespace IGFD
 		//   - (1) it would require focus scope to be set, need exposing PushFocusScope() or equivalent (e.g. BeginSelection() calling PushFocusScope())
 		//   - (2) usage will fail with clipped items
 		//   The multi-select API aim to fix those issues, e.g. may be replaced with a BeginSelection() API.
-		if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == window->DC.NavFocusScopeIdCurrent)
+		if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == g.CurrentFocusScopeId)
 			if (g.NavJustMovedToId == id)
 				selected = pressed = true;
 
@@ -3583,7 +3587,7 @@ namespace IGFD
 		{
 			if (!g.NavDisableMouseHover && g.NavWindow == window && g.NavLayer == window->DC.NavLayerCurrent)
 			{
-				SetNavID(id, window->DC.NavLayerCurrent, window->DC.NavFocusScopeIdCurrent, ImRect(bb.Min - window->Pos, bb.Max - window->Pos));
+				SetNavID(id, window->DC.NavLayerCurrent, g.CurrentFocusScopeId, WindowRectAbsToRel(window, bb)); // (bb == NavRect)
 				g.NavDisableHighlight = true;
 			}
 		}
