@@ -387,17 +387,6 @@ ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoColl
 
 </blockquote></details>
 
-<details open><summary><h2>Detail View Mode :</h2></summary><blockquote>
-
-Dear ImGui just released an improved table API. If your downloaded version of Dear ImGui includes the beta version of
-table support (included for some time now) you can enable table support by uncommenting `#define USE_IMGUI_TABLES` in
-you custom config file (CustomImGuiFileDialogConfig.h)
-
-If your version of Dear ImGui has finalized tables support, it will be enabled by default.
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/imgui_tables_branch.gif)
-
-</blockquote></details>
-
 <details open><summary><h2>Exploring by keys :</h2></summary><blockquote>
 
 You can activate this feature by uncommenting `#define USE_EXPLORATION_BY_KEYS`
