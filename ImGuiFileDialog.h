@@ -845,11 +845,11 @@ struct IGFD_Thumbnail_Info
 	int isReadyToDisplay = 0;				// ready to be rendered, so texture created
 	int isReadyToUpload = 0;				// ready to upload to gpu
 	int isLoadingOrLoaded = 0;				// was sent to laoding or loaded
-	void* textureID = 0;					// 2d texture id (void* is like ImtextureID type) (GL, DX, VK, Etc..)
- 	unsigned char* textureFileDatas = 0;	// file texture datas, will be rested to null after gpu upload
 	int textureWidth = 0;					// width of the texture to upload
 	int textureHeight = 0;					// height of the texture to upload
 	int textureChannels = 0;				// count channels of the texture to upload
+	unsigned char* textureFileDatas = 0;	// file texture datas, will be rested to null after gpu upload
+	void* textureID = 0;					// 2d texture id (void* is like ImtextureID type) (GL, DX, VK, Etc..)
 	void* userDatas = 0;					// user datas
 };
 #endif // USE_THUMBNAILS
@@ -1372,13 +1372,13 @@ namespace IGFD
 
 #ifdef USE_EXPLORATION_BY_KEYS
 	private:
-		size_t prFlashedItem = 0;																// flash when select by char
+		bool prLocateFileByInputChar_lastFound = false;
+		ImWchar prLocateFileByInputChar_lastChar = 0;
 		float prFlashAlpha = 0.0f;																// flash when select by char
 		float prFlashAlphaAttenInSecs = 1.0f;													// fps display dependant
-		size_t prLocateFileByInputChar_lastFileIdx = 0;
-		ImWchar prLocateFileByInputChar_lastChar = 0;
 		int prLocateFileByInputChar_InputQueueCharactersSize = 0;
-		bool prLocateFileByInputChar_lastFound = false;
+		size_t prFlashedItem = 0;																// flash when select by char
+		size_t prLocateFileByInputChar_lastFileIdx = 0;
 
 	protected:
 		void prLocateByInputKey(FileDialogInternal& vFileDialogInternal);						// select a file line in listview according to char key
