@@ -1,7 +1,7 @@
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
-[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.88%20Wip-blue.svg)](https://github.com/ocornut/imgui)
+[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.88-blue.svg)](https://github.com/ocornut/imgui)
 
 # ImGuiFileDialog
 
@@ -14,7 +14,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.88 WIP 
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.88 
 
 ## Structure
 
@@ -51,7 +51,7 @@ all.
 [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) is required to use ImGuiFileDialog under Windows. It is
 included in the Lib_Only branch for your convenience.
 
-### Android Requirements : Api 21 mini
+Android Requirements : Api 21 mini
 
 ## Features
 
@@ -81,11 +81,12 @@ included in the Lib_Only branch for your convenience.
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion) 
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
+- regex support for filters, collection of fitler and filestyle (the regex is recognized when between ( and ) in a filter
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
  
-## Singleton Pattern vs. Multiple Instances
+<details open><summary><h2>Singleton Pattern vs. Multiple Instances :</h2></summary><blockquote>
 
 ### Single Dialog :
 
@@ -107,7 +108,9 @@ ImGuiFileDialog instance_b;
 instance_b.method_of_your_choice();
 ```
 
-## Simple Dialog :
+</blockquote></details>
+
+<details open><summary><h2>Simple Dialog :</h2></summary><blockquote>
 
 ```cpp
 void drawGui()
@@ -135,7 +138,27 @@ void drawGui()
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
 
-## Directory Chooser :
+</blockquote></details>
+
+<details open><summary><h2>Modal Dialog :</h2></summary><blockquote>
+
+you have now a flag for open modal dialog :
+
+
+```cpp
+ImGuiFileDialogFlags_Modal
+```
+
+you can use it like that :
+
+```cpp
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", 
+	".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+```
+
+</blockquote></details>
+
+<details open><summary><h2>Directory Chooser :</h2></summary><blockquote>
 
 To have a directory chooser, set the file extension filter to nullptr:
 
@@ -147,7 +170,9 @@ In this mode you can select any directory with one click and open a directory wi
 
 ![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/directoryChooser.gif)
 
-## Dialog with Custom Pane :
+</blockquote></details>
+
+<details open><summary><h2>Dialog with Custom Pane :</h2></summary><blockquote>
 
 The signature of the custom pane callback is:
 
@@ -207,9 +232,11 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_with_pane.gif)
 
-## File Style : Custom icons and colors by extension
+</blockquote></details>
+
+<details open><summary><h2>File Style : Custom icons and colors by extension :</h2></summary><blockquote>
 
 You can define style for files/dirs/links in many ways :
 
@@ -236,6 +263,8 @@ custom icon sets for use with Dear ImGui.
 
 It is inspired by [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders), which can also be used with 
 ImGuiFileDialog.
+
+you can also use a regex for the filtering. the regex must be betwwen the ( and ) for be recognized as a regex
 
 samples :
 
@@ -269,11 +298,16 @@ all of theses can be miwed with IGFD_FileStyleByTypeDir / IGFD_FileStyleByTypeFi
 like theses by ex :
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByFullName, "cmake", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+
+// for all these,s you can use a regex
+// ex for color files like Custom*.h
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
 ```
 
 this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
 
 ```cpp
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -289,14 +323,20 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
-## Filter Collections
+</blockquote></details>
+
+<details open><summary><h2>Filter Collections :</h2></summary><blockquote>
 
 You can define a custom filter name that corresponds to a group of filters using this syntax:
 
-```custom_name1{filter1,filter2,filter3},custom_name2{filter1,filter2},filter1```
+You can also use a regex for the filtering. the regex must be betwwen the ( and ) for be recognized as a regex
+
+
+```custom_name1{filter1,filter2,filter3,(regex0),(regex1)},custom_name2{filter1,filter2,(regex0)},filter1```
 
 When you select custom_name1, filters 1 to 3 will be applied. The characters `{` and `}` are reserved. Don't use them
 for filter names.
+
 
 this code :
 
@@ -308,9 +348,11 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_O
 will produce :
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/collectionFilters.gif)
 
-## Multi Selection
+</blockquote></details>
 
-You can define in OpenDialog/OpenModal call the count file you want to select :
+<details open><summary><h2>Multi Selection :</h2></summary><blockquote>
+
+You can define in OpenDialog call the count file you want to select :
 
 - 0 => infinite
 - 1 => one file only (default)
@@ -329,7 +371,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
 
-## File Dialog Constraints
+</blockquote></details>
+
+<details open><summary><h2>File Dialog Constraints :</h2></summary><blockquote>
 
 You can set the minimum and/or maximum size of the dialog:
 
@@ -341,16 +385,9 @@ ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoColl
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dialog_constraints.gif)
 
-## Detail View Mode
+</blockquote></details>
 
-Dear ImGui just released an improved table API. If your downloaded version of Dear ImGui includes the beta version of
-table support (included for some time now) you can enable table support by uncommenting `#define USE_IMGUI_TABLES` in
-you custom config file (CustomImGuiFileDialogConfig.h)
-
-If your version of Dear ImGui has finalized tables support, it will be enabled by default.
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/imgui_tables_branch.gif)
-
-## Exploring by keys
+<details open><summary><h2>Exploring by keys :</h2></summary><blockquote>
 
 You can activate this feature by uncommenting `#define USE_EXPLORATION_BY_KEYS`
 in your custom config file (CustomImGuiFileDialogConfig.h)
@@ -372,7 +409,9 @@ As you see the current item is flashed by default for 1 second. You can define t
 ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
 ```
 
-## Bookmarks
+</blockquote></details>
+
+<details open><summary><h2>Bookmarks :</h2></summary><blockquote>
 
 You can create/edit/call path bookmarks and load/save them.
 
@@ -414,7 +453,9 @@ Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookm
 
 (please see example code for details)
 
-## Path Edition :
+</blockquote></details>
+
+<details open><summary><h2>Path Edition :</h2></summary><blockquote>
 
 Right clicking on any path element button allows the user to manually edit the path from that portion of the tree.
 Pressing the completion key (GLFW uses `enter` by default) validates the new path. Pressing the cancel key (GLFW
@@ -423,7 +464,9 @@ uses`escape` by default) cancels the manual entry and restores the original path
 Here's the manual entry operation in action:
 ![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/inputPathEdition.gif)
 
-## Confirm Overwrite Dialog :
+</blockquote></details>
+
+<details open><summary><h2>Confirm Overwrite Dialog :</h2></summary><blockquote>
 
 If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the
 operation.
@@ -444,9 +487,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
 Example code For Modal Dialog :
 
 ```cpp
-ImGuiFileDialog::Instance()->OpenModal("ChooseFileDlgKey",
+ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey",
     ICON_IGFD_SAVE " Choose a File", filters,
-    ".", "", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+    ".", "", 1, nullptr, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
 ```
 
 This dialog will only verify the file in the file field, not with `GetSelection()`.
@@ -469,7 +512,9 @@ See the result :
 
 ![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/ConfirmToOverWrite.gif)
 
-## Open / Save dialog Behavior :
+</blockquote></details>
+
+<details open><summary><h2>Open / Save dialog Behavior :</h2></summary><blockquote>
 
 ImGuiFileDialog uses the same code internally for Open and Save dialogs. To distinguish between them access the various
 data return functions depending on what the dialog is doing.
@@ -490,7 +535,9 @@ std::string GetCurrentPath();                      // Returns current path only
 std::string GetCurrentFilter();                    // The file extension
 ```
 
-## Thumbnails Display
+</blockquote></details>
+
+<details open><summary><h2>Thumbnails Display :</h2></summary><blockquote>
 
 You can now, display thumbnails of pictures. 
 
@@ -579,7 +626,66 @@ ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info*
 ImGuiFileDialog::Instance()->ManageGPUThumbnails();
 ```
 
-## How to Integrate ImGuiFileDialog in your project
+</blockquote></details>
+
+<details open><summary><h2>Embedded in other frames :</h2></summary><blockquote>
+
+The dialog can be embedded in another user frame than the standard or modal dialog
+
+You have to create a variable of type ImGuiFileDialog. (if you are suing the singleton, you will not have the possibility to open other dialog)
+
+ex :
+
+```cpp
+ImGuiFileDialog fileDialog;
+
+// open dialog; in this case, Bookmark, directory creation are disabled with, and also the file input field is readonly.
+// btw you can od what you want
+fileDialog.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
+	ImGuiFileDialogFlags_NoDialog | 
+	ImGuiFileDialogFlags_DisableBookmarkMode | 
+	ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
+	ImGuiFileDialogFlags_ReadOnlyFileNameField);
+// then display, here 
+// to note, when embedded the ImVec2(0,0) (MinSize) do nothing, only the ImVec2(0,350) (MaxSize) can size the dialog frame 
+fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
+```
+the result :
+
+![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
+
+</blockquote></details>
+
+<details open><summary><h2>Quick Parallel Path Selection in Path Composer :</h2></summary><blockquote>
+
+you have a separator between two directories in the path composer
+when you click on it you can explore a list of parrallels directories of this point
+
+this feature is disabled by default
+you can enable it with the compiler flag : #define USE_QUICK_PATH_SELECT 
+
+you can also customize the spacing between path button's with and without this mode
+you can do that by define the compiler flag : #define CUSTOM_PATH_SPACING 2
+if undefined the spacing is defined by the imgui theme
+
+![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
+
+</blockquote></details>
+
+<details open><summary><h2>Case Insensitive Filtering :</h2></summary><blockquote>
+
+you can use this flag 'ImGuiFileDialogFlags_CaseInsensitiveExtention' when you call the open functions
+
+```
+by ex :
+if the flag ImGuiFileDialogFlags_CaseInsensitiveExtention is used
+with filters like .jpg or .Jpg or .JPG
+all files with extentions by ex : .jpg and .JPG will be displayed
+```
+
+</blockquote></details>
+
+<details open><summary><h2>How to Integrate ImGuiFileDialog in your project :</h2></summary><blockquote>
 
 ### Customize ImGuiFileDialog :
 
@@ -598,7 +704,9 @@ with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrot
 
 ImGuiFontStudio uses ImGuiFileDialog! Check it out.
 
-## Tune the validations button group
+</blockquote></details>
+
+<details open><summary><h2>Tune the validations button group :</h2></summary><blockquote>
 
 You can specify :
 - the width of "ok" and "cancel" buttons, by the set the defines "okButtonWidth" and "cancelButtonWidth"
@@ -632,58 +740,48 @@ ok and cancel buttons inverted (cancel on the left and ok on the right)
 
 ![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/validation_buttons_inverted.png)
 
-## Embedded in other frames :
+</blockquote></details>
 
-The dialog can be embedded in another user frame than the standard or modal dialog
+<details open><summary><h2>Filtering by a regex :</h2></summary><blockquote>
 
-You have to create a variable of type ImGuiFileDialog. (if you are suing the singleton, you will not have the possibility to open other dialog)
+you can use a regex for filtering and file coloring 
 
-ex :
+for have a filter recognized as a regex, you must have it between a ( and a )
+
+this one will filter files who start by the word "Common" and finish by ".h" 
+```cpp
+ex : "(Custom.+[.]h)" 
+```
+
+use cases :
+
+* Simple filter : 
+```cpp
+OpenDialog("toto", "Choose File", "(Custom.+[.]h)");
+```
+
+* Collections filter : 
+for this one the filter is between "{" and "}", so you can use the "(" and ")" outside
 
 ```cpp
-ImGuiFileDialog fileDialog;
-
-// open dialog; in this case, Bookmark, directory creation are disabled with, and also the file input field is readonly.
-// btw you can od what you want
-fileDialog.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr, 
-	ImGuiFileDialogFlags_NoDialog | 
-	ImGuiFileDialogFlags_DisableBookmarkMode | 
-	ImGuiFileDialogFlags_DisableCreateDirectoryButton | 
-	ImGuiFileDialogFlags_ReadOnlyFileNameField);
-// then display, here 
-// to note, when embedded the ImVec2(0,0) (MinSize) do nothing, only the ImVec2(0,350) (MaxSize) can size the dialog frame 
-fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
-```
-the result :
-
-![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
-
-## Quick Parallel Path Selection in Path Composer
-
-you have a separator between two directories in the path composer
-when you click on it you can explore a list of parrallels directories of this point
-
-this feature is disabled by default
-you can enable it with the compiler flag : #define USE_QUICK_PATH_SELECT 
-
-you can also customize the spacing between path button's with and without this mode
-you can do that by define the compiler flag : #define CUSTOM_PATH_SPACING 2
-if undefined the spacing is defined by the imgui theme
-
-![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
-
-## Case Insensitive Filtering
-
-you can use this flag 'ImGuiFileDialogFlags_CaseInsensitiveExtention' when you call the open functions
-
-```
-by ex :
-if the flag ImGuiFileDialogFlags_CaseInsensitiveExtention is used
-with filters like .jpg or .Jpg or .JPG
-all files with extentions by ex : .jpg and .JPG will be displayed
+OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp},);
 ```
 
-## Api's C/C++ :
+* file coloring :
+this one will colorized all files who start by the word "Common" and finish by ".h" 
+```cpp
+SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+```
+
+* with this feature you can by ex filter and colorize render frame pictures who have ext like .000, .001, .002, etc..
+```cpp
+OpenDialog("toto", "Choose File", "([.][0-9]{3})");
+SetFileStyle(IGFD_FileStyleByFullName, "([.][0-9]{3})", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+```
+
+</blockquote></details>
+
+<details open><summary><h2>Api's C/C++ :</h2></summary><blockquote>
 
 ### the C Api
 
@@ -759,7 +857,11 @@ if (IGFD_DisplayDialog(cfiledialog, "filedlg", ImGuiWindowFlags_NoCollapse, minS
 IGFD_Destroy(cfiledialog);
 ```
 
-## How to build [sample app](https://github.com/aiekick/ImGuiFileDialog/tree/master) :
+</blockquote></details>
+
+<details open><summary><h2>How to build the sample app :</h2></summary><blockquote>
+
+The sample app is [here in master branch]((https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
 You need to use cMake. For the 3 Os (Win, Linux, MacOs), the cMake usage is exactly the same,
 
@@ -790,6 +892,8 @@ sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxiner
 ### On MacOs :
 
 you need many lib : opengl and cocoa framework
+
+</blockquote></details>
 
 ## Thats all folks :-)
 
