@@ -19,7 +19,7 @@ ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 
 ## Structure
 
 * The library is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-* A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+* A demo app can be found in the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
 This library is designed to be dropped into your source code rather than compiled separately.
 
