@@ -5322,12 +5322,12 @@ IMGUIFILEDIALOG_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext)
 				// filePathName
 				if (!s.second.empty())
 				{
-					size_t siz = s.first.size() + 1U;
+					size_t siz = s.second.size() + 1U;
 					pair->filePathName = new char[siz];
 #ifndef _MSC_VER
-					strncpy(pair->filePathName, s.first.c_str(), siz);
+					strncpy(pair->filePathName, s.second.c_str(), siz);
 #else // _MSC_VER
-					strncpy_s(pair->filePathName, siz, s.first.c_str(), siz);
+					strncpy_s(pair->filePathName, siz, s.second.c_str(), siz);
 #endif // _MSC_VER
 					pair->filePathName[siz - 1U] = '\0';
 				}
