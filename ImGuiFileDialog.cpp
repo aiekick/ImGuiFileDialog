@@ -115,6 +115,10 @@ namespace IGFD
 #ifndef FILTER_COMBO_WIDTH
 #define FILTER_COMBO_WIDTH 150.0f
 #endif // FILTER_COMBO_WIDTH
+// begin combo widget
+#ifndef IMGUI_BEGIN_COMBO
+#define IMGUI_BEGIN_COMBO ImGui::BeginCombo
+#endif // IMGUI_BEGIN_COMBO
 // for lets you define your button widget
 // if you have like me a special bi-color button
 #ifndef IMGUI_PATH_BUTTON
@@ -1218,7 +1222,7 @@ namespace IGFD
 			bool needToApllyNewFilter = false;
 
 			ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
-			if (ImGui::BeginCombo("##Filters", prSelectedFilter.filter.c_str(), ImGuiComboFlags_None))
+			if (IMGUI_BEGIN_COMBO("##Filters", prSelectedFilter.filter.c_str(), ImGuiComboFlags_None))
 			{
 				intptr_t i = 0;
 				for (const auto& filter : prParsedFilters)

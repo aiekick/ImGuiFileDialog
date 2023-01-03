@@ -50,6 +50,8 @@
 //#define IGFD_EXIT_KEY ImGuiKey_Escape
 
 // widget
+// begin combo widget
+// #define IMGUI_BEGIN_COMBO ImGui::BeginCombo
 // filter combobox width
 //#define FILTER_COMBO_WIDTH 120.0f
 // button widget use for compose path
