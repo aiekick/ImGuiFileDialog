@@ -3487,8 +3487,8 @@ namespace IGFD
 
 		// Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
 		ImGuiID id = window->GetID(label);
-		ImVec2 label_size = CalcTextSize(label, nullptr, true);
-		ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y); //-V550
+		ImVec2 label_size = CalcTextSize(label, NULL, true);
+		ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
 		ImVec2 pos = window->DC.CursorPos;
 		pos.y += window->DC.CurrLineTextBaseOffset;
 		ItemSize(size, 0.0f);
@@ -3498,7 +3498,7 @@ namespace IGFD
 		const bool span_all_columns = (flags & ImGuiSelectableFlags_SpanAllColumns) != 0;
 		const float min_x = span_all_columns ? window->ParentWorkRect.Min.x : pos.x;
 		const float max_x = span_all_columns ? window->ParentWorkRect.Max.x : window->WorkRect.Max.x;
-		if (fabs(size_arg.x) < FLT_EPSILON || (flags & ImGuiSelectableFlags_SpanAvailWidth))
+		if (size_arg.x == 0.0f || (flags & ImGuiSelectableFlags_SpanAvailWidth))
 			size.x = ImMax(label_size.x, max_x - min_x);
 
 		// Text stays at the submission position, but bounding box may be extended on both sides
@@ -3529,20 +3529,8 @@ namespace IGFD
 			window->ClipRect.Max.x = window->ParentWorkRect.Max.x;
 		}
 
-		bool item_add;
 		const bool disabled_item = (flags & ImGuiSelectableFlags_Disabled) != 0;
-		if (disabled_item)
-		{
-			ImGuiItemFlags backup_item_flags = g.CurrentItemFlags;
-			g.CurrentItemFlags |= ImGuiItemFlags_Disabled;
-			item_add = ItemAdd(bb, id);
-			g.CurrentItemFlags = backup_item_flags;
-		}
-		else
-		{
-			item_add = ItemAdd(bb, id);
-		}
-
+		const bool item_add = ItemAdd(bb, id, NULL, disabled_item ? ImGuiItemFlags_Disabled : ImGuiItemFlags_None);
 		if (span_all_columns)
 		{
 			window->ClipRect.Min.x = backup_clip_rect_min_x;
@@ -3554,7 +3542,7 @@ namespace IGFD
 
 		const bool disabled_global = (g.CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
 		if (disabled_item && !disabled_global) // Only testing this as an optimization
-			BeginDisabled(true);
+			BeginDisabled();
 
 		// FIXME: We can standardize the behavior of those two, we could also keep the fast path of override ClipRect + full push on render only,
 		// which would be advantageous since most selectable are not selected.
@@ -3566,6 +3554,7 @@ namespace IGFD
 		// We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
 		ImGuiButtonFlags button_flags = 0;
 		if (flags & ImGuiSelectableFlags_NoHoldingActiveID) { button_flags |= ImGuiButtonFlags_NoHoldingActiveId; }
+		if (flags & ImGuiSelectableFlags_NoSetKeyOwner) { button_flags |= ImGuiButtonFlags_NoSetKeyOwner; }
 		if (flags & ImGuiSelectableFlags_SelectOnClick) { button_flags |= ImGuiButtonFlags_PressedOnClick; }
 		if (flags & ImGuiSelectableFlags_SelectOnRelease) { button_flags |= ImGuiButtonFlags_PressedOnRelease; }
 		if (flags & ImGuiSelectableFlags_AllowDoubleClick) { button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick; }
@@ -3606,9 +3595,7 @@ namespace IGFD
 			g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
 		// Render
-		if ((held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld)) || vFlashing)
-			hovered = true;
-		if (hovered || selected)
+		if (hovered || selected || vFlashing)
 		{
 			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
 			RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
@@ -3620,7 +3607,7 @@ namespace IGFD
 		else if (span_all_columns && g.CurrentTable)
 			TablePopBackgroundChannel();
 
-		RenderTextClipped(text_min, text_max, label, nullptr, &label_size, style.SelectableTextAlign, &bb);
+		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
 
 		// Automatically close popups
 		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.LastItemData.InFlags & ImGuiItemFlags_SelectableDontClosePopup))
