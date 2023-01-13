@@ -840,6 +840,14 @@ namespace IGFD
 	{
 		return filter.empty() && collectionfilters.empty();
 	}
+	std::string IGFD::FilterManager::FilterInfos::default_extension() const
+	{
+		if (!collectionfilters.empty())
+			return collectionfilters.front().c_str();
+		if (!filter.empty())
+			return filter.c_str();
+		return "";
+	}
 
 	bool IGFD::FilterManager::FilterInfos::exist(const std::string& vFilter, bool vIsCaseInsensitive) const
 	{
@@ -848,11 +856,11 @@ namespace IGFD
 			auto _filter = Utils::LowerCaseString(vFilter);
 			return
 				filter_optimized == _filter ||
-				(collectionfilters_optimized.find(_filter) != collectionfilters_optimized.end());
+				(std::find(collectionfilters_optimized.begin(), collectionfilters_optimized.end(), _filter) != collectionfilters_optimized.end());
 		}
 		return
 			filter == vFilter ||
-			(collectionfilters.find(vFilter) != collectionfilters.end());
+			(std::find(collectionfilters.begin(), collectionfilters.end(), vFilter) != collectionfilters.end());
 	}
 
 	bool IGFD::FilterManager::FilterInfos::regex_exist(const std::string& vFilter) const
@@ -916,8 +924,8 @@ namespace IGFD
 						auto arr = IGFD::Utils::SplitStringToVector(fs, ',', false);
 						for (auto a : arr)
 						{
-							infos.collectionfilters.emplace(a);
-							infos.collectionfilters_optimized.emplace(Utils::LowerCaseString(a));
+							infos.collectionfilters.push_back(a);
+							infos.collectionfilters_optimized.push_back(Utils::LowerCaseString(a));
 
 							// a regex
 							if (a.find('(') != std::string::npos) {
@@ -1263,10 +1271,8 @@ namespace IGFD
 
 		if (!result.empty())
 		{
-			// if not a collection we can replace the filter by the extention we want
-			if (prSelectedFilter.collectionfilters.empty() &&
-				prSelectedFilter.filter != ".*" &&
-				prSelectedFilter.filter != "*.*")
+			auto ext = prSelectedFilter.default_extension();
+			if (!ext.empty() && ext.front() == '.' && ext.back() != '*')
 			{
 				size_t lastPoint = vFile.find_last_of('.');
 				if (lastPoint != std::string::npos)
@@ -1274,7 +1280,7 @@ namespace IGFD
 					result = result.substr(0, lastPoint);
 				}
 
-				result += prSelectedFilter.filter;
+				result += ext;
 			}
 		}
 
@@ -3571,7 +3577,7 @@ namespace IGFD
 		//   - (1) it would require focus scope to be set, need exposing PushFocusScope() or equivalent (e.g. BeginSelection() calling PushFocusScope())
 		//   - (2) usage will fail with clipped items
 		//   The multi-select API aim to fix those issues, e.g. may be replaced with a BeginSelection() API.
-		if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == g.CurrentFocusScopeId)
+		if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == g.NavFocusScopeId)
 			if (g.NavJustMovedToId == id)
 				selected = pressed = true;
 
@@ -3580,7 +3586,7 @@ namespace IGFD
 		{
 			if (!g.NavDisableMouseHover && g.NavWindow == window && g.NavLayer == window->DC.NavLayerCurrent)
 			{
-				SetNavID(id, window->DC.NavLayerCurrent, g.CurrentFocusScopeId, WindowRectAbsToRel(window, bb)); // (bb == NavRect)
+				SetNavID(id, window->DC.NavLayerCurrent, g.NavFocusScopeId, WindowRectAbsToRel(window, bb)); // (bb == NavRect)
 				g.NavDisableHighlight = true;
 			}
 		}
@@ -3597,7 +3603,7 @@ namespace IGFD
 		// Render
 		if (hovered || selected || vFlashing)
 		{
-			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
+			const ImU32 col = GetColorU32(held ? ImGuiCol_HeaderActive : ImGuiCol_Header);
 			RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
 		}
 		RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);

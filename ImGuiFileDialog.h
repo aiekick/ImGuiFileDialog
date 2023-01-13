@@ -1041,14 +1041,15 @@ namespace IGFD
 		public:
 			std::string filter;																				// simple filter
 			std::regex filter_regex;																		// filter fo type regex
-			std::set<std::string> collectionfilters;														// collections of filters
+			std::vector<std::string> collectionfilters;														// collections of filters
 			std::string filter_optimized;																	// opitmized for case insensitive search
-			std::set<std::string> collectionfilters_optimized;												// optimized collections of filters for case insensitive search
+			std::vector<std::string> collectionfilters_optimized;												// optimized collections of filters for case insensitive search
 			std::vector<std::regex> collectionfilters_regex;												// collection of regex filter type
 
 		public:
 			void clear();																					// clear the datas
 			bool empty() const;																				// is filter empty
+                        std::string default_extension() const;
 			bool exist(const std::string& vFilter, bool vIsCaseInsensitive) const;							// is filter exist
 			bool regex_exist(const std::string& vFilter) const;												// is regex filter exist
 		};
