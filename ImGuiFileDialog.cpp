@@ -550,7 +550,7 @@ namespace IGFD
 				const auto dir_iter = std::filesystem::directory_iterator(pathName);
 				(void)dir_iter; // for avoid unused warnings
 			}
-			catch (std::exception /*ex*/)
+			catch (const std::exception & /*ex*/)
 			{
 				// fail so this dir cant be opened
 				bExists = false;
