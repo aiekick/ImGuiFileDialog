@@ -402,6 +402,11 @@ namespace IGFD
 			str.replace(pos, oldStr.length(), newStr);
 			pos += newStr.length();
 		}
+#else
+		// Suppress warnings from the compiler.
+		(void)str;
+		(void)oldStr;
+		(void)newStr;
 #endif // _IGFD_WIN_
 		return found;
 	}
@@ -426,6 +431,11 @@ namespace IGFD
 			if (!token.empty() || (token.empty() && pushEmpty)) //-V728
 				arr.push_back(token);
 		}
+#else
+		// Suppress warnings from the compiler.
+		(void)text;
+		(void)delimiter;
+		(void)pushEmpty;
 #endif // _IGFD_WIN_
 		return arr;
 	}
@@ -446,6 +456,9 @@ namespace IGFD
 					(int)wstr.size(), &res[0], size_needed, NULL, NULL);
 			}
 		}
+#else
+		// Suppress warnings from the compiler.
+		(void)wstr;
 #endif // _IGFD_WIN_
 		return res;
 	}
@@ -466,6 +479,9 @@ namespace IGFD
 					(int)str.size(), &res[0], size_needed);
 			}
 		}
+#else
+		// Suppress warnings from the compiler.
+		(void)str;
 #endif // _IGFD_WIN_
 		return res;
 	}
