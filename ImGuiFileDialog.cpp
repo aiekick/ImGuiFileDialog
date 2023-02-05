@@ -1659,27 +1659,34 @@ namespace IGFD
 			ClearFileLists();
 
 #ifdef USE_STD_FILESYSTEM
-			const std::filesystem::path fspath(path);
-			const auto dir_iter = std::filesystem::directory_iterator(fspath);
-			FileType fstype = FileType(FileType::ContentType::Directory, std::filesystem::is_symlink(std::filesystem::status(fspath)));
-			AddFile(vFileDialogInternal, path, "..", fstype);
-			for (const auto& file : dir_iter)
+			try
 			{
-				FileType fileType;
-				if (file.is_symlink())
+				const std::filesystem::path fspath(path);
+				const auto dir_iter = std::filesystem::directory_iterator(fspath);
+				FileType fstype = FileType(FileType::ContentType::Directory, std::filesystem::is_symlink(std::filesystem::status(fspath)));
+				AddFile(vFileDialogInternal, path, "..", fstype);
+				for (const auto& file : dir_iter)
 				{
-					fileType.SetSymLink(file.is_symlink());
-					fileType.SetContent(FileType::ContentType::LinkToUnknown);
-				}
+					FileType fileType;
+					if (file.is_symlink())
+					{
+						fileType.SetSymLink(file.is_symlink());
+						fileType.SetContent(FileType::ContentType::LinkToUnknown);
+					}
 
-				if (file.is_directory()) { fileType.SetContent(FileType::ContentType::Directory); } // directory or symlink to directory
-				else if (file.is_regular_file()) { fileType.SetContent(FileType::ContentType::File); }
+					if (file.is_directory()) { fileType.SetContent(FileType::ContentType::Directory); } // directory or symlink to directory
+					else if (file.is_regular_file()) { fileType.SetContent(FileType::ContentType::File); }
 
-				if (fileType.isValid())
-				{
-					auto fileNameExt = file.path().filename().string();
-					AddFile(vFileDialogInternal, path, fileNameExt, fileType);
+					if (fileType.isValid())
+					{
+						auto fileNameExt = file.path().filename().string();
+						AddFile(vFileDialogInternal, path, fileNameExt, fileType);
+					}
 				}
+			}
+			catch (const std::exception& ex)
+			{
+				printf("%s", ex.what());
 			}
 #else // dirent
 			struct dirent** files = nullptr;
@@ -2154,7 +2161,7 @@ namespace IGFD
 			std::wstring fpath(numchar, 0);
 			GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
 			std::string real_path = IGFD::Utils::utf8_encode(fpath);
-			if (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
+			while (real_path.back() == '\0') // for fix issue we can have with std::string concatenation.. if there is a \0 at end
 				real_path = real_path.substr(0, real_path.size() - 1U);
 			if (!real_path.empty())
 #elif defined(_IGFD_UNIX_) // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
