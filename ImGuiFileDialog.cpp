@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
 #include "ImGuiFileDialog.h"
 
 #ifdef __cplusplus
@@ -2761,12 +2765,10 @@ namespace IGFD
 
 	IGFD::ThumbnailFeature::~ThumbnailFeature()	= default;
 
-	void IGFD::ThumbnailFeature::NewThumbnailFrame(FileDialogInternal& vFileDialogInternal)
+	void IGFD::ThumbnailFeature::NewThumbnailFrame(FileDialogInternal& /*vFileDialogInternal*/)
 	{
 #ifdef USE_THUMBNAILS
 		prStartThumbnailFileDatasExtraction();
-#else
-		(void)vFileDialogInternal;
 #endif
 	}
 
