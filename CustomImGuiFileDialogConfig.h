@@ -39,7 +39,7 @@
 // the sleep time can be ssen jsut after the opening of a directory who contain pictures
 #define DisplayMode_ThumbailsGrid_ThreadSleepTimeInMS 50
 
-//#define USE_EXPLORATION_BY_KEYS
+#define USE_EXPLORATION_BY_KEYS
 // Up key for explore to the top
 #define IGFD_KEY_UP ImGuiKey_UpArrow
 // Down key for explore to the bottom
