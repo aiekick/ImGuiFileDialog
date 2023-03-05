@@ -3619,13 +3619,18 @@ namespace IGFD
 		if (selected != was_selected) //-V547
 			g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
+		//////////////////////////////////////////////////////////////////
+		// this function copy ImGui::Selectable just for this line.... 
+		hovered |= vFlashing;
+		//////////////////////////////////////////////////////////////////
+
 		// Render
-		if (hovered || selected || vFlashing)
+		if (hovered || selected)
 		{
 			const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
 			RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
 		}
-		RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+		//RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 
 		if (span_all_columns && window->DC.CurrentColumns)
 			PopColumnsBackground();
