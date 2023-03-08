@@ -196,6 +196,12 @@ namespace IGFD
 #ifndef buttonCreateDirString
 #define buttonCreateDirString "Create Directory"
 #endif // buttonCreateDirString
+#ifndef buttonShowHiddenString
+#define buttonShowHiddenString "Show hidden"
+#endif // buttonShowHiddenString
+#ifndef tooltipShowHiddenString
+#define tooltipShowHiddenString "Toggle hidden"
+#endif // tooltipShowHiddenString
 #ifndef tableHeaderAscendingIcon
 #define tableHeaderAscendingIcon "A|"
 #endif // tableHeaderAscendingIcon
@@ -4287,6 +4293,24 @@ namespace IGFD
 		ImGui::EndGroup();
 
 		prOkCancelButtonWidth = ImGui::GetItemRectSize().x;
+
+		// Only show the hidden files toggle if there is enough horizontal space for it.
+		// The width is calculated as in https://github.com/ocornut/imgui/issues/3714#issuecomment-759319268
+		float const toggleWidth = GImGui->Style.ItemSpacing.x + ImGui::GetFrameHeight() + GImGui->Style.ItemInnerSpacing.x + ImGui::CalcTextSize(buttonShowHiddenString).x;
+		float const toggleOffsetX = ImGui::GetContentRegionAvail().x - toggleWidth;
+		if (toggleOffsetX >= prOkCancelButtonWidth)
+		{
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(toggleOffsetX);
+			bool showHidden = ! (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles);
+			if (ImGui::Checkbox(buttonShowHiddenString, &showHidden))
+			{
+				prFileDialogInternal.puDLGflags ^= ImGuiFileDialogFlags_DontShowHiddenFiles;
+				prFileDialogInternal.puFileManager.OpenCurrentPath(prFileDialogInternal);
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip(tooltipShowHiddenString);
+		}
 
 		return res;
 	}
