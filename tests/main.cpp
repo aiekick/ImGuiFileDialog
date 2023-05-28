@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::1") ? 0 : 1;
     //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Collection::3") ? 0 : 1;
-    //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::6") ? 0 : 1;
+    //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::7") ? 0 : 1;
     //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::2") ? 0 : 1;
     return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Divers::0") ? 0 : 1;
 

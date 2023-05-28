@@ -37,12 +37,17 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
         puDLGFilters.clear();  // directory mode
 
     if (!puDLGFilters.empty()) {
-        // a filter must have 2 chars mini and the first must be a .
-        // a filter must have 2 chars mini and the first must be a .
-        // ".*,.cpp,.h,.hpp" => simple filters
-        // "Source files(.cpp, .h, .hpp){.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md" => collection filters
-        // "([.][0-9]{3}),.cpp,.h,.hpp" => simple filters with regex
-        // "frames files{([.][0-9]{3}),.frames}" => collection filters with regex
+
+		/* Rules
+		0) a filter must have 2 chars mini and the first must be a .
+		1) a regex must be in (( and ))
+		2) a , will separate filters except if between a ( and )
+		3) name{filter1, filter2} is a spetial form for collection filters
+		3.1) the name can be composed of what you want except { and }
+		3.2) the filter can be a regex
+		4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1) 
+        5) the filters cannot integrate a ',' 
+		*/
 
         bool start_collection = false;
         bool end_collection = false;
@@ -95,7 +100,7 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
                 }
                 last_char_c = c;
             } else if (c == '(') {
-                if (!idx || last_char_c) {
+				if (last_char_c == '(') {
                     start_regex = true;
                     end_regex = false;
                 }
@@ -105,28 +110,30 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
             } else if (c == ')') {
                 word += c;
                 filter_name += c;
-                if (start_regex) {
-                    if (start_collection) {
-                        try {
-                            prParsedFilters.back().collectionfilters_regex.emplace_back(word);  // this can fail so is first
-                            prParsedFilters.back().collectionfilters.emplace(word);
-                            prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
-                        } catch (std::exception&) {}
-                    } else {
-                        if (!word.empty()) {
-                            try {
-                                auto rx = std::regex(word);  // this can fail so is first
-                                prParsedFilters.emplace_back();
-                                prParsedFilters.back().filter_regex = std::regex(word);  // this can fail so is first
-                                prParsedFilters.back().filter = word;
-                                prParsedFilters.back().filter_optimized = IGFD::Utils::LowerCaseString(word);
-                            } catch (std::exception&) {}
-                        }
+				if (start_regex) {
+					if (last_char_c == ')') {
+						if (start_collection) {
+							try {
+								prParsedFilters.back().collectionfilters_regex.emplace_back(word);	// this can fail so is first
+								prParsedFilters.back().collectionfilters.emplace(word);
+								prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
+							} catch (std::exception&) {}
+						} else {
+							if (!word.empty()) {
+								try {
+									auto rx = std::regex(word);	 // this can fail so is first
+									prParsedFilters.emplace_back();
+									prParsedFilters.back().filter_regex		= std::regex(word);	 // this can fail so is first
+									prParsedFilters.back().filter			= word;
+									prParsedFilters.back().filter_optimized = IGFD::Utils::LowerCaseString(word);
+								} catch (std::exception&) {}
+							}
+						}
+						word.clear();
+						start_regex = false;
+						end_regex	= true;
                     }
-                    word.clear();
-                    start_regex = false;
-                    end_regex = true;
-                } else if (!start_collection) {
+				} else if (!start_collection && last_char_c != ')') {
                     if (prParsedFilters.size() > 1U) {
                         prParsedFilters.erase(--prParsedFilters.end());
                     } else {
@@ -515,17 +522,17 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_11() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_0() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3})");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3}))");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
 
     return true;
 }
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_1() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3}");
 
     if (mgr.prParsedFilters.size() != 0U) return false;
 
@@ -534,7 +541,7 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_1() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_2() {
-    auto mgr = Test_ParseFilters("[.][0-9]{3})");
+    auto mgr = Test_ParseFilters("[.][0-9]{3}))");
 
     if (mgr.prParsedFilters.size() != 0U) return false;
 
@@ -543,10 +550,10 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_2() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_3() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 4U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
     if (mgr.prParsedFilters[2].filter != ".h") return false;
     if (mgr.prParsedFilters[3].filter != ".hpp") return false;
@@ -556,12 +563,12 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_3() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_4() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,([.][0-9]{3}),.h,.hpp");
+	auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3})),.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 5U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
-    if (mgr.prParsedFilters[2].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[2].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[3].filter != ".h") return false;
     if (mgr.prParsedFilters[4].filter != ".hpp") return false;
 
@@ -570,12 +577,12 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_4() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_5() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,([.][0-9]{3}),.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3})),.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 5U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
-    if (mgr.prParsedFilters[2].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[2].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[3].filter != ".h") return false;
     if (mgr.prParsedFilters[4].filter != ".hpp") return false;
 
@@ -584,10 +591,10 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_5() {
 
 // last ) missing
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_6() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,([.][0-9]{3},.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3},.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 4U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
     if (mgr.prParsedFilters[2].filter != ".h") return false;
     if (mgr.prParsedFilters[3].filter != ".hpp") return false;
@@ -597,10 +604,10 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_6() {
 
 // first ( missing
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_7() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,[.][0-9]{3}),.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,[.][0-9]{3})),.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 4U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
     if (mgr.prParsedFilters[2].filter != ".h") return false;
     if (mgr.prParsedFilters[3].filter != ".hpp") return false;
@@ -610,17 +617,36 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_7() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_8() {
-    auto mgr = Test_ParseFilters("([.][0-9]{3}),.cpp,([.][0-9]{3}) ,.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3})) ,.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 5U) return false;
-    if (mgr.prParsedFilters[0].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[1].filter != ".cpp") return false;
-    if (mgr.prParsedFilters[2].filter != "([.][0-9]{3})") return false;
+    if (mgr.prParsedFilters[2].filter != "(([.][0-9]{3}))") return false;
     if (mgr.prParsedFilters[3].filter != ".h") return false;
     if (mgr.prParsedFilters[4].filter != ".hpp") return false;
 
     return true;
 }
+
+// must fail
+bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_9() {
+	auto mgr = Test_ParseFilters("(([.][0-9]{3})");
+
+	if (mgr.prParsedFilters.size() != 0U) return false;
+
+	return true;
+}
+
+// must fail
+bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_10() {
+	auto mgr = Test_ParseFilters("([.][0-9]{3}))");
+
+	if (mgr.prParsedFilters.size() != 0U) return false;
+
+	return true;
+}
+
 
 #pragma endregion
 
@@ -633,11 +659,11 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_8() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_0() {
-    auto mgr = Test_ParseFilters("frames files{([.][0-9]{3}),.frames}");
+    auto mgr = Test_ParseFilters("frames files{(([.][0-9]{3})),.frames}");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].filter != "frames files") return false;
-    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".frames") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
 
     return true;
@@ -645,7 +671,7 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_0() {
 
 // invalid regex
 bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_1() {
-    auto mgr = Test_ParseFilters("frames files{(.001,.NNN),.frames}");
+    auto mgr = Test_ParseFilters("frames files{((.001,.NNN)),.frames}");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].filter != "frames files") return false;
@@ -655,26 +681,26 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_1() {
     return true;
 }
 
-// msut be ok
+// must be ok
 bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_2() {
-    auto mgr = Test_ParseFilters("frames files(.frames){([.][0-9]{3}),.frames}");
+    auto mgr = Test_ParseFilters("frames files(.frames){(([.][0-9]{3})),.frames}");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].filter != "frames files(.frames)") return false;
-    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".frames") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
 
     return true;
 }
 
-// msut be ok
+// must be ok
 bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_3() {
-    auto mgr = Test_ParseFilters("frames files(.cpp,.hpp){([.][0-9]{3}),.cpp,.hpp}");
+    auto mgr = Test_ParseFilters("frames files(.cpp,.hpp){(([.][0-9]{3})),.cpp,.hpp}");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].filter != "frames files(.cpp,.hpp)") return false;
     if (mgr.prParsedFilters[0].collectionfilters.size() != 3U) return false;
-    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".cpp") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".hpp") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
 
@@ -689,14 +715,30 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_3() {
 
 #pragma region Filters Divers Tests
 
+/* Rules
+0) a filter must have 2 chars mini and the first must be a .
+1) a regex must be in (( and ))
+2) a , will separate filters except if between a ( and )
+3) name{filter1, filter2} is a spetial form for collection filters
+3.1) the name can be composed of what you want except { and }
+3.2) the filter can be a regex
+4) the filters cannot integrate these chars '(' ')' '{' '}' except for a regex with respect to rule 1)
+5) the filters cannot integrate a ','
+6) all spaces in filters will be shrinked, the best you can do is avoid them 
+*/
+
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Divers_0() {
-    auto mgr = Test_ParseFilters("All files{.*},\
-Frames(.001,.NNN){([.][0-9]{3})},\
+    auto mgr = Test_ParseFilters("\
+All files{.*},\
+Frames(.png.001,.NNN){(([.][0-9]{3}))},\
+Frames(XXX.png){(([0-9]{3}.png))},\
 Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},\
-Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md");
+Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},\
+.md\
+Frames(XXX.png){(([0-9]{3}.png))}");
 
-    if (mgr.prParsedFilters.size() != 4U) return false;
+    if (mgr.prParsedFilters.size() != 7U) return false;
     if (mgr.prParsedFilters[0].filter != "All files") return false;
     if (mgr.prParsedFilters[0].collectionfilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".*") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
@@ -708,14 +750,17 @@ Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md");
     if (mgr.prParsedFilters[2].collectionfilters.find(".cpp") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[2].collectionfilters.find(".h") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[2].collectionfilters.find(".hpp") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
-    if (mgr.prParsedFilters[2].filter != "Image files (*.png *.gif *.jpg *.jpeg)") return false;
-    if (mgr.prParsedFilters[2].collectionfilters.size() != 4U) return false;
-    if (mgr.prParsedFilters[2].collectionfilters.find(".png") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
-    if (mgr.prParsedFilters[2].collectionfilters.find(".gif") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
-    if (mgr.prParsedFilters[2].collectionfilters.find(".jpg") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
-    if (mgr.prParsedFilters[2].collectionfilters.find(".jpeg") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
-    if (mgr.prParsedFilters[3].filter != ".md") return false;
-    if (mgr.prParsedFilters[3].collectionfilters.size() != 0U) return false;
+    if (mgr.prParsedFilters[3].filter != "Image files (*.png *.gif *.jpg *.jpeg)") return false;
+    if (mgr.prParsedFilters[3].collectionfilters.size() != 4U) return false;
+    if (mgr.prParsedFilters[3].collectionfilters.find(".png") == mgr.prParsedFilters[3].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[3].collectionfilters.find(".gif") == mgr.prParsedFilters[3].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[3].collectionfilters.find(".jpg") == mgr.prParsedFilters[3].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[3].collectionfilters.find(".jpeg") == mgr.prParsedFilters[3].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[4].filter != ".md") return false;
+	if (mgr.prParsedFilters[4].collectionfilters.size() != 0U) return false;
+	if (mgr.prParsedFilters[5].filter != "Frames(XXX.png)") return false;
+	if (mgr.prParsedFilters[5].collectionfilters.size() != 1U) return false;
+	if (mgr.prParsedFilters[5].collectionfilters.find("([0-9]{3}.png)") == mgr.prParsedFilters[5].collectionfilters.end()) return false;
 
     return true;
 }
@@ -822,7 +867,11 @@ bool Test_FilterManager(const std::string& vTest) {
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::7"))
         return Test_FilterManager_ParseFilters_Filters_Simple_Regex_7();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::8"))
-        return Test_FilterManager_ParseFilters_Filters_Simple_Regex_8();
+		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_8();
+	else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::9"))
+		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_9();
+	else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::10"))
+		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_10();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::0"))
         return Test_FilterManager_ParseFilters_Filters_Collection_Regex_0();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::1"))

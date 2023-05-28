@@ -67,6 +67,8 @@ SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::5")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::6")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::7")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::8")
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::9")
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::10")
 
 ## IGFD::FilterManager -- Collection Regex Filters
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::0")
