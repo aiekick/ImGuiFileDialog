@@ -73,3 +73,9 @@ SetTest("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::0")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::1")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::2")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::3")
+
+## IGFD::FilterManager -- Divers Filters
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::0")
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::1")
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::2")
+SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::3")

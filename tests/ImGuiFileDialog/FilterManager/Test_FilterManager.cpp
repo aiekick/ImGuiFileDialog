@@ -21,137 +21,179 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
     IGFD::FilterManager mgr;
 
     std::vector<IGFD::FilterManager::FilterInfos> prParsedFilters;
+    IGFD::FilterManager::FilterInfos prSelectedFilter;
+    std::string puDLGFilters;
 
-#if 0
+#if 1
 	mgr.ParseFilters(vFilters);
 #else
-    std::string filter_string = vFilters;
+    //////////////////////////////////////////////////////
 
-    IGFD::FilterManager::FilterInfos infos;
+    prParsedFilters.clear();
 
-    bool start_collection = false;
-    bool end_collection = false;
-    bool start_regex = false;
-    bool end_regex = false;
+    if (vFilters)
+        puDLGFilters = vFilters;  // file mode
+    else
+        puDLGFilters.clear();  // directory mode
 
-    std::string word;
+    if (!puDLGFilters.empty()) {
+        // a filter must have 2 chars mini and the first must be a .
+        // a filter must have 2 chars mini and the first must be a .
+        // ".*,.cpp,.h,.hpp" => simple filters
+        // "Source files(.cpp, .h, .hpp){.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md" => collection filters
+        // "([.][0-9]{3}),.cpp,.h,.hpp" => simple filters with regex
+        // "frames files{([.][0-9]{3}),.frames}" => collection filters with regex
 
-    char last_char_c = 0;
-    for (char c : filter_string) {
-        if (c == '{') {
-            last_char_c = c;
-            if (start_regex) {
-                word += c;
-            } else {
-                if (!word.empty()) {
-                    infos.filter = word;
-                    prParsedFilters.push_back(infos);
-                }
-                word.clear();
-                infos.clear();
-                start_collection = true;
-                end_collection = false;
-            }
-        } else if (c == '}') {
-            last_char_c = c;
-            if (start_regex) {
-                word += c;
-            } else {
-                if (start_collection) {
-                    if (prParsedFilters.empty()) { 
-                        prParsedFilters.emplace_back();
-                    }
-                    prParsedFilters.back().collectionfilters.emplace(word);
-                    prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
+        bool start_collection = false;
+        bool end_collection = false;
+        bool start_regex = false;
+        bool end_regex = false;
 
-                    start_collection = false;
-                    end_collection = true;
+        std::string word;
+        std::string filter_name;
+        size_t idx = 0U;
+
+        char last_char_c = 0;
+        for (char c : puDLGFilters) {
+            if (c == '{') {
+                if (start_regex) {
+                    word += c;
+                    filter_name += c;
                 } else {
+                    if (last_char_c == ')') {
+                        prParsedFilters.emplace_back();
+                        prParsedFilters.back().filter = filter_name;
+                    } else if (!word.empty()) {
+                        prParsedFilters.emplace_back();
+                        prParsedFilters.back().filter = word;
+                    }
+                    filter_name.clear();
+                    word.clear();
+                    start_collection = true;
+                    end_collection = false;
+                }
+                last_char_c = c;
+            } else if (c == '}') {
+                if (start_regex) {
+                    word += c;
+                    filter_name += c;
+                } else {
+                    if (start_collection) {
+                        if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
+                        prParsedFilters.back().collectionfilters.emplace(word);
+                        prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
+                        start_collection = false;
+                        end_collection = true;
+                    } else {
+                        if (prParsedFilters.size() > 1U) {
+                            prParsedFilters.erase(--prParsedFilters.end());
+                        } else {
+                            prParsedFilters.clear();
+                        }
+                    }
+                    word.clear();
+                }
+                last_char_c = c;
+            } else if (c == '(') {
+                if (!idx || last_char_c) {
+                    start_regex = true;
+                    end_regex = false;
+                }
+                word += c;
+                filter_name += c;
+                last_char_c = c;
+            } else if (c == ')') {
+                word += c;
+                filter_name += c;
+                if (start_regex) {
+                    if (start_collection) {
+                        try {
+                            prParsedFilters.back().collectionfilters_regex.emplace_back(word);  // this can fail so is first
+                            prParsedFilters.back().collectionfilters.emplace(word);
+                            prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
+                        } catch (std::exception&) {}
+                    } else {
+                        if (!word.empty()) {
+                            try {
+                                auto rx = std::regex(word);  // this can fail so is first
+                                prParsedFilters.emplace_back();
+                                prParsedFilters.back().filter_regex = std::regex(word);  // this can fail so is first
+                                prParsedFilters.back().filter = word;
+                                prParsedFilters.back().filter_optimized = IGFD::Utils::LowerCaseString(word);
+                            } catch (std::exception&) {}
+                        }
+                    }
+                    word.clear();
+                    start_regex = false;
+                    end_regex = true;
+                } else if (!start_collection) {
                     if (prParsedFilters.size() > 1U) {
                         prParsedFilters.erase(--prParsedFilters.end());
                     } else {
                         prParsedFilters.clear();
                     }
-                }
-                word.clear();
-            }
-        } else if (c == '(') {
-            start_regex = true;
-            end_regex = false;
-            last_char_c = c;
-            word += c;
-        } else if (c == ')') {
-            last_char_c = c;
-            word += c;
-            if (start_regex) {
-                if (start_collection) {
-                    try {
-                        prParsedFilters.back().collectionfilters_regex.emplace_back(word);  // this can fail so is first
-                        prParsedFilters.back().collectionfilters.emplace(word);
-                        prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
-                    } catch (std::exception&) {}
                 } else {
-                    if (!word.empty()) {
-                        try {
-                            infos.filter_regex = std::regex(word); // this can fail so is first
-                            infos.filter = word;
-                            infos.filter_optimized = IGFD::Utils::LowerCaseString(infos.filter);
-                            prParsedFilters.push_back(infos);
-                        } catch (std::exception&) {}
+                    word.clear();
+                }
+                last_char_c = c;
+            } else if (c == '.') {
+                word += c;
+                filter_name += c;
+                last_char_c = c;
+            } else if (c == ',') {
+                filter_name += c;
+                if (!start_regex) {
+                    if (word.size() > 1U && word[0] == '.') {
+                        if (start_collection) {
+                            if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
+                            prParsedFilters.back().collectionfilters.emplace(word);
+                            prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
+                        } else {
+                            prParsedFilters.emplace_back();
+                            prParsedFilters.back().filter = word;
+                        }
                     }
                 }
-                word.clear();
-                infos.clear();
                 start_regex = false;
                 end_regex = true;
-            } else if (!start_collection) {
+                word.clear();
+            } else {
+                word += c;
+                filter_name += c;
+            }
+            ++idx;
+        }
+
+        if (start_collection) {
+            if (last_char_c != '}') {
                 if (prParsedFilters.size() > 1U) {
                     prParsedFilters.erase(--prParsedFilters.end());
                 } else {
                     prParsedFilters.clear();
                 }
-            } else {
-                word.clear();
             }
-        } else if (c == '.') {
-            last_char_c = c;
-            word += c;
-        } else if (c == ',') {
-            if (!start_regex) {
-                if (word.size() > 1U && word[0] == '.') {
-                    if (start_collection) {
-                        if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
-                        prParsedFilters.back().collectionfilters.emplace(word);
-                        prParsedFilters.back().collectionfilters_optimized.emplace(IGFD::Utils::LowerCaseString(word));
-                    } else {
-                        infos.filter = word;
-                        prParsedFilters.push_back(infos);
-                        infos.clear();
-                    }
-                }
+        } else if (last_char_c != '}') {
+            if (word.size() > 1U && word[0] == '.') {
+                prParsedFilters.emplace_back();
+                prParsedFilters.back().filter = word;
             }
-            start_regex = false;
-            end_regex = true;
-            word.clear();
-        } else {
-            word += c;
+        }
+
+        bool currentFilterFound = false;
+
+        for (const auto& it : prParsedFilters) {
+            if (it.filter == prSelectedFilter.filter) {
+                currentFilterFound = true;
+                prSelectedFilter = it;
+            }
+        }
+
+        if (!currentFilterFound) {
+            if (!prParsedFilters.empty()) prSelectedFilter = *prParsedFilters.begin();
         }
     }
 
-    if (start_collection) {
-        if (last_char_c != '}') {
-            if (prParsedFilters.size() > 1U) {
-                prParsedFilters.erase(--prParsedFilters.end());
-            } else {
-                prParsedFilters.clear();
-            }
-        }
-    } else if (last_char_c != '}') {
-        if (word.size() > 1U && word[0] == '.') {
-            infos.filter = word;
-            prParsedFilters.push_back(infos);
-        }
-    }
+    //////////////////////////////////////////////////////
 
     mgr.prParsedFilters = prParsedFilters;
 #endif
@@ -627,7 +669,7 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_2() {
 
 // msut be ok
 bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_3() {
-    auto mgr = Test_ParseFilters("frames files(.cpp,.hpp){([.][0-9]{3}),.cpp, .hpp}");
+    auto mgr = Test_ParseFilters("frames files(.cpp,.hpp){([.][0-9]{3}),.cpp,.hpp}");
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].filter != "frames files(.cpp,.hpp)") return false;
@@ -639,6 +681,80 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_3() {
     return true;
 }
 
+#pragma endregion
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//// ParseFilters // Divers Tests ///////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma region Filters Divers Tests
+
+// must be ok
+bool Test_FilterManager_ParseFilters_Filters_Divers_0() {
+    auto mgr = Test_ParseFilters("All files{.*},\
+Frames(.001,.NNN){([.][0-9]{3})},\
+Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},\
+Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md");
+
+    if (mgr.prParsedFilters.size() != 4U) return false;
+    if (mgr.prParsedFilters[0].filter != "All files") return false;
+    if (mgr.prParsedFilters[0].collectionfilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find(".*") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[1].filter != "Frames(.001,.NNN)") return false;
+    if (mgr.prParsedFilters[1].collectionfilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[1].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].filter != "Source files (*.cpp *.h *.hpp)") return false;
+    if (mgr.prParsedFilters[2].collectionfilters.size() != 3U) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".cpp") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".h") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".hpp") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].filter != "Image files (*.png *.gif *.jpg *.jpeg)") return false;
+    if (mgr.prParsedFilters[2].collectionfilters.size() != 4U) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".png") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".gif") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".jpg") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find(".jpeg") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[3].filter != ".md") return false;
+    if (mgr.prParsedFilters[3].collectionfilters.size() != 0U) return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ParseFilters_Filters_Divers_1() {
+    auto mgr = Test_ParseFilters("Regex Custom*.h{(Custom.+[.]h)}");
+
+    if (mgr.prParsedFilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[0].filter != "frames files") return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find(".frames") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ParseFilters_Filters_Divers_2() {
+    auto mgr = Test_ParseFilters("C++ File (*.cpp){.cpp}");
+
+    if (mgr.prParsedFilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[0].filter != "frames files") return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find(".frames") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ParseFilters_Filters_Divers_3() {
+    auto mgr = Test_ParseFilters("C/C++ File (*.c *.cpp){.c,.cpp}, Header File (*.h){.h}");
+
+    if (mgr.prParsedFilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[0].filter != "frames files") return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find("([.][0-9]{3})") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find(".frames") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+
+    return true;
+}
 #pragma endregion
 
 ////////////////////////////////////////////////////////////////////////////
@@ -715,7 +831,15 @@ bool Test_FilterManager(const std::string& vTest) {
         return Test_FilterManager_ParseFilters_Filters_Collection_Regex_2();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::3"))
         return Test_FilterManager_ParseFilters_Filters_Collection_Regex_3();
-
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::0"))
+        return Test_FilterManager_ParseFilters_Filters_Divers_0();
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::1"))
+        return Test_FilterManager_ParseFilters_Filters_Divers_1();
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::2"))
+        return Test_FilterManager_ParseFilters_Filters_Divers_2();
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::3"))
+        return Test_FilterManager_ParseFilters_Filters_Divers_3();
+    
     assert(0);
 
     return false;
