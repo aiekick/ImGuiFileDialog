@@ -2333,7 +2333,7 @@ namespace IGFD
 		if (!vInfos.use_count())
 			return;
 
-		if (ImGui::GetIO().KeyCtrl)
+		if (ImGui::IsKeyDown(ImGuiMod_Ctrl))
 		{
 			if (puDLGcountSelectionMax == 0) // infinite selection
 			{
@@ -2361,7 +2361,7 @@ namespace IGFD
 				}
 			}
 		}
-		else if (ImGui::GetIO().KeyShift)
+		else if (ImGui::IsKeyDown(ImGuiMod_Shift))
 		{
 			if (puDLGcountSelectionMax != 1)
 			{
