@@ -24,7 +24,7 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
     IGFD::FilterManager::FilterInfos prSelectedFilter;
     std::string puDLGFilters;
 
-#if 1
+#if 0
 	mgr.ParseFilters(vFilters);
 #else
     //////////////////////////////////////////////////////
