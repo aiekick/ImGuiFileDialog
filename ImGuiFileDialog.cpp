@@ -588,7 +588,7 @@ namespace IGFD
 #endif // USE_STD_FILESYSTEM
 		}
 
-		return bExists;    // this is not a directory!
+		return bExists;	// this is not a directory!
 	}
 
 	bool IGFD::Utils::IsDirectoryExist(const std::string& name)
@@ -629,7 +629,7 @@ namespace IGFD
 #endif // USE_STD_FILESYSTEM
 		}
 
-		return bExists;    // this is not a directory!
+		return bExists;	// this is not a directory!
 	}
 
 	bool IGFD::Utils::CreateDirectoryIfNotExist(const std::string& name)
@@ -900,8 +900,7 @@ namespace IGFD
 	//// FILTER MANAGER /////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////
 
-	void IGFD::FilterManager::ParseFilters(const char* vFilters)
-	{
+	void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 		prParsedFilters.clear();
 
 		if (vFilters)
@@ -909,8 +908,7 @@ namespace IGFD
 		else
 			puDLGFilters.clear();				// directory mode
 
-		if (!puDLGFilters.empty())
-		{
+		if (!puDLGFilters.empty()) {
 			// ".*,.cpp,.h,.hpp" => simple filters
 			// "Source files{.cpp,.h,.hpp},Image files{.png,.gif,.jpg,.jpeg},.md" => collection filters
 			// "([.][0-9]{3}),.cpp,.h,.hpp" => simple filters with regex
@@ -920,22 +918,19 @@ namespace IGFD
 
 			size_t nan = std::string::npos;
 			size_t p = 0, lp = 0;
-			while ((p = puDLGFilters.find_first_of("{,", p)) != nan)
-			{
+			while ((p = puDLGFilters.find_first_of("{,", p)) != nan) {
 				FilterInfos infos;
 
-				if (puDLGFilters[p] == '{') // {
+				if (puDLGFilters[p] == '{')  // {
 				{
 					infos.filter = puDLGFilters.substr(lp, p - lp);
 					infos.filter_optimized = Utils::LowerCaseString(infos.filter);
 					p++;
 					lp = puDLGFilters.find('}', p);
-					if (lp != nan)
-					{
+					if (lp != nan) {
 						std::string fs = puDLGFilters.substr(p, lp - p);
 						auto arr = IGFD::Utils::SplitStringToVector(fs, ',', false);
-						for (auto a : arr)
-						{
+						for (auto a : arr) {
 							infos.collectionfilters.emplace(a);
 							infos.collectionfilters_optimized.emplace(Utils::LowerCaseString(a));
 
@@ -948,8 +943,7 @@ namespace IGFD
 						}
 					}
 					p = lp + 1;
-				}
-				else // ,
+				} else  // ,
 				{
 					infos.filter = puDLGFilters.substr(lp, p - lp);
 					infos.filter_optimized = Utils::LowerCaseString(infos.filter);
@@ -964,8 +958,7 @@ namespace IGFD
 					p++;
 				}
 
-				if (!currentFilterFound && prSelectedFilter.filter == infos.filter)
-				{
+				if (!currentFilterFound && prSelectedFilter.filter == infos.filter) {
 					currentFilterFound = true;
 					prSelectedFilter = infos;
 				}
@@ -976,8 +969,7 @@ namespace IGFD
 			}
 
 			std::string token = puDLGFilters.substr(lp);
-			if (!token.empty())
-			{
+			if (!token.empty()) {
 				FilterInfos infos;
 				infos.filter = std::move(token);
 				prParsedFilters.emplace_back(infos);
