@@ -8,7 +8,7 @@ enable_language(C CXX)
 project(${PROJECT} CXX)
 
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
-option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" OFF)
+option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" ON)
 option(USE_TEST "Enable Tests" OFF)
 
 include(cmake/3rdparty.cmake)
