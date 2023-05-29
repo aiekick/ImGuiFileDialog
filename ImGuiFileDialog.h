@@ -1572,7 +1572,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class IGFD_API FileDialog : public BookMarkFeature, public KeyExplorerFeature, public ThumbnailFeature {
-private:
+protected:
 	FileDialogInternal prFileDialogInternal;
 	ImGuiListClipper prFileListClipper;
 	ImGuiListClipper prPathListClipper;
@@ -1697,7 +1697,6 @@ protected:
 	// others
 	bool prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);	// treatment of the result, start the confirm to overwrite dialog if needed (if defined with flag)
 
-public:
 	// dialog parts
 	virtual void prDrawHeader();   // draw header part of the dialog (bookmark btn, dir creation, path composer, search bar)
 	virtual void prDrawContent();  // draw content part of the dialog (bookmark pane, file list, side pane)
