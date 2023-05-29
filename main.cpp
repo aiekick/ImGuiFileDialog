@@ -322,11 +322,13 @@ int main(int, char**) {
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 	// set file style with a lambda function
-	ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile) -> std::shared_ptr<IGFD::FileStyle> {
+	// return true is a file style was defined
+	ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle &vOutStyle) -> bool {
 		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
-			return std::make_shared<IGFD::FileStyle>(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+			vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+			return true;
 		}
-		return nullptr;
+		return false;
 	});
 
 
