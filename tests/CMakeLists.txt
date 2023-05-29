@@ -17,7 +17,7 @@ add_executable(${PROJECT}
 )
 	
 target_link_libraries(${PROJECT} PRIVATE
-	${PROJECT_LIB}
+	ImGuiFileDialog
 )
 
 set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
