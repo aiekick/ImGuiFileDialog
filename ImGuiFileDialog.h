@@ -1133,8 +1133,8 @@ public:
     typedef std::function<bool(const FileInfos&, FileStyle&)> FileStyleFunctor;
 
 public:
-    std::string icon;
     ImVec4 color              = ImVec4(0, 0, 0, 0);
+    std::string icon;
     ImFont* font              = nullptr;
     IGFD_FileStyleFlags flags = 0;
 
