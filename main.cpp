@@ -321,6 +321,14 @@ int main(int, char**) {
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 	ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+	// set file style with a lambda function
+	ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile) -> std::shared_ptr<IGFD::FileStyle> {
+		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
+			return std::make_shared<IGFD::FileStyle>(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+		}
+		return nullptr;
+	});
+
 
 	// just for show multi dialog instance behavior (here use for show directory query dialog)
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
