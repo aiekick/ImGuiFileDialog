@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(ImGuiFileDialog)
 
-add_library(ImGuiFileDialog
+add_library(ImGuiFileDialog STATIC
     ImGuiFileDialog.cpp
     ImGuiFileDialog.h
 )
