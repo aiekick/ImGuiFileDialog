@@ -55,6 +55,13 @@ include_directories(
 		${CMAKE_SOURCE_DIR}
 )
 
+if(USE_TEST)
+	message("Testing enabled")
+	enable_testing()
+	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+endif()
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
 
 add_executable(${PROJECT}
@@ -64,10 +71,6 @@ add_executable(${PROJECT}
 	${MAIN_SOURCES}
 	${CUSTOM_SOURCES}
 	${IMGUIIMPL_SOURCES}
-)
-
-target_link_libraries(${PROJECT} PRIVATE 
-	ImGuiFileDialog
 )
 
 if (APPLE)
@@ -120,8 +123,3 @@ target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_SOURCE_DIR}
 )
 
-if(USE_TEST)
-	enable_testing()
-	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
-endif()
