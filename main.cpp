@@ -146,6 +146,83 @@ inline bool RadioButtonLabeled_BitWize(const char* vLabel, const char* vHelp, T*
 	return res;
 }
 
+class CustomFileDialog : public ImGuiFileDialog {
+private:
+	bool m_ReadOnly = false;
+
+public:
+	static CustomFileDialog* Instance(CustomFileDialog* vCopy = nullptr, bool vForce = false) {
+		static CustomFileDialog _instance;
+		static CustomFileDialog* _instance_copy = nullptr;
+		if (vCopy || vForce) { _instance_copy = vCopy; }
+		if (_instance_copy) { return _instance_copy; }
+		return &_instance;
+	}
+
+public:
+	void OpenDialog(const std::string& vKey, 
+		const std::string& vTitle, 
+		const char* vFilters, 
+		const std::string& vPath, 
+		const std::string& vFileName, 
+		const int& vCountSelectionMax, 
+		IGFD::UserDatas vUserDatas, 
+		ImGuiFileDialogFlags vFlags)
+	{
+		m_ReadOnly = false;
+		ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vPath, vFileName, vCountSelectionMax, vUserDatas, vFlags);
+	}
+
+	bool isReadOnly() { return m_ReadOnly; }
+
+protected:
+	bool prDrawFooter() override {
+		auto& fdFile = prFileDialogInternal.puFileManager;
+
+		float posY = ImGui::GetCursorPos().y;  // height of last bar calc
+		ImGui::AlignTextToFramePadding();
+		if (!fdFile.puDLGDirectoryMode)
+			ImGui::Text("File Name :");
+		else  // directory chooser
+			ImGui::Text("Directory Path :");
+		ImGui::SameLine();
+
+		// Input file fields
+		float width = ImGui::GetContentRegionAvail().x;
+		if (!fdFile.puDLGDirectoryMode) {
+			ImGuiContext& g = *GImGui;
+			width -= 150.0f + g.Style.ItemSpacing.x;
+		}
+
+		ImGui::PushItemWidth(width);
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+		if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) { flags |= ImGuiInputTextFlags_ReadOnly; }
+		if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) { prFileDialogInternal.puIsOk = true; }
+		if (ImGui::GetItemID() == ImGui::GetActiveID()) prFileDialogInternal.puFileInputIsActive = true;
+		ImGui::PopItemWidth();
+
+		// combobox of filters
+		prFileDialogInternal.puFilterManager.DrawFilterComboBox(prFileDialogInternal);
+
+		bool res							= prDrawValidationButtons();
+
+		ImGui::SameLine();
+
+		if (ImGui::Checkbox("Read-Only", &m_ReadOnly)) {
+			if (m_ReadOnly) { 
+				// remove confirm overwirte check since we are read only
+				prFileDialogInternal.puDLGflags &= ~ImGuiFileDialogFlags_ConfirmOverwrite;
+			} else {
+				// add confirm overwirte since is what we want in our case
+				prFileDialogInternal.puDLGflags |= ImGuiFileDialogFlags_ConfirmOverwrite;
+			}
+		}
+
+		prFileDialogInternal.puFooterHeight = ImGui::GetCursorPosY() - posY;
+		return res;
+	}
+};
+
 int main(int, char**) {
 #ifdef _MSC_VER
 	// active memory leak detector
@@ -218,6 +295,10 @@ int main(int, char**) {
 
 	ImGuiFileDialog fileDialog2;
 	ImGuiFileDialog fileDialogEmbedded3;
+	
+	// an override for have read only checkbox
+	static bool _IsFileReadOnly = false;
+	CustomFileDialog customFileDialog;
 
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) -> void {
@@ -331,7 +412,6 @@ int main(int, char**) {
 		return false;
 	});
 
-
 	// just for show multi dialog instance behavior (here use for show directory query dialog)
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 	fileDialog2.SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
@@ -349,6 +429,30 @@ int main(int, char**) {
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");			  // add an text for a filter type
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");			   // add an text for a filter type
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);	   // for all dirs
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);							   // for all link files
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+	// set file style with a lambda function
+	// return true is a file style was defined
+	CustomFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
+		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
+			vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
+			return true;
+		}
+		return false;
+	});
 
 	// c interface
 	auto cfileDialog = IGFD_Create();
@@ -536,6 +640,14 @@ int main(int, char**) {
 
 				ImGui::Separator();
 
+				ImGui::Text("Draw Override of the FileDialog for have a read only checkbox");
+				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open A Draww Override FileDialog with a read only btn")) {
+					const char* filters =
+						"All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
+					CustomFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+				}
+				ImGui::Text("Is File Read only ?? : %s", _IsFileReadOnly ? "yes" : "false");
+
 				/////////////////////////////////////////////////////////////////
 				// C Interface
 				/////////////////////////////////////////////////////////////////
@@ -617,6 +729,13 @@ int main(int, char**) {
 					fileDialog2.Close();
 				}
 
+				if (CustomFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+					if (CustomFileDialog::Instance()->IsOk()) { 
+						_IsFileReadOnly = CustomFileDialog::Instance()->isReadOnly();
+					}
+					CustomFileDialog::Instance()->Close();
+				}
+				
 				/////////////////////////////////////////////////////////////////
 				// C Interface
 				/////////////////////////////////////////////////////////////////
