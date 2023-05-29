@@ -25,167 +25,162 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
     std::string puDLGFilters;
 
 #if 1
-	mgr.ParseFilters(vFilters);
+    mgr.ParseFilters(vFilters);
 #else
-	//////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
 
-	prParsedFilters.clear();
+    prParsedFilters.clear();
 
-	if (vFilters)
-		puDLGFilters = vFilters;  // file mode
-	else
-		puDLGFilters.clear();  // directory mode
+    if (vFilters)
+        puDLGFilters = vFilters;  // file mode
+    else
+        puDLGFilters.clear();  // directory mode
 
-	if (!puDLGFilters.empty()) {
+    if (!puDLGFilters.empty()) {
+        /* Rules
+        0) a filter must have 2 chars mini and the first must be a .
+        1) a regex must be in (( and ))
+        2) a , will separate filters except if between a ( and )
+        3) name{filter1, filter2} is a spetial form for collection filters
+        3.1) the name can be composed of what you want except { and }
+        3.2) the filter can be a regex
+        4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
+        5) the filters cannot integrate a ','
+        */
 
-		/* Rules
-		0) a filter must have 2 chars mini and the first must be a .
-		1) a regex must be in (( and ))
-		2) a , will separate filters except if between a ( and )
-		3) name{filter1, filter2} is a spetial form for collection filters
-		3.1) the name can be composed of what you want except { and }
-		3.2) the filter can be a regex
-		4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
-		5) the filters cannot integrate a ','
-		*/
+        bool collection_started  = false;
+        bool regex_started       = false;
+        bool parenthesis_started = false;
 
-		bool collection_started  = false;
-		bool regex_started	   = false;
-		bool parenthesis_started = false;
+        std::string word;
+        std::string filter_name;
 
-		std::string word;
-		std::string filter_name;
-
-		char last_split_char = 0;
-		for (char c : puDLGFilters) {
-			if (c == '{') {
-				if (regex_started) {
-					word += c;
-				} else {
-					collection_started = true;
-					prParsedFilters.emplace_back();
-					prParsedFilters.back().filter = filter_name;
-					filter_name.clear();
-					word.clear();
-				}
-				last_split_char = c;
-			} else if (c == '}') {
-				if (regex_started) {
-					word += c;
-				} else {
-					if (collection_started) {
-						if (word.size() > 1U && word[0] == '.') {
-							if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
-							prParsedFilters.back().collectionfilters.emplace(word);
-						}
-						word.clear();
-						filter_name.clear();
-						collection_started = false;
-					}
-				}
-				last_split_char = c;
-			} else if (c == '(') {
-				word += c;
-				if (last_split_char == '(') {
-					regex_started = true;
+        char last_split_char = 0;
+        for (char c : puDLGFilters) {
+            if (c == '{') {
+                if (regex_started) {
+                    word += c;
+                } else {
+                    collection_started = true;
+                    prParsedFilters.emplace_back();
+                    prParsedFilters.back().filter = filter_name;
+                    filter_name.clear();
+                    word.clear();
                 }
-				parenthesis_started = true;
-				if (!collection_started) { filter_name += c; }
-				last_split_char = c;
-			} else if (c == ')') {
-				word += c;
-				if (last_split_char == ')') {
-					if (regex_started) {
-						try {
-							auto rx = std::regex(word);	 // cant thrwo an exception so if first, prevent emplace if failed
-							if (collection_started) {
-								prParsedFilters.back().collectionfilters.emplace(word);
-								prParsedFilters.back().collectionfilters_regex.emplace_back(rx);
-							} else {
-								prParsedFilters.emplace_back();
-								prParsedFilters.back().filter		= word;
-								prParsedFilters.back().filter_regex = rx;
-							}
-						} catch (std::exception&) {}
-						word.clear();
-						filter_name.clear();
-						regex_started = false;
-					} else {
-						if (!collection_started) {
-							if (!prParsedFilters.empty()) {
-								prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
-							} else {
-								prParsedFilters.clear();
-							}
-						}
-						word.clear();
-						filter_name.clear();
-					}
-				}
-				parenthesis_started = false;
-				if (!collection_started) { 
-                    filter_name += c;
+                last_split_char = c;
+            } else if (c == '}') {
+                if (regex_started) {
+                    word += c;
+                } else {
+                    if (collection_started) {
+                        if (word.size() > 1U && word[0] == '.') {
+                            if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
+                            prParsedFilters.back().collectionfilters.emplace(word);
+                        }
+                        word.clear();
+                        filter_name.clear();
+                        collection_started = false;
+                    }
                 }
-				last_split_char = c;
-			} else if (c == '.') {
-				word += c;
-				if (!collection_started) { filter_name += c; }
-				last_split_char = c;
-			} else if (c == ',') {
-				if (regex_started) {
-					regex_started = false;
-					word.clear();
-					filter_name.clear();
-				} else {
-					if (collection_started) {
-						if (word.size() > 1U && word[0] == '.') {
-							prParsedFilters.back().collectionfilters.emplace(word);
-							word.clear();
-							filter_name.clear();
-						}
-					} else {
-						if (word.size() > 1U && word[0] == '.') {
-							prParsedFilters.emplace_back();
-							prParsedFilters.back().filter = word;
-							word.clear();
-							filter_name.clear();
-						}
-						if (parenthesis_started) { filter_name += c; }
-					}
-				}
-			} else {
-				if (c != ' ') { word += c; }
-				if (!collection_started) { filter_name += c; }
-			}
-		}
+                last_split_char = c;
+            } else if (c == '(') {
+                word += c;
+                if (last_split_char == '(') { regex_started = true; }
+                parenthesis_started = true;
+                if (!collection_started) { filter_name += c; }
+                last_split_char = c;
+            } else if (c == ')') {
+                word += c;
+                if (last_split_char == ')') {
+                    if (regex_started) {
+                        try {
+                            auto rx = std::regex(word);  // cant thrwo an exception so if first, prevent emplace if failed
+                            if (collection_started) {
+                                prParsedFilters.back().collectionfilters.emplace(word);
+                                prParsedFilters.back().collectionfilters_regex.emplace_back(rx);
+                            } else {
+                                prParsedFilters.emplace_back();
+                                prParsedFilters.back().filter       = word;
+                                prParsedFilters.back().filter_regex = rx;
+                            }
+                        } catch (std::exception&) {}
+                        word.clear();
+                        filter_name.clear();
+                        regex_started = false;
+                    } else {
+                        if (!collection_started) {
+                            if (!prParsedFilters.empty()) {
+                                prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
+                            } else {
+                                prParsedFilters.clear();
+                            }
+                        }
+                        word.clear();
+                        filter_name.clear();
+                    }
+                }
+                parenthesis_started = false;
+                if (!collection_started) { filter_name += c; }
+                last_split_char = c;
+            } else if (c == '.') {
+                word += c;
+                if (!collection_started) { filter_name += c; }
+                last_split_char = c;
+            } else if (c == ',') {
+                if (regex_started) {
+                    regex_started = false;
+                    word.clear();
+                    filter_name.clear();
+                } else {
+                    if (collection_started) {
+                        if (word.size() > 1U && word[0] == '.') {
+                            prParsedFilters.back().collectionfilters.emplace(word);
+                            word.clear();
+                            filter_name.clear();
+                        }
+                    } else {
+                        if (word.size() > 1U && word[0] == '.') {
+                            prParsedFilters.emplace_back();
+                            prParsedFilters.back().filter = word;
+                            word.clear();
+                            filter_name.clear();
+                        }
+                        if (parenthesis_started) { filter_name += c; }
+                    }
+                }
+            } else {
+                if (c != ' ') { word += c; }
+                if (!collection_started) { filter_name += c; }
+            }
+        }
 
-		if (collection_started) {
-			if (!prParsedFilters.empty()) {
-				prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
-			} else {
-				prParsedFilters.clear();
-			}
-		} else if (word.size() > 1U && word[0] == '.') {
-			prParsedFilters.emplace_back();
-			prParsedFilters.back().filter = word;
-			word.clear();
-		}
+        if (collection_started) {
+            if (!prParsedFilters.empty()) {
+                prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
+            } else {
+                prParsedFilters.clear();
+            }
+        } else if (word.size() > 1U && word[0] == '.') {
+            prParsedFilters.emplace_back();
+            prParsedFilters.back().filter = word;
+            word.clear();
+        }
 
-		bool currentFilterFound = false;
+        bool currentFilterFound = false;
 
-		for (const auto& it : prParsedFilters) {
-			if (it.filter == prSelectedFilter.filter) {
-				currentFilterFound = true;
-				prSelectedFilter   = it;
-			}
-		}
+        for (const auto& it : prParsedFilters) {
+            if (it.filter == prSelectedFilter.filter) {
+                currentFilterFound = true;
+                prSelectedFilter   = it;
+            }
+        }
 
-		if (!currentFilterFound) {
-			if (!prParsedFilters.empty()) prSelectedFilter = *prParsedFilters.begin();
-		}
-	}
+        if (!currentFilterFound) {
+            if (!prParsedFilters.empty()) prSelectedFilter = *prParsedFilters.begin();
+        }
+    }
 
-	//////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
 
     mgr.prParsedFilters = prParsedFilters;
 #endif
@@ -472,8 +467,8 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_10() {
     if (mgr.prParsedFilters[1].collectionfilters.size() != 3U) return false;
     if (mgr.prParsedFilters[1].collectionfilters.find(".hpp") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[1].collectionfilters.find(".h") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
-	if (mgr.prParsedFilters[1].collectionfilters.find(".hxx") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
-	if (mgr.prParsedFilters[2].filter != ".md") return false;
+    if (mgr.prParsedFilters[1].collectionfilters.find(".hxx") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].filter != ".md") return false;
 
     return true;
 }
@@ -549,7 +544,7 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_3() {
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_4() {
-	auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3})),.h,.hpp");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})),.cpp,(([.][0-9]{3})),.h,.hpp");
 
     if (mgr.prParsedFilters.size() != 5U) return false;
     if (mgr.prParsedFilters[0].filter != "(([.][0-9]{3}))") return false;
@@ -617,22 +612,21 @@ bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_8() {
 
 // must fail
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_9() {
-	auto mgr = Test_ParseFilters("(([.][0-9]{3})");
+    auto mgr = Test_ParseFilters("(([.][0-9]{3})");
 
-	if (mgr.prParsedFilters.size() != 0U) return false;
+    if (mgr.prParsedFilters.size() != 0U) return false;
 
-	return true;
+    return true;
 }
 
 // must fail
 bool Test_FilterManager_ParseFilters_Filters_Simple_Regex_10() {
-	auto mgr = Test_ParseFilters("([.][0-9]{3}))");
+    auto mgr = Test_ParseFilters("([.][0-9]{3}))");
 
-	if (mgr.prParsedFilters.size() != 0U) return false;
+    if (mgr.prParsedFilters.size() != 0U) return false;
 
-	return true;
+    return true;
 }
-
 
 #pragma endregion
 
@@ -710,12 +704,13 @@ bool Test_FilterManager_ParseFilters_Filters_Collection_Regex_3() {
 3.2) the filter can be a regex
 4) the filters cannot integrate these chars '(' ')' '{' '}' except for a regex with respect to rule 1)
 5) the filters cannot integrate a ','
-6) all spaces in filters will be shrinked, the best you can do is avoid them 
+6) all spaces in filters will be shrinked, the best you can do is avoid them
 */
 
 // must be ok
 bool Test_FilterManager_ParseFilters_Filters_Divers_0() {
-    auto mgr = Test_ParseFilters("\
+    auto mgr = Test_ParseFilters(
+        "\
 All files{.*},\
 Frames Format 0(.001,.NNN){(([.][0-9]{3}))},\
 Frames Format 1(XXX.png){(([0-9]{3}.png))},\
@@ -731,9 +726,9 @@ Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},\
     if (mgr.prParsedFilters[1].filter != "Frames Format 0(.001,.NNN)") return false;
     if (mgr.prParsedFilters[1].collectionfilters.size() != 1U) return false;
     if (mgr.prParsedFilters[1].collectionfilters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
-	if (mgr.prParsedFilters[2].filter != "Frames Format 1(XXX.png)") return false;
-	if (mgr.prParsedFilters[2].collectionfilters.size() != 1U) return false;
-	if (mgr.prParsedFilters[2].collectionfilters.find("(([0-9]{3}.png))") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[2].filter != "Frames Format 1(XXX.png)") return false;
+    if (mgr.prParsedFilters[2].collectionfilters.size() != 1U) return false;
+    if (mgr.prParsedFilters[2].collectionfilters.find("(([0-9]{3}.png))") == mgr.prParsedFilters[2].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[3].filter != "Source files (*.cpp *.h *.hpp)") return false;
     if (mgr.prParsedFilters[3].collectionfilters.size() != 3U) return false;
     if (mgr.prParsedFilters[3].collectionfilters.find(".cpp") == mgr.prParsedFilters[3].collectionfilters.end()) return false;
@@ -746,7 +741,7 @@ Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},\
     if (mgr.prParsedFilters[4].collectionfilters.find(".jpg") == mgr.prParsedFilters[4].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[4].collectionfilters.find(".jpeg") == mgr.prParsedFilters[4].collectionfilters.end()) return false;
     if (mgr.prParsedFilters[5].filter != ".md") return false;
-	if (mgr.prParsedFilters[5].collectionfilters.size() != 0U) return false;
+    if (mgr.prParsedFilters[5].collectionfilters.size() != 0U) return false;
 
     return true;
 }
@@ -780,9 +775,9 @@ bool Test_FilterManager_ParseFilters_Filters_Divers_3() {
     if (mgr.prParsedFilters.size() != 2U) return false;
     if (mgr.prParsedFilters[0].filter != "C/C++ File (*.c *.cpp)") return false;
     if (mgr.prParsedFilters[0].collectionfilters.find(".c") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
-	if (mgr.prParsedFilters[0].collectionfilters.find(".cpp") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
-	if (mgr.prParsedFilters[1].filter != " Header File (*.h)") return false;
-	if (mgr.prParsedFilters[1].collectionfilters.find(".h") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[0].collectionfilters.find(".cpp") == mgr.prParsedFilters[0].collectionfilters.end()) return false;
+    if (mgr.prParsedFilters[1].filter != " Header File (*.h)") return false;
+    if (mgr.prParsedFilters[1].collectionfilters.find(".h") == mgr.prParsedFilters[1].collectionfilters.end()) return false;
 
     return true;
 }
@@ -853,11 +848,11 @@ bool Test_FilterManager(const std::string& vTest) {
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::7"))
         return Test_FilterManager_ParseFilters_Filters_Simple_Regex_7();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::8"))
-		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_8();
-	else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::9"))
-		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_9();
-	else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::10"))
-		return Test_FilterManager_ParseFilters_Filters_Simple_Regex_10();
+        return Test_FilterManager_ParseFilters_Filters_Simple_Regex_8();
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::9"))
+        return Test_FilterManager_ParseFilters_Filters_Simple_Regex_9();
+    else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::10"))
+        return Test_FilterManager_ParseFilters_Filters_Simple_Regex_10();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::0"))
         return Test_FilterManager_ParseFilters_Filters_Collection_Regex_0();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::1"))
@@ -874,7 +869,7 @@ bool Test_FilterManager(const std::string& vTest) {
         return Test_FilterManager_ParseFilters_Filters_Divers_2();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::3"))
         return Test_FilterManager_ParseFilters_Filters_Divers_3();
-    
+
     assert(0);
 
     return false;
