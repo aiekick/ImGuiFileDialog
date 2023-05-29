@@ -86,7 +86,7 @@ Android Requirements : Api 21 mini
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
-
+ 
 ### Filter format
 
 A filter is recognized only if it respects theses rules :
