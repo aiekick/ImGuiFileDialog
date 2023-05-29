@@ -33,13 +33,13 @@ SOFTWARE.
  |_____|_| |_| |_|\_____|\__,_|_|_|    |_|_|\___|_____/|_|\__,_|_|\___/ \__, |
   _________________________________________________________________________/ |
  |__________________________________________________________________________/
-                          ___      __     _____
-                         / _ \    / /    | ____|
-                 __   __| | | |  / /_    | |__
-                 \ \ / /| | | | | '_ \   |___ \
-                  \ V / | |_| |_| (_) |_  ___) |
-                   \_/   \___/(_)\___/(_)|____/
-
+                            ___      __      __                                                               
+                           / _ \    / /     / /                                                               
+                   __   __| | | |  / /_    / /_                                                               
+                   \ \ / /| | | | | '_ \  | '_ \                                                              
+                    \ V / | |_| |_| (_) |_| (_) |                                                             
+                     \_/   \___/(_)\___/(_)\___/                                                              
+                                
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
@@ -963,7 +963,7 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 #define IMGUIFILEDIALOG_H
 
 // compatible with 1.89.5 WIP
-#define IMGUIFILEDIALOG_VERSION "v0.6.5"
+#define IMGUIFILEDIALOG_VERSION "v0.6.6"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
 #include "ImGuiFileDialogConfig.h"
