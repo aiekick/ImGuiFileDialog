@@ -3465,14 +3465,11 @@ IGFD_API bool IGFD::FileDialog::prDrawFooter() {
 	auto& fdFile = prFileDialogInternal.puFileManager;
 
 	float posY = ImGui::GetCursorPos().y;  // height of last bar calc
-
 	ImGui::AlignTextToFramePadding();
-
 	if (!fdFile.puDLGDirectoryMode)
 		ImGui::Text(fileNameString);
 	else  // directory chooser
 		ImGui::Text(dirNameString);
-
 	ImGui::SameLine();
 
 	// Input file fields
@@ -3483,25 +3480,17 @@ IGFD_API bool IGFD::FileDialog::prDrawFooter() {
 	}
 
 	ImGui::PushItemWidth(width);
-
 	ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
 	if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) { flags |= ImGuiInputTextFlags_ReadOnly; }
-
 	if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) { prFileDialogInternal.puIsOk = true; }
-
 	if (ImGui::GetItemID() == ImGui::GetActiveID()) prFileDialogInternal.puFileInputIsActive = true;
 	ImGui::PopItemWidth();
 
 	// combobox of filters
 	prFileDialogInternal.puFilterManager.DrawFilterComboBox(prFileDialogInternal);
 
-	bool res = false;
-
-	res = prDrawValidationButtons();
-
+	bool res = prDrawValidationButtons();
 	prFileDialogInternal.puFooterHeight = ImGui::GetCursorPosY() - posY;
-
 	return res;
 }
 
