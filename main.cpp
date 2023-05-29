@@ -146,14 +146,14 @@ inline bool RadioButtonLabeled_BitWize(const char* vLabel, const char* vHelp, T*
 	return res;
 }
 
-class CustomFileDialog : public ImGuiFileDialog {
+class CustomDrawReadOnlyCheckBoxFileDialog : public ImGuiFileDialog {
 private:
 	bool m_ReadOnly = false;
 
 public:
-	static CustomFileDialog* Instance(CustomFileDialog* vCopy = nullptr, bool vForce = false) {
-		static CustomFileDialog _instance;
-		static CustomFileDialog* _instance_copy = nullptr;
+	static CustomDrawReadOnlyCheckBoxFileDialog* Instance(CustomDrawReadOnlyCheckBoxFileDialog* vCopy = nullptr, bool vForce = false) {
+		static CustomDrawReadOnlyCheckBoxFileDialog _instance;
+		static CustomDrawReadOnlyCheckBoxFileDialog* _instance_copy = nullptr;
 		if (vCopy || vForce) { _instance_copy = vCopy; }
 		if (_instance_copy) { return _instance_copy; }
 		return &_instance;
@@ -298,7 +298,7 @@ int main(int, char**) {
 	
 	// an override for have read only checkbox
 	static bool _IsFileReadOnly = false;
-	CustomFileDialog customFileDialog;
+	CustomDrawReadOnlyCheckBoxFileDialog customFileDialog;
 
 #ifdef USE_THUMBNAILS
 	ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) -> void {
@@ -430,23 +430,23 @@ int main(int, char**) {
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
 	fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
 
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");			   // add an text for a filter type
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);	   // for all dirs
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);							   // for all link files
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
-	CustomFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");			   // add an text for a filter type
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);	   // for all dirs
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);							   // for all link files
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 	// set file style with a lambda function
 	// return true is a file style was defined
-	CustomFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
+	CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
 		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
 			vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
 			return true;
@@ -644,7 +644,7 @@ int main(int, char**) {
 				if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open A Draww Override FileDialog with a read only btn")) {
 					const char* filters =
 						"All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
-					CustomFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
+					CustomDrawReadOnlyCheckBoxFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
 				}
 				ImGui::Text("Is File Read only ?? : %s", _IsFileReadOnly ? "yes" : "false");
 
@@ -729,11 +729,11 @@ int main(int, char**) {
 					fileDialog2.Close();
 				}
 
-				if (CustomFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-					if (CustomFileDialog::Instance()->IsOk()) { 
-						_IsFileReadOnly = CustomFileDialog::Instance()->isReadOnly();
+				if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+					if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->IsOk()) { 
+						_IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly();
 					}
-					CustomFileDialog::Instance()->Close();
+					CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Close();
 				}
 				
 				/////////////////////////////////////////////////////////////////
