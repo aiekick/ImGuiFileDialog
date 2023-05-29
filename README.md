@@ -1,7 +1,7 @@
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
-[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.88-blue.svg)](https://github.com/ocornut/imgui)
+[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.89.5-blue.svg)](https://github.com/ocornut/imgui)
 
 # ImGuiFileDialog
 
@@ -14,7 +14,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.88 
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.5 
 
 ## Structure
 
@@ -55,18 +55,20 @@ Android Requirements : Api 21 mini
 
 ## Features
 
+- C Api (succesfully tested with CimGui)
 - Separate system for call and display
-    - Can have many function calls with different parameters for one display function, for example
+	- Can have many function calls with different parameters for one display function, for example
 - Can create a custom pane with any widgets via function binding
-    - This pane can block the validation of the dialog
-    - Can also display different things according to current filter and UserDatas
+	- This pane can block the validation of the dialog
+	- Can also display different things according to current filter and UserDatas
 - Advanced file style for file/dir/link coloring / icons / font
+    - predefined form or user custom form by lambda function (the lambda mode is not available for the C API)
 - Multi-selection (ctrl/shift + click) :
-    - 0 => Infinite
-    - 1 => One file (default)
-    - n => n files
+	- 0 => Infinite
+	- 1 => One file (default)
+	- n => n files
 - Compatible with MacOs, Linux, Windows
-    - Windows version can list drives
+	- Windows version can list drives
 - Supports modal or standard dialog types
 - Select files or directories
 - Filter groups and custom filter names
@@ -76,17 +78,29 @@ Android Requirements : Api 21 mini
 - Directory bookmarks
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
-- C Api (succesfully tested with CimGui)
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 - The dialog can be embedded in another user frame than the standard or modal dialog
-- Can tune validation buttons (placements, widths, inversion) 
+- Can tune validation buttons (placements, widths, inversion)
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
-- regex support for filters, collection of fitler and filestyle (the regex is recognized when between ( and ) in a filter
+- regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
  
 <details open><summary><h2>Singleton Pattern vs. Multiple Instances :</h2></summary><blockquote>
+
+### Filter format
+
+A filter is recognized only if it respects theses rules :
+
+0) a filter must have 2 chars mini and the first must be a .
+1) a regex must be in (( and ))
+2) a , will separate filters except if between a ( and )
+3) name{filter1, filter2} is a special form for collection filters
+3.1) the name can be composed of what you want except { and }
+3.2) a filter can be a regex
+4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
+5) the filters cannot integrate a ','
 
 ### Single Dialog :
 
@@ -245,9 +259,13 @@ the style can be colors, icons and fonts
 the general form is :
 ```cpp
 ImGuiFileDialog::Instance()->SetFileStyle(styleType, criteria, color, icon, font);
+```
+
+### Predefined Form :
 
 styleType can be thoses :
 
+```cpp
 IGFD_FileStyleByTypeFile				// define style for all files
 IGFD_FileStyleByTypeDir					// define style for all dir
 IGFD_FileStyleByTypeLink				// define style for all link
@@ -256,20 +274,45 @@ IGFD_FileStyleByFullName				// define style for particular file/dir/link full na
 IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when criteria is contained in full name
 ```
 
+### Lambda Function Form :
+
+You can define easily your own style include your own detection by using lambda function :
+
+** To note, this mode is not available with the C API **
+
+this lamba will treat a file and return a shared pointer of your files style
+
+see in action a styling of all files and dir starting by a dot
+
+this lambda input a FileInfos and output a FileStyle 
+return true if a FileStyle was defined
+
+```cpp
+ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle &vOutStyle) -> bool {
+	if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
+		vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+		return true;
+	}
+	return false;
+});
+```
+
+see sample app for the code in action
+
+### Samples : 
+
 ImGuiFileDialog accepts icon font macros as well as text tags for file types.
 
-[ImGuIFontStudio](https://github.com/aiekick/ImGuiFontStudio) is useful here. I wrote it to make it easy to create 
-custom icon sets for use with Dear ImGui.  
+[ImGuIFontStudio](https://github.com/aiekick/ImGuiFontStudio) is useful here. I wrote it to make it easy to create
+custom icon sets for use with Dear ImGui.
 
-It is inspired by [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders), which can also be used with 
+It is inspired by [IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders), which can also be used with
 ImGuiFileDialog.
-
-you can also use a regex for the filtering. the regex must be betwwen the ( and ) for be recognized as a regex
 
 samples :
 
 ```cpp
-// define style by file extention and Add an icon for .png files 
+// define style by file extention and Add an icon for .png files
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");
 
@@ -301,13 +344,23 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 
 // for all these,s you can use a regex
 // ex for color files like Custom*.h
-ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+
+// lambda function
+// set file style with a lambda function
+// return true is a file style was defined
+ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle &vOutStyle) -> bool {
+	if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
+		vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+		return true;
+	}
+	return false;
+});
 ```
 
 this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
 
 ```cpp
-ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f));
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
@@ -704,6 +757,14 @@ with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrot
 
 ImGuiFontStudio uses ImGuiFileDialog! Check it out.
 
+### Overriding ImGuiFileDialog :
+
+You can also override it to draw differently or to add/remove widgets.
+
+Take a look at the example application where I show how to use it to display a read-only checkbox.
+
+see the 'CustomDrawReadOnlyCheckBoxFileDialog' class.
+
 </blockquote></details>
 
 <details open><summary><h2>Tune the validations button group :</h2></summary><blockquote>
@@ -744,39 +805,39 @@ ok and cancel buttons inverted (cancel on the left and ok on the right)
 
 <details open><summary><h2>Filtering by a regex :</h2></summary><blockquote>
 
-you can use a regex for filtering and file coloring 
+you can use a regex for filtering and file Styling
 
-for have a filter recognized as a regex, you must have it between a ( and a )
+for have a filter recognized as a regex, you must have it between a (( and a ))
 
-this one will filter files who start by the word "Common" and finish by ".h" 
+this one will filter files who start by the word "Common" and finish by ".h"
 ```cpp
-ex : "(Custom.+[.]h)" 
+ex : "((Custom.+[.]h))"
 ```
 
 use cases :
 
-* Simple filter : 
+* Simple filter :
 ```cpp
-OpenDialog("toto", "Choose File", "(Custom.+[.]h)");
+OpenDialog("toto", "Choose File", "((Custom.+[.]h))");
 ```
 
-* Collections filter : 
+* Collections filter :
 for this one the filter is between "{" and "}", so you can use the "(" and ")" outside
 
 ```cpp
-OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp},);
+OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){((Custom.+[.]h)),.h,.hpp}");
 ```
 
 * file coloring :
-this one will colorized all files who start by the word "Common" and finish by ".h" 
+this one will colorized all files who start by the word "Common" and finish by ".h"
 ```cpp
-SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ```
 
 * with this feature you can by ex filter and colorize render frame pictures who have ext like .000, .001, .002, etc..
 ```cpp
-OpenDialog("toto", "Choose File", "([.][0-9]{3})");
-SetFileStyle(IGFD_FileStyleByFullName, "([.][0-9]{3})", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+OpenDialog("toto", "Choose File", "(([.][0-9]{3}))");
+SetFileStyle(IGFD_FileStyleByFullName, "(([.][0-9]{3}))", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ```
 
 </blockquote></details>
