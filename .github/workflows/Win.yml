@@ -19,5 +19,5 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v1
       with:
-        name: ImGuiFileDialog
-        path: build\Release\ImGuiFileDialog.exe
+        name: ImGuiFileDialog_App_WIn32
+        path: build\Release\ImGuiFileDialog_App_WIn32.exe
