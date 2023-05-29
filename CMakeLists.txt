@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(PROJECT ImGuiFileDialog)
-set(PROJECT_LIB ${PROJECT}_Lib)
-set(PROJECT_APP ${PROJECT}_App)
+set(PROJECT ImGuiFileDialog_App)
 
 enable_language(C CXX)
 project(${PROJECT} CXX)
@@ -40,7 +38,6 @@ file(GLOB IMGUIIMPL_SOURCES
 source_group(main FILES ${MAIN_SOURCES})
 source_group(src\\Custom FILES ${CUSTOM_SOURCES})
 source_group(src\\Res FILES ${RES_SOURCES})
-source_group(src\\ImGuiFileDialog FILES ${IMGUIFILEDIALOG_SOURCES})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
 if (APPLE)
@@ -48,9 +45,19 @@ if (APPLE)
 	##set_source_files_properties(icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 endif()
 
-add_subdirectory(ImGuiFileDialog)
+include_directories(
+		${PLOG_INCLUDE_DIR}
+		${GLM_INCLUDE_DIR}
+		${OPENGL_INCLUDE_DIR}
+		${GLFW_INCLUDE_DIR}
+		${GLAD_INCLUDE_DIR}
+		${IMGUI_INCLUDE_DIR}
+		${CMAKE_SOURCE_DIR}
+)
 
-add_executable(${PROJECT_APP}
+add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
+
+add_executable(${PROJECT}
 	MACOSX_BUNDLE
 	##${ICON}
 	${RES_SOURCES}
@@ -59,37 +66,37 @@ add_executable(${PROJECT_APP}
 	${IMGUIIMPL_SOURCES}
 )
 
-target_link_libraries(${PROJECT_APP} PRIVATE 
+target_link_libraries(${PROJECT} PRIVATE 
 	ImGuiFileDialog
 )
 
 if (APPLE)
-	set_target_properties(${PROJECT_APP}
+	set_target_properties(${PROJECT}
 			PROPERTIES
-			OUTPUT_NAME "ImGuiFileDialog"
-			MACOSX_BUNDLE_EXECUTABLE_NAME "ImGuiFileDialog"
-			MACOSX_BUNDLE_BUNDLE_NAME "ImGuiFileDialog"
-			FOLDER "ImGuiFileDialog"
+			OUTPUT_NAME "${PROJECT}_Macos"
+			MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT}"
+			MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT}"
+			FOLDER "${PROJECT}"
 			##RESOURCE icon.icns
 			MACOSX_BUNDLE_SHORT_VERSION_STRING ""
 			MACOSX_BUNDLE_LONG_VERSION_STRING ""
 			##MACOSX_BUNDLE_ICON_FILE icon.icns
 			MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
 elseif(WIN32)
-	set_target_properties(${PROJECT_APP} PROPERTIES OUTPUT_NAME "ImGuiFileDialog")
+	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_WIn32")
 elseif(UNIX)
-	set_target_properties(${PROJECT_APP} PROPERTIES OUTPUT_NAME "ImGuiFileDialog")
+	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_Unix")
 endif()
 
 if (USE_STD_FILESYSTEM)
 	add_definitions(-DUSE_STD_FILESYSTEM)
 	set(CMAKE_CXX_STANDARD 17)
-	set_target_properties(${PROJECT_APP} PROPERTIES CXX_STANDARD 17)
+	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 17)
 	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 17)
 	message("USE C++17 and std::filesystem")
 else()
 	set(CMAKE_CXX_STANDARD 11)
-	set_target_properties(${PROJECT_APP} PROPERTIES CXX_STANDARD 11)
+	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
 	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 11)
 	message("USE C++11 and DIRENT")
 endif()
@@ -97,34 +104,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
-install(TARGETS ${PROJECT_APP} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${PROJECT} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-include_directories(
-	${PLOG_INCLUDE_DIR}
-	${GLM_INCLUDE_DIR}
-	${OPENGL_INCLUDE_DIR}
-	${GLFW_INCLUDE_DIR}
-	${GLAD_INCLUDE_DIR}
-	${IMGUI_INCLUDE_DIR}
-	${CMAKE_SOURCE_DIR}
-	${CMAKE_SOURCE_DIR}/ImGuiFileDialog
-)
-
-target_link_libraries(${PROJECT_APP} PRIVATE
+target_link_libraries(${PROJECT} PRIVATE
 	${OPENGL_LIBRARIES}
 	${GLFW_LIBRARIES}
 	${GLAD_LIBRARIES}
 	${IMGUI_LIBRARIES}
+	ImGuiFileDialog
 )
 
 set_target_properties(ImGuiFileDialog PROPERTIES FOLDER Lib)
 
 target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_SOURCE_DIR}
-)
-	
-target_link_libraries(${PROJECT_APP} PRIVATE
-	ImGuiFileDialog
 )
 
 if(USE_TEST)
