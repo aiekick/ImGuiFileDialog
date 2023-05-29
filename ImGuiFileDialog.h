@@ -22,7 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-/*
+/* 
+// generated with "Text to ASCII Art Generator (TAAG)"
+// https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.5
   _____            _____       _ ______ _ _      _____  _       _
  |_   _|          / ____|     (_)  ____(_) |    |  __ \(_)     | |
    | |  _ __ ___ | |  __ _   _ _| |__   _| | ___| |  | |_  __ _| | ___   __ _
@@ -31,12 +33,13 @@ SOFTWARE.
  |_____|_| |_| |_|\_____|\__,_|_|_|    |_|_|\___|_____/|_|\__,_|_|\___/ \__, |
   _________________________________________________________________________/ |
  |__________________________________________________________________________/
-								 ___    __    __
-								/ _ \  / /   / /
-						 __   _| | | |/ /_  / /_
-						 \ \ / / | | | '_ \| '_ \
-						  \ V /| |_| | (_) | (_) |
-						   \_/  \___(_)___(_)___/
+                          ___      __     _____                                                             
+						 / _ \    / /    | ____|                                                            
+				 __   __| | | |  / /_    | |__                                                              
+				 \ \ / /| | | | | '_ \   |___ \                                                             
+				  \ V / | |_| |_| (_) |_  ___) |                                                            
+				   \_/   \___/(_)\___/(_)|____/                                                             
+                                    
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
@@ -52,7 +55,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.88 WIP
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.5 WIP
 
 ## Structure
 
@@ -89,7 +92,9 @@ all.
 [dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) is required to use ImGuiFileDialog under Windows. It is
 included in the Lib_Only branch for your convenience.
 
+################################################################
 ## Features
+################################################################
 
 - Separate system for call and display
 	- Can have many function calls with different parameters for one display function, for example
@@ -97,6 +102,7 @@ included in the Lib_Only branch for your convenience.
 	- This pane can block the validation of the dialog
 	- Can also display different things according to current filter and UserDatas
 - Advanced file style for file/dir/link coloring / icons / font
+    - predefined form or user custom form by lambda function
 - Multi-selection (ctrl/shift + click) :
 	- 0 => Infinite
 	- 1 => One file (default)
@@ -117,9 +123,26 @@ included in the Lib_Only branch for your convenience.
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion)
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
-- regex support for filters, collection of fitler and filestyle (the regex is recognized when between ( and ) in a filter
+- regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
 
+################################################################
+## Filter format
+################################################################
+
+A filter is recognized only if he respects theses rules :
+
+0) a filter must have 2 chars mini and the first must be a .
+1) a regex must be in (( and ))
+2) a , will separate filters except if between a ( and )
+3) name{filter1, filter2} is a special form for collection filters
+3.1) the name can be composed of what you want except { and }
+3.2) a filter can be a regex
+4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
+5) the filters cannot integrate a ','
+
+################################################################
 ## Singleton Pattern vs. Multiple Instances
+################################################################
 
 ### Single Dialog :
 
@@ -141,7 +164,9 @@ ImGuiFileDialog instance_b;
 instance_b.method_of_your_choice();
 ```
 
+################################################################
 ## Simple Dialog :
+################################################################
 
 ```cpp
 void drawGui()
@@ -169,7 +194,9 @@ void drawGui()
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
 
+################################################################
 ## Modal dialog :
+################################################################
 
 you have now a flag for open modal dialog :
 
@@ -184,7 +211,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp
 	".", 1, nullptr, ImGuiFileDialogFlags_Modal);
 ```
 
+################################################################
 ## Directory Chooser :
+################################################################
 
 To have a directory chooser, set the file extension filter to nullptr:
 
@@ -196,7 +225,9 @@ In this mode you can select any directory with one click and open a directory wi
 
 ![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/directoryChooser.gif)
 
+################################################################
 ## Dialog with Custom Pane :
+################################################################
 
 The signature of the custom pane callback is:
 
@@ -258,7 +289,9 @@ void drawGui()
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/doc/dlg_with_pane.gif)
 
+################################################################
 ## File Style : Custom icons and colors by extension
+################################################################
 
 You can define style for files/dirs/links in many ways :
 
@@ -267,9 +300,13 @@ the style can be colors, icons and fonts
 the general form is :
 ```cpp
 ImGuiFileDialog::Instance()->SetFileStyle(styleType, criteria, color, icon, font);
+```
+
+### Predefined Form :
 
 styleType can be thoses :
 
+```cpp
 IGFD_FileStyleByTypeFile				// define style for all files
 IGFD_FileStyleByTypeDir					// define style for all dir
 IGFD_FileStyleByTypeLink				// define style for all link
@@ -277,6 +314,27 @@ IGFD_FileStyleByExtention				// define style by extention, for files or links
 IGFD_FileStyleByFullName				// define style for particular file/dir/link full name (filename + extention)
 IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when criteria is contained in full name
 ```
+
+### Lambda Function Form :
+
+You can define easily your own style include your own detection by using lambda function :
+
+this lamba will treat a file and return a shared pointer of your files style
+
+see in action a styling of all files and dir starting by a dot
+
+```cpp
+ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile) -> std::shared_ptr<IGFD::FileStyle> {
+		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
+			return std::make_shared<IGFD::FileStyle>(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
+		}
+		return nullptr;
+	});
+```
+
+see sample app for the code in action
+
+### Samples : 
 
 ImGuiFileDialog accepts icon font macros as well as text tags for file types.
 
@@ -321,7 +379,7 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 
 // for all these,s you can use a regex
 // ex for color files like Custom*.h
-ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
 ```
 
 this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
@@ -342,7 +400,10 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
 
+
+################################################################
 ## Filter Collections
+################################################################
 
 You can define a custom filter name that corresponds to a group of filters using this syntax:
 
@@ -361,7 +422,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_O
 will produce :
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/collectionFilters.gif)
 
+################################################################
 ## Multi Selection
+################################################################
 
 You can define in OpenDialog call the count file you want to select :
 
@@ -382,7 +445,9 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
 
+################################################################
 ## File Dialog Constraints
+################################################################
 
 You can set the minimum and/or maximum size of the dialog:
 
@@ -394,7 +459,9 @@ ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoColl
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dialog_constraints.gif)
 
+################################################################
 ## Exploring by keys
+################################################################
 
 You can activate this feature by uncommenting `#define USE_EXPLORATION_BY_KEYS`
 in your custom config file (CustomImGuiFileDialogConfig.h)
@@ -416,7 +483,9 @@ As you see the current item is flashed by default for 1 second. You can define t
 ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
 ```
 
+################################################################
 ## Bookmarks
+################################################################
 
 You can create/edit/call path bookmarks and load/save them.
 
@@ -454,7 +523,9 @@ Remove => ImGuiFileDialog::Instance()->RemoveBookmark(bookmark_name);
 Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true); // true for prevent serialization of code based bookmarks
 ```
 
+################################################################
 ## Path Edition :
+################################################################
 
 Right clicking on any path element button allows the user to manually edit the path from that portion of the tree.
 Pressing the completion key (GLFW uses `enter` by default) validates the new path. Pressing the cancel key (GLFW
@@ -463,7 +534,9 @@ uses`escape` by default) cancels the manual entry and restores the original path
 Here's the manual entry operation in action:
 ![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/inputPathEdition.gif)
 
+################################################################
 ## Confirm Overwrite Dialog :
+################################################################
 
 If you want avoid overwriting files after selection, ImGuiFileDialog can show a dialog to confirm or cancel the
 operation.
@@ -509,7 +582,9 @@ See the result :
 
 ![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/ConfirmToOverWrite.gif)
 
+################################################################
 ## Open / Save dialog Behavior :
+################################################################
 
 ImGuiFileDialog uses the same code internally for Open and Save dialogs. To distinguish between them access the various
 data return functions depending on what the dialog is doing.
@@ -530,7 +605,9 @@ std::string GetCurrentPath();                      // Returns current path only
 std::string GetCurrentFilter();                    // The file extension
 ```
 
+################################################################
 ## Thumbnails Display
+################################################################
 
 You can now, display thumbnails of pictures.
 
@@ -619,7 +696,9 @@ ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info*
 ImGuiFileDialog::Instance()->ManageGPUThumbnails();
 ```
 
+################################################################
 ## Embedded in other frames :
+################################################################
 
 The dialog can be embedded in another user frame than the standard or modal dialog
 
@@ -645,7 +724,9 @@ the result :
 
 ![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
 
+################################################################
 ## Quick Parallel Path Selection in Path Composer
+################################################################
 
 you have a separator between two directories in the path composer
 when you click on it you can explore a list of parrallels directories of this point
@@ -659,7 +740,9 @@ if undefined the spacing is defined by the imgui theme
 
 ![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
 
+################################################################
 ## Case Insensitive Filtering
+################################################################
 
 you can use this flag 'ImGuiFileDialogFlags_CaseInsensitiveExtention' when you call the display function
 
@@ -670,7 +753,9 @@ with filters like .jpg or .Jpg or .JPG
 all files with extentions by ex : .jpg and .JPG will be displayed
 ```
 
+################################################################
 ## Tune the validations button group
+################################################################
 
 You can specify :
 - the width of "ok" and "cancel" buttons, by the set the defines "okButtonWidth" and "cancelButtonWidth"
@@ -704,44 +789,48 @@ ok and cancel buttons inverted (cancel on the left and ok on the right)
 
 ![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/validation_buttons_inverted.png)
 
-## Filtering by a regex :
+################################################################
+## Regex support for Filtering and File Styling
+################################################################
 
-you can use a regex for filtering and file coloring
+you can use a regex for filtering and file Styling
 
-for have a filter recognized as a regex, you must have it between a ( and a )
+for have a filter recognized as a regex, you must have it between a (( and a ))
 
 this one will filter files who start by the word "Common" and finish by ".h"
 ```cpp
-ex : "(Custom.+[.]h)"
+ex : "((Custom.+[.]h))"
 ```
 
 use cases :
 
 * Simple filter :
 ```cpp
-OpenDialog("toto", "Choose File", "(Custom.+[.]h)");
+OpenDialog("toto", "Choose File", "((Custom.+[.]h))");
 ```
 
 * Collections filter :
 for this one the filter is between "{" and "}", so you can use the "(" and ")" outside
 
 ```cpp
-OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){(Custom.+[.]h),.h,.hpp}");
+OpenDialog("toto", "Choose File", "Source files (*.cpp *.h *.hpp){((Custom.+[.]h)),.h,.hpp}");
 ```
 
 * file coloring :
 this one will colorized all files who start by the word "Common" and finish by ".h"
 ```cpp
-SetFileStyle(IGFD_FileStyleByFullName, "(Custom.+[.]h)", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ```
 
 * with this feature you can by ex filter and colorize render frame pictures who have ext like .000, .001, .002, etc..
 ```cpp
-OpenDialog("toto", "Choose File", "([.][0-9]{3})");
-SetFileStyle(IGFD_FileStyleByFullName, "([.][0-9]{3})", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+OpenDialog("toto", "Choose File", "(([.][0-9]{3}))");
+SetFileStyle(IGFD_FileStyleByFullName, "(([.][0-9]{3}))", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ```
 
+################################################################
 ## How to Integrate ImGuiFileDialog in your project
+################################################################
 
 ### Customize ImGuiFileDialog :
 
@@ -760,7 +849,9 @@ with [ImGuiFontStudio](https://github.com/aiekick/ImGuiFontStudio), which I wrot
 
 ImGuiFontStudio uses ImGuiFileDialog! Check it out.
 
+################################################################
 ## Api's C/C++ :
+################################################################
 
 ### the C Api
 
@@ -835,9 +926,8 @@ if (IGFD_DisplayDialog(cfiledialog, "filedlg", ImGuiWindowFlags_NoCollapse, minS
 // destroy ImGuiFileDialog
 IGFD_Destroy(cfiledialog);
 ```
-
------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------
+################################################################
+################################################################
 
 Thats all.
 
@@ -848,14 +938,14 @@ You can check by example in this repo with the file CustomImGuiFileDialogConfig.
 The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
 ImGuiFontStudio is using also ImGuiFileDialog.
 
------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------
+################################################################
+################################################################
 */
 
 #ifndef IMGUIFILEDIALOG_H
 #define IMGUIFILEDIALOG_H
 
-// compatible with 1.88 WIP
+// compatible with 1.89.5 WIP
 #define IMGUIFILEDIALOG_VERSION "v0.6.5"
 
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG
@@ -1016,7 +1106,11 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class FileInfos;
 class FileStyle {
+public:
+	typedef std::function<std::shared_ptr<FileStyle>(const FileInfos&)> FileStyleFunctor;
+
 public:
 	ImVec4 color = ImVec4(0, 0, 0, 0);
 	std::string icon;
@@ -1058,6 +1152,7 @@ public:
 #endif
 	std::vector<FilterInfos> prParsedFilters;
 	std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, std::shared_ptr<FileStyle>>> prFilesStyle;	// file infos for file extention only
+	std::vector<FileStyle::FileStyleFunctor> prFilesStyleFunctors; // file style via lambda function
 	FilterInfos prSelectedFilter;
 
 public:
@@ -1070,20 +1165,17 @@ public:
 
 	bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const;	// fill with the good style
 
-	void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria,
-					  const FileStyle& vInfos);	 // Set FileStyle
-	void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon,
-					  ImFont* vFont);  // link file style to Color and Icon and Font
-	bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon,
-					  ImFont** vOutFont);  // Get Color and Icon for Filter
-	void ClearFilesStyle();				   // clear prFileStyle
+	void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos);											  // Set FileStyle
+	void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont);		  // link file style to Color and Icon and Font
+	void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);																						  // lambda functor for set file style.
+	bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon, ImFont** vOutFont);  // Get Color and Icon for Filter
+	void ClearFilesStyle();																															  // clear prFileStyle
 
-	bool IsCoveredByFilters(  // check if current file extention (vExt) is covered by current filter, ro by regex (vNameExt)
-		const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const;
-	bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);				// draw the filter combobox
-	FilterInfos GetSelectedFilter();												// get the current selected filter
-	std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;	// replace the extention of the current file by the selected filter
-	void SetDefaultFilterIfNotDefined();											// define the first filter if no filter is selected
+	bool IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const;  // check if current file extention (vExt) is covered by current filter, or by regex (vNameExt)
+	bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);											   // draw the filter combobox
+	FilterInfos GetSelectedFilter();																			   // get the current selected filter
+	std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;								   // replace the extention of the current file by the selected filter
+	void SetDefaultFilterIfNotDefined();																		   // define the first filter if no filter is selected
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1211,11 +1303,11 @@ private:
 	void AddPath(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType);	 // add file called by scandir
 
 #if defined(USE_QUICK_PATH_SELECT)
-	void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);	// scan the directory for retrieve the path list
-	void OpenPathPopup(const FileDialogInternal& vFileDialogInternal, std::vector<std::string>::iterator vPathIter);
+	void ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath);			  // scan the directory for retrieve the path list
+	void OpenPathPopup(const FileDialogInternal& vFileDialogInternal, std::vector<std::string>::iterator vPathIter);  // open the popup list of paths
 #endif	// USE_QUICK_PATH_SELECT
 
-	void SetCurrentPath(std::vector<std::string>::iterator vPathIter);
+	void SetCurrentPath(std::vector<std::string>::iterator vPathIter); // set the current path, update the path bar
 
 	void ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal, std::vector<std::shared_ptr<FileInfos>>& vFileInfosList, std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);
 	void SortFields(const FileDialogInternal& vFileDialogInternal, std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
@@ -1552,23 +1644,24 @@ public:
 	UserDatas GetUserDatas() const;						// will return user datas send with Open Dialog
 
 	// file style by extentions
-	void SetFileStyle(						// SetExtention datas for have custom display of particular file type
-		const IGFD_FileStyleFlags& vFlags,	// file style
-		const char* vCriteria,				// extention filter to tune
-		const FileStyle& vInfos);			// Filter Extention Struct who contain Color and Icon/Text for the display of the file with extention filter
-	void SetFileStyle(						// SetExtention datas for have custom display of particular file type
-		const IGFD_FileStyleFlags& vFlags,	// file style
-		const char* vCriteria,				// extention filter to tune
-		const ImVec4& vColor,				// wanted color for the display of the file with extention filter
-		const std::string& vIcon = "",		// wanted text or icon of the file with extention filter
-		ImFont* vFont			 = nullptr);			// wantes font
-	bool GetFileStyle(						// GetExtention datas. return true is extention exist
-		const IGFD_FileStyleFlags& vFlags,	// file style
-		const std::string& vCriteria,		// extention filter (same as used in SetExtentionInfos)
-		ImVec4* vOutColor,					// color to retrieve
-		std::string* vOutIcon = nullptr,	// icon or text to retrieve
-		ImFont** vOutFont	  = nullptr);		// font to retreive
-	void ClearFilesStyle();					// clear extentions setttings
+	void SetFileStyle(														 // SetExtention datas for have custom display of particular file type
+		const IGFD_FileStyleFlags& vFlags,									 // file style
+		const char* vCriteria,												 // extention filter to tune
+		const FileStyle& vInfos);											 // Filter Extention Struct who contain Color and Icon/Text for the display of the file with extention filter
+	void SetFileStyle(														 // SetExtention datas for have custom display of particular file type
+		const IGFD_FileStyleFlags& vFlags,									 // file style
+		const char* vCriteria,												 // extention filter to tune
+		const ImVec4& vColor,												 // wanted color for the display of the file with extention filter
+		const std::string& vIcon = "",										 // wanted text or icon of the file with extention filter
+		ImFont* vFont			 = nullptr);						 		 // wanted font
+	void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);				 // set file style via lambda function
+	bool GetFileStyle(														 // GetExtention datas. return true is extention exist
+		const IGFD_FileStyleFlags& vFlags,									 // file style
+		const std::string& vCriteria,										 // extention filter (same as used in SetExtentionInfos)
+		ImVec4* vOutColor,													 // color to retrieve
+		std::string* vOutIcon = nullptr,									 // icon or text to retrieve
+		ImFont** vOutFont	  = nullptr);									 // font to retreive
+	void ClearFilesStyle();													 // clear extentions setttings
 
 	void SetLocales(					  // set locales to use before and after the dialog display
 		const int& vLocaleCategory,		  // set local category
@@ -1609,10 +1702,8 @@ public:
 	// - prDrawFileListView
 	// - prDrawThumbnailsListView
 	// - prDrawThumbnailsGridView
-	void prBeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr,
-								   ImFont** vOutFont);	// begin style apply of filter with color an icon if any
-	void prEndFileColorIconStyle(const bool& vShowColor,
-								 ImFont* vFont);  // end style apply of filter
+	void prBeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr, ImFont** vOutFont);  // begin style apply of filter with color an icon if any
+	void prEndFileColorIconStyle(const bool& vShowColor, ImFont* vFont);																  // end style apply of filter
 };
 }  // namespace IGFD
 

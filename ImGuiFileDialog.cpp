@@ -823,6 +823,7 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 					collection_started = true;
 					prParsedFilters.emplace_back();
 					prParsedFilters.back().filter = filter_name;
+					prParsedFilters.back().filter_optimized = Utils::LowerCaseString(filter_name);
 					filter_name.clear();
 					word.clear();
 				}
@@ -857,9 +858,11 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 							if (collection_started) {
 								prParsedFilters.back().collectionfilters.emplace(word);
 								prParsedFilters.back().collectionfilters_regex.emplace_back(rx);
+								prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
 							} else {
 								prParsedFilters.emplace_back();
-								prParsedFilters.back().filter		= word;
+								prParsedFilters.back().filter			= word;
+								prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
 								prParsedFilters.back().filter_regex = rx;
 							}
 						} catch (std::exception&) {}
@@ -894,13 +897,15 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 					if (collection_started) {
 						if (word.size() > 1U && word[0] == '.') {
 							prParsedFilters.back().collectionfilters.emplace(word);
+							prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
 							word.clear();
 							filter_name.clear();
 						}
 					} else {
 						if (word.size() > 1U && word[0] == '.') {
 							prParsedFilters.emplace_back();
-							prParsedFilters.back().filter = word;
+							prParsedFilters.back().filter			= word;
+							prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
 							word.clear();
 							filter_name.clear();
 						}
@@ -921,7 +926,8 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 			}
 		} else if (word.size() > 1U && word[0] == '.') {
 			prParsedFilters.emplace_back();
-			prParsedFilters.back().filter = word;
+			prParsedFilters.back().filter			= word;
+			prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
 			word.clear();
 		}
 
@@ -981,20 +987,17 @@ bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)
 					(_flag.first & IGFD_FileStyleByTypeFile && _flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isFile() && vFileInfos->fileType.isSymLink()) ||
 					(_flag.first & IGFD_FileStyleByTypeLink && vFileInfos->fileType.isSymLink()) || (_flag.first & IGFD_FileStyleByTypeDir && vFileInfos->fileType.isDir()) ||
 					(_flag.first & IGFD_FileStyleByTypeFile && vFileInfos->fileType.isFile())) {
-					if (_file.first.empty())  // for all links
-					{
+					if (_file.first.empty()) { // for all links
 						vFileInfos->fileStyle = _file.second;
-					} else if (_file.first.find('(') != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first)))  // for links who are equal to style criteria
-					{
+					} else if (_file.first.find("((") != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first))) { // for links who are equal to style criteria
 						vFileInfos->fileStyle = _file.second;
-					} else if (_file.first == vFileInfos->fileNameExt)	// for links who are equal to style criteria
-					{
+					} else if (_file.first == vFileInfos->fileNameExt) { // for links who are equal to style criteria
 						vFileInfos->fileStyle = _file.second;
 					}
 				}
 
 				if (_flag.first & IGFD_FileStyleByExtention) {
-					if (_file.first.find('(') != std::string::npos && std::regex_search(vFileInfos->fileExt, std::regex(_file.first))) {
+					if (_file.first.find("((") != std::string::npos && std::regex_search(vFileInfos->fileExt, std::regex(_file.first))) {
 						vFileInfos->fileStyle = _file.second;
 					} else if (_file.first == vFileInfos->fileExt) {
 						vFileInfos->fileStyle = _file.second;
@@ -1002,7 +1005,7 @@ bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)
 				}
 
 				if (_flag.first & IGFD_FileStyleByFullName) {
-					if (_file.first.find('(') != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first))) {
+					if (_file.first.find("((") != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first))) {
 						vFileInfos->fileStyle = _file.second;
 					} else if (_file.first == vFileInfos->fileNameExt) {
 						vFileInfos->fileStyle = _file.second;
@@ -1010,13 +1013,20 @@ bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)
 				}
 
 				if (_flag.first & IGFD_FileStyleByContainedInFullName) {
-					if (_file.first.find('(') != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first))) {
+					if (_file.first.find("((") != std::string::npos && std::regex_search(vFileInfos->fileNameExt, std::regex(_file.first))) {
 						vFileInfos->fileStyle = _file.second;
 					} else if (vFileInfos->fileNameExt.find(_file.first) != std::string::npos) {
 						vFileInfos->fileStyle = _file.second;
 					}
 				}
 
+				for (auto& functor : prFilesStyleFunctors) {
+					if (functor) {
+						auto ptr = functor(*(vFileInfos.get()));
+						if (ptr) { vFileInfos->fileStyle = std::move(ptr); }
+					}
+				}
+								
 				if (vFileInfos->fileStyle.use_count()) return true;
 			}
 		}
@@ -1032,12 +1042,15 @@ void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const 
 	prFilesStyle[vFlags][_criteria]->flags = vFlags;
 }
 
-// todo : to refactor this fucking function
+void IGFD::FilterManager::SetFileStyle(FileStyle::FileStyleFunctor vFunctor) {
+	if (vFunctor) { prFilesStyleFunctors.push_back(vFunctor); }
+}
+
+// todo : refactor this fucking function
 bool IGFD::FilterManager::GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon, ImFont** vOutFont) {
 	if (vOutColor) {
 		if (!prFilesStyle.empty()) {
-			if (prFilesStyle.find(vFlags) != prFilesStyle.end())  // found
-			{
+			if (prFilesStyle.find(vFlags) != prFilesStyle.end()) { // found
 				if (vFlags & IGFD_FileStyleByContainedInFullName) {
 					// search for vCriteria who are containing the criteria
 					for (const auto& _file : prFilesStyle.at(vFlags)) {
@@ -1051,8 +1064,7 @@ bool IGFD::FilterManager::GetFileStyle(const IGFD_FileStyleFlags& vFlags, const 
 						}
 					}
 				} else {
-					if (prFilesStyle.at(vFlags).find(vCriteria) != prFilesStyle.at(vFlags).end())  // found
-					{
+					if (prFilesStyle.at(vFlags).find(vCriteria) != prFilesStyle.at(vFlags).end()) { // found
 						*vOutColor = prFilesStyle[vFlags][vCriteria]->color;
 						if (vOutIcon) *vOutIcon = prFilesStyle[vFlags][vCriteria]->icon;
 						if (vOutFont) *vOutFont = prFilesStyle[vFlags][vCriteria]->font;
@@ -1076,8 +1088,7 @@ bool IGFD::FilterManager::GetFileStyle(const IGFD_FileStyleFlags& vFlags, const 
 								}
 							}
 						} else {
-							if (prFilesStyle.at(_flag.first).find(vCriteria) != prFilesStyle.at(_flag.first).end())	 // found
-							{
+							if (prFilesStyle.at(_flag.first).find(vCriteria) != prFilesStyle.at(_flag.first).end()) { // found
 								*vOutColor = prFilesStyle[_flag.first][vCriteria]->color;
 								if (vOutIcon) *vOutIcon = prFilesStyle[_flag.first][vCriteria]->icon;
 								if (vOutFont) *vOutFont = prFilesStyle[_flag.first][vCriteria]->font;
@@ -1105,13 +1116,11 @@ bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vNameExt, const 
 	return false;
 }
 
+// combobox of filters
 bool IGFD::FilterManager::DrawFilterComboBox(FileDialogInternal& vFileDialogInternal) {
-	// combobox of filters
 	if (!puDLGFilters.empty()) {
 		ImGui::SameLine();
-
 		bool needToApllyNewFilter = false;
-
 		ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
 		if (IMGUI_BEGIN_COMBO("##Filters", prSelectedFilter.filter.c_str(), ImGuiComboFlags_None)) {
 			intptr_t i = 0;
@@ -1124,16 +1133,12 @@ bool IGFD::FilterManager::DrawFilterComboBox(FileDialogInternal& vFileDialogInte
 				}
 				ImGui::PopID();
 			}
-
 			ImGui::EndCombo();
 		}
 		ImGui::PopItemWidth();
-
 		if (needToApllyNewFilter) { vFileDialogInternal.puFileManager.OpenCurrentPath(vFileDialogInternal); }
-
 		return needToApllyNewFilter;
 	}
-
 	return false;
 }
 
@@ -1141,24 +1146,22 @@ IGFD::FilterManager::FilterInfos IGFD::FilterManager::GetSelectedFilter() { retu
 
 std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(const std::string& vFile) const {
 	auto result = vFile;
-
 	if (!result.empty()) {
 		// if not a collection we can replace the filter by the extention we want
 		if (prSelectedFilter.collectionfilters.empty() && prSelectedFilter.filter != ".*" && prSelectedFilter.filter != "*.*") {
 			size_t lastPoint = vFile.find_last_of('.');
 			if (lastPoint != std::string::npos) { result = result.substr(0, lastPoint); }
-
 			result += prSelectedFilter.filter;
 		}
 	}
-
 	return result;
 }
 
 void IGFD::FilterManager::SetDefaultFilterIfNotDefined() {
 	if (prSelectedFilter.empty() &&					  // no filter selected
-		!prParsedFilters.empty())					  // filter exist
+		!prParsedFilters.empty()) {					  // filter exist
 		prSelectedFilter = *prParsedFilters.begin();  // we take the first filter
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1171,10 +1174,11 @@ void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInt
 	puShowDrives = false;
 	ClearComposer();
 	ClearFileLists();
-	if (puDLGDirectoryMode)	 // directory mode
+	if (puDLGDirectoryMode) {  // directory mode
 		SetDefaultFileName(".");
-	else
+	} else {
 		SetDefaultFileName(puDLGDefaultFileName);
+	}
 	ScanDir(vFileDialogInternal, GetCurrentPath());
 }
 
@@ -1190,7 +1194,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 		puHeaderFileThumbnails = tableHeaderFileThumbnailsString;
 #endif	// #ifdef USE_THUMBNAILS
 	}
-
 	if (puSortingField == SortingFieldEnum::FIELD_FILENAME) {
 		if (puSortingDirection[0]) {
 #ifdef USE_CUSTOM_SORTING_ICON
@@ -1198,8 +1201,7 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
-				// this code fail in c:\\Users with the link "All users". got a invalid comparator
+				// tofix : this code fail in c:\\Users with the link "All users". got a invalid comparator
 				/*
 				// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
 				// strict ordering for file/directory types beginning in '.'
@@ -1222,8 +1224,7 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
-				// this code fail in c:\\Users with the link "All users". got a invalid comparator
+				// tofix : this code fail in c:\\Users with the link "All users". got a invalid comparator
 				/*
 				// use code from https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
 				// strict ordering for file/directory types beginning in '.'
@@ -1248,7 +1249,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType < b->fileType);	 // directory in first
 				return (a->fileExt < b->fileExt);									 // else
 			});
@@ -1258,7 +1258,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType > b->fileType);	 // directory in last
 				return (a->fileExt > b->fileExt);									 // else
 			});
@@ -1270,7 +1269,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType < b->fileType);	 // directory in first
 				return (a->fileSize < b->fileSize);									 // else
 			});
@@ -1280,7 +1278,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType > b->fileType);	 // directory in last
 				return (a->fileSize > b->fileSize);									 // else
 			});
@@ -1292,7 +1289,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType < b->fileType);	 // directory in first
 				return (a->fileModifDate < b->fileModifDate);						 // else
 			});
@@ -1302,7 +1298,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType > b->fileType);	 // directory in last
 				return (a->fileModifDate > b->fileModifDate);						 // else
 			});
@@ -1320,7 +1315,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (a->fileType.isDir());  // directory in first
 				if (a->thumbnailInfo.textureWidth == b->thumbnailInfo.textureWidth) return (a->thumbnailInfo.textureHeight < b->thumbnailInfo.textureHeight);
 				return (a->thumbnailInfo.textureWidth < b->thumbnailInfo.textureWidth);
@@ -1333,7 +1327,6 @@ void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialogInternal
 #endif	// USE_CUSTOM_SORTING_ICON
 			std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
 				if (!a.use_count() || !b.use_count()) return false;
-
 				if (a->fileType != b->fileType) return (!a->fileType.isDir());	// directory in last
 				if (a->thumbnailInfo.textureWidth == b->thumbnailInfo.textureWidth) return (a->thumbnailInfo.textureHeight > b->thumbnailInfo.textureHeight);
 				return (a->thumbnailInfo.textureWidth > b->thumbnailInfo.textureWidth);
@@ -1368,8 +1361,7 @@ void IGFD::FileManager::AddFile(const FileDialogInternal& vFileDialogInternal, c
 		if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != "."))  // except "." if in directory mode //-V728
 			return;
 
-	if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown())	// link can have the same extention of a file
-	{
+	if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown()) { // link can have the same extention of a file
 		size_t lpt = infos->fileNameExt.find_last_of('.');
 		if (lpt != std::string::npos) { infos->fileExt = infos->fileNameExt.substr(lpt); }
 
@@ -1397,8 +1389,7 @@ void IGFD::FileManager::AddPath(const FileDialogInternal& vFileDialogInternal, c
 		if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != "."))  // except "." if in directory mode //-V728
 			return;
 
-	if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown())	// link can have the same extention of a file
-	{
+	if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown()) { // link can have the same extention of a file
 		size_t lpt = infos->fileNameExt.find_last_of('.');
 		if (lpt != std::string::npos) { infos->fileExt = infos->fileNameExt.substr(lpt); }
 
@@ -4022,6 +4013,10 @@ void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const cha
 
 void IGFD::FileDialog::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont) {
 	prFileDialogInternal.puFilterManager.SetFileStyle(vFlags, vCriteria, vColor, vIcon, vFont);
+}
+
+void IGFD::FileDialog::SetFileStyle(FileStyle::FileStyleFunctor vFunctor) { 
+	prFileDialogInternal.puFilterManager.SetFileStyle(vFunctor); 
 }
 
 bool IGFD::FileDialog::GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon, ImFont** vOutFont) {
