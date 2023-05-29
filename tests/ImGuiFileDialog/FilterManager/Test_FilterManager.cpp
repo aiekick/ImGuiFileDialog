@@ -24,7 +24,7 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
     IGFD::FilterManager::FilterInfos prSelectedFilter;
     std::string puDLGFilters;
 
-#if 0
+#if 1
 	mgr.ParseFilters(vFilters);
 #else
 	//////////////////////////////////////////////////////
@@ -37,6 +37,7 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
 		puDLGFilters.clear();  // directory mode
 
 	if (!puDLGFilters.empty()) {
+
 		/* Rules
 		0) a filter must have 2 chars mini and the first must be a .
 		1) a regex must be in (( and ))
@@ -48,62 +49,56 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
 		5) the filters cannot integrate a ','
 		*/
 
-		bool start_collection  = false;
-		bool end_collection	   = false;
-		bool start_regex	   = false;
-		bool end_regex		   = false;
-		bool start_parenthesis = false;
+		bool collection_started  = false;
+		bool regex_started	   = false;
+		bool parenthesis_started = false;
 
 		std::string word;
 		std::string filter_name;
-		size_t idx = 0U;
 
-		char last_char_c = 0;
+		char last_split_char = 0;
 		for (char c : puDLGFilters) {
 			if (c == '{') {
-				if (start_regex) {
+				if (regex_started) {
 					word += c;
 				} else {
-					start_collection = true;
-					end_collection	 = false;
+					collection_started = true;
 					prParsedFilters.emplace_back();
 					prParsedFilters.back().filter = filter_name;
 					filter_name.clear();
 					word.clear();
 				}
-				last_char_c = c;
+				last_split_char = c;
 			} else if (c == '}') {
-				if (start_regex) {
+				if (regex_started) {
 					word += c;
 				} else {
-					if (start_collection) {
+					if (collection_started) {
 						if (word.size() > 1U && word[0] == '.') {
 							if (prParsedFilters.empty()) { prParsedFilters.emplace_back(); }
 							prParsedFilters.back().collectionfilters.emplace(word);
 						}
 						word.clear();
 						filter_name.clear();
-						start_collection = false;
-						end_collection	 = true;
+						collection_started = false;
 					}
 				}
-				last_char_c = c;
+				last_split_char = c;
 			} else if (c == '(') {
 				word += c;
-				if (start_parenthesis) {
-					start_regex = true;
-					end_regex = false;
+				if (last_split_char == '(') {
+					regex_started = true;
                 }
-				start_parenthesis = true;
-				if (!start_collection) { filter_name += c; }
-				last_char_c = c;
+				parenthesis_started = true;
+				if (!collection_started) { filter_name += c; }
+				last_split_char = c;
 			} else if (c == ')') {
 				word += c;
-				if (last_char_c == ')') {
-					if (start_regex) {
+				if (last_split_char == ')') {
+					if (regex_started) {
 						try {
 							auto rx = std::regex(word);	 // cant thrwo an exception so if first, prevent emplace if failed
-							if (start_collection) {
+							if (collection_started) {
 								prParsedFilters.back().collectionfilters.emplace(word);
 								prParsedFilters.back().collectionfilters_regex.emplace_back(rx);
 							} else {
@@ -114,10 +109,9 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
 						} catch (std::exception&) {}
 						word.clear();
 						filter_name.clear();
-						start_regex = false;
-						end_regex	= true;
+						regex_started = false;
 					} else {
-						if (!start_collection) {
+						if (!collection_started) {
 							if (!prParsedFilters.empty()) {
 								prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
 							} else {
@@ -128,23 +122,22 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
 						filter_name.clear();
 					}
 				}
-				start_parenthesis = false;
-				if (!start_collection) { 
+				parenthesis_started = false;
+				if (!collection_started) { 
                     filter_name += c;
                 }
-				last_char_c = c;
+				last_split_char = c;
 			} else if (c == '.') {
 				word += c;
-				if (!start_collection) { filter_name += c; }
-				last_char_c = c;
+				if (!collection_started) { filter_name += c; }
+				last_split_char = c;
 			} else if (c == ',') {
-				if (start_regex) {
-					start_regex = false;
-					end_regex	= true;
+				if (regex_started) {
+					regex_started = false;
 					word.clear();
 					filter_name.clear();
 				} else {
-					if (start_collection) {
+					if (collection_started) {
 						if (word.size() > 1U && word[0] == '.') {
 							prParsedFilters.back().collectionfilters.emplace(word);
 							word.clear();
@@ -157,17 +150,16 @@ IGFD::FilterManager Test_ParseFilters(const char* vFilters) {
 							word.clear();
 							filter_name.clear();
 						}
-						if (start_parenthesis) { filter_name += c; }
+						if (parenthesis_started) { filter_name += c; }
 					}
 				}
 			} else {
 				if (c != ' ') { word += c; }
-				if (!start_collection) { filter_name += c; }
+				if (!collection_started) { filter_name += c; }
 			}
-			++idx;
 		}
 
-		if (start_collection) {
+		if (collection_started) {
 			if (!prParsedFilters.empty()) {
 				prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
 			} else {
