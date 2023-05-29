@@ -87,8 +87,6 @@ Android Requirements : Api 21 mini
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
  
-<details open><summary><h2>Singleton Pattern vs. Multiple Instances :</h2></summary><blockquote>
-
 ### Filter format
 
 A filter is recognized only if it respects theses rules :
@@ -101,6 +99,8 @@ A filter is recognized only if it respects theses rules :
 3.2) a filter can be a regex
 4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
 5) the filters cannot integrate a ','
+
+<details open><summary><h2>Singleton Pattern vs. Multiple Instances :</h2></summary><blockquote>
 
 ### Single Dialog :
 
