@@ -1022,8 +1022,8 @@ bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos)
 
 				for (auto& functor : prFilesStyleFunctors) {
 					if (functor) {
-						auto ptr = functor(*(vFileInfos.get()));
-						if (ptr) { vFileInfos->fileStyle = std::move(ptr); }
+						FileStyle result;
+						if (functor(*(vFileInfos.get()), result)) { vFileInfos->fileStyle = std::make_shared<FileStyle>(std::move(result)); }
 					}
 				}
 								

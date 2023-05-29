@@ -96,13 +96,14 @@ included in the Lib_Only branch for your convenience.
 ## Features
 ################################################################
 
+- C Api (succesfully tested with CimGui)
 - Separate system for call and display
 	- Can have many function calls with different parameters for one display function, for example
 - Can create a custom pane with any widgets via function binding
 	- This pane can block the validation of the dialog
 	- Can also display different things according to current filter and UserDatas
 - Advanced file style for file/dir/link coloring / icons / font
-    - predefined form or user custom form by lambda function
+    - predefined form or user custom form by lambda function (the lambda mode is not available for the C API)
 - Multi-selection (ctrl/shift + click) :
 	- 0 => Infinite
 	- 1 => One file (default)
@@ -118,7 +119,6 @@ included in the Lib_Only branch for your convenience.
 - Directory bookmarks
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
-- C Api (succesfully tested with CimGui)
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion)
@@ -319,17 +319,23 @@ IGFD_FileStyleByContainedInFullName		// define style for file/dir/link when crit
 
 You can define easily your own style include your own detection by using lambda function :
 
+** To note, this mode is not available with the C API **
+
 this lamba will treat a file and return a shared pointer of your files style
 
 see in action a styling of all files and dir starting by a dot
 
+this lambda input a FileInfos and output a FileStyle 
+return true if a FileStyle was defined
+
 ```cpp
-ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile) -> std::shared_ptr<IGFD::FileStyle> {
-		if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
-			return std::make_shared<IGFD::FileStyle>(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
-		}
-		return nullptr;
-	});
+ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle &vOutStyle) -> bool {
+	if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
+		vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+		return true;
+	}
+	return false;
+});
 ```
 
 see sample app for the code in action
@@ -380,6 +386,17 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileSt
 // for all these,s you can use a regex
 // ex for color files like Custom*.h
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC, font1);
+
+// lambda function
+// set file style with a lambda function
+// return true is a file style was defined
+ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle &vOutStyle) -> bool {
+	if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') { 
+		vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE); 
+		return true;
+	}
+	return false;
+});
 ```
 
 this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
@@ -1109,11 +1126,11 @@ public:
 class FileInfos;
 class FileStyle {
 public:
-	typedef std::function<std::shared_ptr<FileStyle>(const FileInfos&)> FileStyleFunctor;
+	typedef std::function<bool(const FileInfos&, FileStyle&)> FileStyleFunctor;
 
 public:
-	ImVec4 color = ImVec4(0, 0, 0, 0);
 	std::string icon;
+	ImVec4 color			  = ImVec4(0, 0, 0, 0);
 	ImFont* font			  = nullptr;
 	IGFD_FileStyleFlags flags = 0;
 
