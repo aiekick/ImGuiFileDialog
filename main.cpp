@@ -611,6 +611,11 @@ int main(int, char**) {
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, filePathName, 1, nullptr, flags);
                 }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) { ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags); }
+
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
+                    const char* filters = ".a.b";
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+                }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1,
