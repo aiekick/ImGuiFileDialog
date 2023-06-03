@@ -7,7 +7,5 @@ add_library(ImGuiFileDialog STATIC
     ImGuiFileDialog.h
 )
 
-#target_link_libraries(ImGuiFileDialog imgui)
-
 target_include_directories(ImGuiFileDialog PUBLIC 
 	${CMAKE_CURRENT_SOURCE_DIR})
