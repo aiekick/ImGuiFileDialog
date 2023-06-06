@@ -1121,6 +1121,7 @@ public:
     static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
     static std::vector<std::string> GetDrivesList();
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
+    static size_t GetCharCountInString(const std::string& vString, char vChar);
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1593,9 +1594,10 @@ public:
     }
 
 public:
-    FileDialog();           // ImGuiFileDialog Constructor. can be used for have many dialog at same tiem (not possible with singleton)
+    FileDialog();           // ImGuiFileDialog Constructor. can be used for have many dialog at same time (not possible with singleton)
     virtual ~FileDialog();  // ImGuiFileDialog Destructor
 
+    //todo : need to refactor all theses function to maybe just one
     // standard dialog
     void OpenDialog(                              // open simple dialog (path and fileName can be specified)
         const std::string& vKey,                  // key dialog
@@ -1645,7 +1647,7 @@ public:
         const std::string& vKey,                                // key dialog to display (if not the same key as defined by OpenDialog => no opening)
         ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,  // ImGuiWindowFlags
         ImVec2 vMinSize         = ImVec2(0, 0),                 // mininmal size contraint for the ImGuiWindow
-        ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));            // maximal size contraint for the ImGuiWindow
+        ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));    // maximal size contraint for the ImGuiWindow
     void Close();                                               // close dialog
 
     // queries

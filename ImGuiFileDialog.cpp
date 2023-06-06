@@ -701,6 +701,14 @@ IGFD_API std::string IGFD::Utils::LowerCaseString(const std::string& vString) {
     return str;
 }
 
+IGFD_API size_t IGFD::Utils::GetCharCountInString(const std::string& vString, char vChar) {
+    size_t res = 0U;
+    for (const auto& c : vString) {
+        if (c == vChar) { ++res; }
+    }
+    return res;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 //// FILE INFOS /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -1142,14 +1150,54 @@ IGFD_API bool IGFD::FilterManager::DrawFilterComboBox(FileDialogInternal& vFileD
 
 IGFD_API IGFD::FilterManager::FilterInfos IGFD::FilterManager::GetSelectedFilter() { return prSelectedFilter; }
 
+//todo a test
 IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(const std::string& vFile) const {
     auto result = vFile;
     if (!result.empty()) {
-        // if not a collection we can replace the filter by the extention we want
-        if (prSelectedFilter.collectionfilters.empty() && prSelectedFilter.filter != ".*" && prSelectedFilter.filter != "*.*") {
-            size_t lastPoint = vFile.find_last_of('.');
-            if (lastPoint != std::string::npos) { result = result.substr(0, lastPoint); }
-            result += prSelectedFilter.filter;
+        // many filter in collection for the selected filter => no change
+        if (prSelectedFilter.collectionfilters.size() > 1U) return result;
+        // one filter in collection for the selected filter and contain .* => no change 
+        if (prSelectedFilter.collectionfilters.size() == 1U && 
+            (*(prSelectedFilter.collectionfilters.begin())).find(".*") != std::string::npos) return result;
+        // filter containe .* => no change
+        if (prSelectedFilter.filter.find(".*") != std::string::npos) return result;
+        // if some regex in collection in the current filter => no change
+        if (!prSelectedFilter.collectionfilters_regex.empty()) return result;
+        // if a regex => no change
+        if (!prSelectedFilter.filter_regex._Empty()) return result;
+
+        // else => change
+
+        std::string filter;
+        if (prSelectedFilter.collectionfilters.size() == 1U) {
+            filter = *(prSelectedFilter.collectionfilters.begin());
+        } else {
+            filter = prSelectedFilter.filter;
+        }
+
+        // toto.c.t with a filter .b.s => toto.b.s
+        // toto.c.t with a fitler .b => toto.c.b
+
+        // count dot in this filter
+        auto count_dots = Utils::GetCharCountInString(filter, '.');
+
+        // last dot pos according to the dot count of the filter
+        size_t last_dot = vFile.size() + 1U;
+        while (count_dots > 0U && last_dot > 0U && last_dot != std::string::npos) {
+            auto new_dot = vFile.rfind('.', last_dot - 1U);
+            if (new_dot != std::string::npos) {
+                last_dot = new_dot;
+                --count_dots;
+            }
+            else {
+                break;
+            }
+        }
+
+        if (last_dot != std::string::npos) {
+            result = result.substr(0, last_dot) + filter;
+        } else {
+
         }
     }
     return result;
