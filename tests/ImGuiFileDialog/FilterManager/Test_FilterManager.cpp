@@ -783,6 +783,151 @@ bool Test_FilterManager_ParseFilters_Filters_Divers_3() {
 }
 #pragma endregion
 
+/////////////////////////////////////////////////////////////////////////////////////////
+//// ReplaceExtentionWithCurrentFilter //////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_0() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    if (res != "toto.cpp") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_1() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.cpp") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_2() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".code.cpp";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    if (res != "toto.code.cpp") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_3() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".code.cpp";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.code.cpp") return false;
+
+    return true;
+}
+
+// if regex, the function have no impact
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_4() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter       = "(.*\\.a\\.b)";
+    mgr.prSelectedFilter.filter_regex = "(.*\\.a\\.b)";
+    auto res                          = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.c") return false;
+
+    return true;
+}
+
+// many filter in the current collection, no change
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_5() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("C/C++ File (*.c,*.cpp){.c,.cpp}");
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.c") return false;
+
+    return true;
+}
+
+// one filter in the current collection => change
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_6() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("C/C++ File (*.cpp){.cpp}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.cpp") return false;
+
+    return true;
+}
+
+// .* => no change
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_7() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters(".*");
+    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.c") return false;
+
+    return true;
+}
+
+// one filter .* in one collection => no change
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_8() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("All files{.*}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.c") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_9() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    if (res != "toto.c.r.cpp") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_10() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp.tv";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    if (res != "toto.c.cpp.tv") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_11() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = "";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    if (res != "toto.c.r.x") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_12() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp.tv";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.");
+    if (res != "toto.cpp.tv") return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_13() {
+    IGFD::FilterManager mgr;
+    mgr.prSelectedFilter.filter = ".cpp.tv";
+    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    if (res != "toto.cpp.tv") return false;
+
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 //// ENTRY POINT ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -869,6 +1014,34 @@ bool Test_FilterManager(const std::string& vTest) {
         return Test_FilterManager_ParseFilters_Filters_Divers_2();
     else if (IfTestExist("IGFD::FilterManager::ParseFilters::Filters::Divers::3"))
         return Test_FilterManager_ParseFilters_Filters_Divers_3();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::0"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_0();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::1"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_1();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::2"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_2();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::3"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_3();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::4"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_4();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::5"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_5();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::6"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_6();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::7"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_7();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::8"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_8();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::9"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_9();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::10"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_10();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::11"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_11();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::12"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_12();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::13"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_13();
 
     assert(0);
 

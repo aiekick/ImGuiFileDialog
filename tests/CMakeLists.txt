@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 set(PROJECT ImGuiFileDialog_Test)
-enable_language(C CXX)
+enable_language(CXX)
 project(${PROJECT} CXX)
 
 file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE 
@@ -17,6 +17,10 @@ add_executable(${PROJECT}
 )
 	
 target_link_libraries(${PROJECT} PRIVATE
+	${OPENGL_LIBRARIES}
+	${GLFW_LIBRARIES}
+	${GLAD_LIBRARIES}
+	${IMGUI_LIBRARIES}
 	ImGuiFileDialog
 )
 
@@ -81,3 +85,19 @@ SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::0")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::1")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::2")
 SetTest("IGFD::FilterManager::ParseFilters::Filters::Divers::3")
+
+## IGFD::FilterManager -- ReplaceExtentionWithCurrentFilter
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::0")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::1")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::2")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::3")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::4")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::5")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::6")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::7")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::8")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::9")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::10")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::11")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::12")
+SetTest("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::13")
