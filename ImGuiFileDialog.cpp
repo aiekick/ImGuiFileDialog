@@ -1164,7 +1164,7 @@ IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(cons
         // if some regex in collection in the current filter => no change
         if (!prSelectedFilter.collectionfilters_regex.empty()) return result;
         // if a regex => no change
-        if (!prSelectedFilter.filter_regex._Empty()) return result;
+        if (prSelectedFilter.regex_exist(prSelectedFilter.filter)) return result;
 
         // else => change
 
