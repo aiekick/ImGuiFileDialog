@@ -830,8 +830,8 @@ bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_3() {
 // if regex, the function have no impact
 bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_4() {
     IGFD::FilterManager mgr;
-    mgr.prSelectedFilter.filter       = "(.*\\.a\\.b)";
-    mgr.prSelectedFilter.filter_regex = "(.*\\.a\\.b)";
+    mgr.prSelectedFilter.filter       = "((.*\\.a\\.b))";
+    mgr.prSelectedFilter.filter_regex = "((.*\\.a\\.b))";
     auto res                          = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
     if (res != "toto.c") return false;
 
@@ -924,6 +924,16 @@ bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_13() {
     mgr.prSelectedFilter.filter = ".cpp.tv";
     auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
     if (res != "toto.cpp.tv") return false;
+
+    return true;
+}
+
+// if regex, the function have no impact
+bool Test_FilterManager_ReplaceExtentionWithCurrentFilter_14() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("C/C++ File{((.*\\.a\\.b))}");
+    auto res                          = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    if (res != "toto.c") return false;
 
     return true;
 }
@@ -1042,6 +1052,8 @@ bool Test_FilterManager(const std::string& vTest) {
         return Test_FilterManager_ReplaceExtentionWithCurrentFilter_12();
     else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::13"))
         return Test_FilterManager_ReplaceExtentionWithCurrentFilter_13();
+    else if (IfTestExist("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::14"))
+        return Test_FilterManager_ReplaceExtentionWithCurrentFilter_14();
 
     assert(0);
 
