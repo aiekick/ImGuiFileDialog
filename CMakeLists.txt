@@ -59,9 +59,10 @@ if (USE_TEST)
 	enable_testing()
 	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
 endif()
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
+	
 add_executable(${PROJECT}
 	MACOSX_BUNDLE
 	##${ICON}
