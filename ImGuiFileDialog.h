@@ -33,13 +33,13 @@ SOFTWARE.
  |_____|_| |_| |_|\_____|\__,_|_|_|    |_|_|\___|_____/|_|\__,_|_|\___/ \__, |
   _________________________________________________________________________/ |
  |__________________________________________________________________________/
-                            ___      __      __                                                               
-                           / _ \    / /     / /                                                               
-                   __   __| | | |  / /_    / /_                                                               
-                   \ \ / /| | | | | '_ \  | '_ \                                                              
-                    \ V / | |_| |_| (_) |_| (_) |                                                             
-                     \_/   \___/(_)\___/(_)\___/                                                              
-                                
+                            ___      __      __
+                           / _ \    / /     / /
+                   __   __| | | |  / /_    / /_
+                   \ \ / /| | | | | '_ \  | '_ \
+                    \ V / | |_| |_| (_) |_| (_) |
+                     \_/   \___/(_)\___/(_)\___/
+
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
@@ -1134,7 +1134,7 @@ public:
     typedef std::function<bool(const FileInfos&, FileStyle&)> FileStyleFunctor;
 
 public:
-    ImVec4 color              = ImVec4(0, 0, 0, 0);
+    ImVec4 color = ImVec4(0, 0, 0, 0);
     std::string icon;
     ImFont* font              = nullptr;
     IGFD_FileStyleFlags flags = 0;
@@ -1182,22 +1182,19 @@ public:
     std::string puDLGdefaultExt;
 
 public:
-    void ParseFilters(const char* vFilters);                    // Parse filter syntax, detect and parse filter collection
-    void SetSelectedFilterWithExt(const std::string& vFilter);  // Select filter
-
-    bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const;  // fill with the good style
-
+    void ParseFilters(const char* vFilters);                                                                                                          // Parse filter syntax, detect and parse filter collection
+    void SetSelectedFilterWithExt(const std::string& vFilter);                                                                                        // Select filter
+    bool prFillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const;                                                                                // fill with the good style
     void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos);                                             // Set FileStyle
     void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont);       // link file style to Color and Icon and Font
     void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);                                                                                          // lambda functor for set file style.
     bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon, ImFont** vOutFont);  // Get Color and Icon for Filter
     void ClearFilesStyle();                                                                                                                           // clear prFileStyle
-
-    bool IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const;  // check if current file extention (vExt) is covered by current filter, or by regex (vNameExt)
-    bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);                                              // draw the filter combobox
-    FilterInfos GetSelectedFilter();                                                                               // get the current selected filter
-    std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;                                 // replace the extention of the current file by the selected filter
-    void SetDefaultFilterIfNotDefined();                                                                           // define the first filter if no filter is selected
+    bool IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const;                                     // check if current file extention (vExt) is covered by current filter, or by regex (vNameExt)
+    bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);                                                                                 // draw the filter combobox
+    FilterInfos GetSelectedFilter();                                                                                                                  // get the current selected filter
+    std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;                                                                    // replace the extention of the current file by the selected filter
+    void SetDefaultFilterIfNotDefined();                                                                                                              // define the first filter if no filter is selected
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1220,22 +1217,45 @@ private:
 
 public:
     FileType() = default;
-    FileType(const ContentType& vContentType, const bool& vIsSymlink) : m_Content(vContentType), m_Symlink(vIsSymlink) {}
+    FileType(const ContentType& vContentType, const bool& vIsSymlink) : m_Content(vContentType), m_Symlink(vIsSymlink) {
+    }
 
-    void SetContent(const ContentType& vContentType) { m_Content = vContentType; }
-    void SetSymLink(const bool& vIsSymlink) { m_Symlink = vIsSymlink; }
+    void SetContent(const ContentType& vContentType) {
+        m_Content = vContentType;
+    }
+    void SetSymLink(const bool& vIsSymlink) {
+        m_Symlink = vIsSymlink;
+    }
 
-    bool isValid() const { return m_Content != ContentType::Invalid; }
-    bool isDir() const { return m_Content == ContentType::Directory; }
-    bool isFile() const { return m_Content == ContentType::File; }
-    bool isLinkToUnknown() const { return m_Content == ContentType::LinkToUnknown; }
-    bool isSymLink() const { return m_Symlink; }
+    bool isValid() const {
+        return m_Content != ContentType::Invalid;
+    }
+    bool isDir() const {
+        return m_Content == ContentType::Directory;
+    }
+    bool isFile() const {
+        return m_Content == ContentType::File;
+    }
+    bool isLinkToUnknown() const {
+        return m_Content == ContentType::LinkToUnknown;
+    }
+    bool isSymLink() const {
+        return m_Symlink;
+    }
 
     // Comparisons only care about the content type, ignoring whether it's a symlink or not.
-    bool operator==(const FileType& rhs) const { return m_Content == rhs.m_Content; }
-    bool operator!=(const FileType& rhs) const { return m_Content != rhs.m_Content; }
-    bool operator<(const FileType& rhs) const { return m_Content < rhs.m_Content; }
-    bool operator>(const FileType& rhs) const { return m_Content > rhs.m_Content; }
+    bool operator==(const FileType& rhs) const {
+        return m_Content == rhs.m_Content;
+    }
+    bool operator!=(const FileType& rhs) const {
+        return m_Content != rhs.m_Content;
+    }
+    bool operator<(const FileType& rhs) const {
+        return m_Content < rhs.m_Content;
+    }
+    bool operator>(const FileType& rhs) const {
+        return m_Content > rhs.m_Content;
+    }
 };
 
 class IGFD_API FileInfos {
@@ -1262,15 +1282,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class IGFD_API FileManager {
-public:                          // types
-    enum class SortingFieldEnum  // sorting for filetering of the file lsit
-    {
-        FIELD_NONE = 0,    // no sorting preference, result indetermined haha..
-        FIELD_FILENAME,    // sorted by filename
-        FIELD_TYPE,        // sorted by filetype
-        FIELD_SIZE,        // sorted by filesize (formated file size)
-        FIELD_DATE,        // sorted by filedate
-        FIELD_THUMBNAILS,  // sorted by thumbnails (comparaison by width then by height)
+public:                            // types
+    enum class SortingFieldEnum {  // sorting for filetering of the file lsit
+        FIELD_NONE = 0,            // no sorting preference, result indetermined haha..
+        FIELD_FILENAME,            // sorted by filename
+        FIELD_TYPE,                // sorted by filetype
+        FIELD_SIZE,                // sorted by filesize (formated file size)
+        FIELD_DATE,                // sorted by filedate
+        FIELD_THUMBNAILS,          // sorted by thumbnails (comparaison by width then by height)
     };
 
 private:
@@ -1514,11 +1533,11 @@ protected:
     void prLocateByInputKey(FileDialogInternal& vFileDialogInternal);                      // select a file line in listview according to char key
     bool prLocateItem_Loop(FileDialogInternal& vFileDialogInternal, ImWchar vC);           // restrat for start of list view if not found a corresponding file
     void prExploreWithkeys(FileDialogInternal& vFileDialogInternal, ImGuiID vListViewID);  // select file/directory line in listview accroding to up/down enter/backspace keys
-    static bool prFlashableSelectable(                                                     // custom flashing selectable widgets, for flash the selected line in a short time
-        const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, bool vFlashing = false, const ImVec2& size = ImVec2(0, 0));
-    void prStartFlashItem(size_t vIdx);  // define than an item must be flashed
-    bool prBeginFlashItem(size_t vIdx);  // start the flashing of a line in lsit view
-    static void prEndFlashItem();        // end the fleshing accrdoin to var prFlashAlphaAttenInSecs
+    void prStartFlashItem(size_t vIdx);                                                    // define than an item must be flashed
+    bool prBeginFlashItem(size_t vIdx);                                                    // start the flashing of a line in lsit view
+    static void prEndFlashItem();                                                          // end the fleshing accrdoin to var prFlashAlphaAttenInSecs
+    static bool prFlashableSelectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, bool vFlashing = false,
+                                      const ImVec2& size = ImVec2(0, 0));  // custom flashing selectable widgets, for flash the selected line in a short time
 
 public:
     void SetFlashingAttenuationInSeconds(  // set the flashing time of the line in file list when use exploration keys
@@ -1534,33 +1553,32 @@ typedef void* UserDatas;
 typedef std::function<void(const char*, UserDatas, bool*)> PaneFun;  // side pane function binding
 class IGFD_API FileDialogInternal {
 public:
-    FileManager puFileManager;
-    FilterManager puFilterManager;
-    SearchManager puSearchManager;
+    FileManager puFileManager;      // the file manager
+    FilterManager puFilterManager;  // the filter manager
+    SearchManager puSearchManager;  // the search manager
 
 public:
-    std::string puName;
-    bool puShowDialog           = false;
-    ImVec2 puDialogCenterPos    = ImVec2(0, 0);  // center pos for display the confirm overwrite dialog
-    int puLastImGuiFrameCount   = 0;             // to be sure than only one dialog displayed per frame
-    float puFooterHeight        = 0.0f;
-    bool puCanWeContinue        = true;   // events
-    bool puOkResultToConfirm    = false;  // to confim if ok for OverWrite
-    bool puIsOk                 = false;
-    bool puFileInputIsActive    = false;  // when input text for file or directory is active
-    bool puFileListViewIsActive = false;  // when list view is active
-    std::string puDLGkey;
-    std::string puDLGtitle;
-    ImGuiFileDialogFlags puDLGflags = ImGuiFileDialogFlags_None;
-    UserDatas puDLGuserDatas        = nullptr;
-    PaneFun puDLGoptionsPane        = nullptr;
-    float puDLGoptionsPaneWidth     = 0.0f;
-    bool puNeedToExitDialog         = false;
-
-    bool puUseCustomLocale = false;
-    int puLocaleCategory   = LC_ALL;  // locale category to use
-    std::string puLocaleBegin;        // the locale who will be applied at start of the display dialog
-    std::string puLocaleEnd;          // the locale who will be applaied at end of the display dialog
+    std::string puName;                                           // the internal dialog name (title + ##word)
+    bool puShowDialog           = false;                          // the dialog is shown
+    ImVec2 puDialogCenterPos    = ImVec2(0, 0);                   // center pos for display the confirm overwrite dialog
+    int puLastImGuiFrameCount   = 0;                              // to be sure than only one dialog displayed per frame
+    float puFooterHeight        = 0.0f;                           // footer height
+    bool puCanWeContinue        = true;                           // events
+    bool puOkResultToConfirm    = false;                          // to confim if ok for OverWrite
+    bool puIsOk                 = false;                          // is dialog ok button click
+    bool puFileInputIsActive    = false;                          // when input text for file or directory is active
+    bool puFileListViewIsActive = false;                          // when list view is active
+    std::string puDLGkey;                                         // the dialog key
+    std::string puDLGtitle;                                       // the dialog title
+    ImGuiFileDialogFlags puDLGflags = ImGuiFileDialogFlags_None;  // default dialog flag
+    UserDatas puDLGuserDatas        = nullptr;                    // the user datas passed to a dialog
+    PaneFun puDLGoptionsPane        = nullptr;                    // the user side pane
+    float puDLGoptionsPaneWidth     = 0.0f;                       // the user side pane width
+    bool puNeedToExitDialog         = false;                      // we need to exit the dialog
+    bool puUseCustomLocale          = false;                      // custom user locale
+    int puLocaleCategory            = LC_ALL;                     // locale category to use
+    std::string puLocaleBegin;                                    // the locale who will be applied at start of the display dialog
+    std::string puLocaleEnd;                                      // the locale who will be applaied at end of the display dialog
 
 public:
     void NewFrame();           // new frame, so maybe neded to do somethings, like reset events
@@ -1588,8 +1606,12 @@ public:
     static FileDialog* Instance(FileDialog* vCopy = nullptr, bool vForce = false) {
         static FileDialog _instance;
         static FileDialog* _instance_copy = nullptr;
-        if (vCopy || vForce) { _instance_copy = vCopy; }
-        if (_instance_copy) { return _instance_copy; }
+        if (vCopy || vForce) {
+            _instance_copy = vCopy;
+        }
+        if (_instance_copy) {
+            return _instance_copy;
+        }
         return &_instance;
     }
 
@@ -1597,8 +1619,8 @@ public:
     FileDialog();           // ImGuiFileDialog Constructor. can be used for have many dialog at same time (not possible with singleton)
     virtual ~FileDialog();  // ImGuiFileDialog Destructor
 
-    //todo : need to refactor all theses function to maybe just one
-    // standard dialog
+    // todo : need to refactor all theses function to maybe just one
+    //  standard dialog
     void OpenDialog(                              // open simple dialog (path and fileName can be specified)
         const std::string& vKey,                  // key dialog
         const std::string& vTitle,                // title
@@ -1647,7 +1669,7 @@ public:
         const std::string& vKey,                                // key dialog to display (if not the same key as defined by OpenDialog => no opening)
         ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,  // ImGuiWindowFlags
         ImVec2 vMinSize         = ImVec2(0, 0),                 // mininmal size contraint for the ImGuiWindow
-        ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));    // maximal size contraint for the ImGuiWindow
+        ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));	// maximal size contraint for the ImGuiWindow
     void Close();                                               // close dialog
 
     // queries
