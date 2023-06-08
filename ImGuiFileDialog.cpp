@@ -862,6 +862,7 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                                 prParsedFilters.emplace_back();
                             }
                             prParsedFilters.back().collectionfilters.emplace(word);
+                            prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
                         }
                         word.clear();
                         filter_name.clear();
