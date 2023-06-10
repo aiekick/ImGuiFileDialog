@@ -1,5 +1,11 @@
+#pragma region PVS STUDIO
+
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
+#pragma endregion
+
+#pragma region IGFD LICENSE
 
 /*
 MIT License
@@ -25,6 +31,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#pragma endregion
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
@@ -32,6 +40,8 @@ SOFTWARE.
 #include "ImGuiFileDialog.h"
 
 #ifdef __cplusplus
+
+#pragma region Includes
 
 #include <cfloat>
 #include <cstring>  // stricmp / strcasecmp
@@ -52,6 +62,14 @@ SOFTWARE.
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif  // __EMSCRIPTEN__
+
+#ifdef _MSC_VER
+
+#define IGFD_DEBUG_BREAK \
+    if (IsDebuggerPresent()) __debugbreak()
+#else
+#define IGFD_DEBUG_BREAK
+#endif
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define _IGFD_WIN_
@@ -80,14 +98,15 @@ SOFTWARE.
 #endif  // _IGFD_UNIX_
 
 #include "imgui.h"
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#endif  // IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
+
+#pragma endregion
+
+#pragma region Common defines
 
 #ifdef USE_THUMBNAILS
 #ifndef DONT_DEFINE_AGAIN__STB_IMAGE_IMPLEMENTATION
@@ -104,7 +123,6 @@ SOFTWARE.
 #include "stb/stb_image_resize.h"
 #endif  // USE_THUMBNAILS
 
-namespace IGFD {
 // float comparisons
 #ifndef IS_FLOAT_DIFFERENT
 #define IS_FLOAT_DIFFERENT(a, b) (fabs((a) - (b)) > FLT_EPSILON)
@@ -112,14 +130,27 @@ namespace IGFD {
 #ifndef IS_FLOAT_EQUAL
 #define IS_FLOAT_EQUAL(a, b) (fabs((a) - (b)) < FLT_EPSILON)
 #endif  // IS_FLOAT_EQUAL
-// width of filter combobox
-#ifndef FILTER_COMBO_WIDTH
-#define FILTER_COMBO_WIDTH 150.0f
-#endif  // FILTER_COMBO_WIDTH
-// begin combo widget
+
+#pragma endregion
+
+#pragma region IGFD NAMESPACE
+
+namespace IGFD {
+
+#pragma region CUSTOMIZATION DEFINES
+
+///////////////////////////////
+// COMBOBOX
+///////////////////////////////
+#ifndef FILTER_COMBO_MIN_WIDTH
+#define FILTER_COMBO_MIN_WIDTH 150.0f
+#endif  // FILTER_COMBO_MIN_WIDTH
 #ifndef IMGUI_BEGIN_COMBO
 #define IMGUI_BEGIN_COMBO ImGui::BeginCombo
 #endif  // IMGUI_BEGIN_COMBO
+///////////////////////////////
+// BUTTON
+///////////////////////////////
 // for lets you define your button widget
 // if you have like me a special bi-color button
 #ifndef IMGUI_PATH_BUTTON
@@ -128,7 +159,9 @@ namespace IGFD {
 #ifndef IMGUI_BUTTON
 #define IMGUI_BUTTON ImGui::Button
 #endif  // IMGUI_BUTTON
+///////////////////////////////
 // locales
+///////////////////////////////
 #ifndef createDirButtonString
 #define createDirButtonString "+"
 #endif  // createDirButtonString
@@ -235,10 +268,13 @@ namespace IGFD {
 #ifndef OverWriteDialogCancelButtonString
 #define OverWriteDialogCancelButtonString "Cancel"
 #endif  // OverWriteDialogCancelButtonString
-// see strftime functionin <ctime> for customize
 #ifndef DateTimeFormat
+// see strftime functionin <ctime> for customize
 #define DateTimeFormat "%Y/%m/%d %H:%M"
 #endif  // DateTimeFormat
+///////////////////////////////
+// THUMBNAILS
+///////////////////////////////
 #ifdef USE_THUMBNAILS
 #ifndef tableHeaderFileThumbnailsString
 #define tableHeaderFileThumbnailsString "Thumbnails"
@@ -267,7 +303,6 @@ namespace IGFD {
 #ifndef IMGUI_RADIO_BUTTON
 inline bool inRadioButton(const char* vLabel, bool vToggled) {
     bool pressed = false;
-
     if (vToggled) {
         ImVec4 bua = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
         ImVec4 te  = ImGui::GetStyleColorVec4(ImGuiCol_Text);
@@ -276,18 +311,18 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, te);
         ImGui::PushStyleColor(ImGuiCol_Text, bua);
     }
-
     pressed = IMGUI_BUTTON(vLabel);
-
     if (vToggled) {
         ImGui::PopStyleColor(4);  //-V112
     }
-
     return pressed;
 }
 #define IMGUI_RADIO_BUTTON inRadioButton
 #endif  // IMGUI_RADIO_BUTTON
 #endif  // USE_THUMBNAILS
+///////////////////////////////
+// BOOKMARKS
+///////////////////////////////
 #ifdef USE_BOOKMARK
 #ifndef defaultBookmarkPaneWith
 #define defaultBookmarkPaneWith 150.0f
@@ -333,9 +368,11 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 #endif  // IMGUI_TOGGLE_BUTTON
 #endif  // USE_BOOKMARK
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// INLINE FUNCTIONS ///////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region INTERNAL
+
+#pragma region Utils
 
 #ifndef USE_STD_FILESYSTEM
 inline int inAlphaSort(const struct dirent** a, const struct dirent** b) {
@@ -343,29 +380,8 @@ inline int inAlphaSort(const struct dirent** a, const struct dirent** b) {
 }
 #endif
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE EXTENTIONS INFOS //////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-IGFD_API IGFD::FileStyle::FileStyle() : color(0, 0, 0, 0) {
-}
-
-IGFD_API IGFD::FileStyle::FileStyle(const FileStyle& vStyle) {
-    color = vStyle.color;
-    icon  = vStyle.icon;
-    font  = vStyle.font;
-    flags = vStyle.flags;
-}
-
-IGFD_API IGFD::FileStyle::FileStyle(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont) : color(vColor), icon(vIcon), font(vFont) {
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE INFOS /////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
 // https://github.com/ocornut/imgui/issues/1720
-IGFD_API bool IGFD::Utils::Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size) {
+IGFD_API bool IGFD::Utils::ImSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size) {
     using namespace ImGui;
     ImGuiContext& g     = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
@@ -402,14 +418,16 @@ IGFD_API std::vector<std::wstring> IGFD::Utils::WSplitStringToVector(const std::
         std::wstring::size_type end   = text.find(delimiter, start);
         while (end != std::wstring::npos) {
             std::wstring token = text.substr(start, end - start);
-            if (!token.empty() || (token.empty() && pushEmpty))  //-V728
+            if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
                 arr.push_back(token);
+            }
             start = end + 1;
             end   = text.find(delimiter, start);
         }
         std::wstring token = text.substr(start);
-        if (!token.empty() || (token.empty() && pushEmpty))  //-V728
+        if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
             arr.push_back(token);
+        }
     }
 #else
     // Suppress warnings from the compiler.
@@ -474,14 +492,16 @@ IGFD_API std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::st
         size_t end   = text.find(delimiter, start);
         while (end != std::string::npos) {
             auto token = text.substr(start, end - start);
-            if (!token.empty() || (token.empty() && pushEmpty))  //-V728
+            if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
                 arr.push_back(token);
+            }
             start = end + 1;
             end   = text.find(delimiter, start);
         }
         auto token = text.substr(start);
-        if (!token.empty() || (token.empty() && pushEmpty))  //-V728
+        if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
             arr.push_back(token);
+        }
     }
     return arr;
 }
@@ -686,7 +706,9 @@ IGFD_API void IGFD::Utils::AppendToBuffer(char* vBuffer, size_t vBufferLen, cons
     std::string str = std::string(vBuffer);
     // if (!str.empty()) str += "\n";
     str += vStr;
-    if (len > str.size()) len = str.size();
+    if (len > str.size()) {
+        len = str.size();
+    }
 #ifdef _MSC_VER
     strncpy_s(vBuffer, vBufferLen, str.c_str(), len);
 #else   // _MSC_VER
@@ -708,12 +730,14 @@ IGFD_API std::string IGFD::Utils::LowerCaseString(const std::string& vString) {
     auto str = vString;
 
     // convert to lower case
-    for (char& c : str) c = (char)std::tolower(c);
+    for (char& c : str) {
+        c = (char)std::tolower(c);
+    }
 
     return str;
 }
 
-IGFD_API size_t IGFD::Utils::GetCharCountInString(const std::string& vString, char vChar) {
+IGFD_API size_t IGFD::Utils::GetCharCountInString(const std::string& vString, const char& vChar) {
     size_t res = 0U;
     for (const auto& c : vString) {
         if (c == vChar) {
@@ -723,25 +747,44 @@ IGFD_API size_t IGFD::Utils::GetCharCountInString(const std::string& vString, ch
     return res;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE INFOS /////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-IGFD_API bool IGFD::FileInfos::IsTagFound(const std::string& vTag) const {
-    if (!vTag.empty()) {
-        if (fileNameExt_optimized == "..") return true;
-
-        return fileNameExt_optimized.find(vTag) != std::string::npos ||  // first try without case and accents
-               fileNameExt.find(vTag) != std::string::npos;              // second if searched with case and accents
+IGFD_API size_t IGFD::Utils::GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount) {
+    if (vMinCharCount) {
+        size_t last_dot_pos = vString.size() + 1U;
+        size_t count_dots   = vMinCharCount;
+        while (count_dots > 0U && last_dot_pos > 0U && last_dot_pos != std::string::npos) {
+            auto new_dot = vString.rfind(vChar, last_dot_pos - 1U);
+            if (new_dot != std::string::npos) {
+                last_dot_pos = new_dot;
+                --count_dots;
+            } else {
+                break;
+            }
+        }
+        return last_dot_pos;
     }
-
-    // if tag is empty => its a special case but all is found
-    return true;
+    return std::string::npos;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// SEARCH MANAGER /////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region FileStyle
+
+IGFD_API IGFD::FileStyle::FileStyle() : color(0, 0, 0, 0) {
+}
+
+IGFD_API IGFD::FileStyle::FileStyle(const FileStyle& vStyle) {
+    color = vStyle.color;
+    icon  = vStyle.icon;
+    font  = vStyle.font;
+    flags = vStyle.flags;
+}
+
+IGFD_API IGFD::FileStyle::FileStyle(const ImVec4& vColor, const std::string& vIcon, ImFont* vFont) : color(vColor), icon(vIcon), font(vFont) {
+}
+
+#pragma endregion
+
+#pragma region SearchManager
 
 IGFD_API void IGFD::SearchManager::Clear() {
     puSearchTag.clear();
@@ -768,56 +811,112 @@ IGFD_API void IGFD::SearchManager::DrawSearchBar(FileDialogInternal& vFileDialog
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILTER INFOS ///////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
 
-void IGFD::FilterManager::FilterInfos::clear() {
-    filter.clear();
-    filter_regex = std::regex();
-    collectionfilters.clear();
-    filter_optimized.clear();
-    collectionfilters_optimized.clear();
-    collectionfilters_regex.clear();
+#pragma region FilterInfos
+
+void IGFD::FilterInfos::setCollectionTitle(const std::string& vTitle) {
+    title = vTitle;
 }
 
-bool IGFD::FilterManager::FilterInfos::empty() const {
-    return filter.empty() && collectionfilters.empty();
-}
-
-bool IGFD::FilterManager::FilterInfos::exist(const std::string& vFilter, bool vIsCaseInsensitive) const {
-    if (vIsCaseInsensitive) {
-        auto _filter = Utils::LowerCaseString(vFilter);
-        return filter_optimized == _filter || (collectionfilters_optimized.find(_filter) != collectionfilters_optimized.end());
+void IGFD::FilterInfos::addFilter(const std::string& vFilter, const bool& vIsRegex) {
+    if (!vIsRegex) {
+        title = vFilter;
     }
-    return filter == vFilter || (collectionfilters.find(vFilter) != collectionfilters.end());
+    addCollectionFilter(vFilter, vIsRegex);
 }
 
-bool IGFD::FilterManager::FilterInfos::regex_exist(const std::string& vFilter) const {
-    if (std::regex_search(vFilter, filter_regex)) {
-        return true;
+void IGFD::FilterInfos::addCollectionFilter(const std::string& vFilter, const bool& vIsRegex) {
+    if (!vIsRegex) {
+        if (vFilter.find('*') != std::string::npos) {
+            const auto& regex_string = transformAsteriskBasedFilterToRegex(vFilter);
+            addCollectionFilter(regex_string, true);
+            return;
+        }
+        filters.emplace(vFilter);
+        filters_optimized.emplace(Utils::LowerCaseString(vFilter));
+        auto _count_dots = Utils::GetCharCountInString(vFilter, '.');
+        if (_count_dots > count_dots) {
+            count_dots = _count_dots;
+        }
     } else {
-        for (auto regex : collectionfilters_regex) {
-            if (std::regex_search(vFilter, regex)) {
-                return true;
-            }
+        try {
+            auto rx = std::regex(vFilter);
+            filters.emplace(vFilter);
+            filters_regex.emplace_back(rx);
+            filters_optimized.emplace(Utils::LowerCaseString(vFilter));
+        } catch (std::exception&) {
+            IGFD_DEBUG_BREAK;
         }
     }
+}
 
+void IGFD::FilterInfos::clear() {
+    title.clear();
+    filters.clear();
+    filters_optimized.clear();
+    filters_regex.clear();
+}
+
+bool IGFD::FilterInfos::empty() const {
+    return filters.empty() || filters.begin()->empty();
+}
+
+const std::string& IGFD::FilterInfos::getFirstFilter() const {
+    if (!filters.empty()) {
+        return *filters.begin();
+    }
+    return empty_string;
+}
+
+bool IGFD::FilterInfos::exist(const FileInfos& vFileInfos, bool vIsCaseInsensitive) const {
+    for (const auto& filter : filters) {
+        if (vFileInfos.SearchForExt(filter, vIsCaseInsensitive, count_dots)) {
+            return true;
+        }
+    }
     return false;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILTER MANAGER /////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+bool IGFD::FilterInfos::regexExist(const std::string& vFilter) const {
+    for (auto regex : filters_regex) {
+        if (std::regex_search(vFilter, regex)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+IGFD_API std::string IGFD::FilterInfos::transformAsteriskBasedFilterToRegex(const std::string& vFilter) {
+    std::string res;
+    if (!vFilter.empty() && vFilter.find('*') != std::string::npos) {
+        res = "((";
+        for (const auto& c : vFilter) {
+            if (c == '.') {
+                res += "[.]";  // a dot
+            } else if (c == '*') {
+                res += ".*";  // any char zero or many
+            } else {
+                res += c;  // other chars
+            }
+        }
+        res += "$))";
+    }
+    return res;
+}
+
+#pragma endregion
+
+#pragma region FilterManager
 
 IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
     prParsedFilters.clear();
 
-    if (vFilters)
+    if (vFilters) {
         puDLGFilters = vFilters;  // file mode
-    else
+    } else {
         puDLGFilters.clear();  // directory mode
+    }
 
     if (!puDLGFilters.empty()) {
         /* Rules
@@ -831,9 +930,10 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
         5) the filters cannot integrate a ','
         */
 
-        bool collection_started  = false;
-        bool regex_started       = false;
-        bool parenthesis_started = false;
+        bool current_filter_found = false;
+        bool started              = false;
+        bool regex_started        = false;
+        bool parenthesis_started  = false;
 
         std::string word;
         std::string filter_name;
@@ -844,10 +944,9 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                 if (regex_started) {
                     word += c;
                 } else {
-                    collection_started = true;
+                    started = true;
                     prParsedFilters.emplace_back();
-                    prParsedFilters.back().filter           = filter_name;
-                    prParsedFilters.back().filter_optimized = Utils::LowerCaseString(filter_name);
+                    prParsedFilters.back().setCollectionTitle(filter_name);
                     filter_name.clear();
                     word.clear();
                 }
@@ -856,17 +955,16 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                 if (regex_started) {
                     word += c;
                 } else {
-                    if (collection_started) {
+                    if (started) {
                         if (word.size() > 1U && word[0] == '.') {
                             if (prParsedFilters.empty()) {
                                 prParsedFilters.emplace_back();
                             }
-                            prParsedFilters.back().collectionfilters.emplace(word);
-                            prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
+                            prParsedFilters.back().addCollectionFilter(word, false);
                         }
                         word.clear();
                         filter_name.clear();
-                        collection_started = false;
+                        started = false;
                     }
                 }
                 last_split_char = c;
@@ -876,7 +974,7 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                     regex_started = true;
                 }
                 parenthesis_started = true;
-                if (!collection_started) {
+                if (!started) {
                     filter_name += c;
                 }
                 last_split_char = c;
@@ -884,25 +982,17 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                 word += c;
                 if (last_split_char == ')') {
                     if (regex_started) {
-                        try {
-                            auto rx = std::regex(word);  // cant thrwo an exception so if first, prevent emplace if failed
-                            if (collection_started) {
-                                prParsedFilters.back().collectionfilters.emplace(word);
-                                prParsedFilters.back().collectionfilters_regex.emplace_back(rx);
-                                prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
-                            } else {
-                                prParsedFilters.emplace_back();
-                                prParsedFilters.back().filter           = word;
-                                prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
-                                prParsedFilters.back().filter_regex     = rx;
-                            }
-                        } catch (std::exception&) {
+                        if (started) {
+                            prParsedFilters.back().addCollectionFilter(word, true);
+                        } else {
+                            prParsedFilters.emplace_back();
+                            prParsedFilters.back().addFilter(word, true);
                         }
                         word.clear();
                         filter_name.clear();
                         regex_started = false;
                     } else {
-                        if (!collection_started) {
+                        if (!started) {
                             if (!prParsedFilters.empty()) {
                                 prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
                             } else {
@@ -914,13 +1004,13 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                     }
                 }
                 parenthesis_started = false;
-                if (!collection_started) {
+                if (!started) {
                     filter_name += c;
                 }
                 last_split_char = c;
             } else if (c == '.') {
                 word += c;
-                if (!collection_started) {
+                if (!started) {
                     filter_name += c;
                 }
                 last_split_char = c;
@@ -930,18 +1020,16 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                     word.clear();
                     filter_name.clear();
                 } else {
-                    if (collection_started) {
+                    if (started) {
                         if (word.size() > 1U && word[0] == '.') {
-                            prParsedFilters.back().collectionfilters.emplace(word);
-                            prParsedFilters.back().collectionfilters_optimized.emplace(Utils::LowerCaseString(word));
+                            prParsedFilters.back().addCollectionFilter(word, false);
                             word.clear();
                             filter_name.clear();
                         }
                     } else {
                         if (word.size() > 1U && word[0] == '.') {
                             prParsedFilters.emplace_back();
-                            prParsedFilters.back().filter           = word;
-                            prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
+                            prParsedFilters.back().addFilter(word, false);
                             word.clear();
                             filter_name.clear();
                         }
@@ -954,13 +1042,13 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                 if (c != ' ') {
                     word += c;
                 }
-                if (!collection_started) {
+                if (!started) {
                     filter_name += c;
                 }
             }
         }
 
-        if (collection_started) {
+        if (started) {
             if (!prParsedFilters.empty()) {
                 prParsedFilters.erase(prParsedFilters.begin() + prParsedFilters.size() - 1U);
             } else {
@@ -968,22 +1056,22 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
             }
         } else if (word.size() > 1U && word[0] == '.') {
             prParsedFilters.emplace_back();
-            prParsedFilters.back().filter           = word;
-            prParsedFilters.back().filter_optimized = Utils::LowerCaseString(word);
+            prParsedFilters.back().addFilter(word, false);
             word.clear();
         }
 
-        bool currentFilterFound = false;
-
         for (const auto& it : prParsedFilters) {
-            if (it.filter == prSelectedFilter.filter) {
-                currentFilterFound = true;
-                prSelectedFilter   = it;
+            if (it.title == prSelectedFilter.title) {
+                prSelectedFilter     = it;
+                current_filter_found = true;
+                break;
             }
         }
 
-        if (!currentFilterFound) {
-            if (!prParsedFilters.empty()) prSelectedFilter = *prParsedFilters.begin();
+        if (!current_filter_found) {
+            if (!prParsedFilters.empty()) {
+                prSelectedFilter = *prParsedFilters.begin();
+            }
         }
     }
 }
@@ -991,23 +1079,18 @@ IGFD_API void IGFD::FilterManager::ParseFilters(const char* vFilters) {
 IGFD_API void IGFD::FilterManager::SetSelectedFilterWithExt(const std::string& vFilter) {
     if (!prParsedFilters.empty()) {
         if (!vFilter.empty()) {
-            // std::map<std::string, FilterInfos>
             for (const auto& infos : prParsedFilters) {
-                if (vFilter == infos.filter) {
-                    prSelectedFilter = infos;
-                } else {
-                    // maybe this ext is in an extention so we will
-                    // explore the collections is they are existing
-                    for (const auto& filter : infos.collectionfilters) {
-                        if (vFilter == filter) {
-                            prSelectedFilter = infos;
-                        }
+                for (const auto& filter : infos.filters) {
+                    if (vFilter == filter) {
+                        prSelectedFilter = infos;
                     }
                 }
             }
         }
 
-        if (prSelectedFilter.empty()) prSelectedFilter = *prParsedFilters.begin();
+        if (prSelectedFilter.empty()) {
+            prSelectedFilter = *prParsedFilters.begin();
+        }
     }
 }
 
@@ -1041,10 +1124,13 @@ IGFD_API bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vF
                 }
 
                 if (_flag.first & IGFD_FileStyleByExtention) {
-                    if (_file.first.find("((") != std::string::npos && std::regex_search(vFileInfos->fileExt, std::regex(_file.first))) {
-                        vFileInfos->fileStyle = _file.second;
-                    } else if (_file.first == vFileInfos->fileExt) {
-                        vFileInfos->fileStyle = _file.second;
+                    if (_file.first.find("((") != std::string::npos) {
+                        if (std::regex_search(vFileInfos->fileExtLevels[0], std::regex(_file.first)) ||  // last dot
+                            std::regex_search(vFileInfos->fileExtLevels[0], std::regex(_file.first))) {  // first dot
+                            vFileInfos->fileStyle = _file.second;
+                        } else if (_file.first == vFileInfos->fileNameExt) {
+                            vFileInfos->fileStyle = _file.second;
+                        }
                     }
                 }
 
@@ -1073,7 +1159,9 @@ IGFD_API bool IGFD::FilterManager::prFillFileStyle(std::shared_ptr<FileInfos> vF
                     }
                 }
 
-                if (vFileInfos->fileStyle.use_count()) return true;
+                if (vFileInfos->fileStyle.use_count()) {
+                    return true;
+                }
             }
         }
     }
@@ -1155,29 +1243,34 @@ IGFD_API void IGFD::FilterManager::ClearFilesStyle() {
     prFilesStyle.clear();
 }
 
-IGFD_API bool IGFD::FilterManager::IsCoveredByFilters(const std::string& vNameExt, const std::string& vExt, bool vIsCaseInsensitive) const {
+IGFD_API bool IGFD::FilterManager::IsCoveredByFilters(const FileInfos& vFileInfos, bool vIsCaseInsensitive) const {
     if (!puDLGFilters.empty() && !prSelectedFilter.empty()) {
-        // check if current file extention is covered by current filter
-        // we do that here, for avoid doing that during filelist display
-        // for better fps
-        return (prSelectedFilter.exist(vExt, vIsCaseInsensitive) || prSelectedFilter.exist(".*", vIsCaseInsensitive) || prSelectedFilter.exist("*.*", vIsCaseInsensitive) || prSelectedFilter.filter == ".*" || prSelectedFilter.regex_exist(vNameExt));
+        return (prSelectedFilter.exist(vFileInfos, vIsCaseInsensitive) || prSelectedFilter.regexExist(vFileInfos.fileNameExt));
     }
 
     return false;
 }
 
-// combobox of filters
+IGFD_API float IGFD::FilterManager::GetFilterComboBoxWidth() const {
+#ifdef FILTER_COMBO_AUTO_SIZE
+    const auto& combo_width = ImGui::CalcTextSize(prSelectedFilter.title.c_str()).x + ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.x;
+    return ImMax(combo_width, FILTER_COMBO_MIN_WIDTH);
+#else
+    return FILTER_COMBO_MIN_WIDTH;
+#endif
+}
+
 IGFD_API bool IGFD::FilterManager::DrawFilterComboBox(FileDialogInternal& vFileDialogInternal) {
     if (!puDLGFilters.empty()) {
         ImGui::SameLine();
         bool needToApllyNewFilter = false;
-        ImGui::PushItemWidth(FILTER_COMBO_WIDTH);
-        if (IMGUI_BEGIN_COMBO("##Filters", prSelectedFilter.filter.c_str(), ImGuiComboFlags_None)) {
+        ImGui::PushItemWidth(GetFilterComboBoxWidth());
+        if (IMGUI_BEGIN_COMBO("##Filters", prSelectedFilter.title.c_str(), ImGuiComboFlags_None)) {
             intptr_t i = 0;
             for (const auto& filter : prParsedFilters) {
-                const bool item_selected = (filter.filter == prSelectedFilter.filter);
+                const bool item_selected = (filter.title == prSelectedFilter.title);
                 ImGui::PushID((void*)(intptr_t)i++);
-                if (ImGui::Selectable(filter.filter.c_str(), item_selected)) {
+                if (ImGui::Selectable(filter.title.c_str(), item_selected)) {
                     prSelectedFilter     = filter;
                     needToApllyNewFilter = true;
                 }
@@ -1194,7 +1287,7 @@ IGFD_API bool IGFD::FilterManager::DrawFilterComboBox(FileDialogInternal& vFileD
     return false;
 }
 
-IGFD_API IGFD::FilterManager::FilterInfos IGFD::FilterManager::GetSelectedFilter() {
+IGFD_API IGFD::FilterInfos IGFD::FilterManager::GetSelectedFilter() const {
     return prSelectedFilter;
 }
 
@@ -1202,24 +1295,26 @@ IGFD_API IGFD::FilterManager::FilterInfos IGFD::FilterManager::GetSelectedFilter
 IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(const std::string& vFile) const {
     auto result = vFile;
     if (!result.empty()) {
+        const auto& current_filter = prSelectedFilter.getFirstFilter();
+
         // many filter in collection for the selected filter => no change
-        if (prSelectedFilter.collectionfilters.size() > 1U) return result;
+        if (prSelectedFilter.filters.size() > 1U) return result;
         // one filter in collection for the selected filter and contain .* => no change
-        if (prSelectedFilter.collectionfilters.size() == 1U && (*(prSelectedFilter.collectionfilters.begin())).find(".*") != std::string::npos) return result;
+        if (prSelectedFilter.filters.size() == 1U && (*(prSelectedFilter.filters.begin())).find(".*") != std::string::npos) return result;
         // filter containe .* => no change
-        if (prSelectedFilter.filter.find(".*") != std::string::npos) return result;
+        if (current_filter.find(".*") != std::string::npos) return result;
         // if some regex in collection in the current filter => no change
-        if (!prSelectedFilter.collectionfilters_regex.empty()) return result;
+        if (!prSelectedFilter.filters_regex.empty()) return result;
         // if a regex => no change
-        if (prSelectedFilter.regex_exist(prSelectedFilter.filter)) return result;
+        if (prSelectedFilter.regexExist(current_filter)) return result;
 
         // else => change
 
         std::string filter;
-        if (prSelectedFilter.collectionfilters.size() == 1U) {
-            filter = *(prSelectedFilter.collectionfilters.begin());
+        if (prSelectedFilter.filters.size() == 1U) {
+            filter = *(prSelectedFilter.filters.begin());
         } else {
-            filter = prSelectedFilter.filter;
+            filter = current_filter;
         }
 
         // toto.c.t with a filter .b.s => toto.b.s
@@ -1229,20 +1324,11 @@ IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilter(cons
         auto count_dots = Utils::GetCharCountInString(filter, '.');
 
         // last dot pos according to the dot count of the filter
-        size_t last_dot = vFile.size() + 1U;
-        while (count_dots > 0U && last_dot > 0U && last_dot != std::string::npos) {
-            auto new_dot = vFile.rfind('.', last_dot - 1U);
-            if (new_dot != std::string::npos) {
-                last_dot = new_dot;
-                --count_dots;
-            } else {
-                break;
-            }
-        }
-
+        size_t last_dot = Utils::GetLastCharPosWithMinCharCount(vFile, '.', count_dots);
         if (last_dot != std::string::npos) {
             result = result.substr(0, last_dot) + filter;
         } else {
+            IGFD_DEBUG_BREAK;
         }
     }
     return result;
@@ -1255,9 +1341,142 @@ IGFD_API void IGFD::FilterManager::SetDefaultFilterIfNotDefined() {
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE MANAGER ///////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region FileType
+
+FileType::FileType() = default;
+FileType::FileType(const ContentType& vContentType, const bool& vIsSymlink) : m_Content(vContentType), m_Symlink(vIsSymlink) {
+}
+
+void FileType::SetContent(const ContentType& vContentType) {
+    m_Content = vContentType;
+}
+
+void FileType::SetSymLink(const bool& vIsSymlink) {
+    m_Symlink = vIsSymlink;
+}
+
+bool FileType::isValid() const {
+    return m_Content != ContentType::Invalid;
+}
+
+bool FileType::isDir() const {
+    return m_Content == ContentType::Directory;
+}
+
+bool FileType::isFile() const {
+    return m_Content == ContentType::File;
+}
+
+bool FileType::isLinkToUnknown() const {
+    return m_Content == ContentType::LinkToUnknown;
+}
+
+bool FileType::isSymLink() const {
+    return m_Symlink;
+}
+
+// Comparisons only care about the content type, ignoring whether it's a symlink or not.
+bool FileType::operator==(const FileType& rhs) const {
+    return m_Content == rhs.m_Content;
+}
+
+bool FileType::operator!=(const FileType& rhs) const {
+    return m_Content != rhs.m_Content;
+}
+
+bool FileType::operator<(const FileType& rhs) const {
+    return m_Content < rhs.m_Content;
+}
+
+bool FileType::operator>(const FileType& rhs) const {
+    return m_Content > rhs.m_Content;
+}
+
+#pragma endregion
+
+#pragma region FileInfos
+
+IGFD_API bool IGFD::FileInfos::SearchForTag(const std::string& vTag) const {
+    if (!vTag.empty()) {
+        if (fileNameExt_optimized == "..") return true;
+
+        return fileNameExt_optimized.find(vTag) != std::string::npos ||  // first try without case and accents
+               fileNameExt.find(vTag) != std::string::npos;              // second if searched with case and accents
+    }
+
+    // if tag is empty => its a special case but all is found
+    return true;
+}
+
+IGFD_API bool IGFD::FileInfos::SearchForExt(const std::string& vExt, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
+    if (!vExt.empty()) {
+        const auto& ext_levels = vIsCaseInsensitive ? fileExtLevels_optimized : fileExtLevels;
+        if (vMaxLevel > 1 && countExtDot >= vMaxLevel) {
+            for (const auto& ext : ext_levels) {
+                if (ext == vExt) {
+                    return true;
+                }
+            }
+        } else {
+            return (fileExtLevels[0] == vExt);
+        }
+    }
+    return false;
+}
+
+IGFD_API bool IGFD::FileInfos::SearchForExts(const std::string& vComaSepExts, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
+    if (!vComaSepExts.empty()) {
+        const auto& arr = Utils::SplitStringToVector(vComaSepExts, ',', false);
+        for (const auto& a : arr) {
+            if (SearchForExt(a, vIsCaseInsensitive, vMaxLevel)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
+    if (fileType.isFile() || fileType.isLinkToUnknown()) {  // link can have the same extention of a file
+        countExtDot = Utils::GetCharCountInString(fileNameExt, '.');
+        size_t lpt         = 0U;
+        if (countExtDot > 1U) {  // multi layer ext
+            size_t max_dot_to_extract = vMaxDotToExtract;
+            if (max_dot_to_extract > countExtDot) {
+                max_dot_to_extract = countExtDot;
+            }
+            lpt = Utils::GetLastCharPosWithMinCharCount(fileNameExt, '.', max_dot_to_extract);
+        } else {
+            lpt = fileNameExt.find_first_of('.');
+        }
+        if (lpt != std::string::npos) {
+            size_t lvl                          = 0U;
+            fileExtLevels[lvl]           = fileNameExt.substr(lpt);
+            fileExtLevels_optimized[lvl] = Utils::LowerCaseString(fileExtLevels[lvl]);
+            if (countExtDot > 1U) {  // multi layer ext
+                auto count = countExtDot;
+                while (count > 0 && lpt != std::string::npos && lvl < fileExtLevels.size()) {
+                    ++lpt, ++lvl;
+                    if (fileNameExt.size() > lpt) {
+                        lpt = fileNameExt.find_first_of('.', lpt);
+                        if (lpt != std::string::npos) {
+                            fileExtLevels[lvl]           = fileNameExt.substr(lpt);
+                            fileExtLevels_optimized[lvl] = Utils::LowerCaseString(fileExtLevels[lvl]);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+#pragma endregion
+
+#pragma region FileManager
 
 IGFD_API IGFD::FileManager::FileManager() {
     puFsRoot = std::string(1u, PATH_SEP);
@@ -1345,7 +1564,7 @@ IGFD_API void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialo
             std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
                 if (!a.use_count() || !b.use_count()) return false;
                 if (a->fileType != b->fileType) return (a->fileType < b->fileType);  // directory in first
-                return (a->fileExt < b->fileExt);                                    // else
+                return (a->fileExtLevels[0] < b->fileExtLevels[0]);                  // else
             });
         } else {
 #ifdef USE_CUSTOM_SORTING_ICON
@@ -1354,7 +1573,7 @@ IGFD_API void IGFD::FileManager::SortFields(const FileDialogInternal& vFileDialo
             std::sort(vFileInfosList.begin(), vFileInfosList.end(), [](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
                 if (!a.use_count() || !b.use_count()) return false;
                 if (a->fileType != b->fileType) return (a->fileType > b->fileType);  // directory in last
-                return (a->fileExt > b->fileExt);                                    // else
+                return (a->fileExtLevels[0] > b->fileExtLevels[0]);                  // else
             });
         }
     } else if (puSortingField == SortingFieldEnum::FIELD_SIZE) {
@@ -1451,18 +1670,18 @@ IGFD_API void IGFD::FileManager::AddFile(const FileDialogInternal& vFileDialogIn
     infos->fileNameExt_optimized = Utils::LowerCaseString(infos->fileNameExt);
     infos->fileType              = vFileType;
 
-    if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return;                            // filename empty or filename is the current dir '.' //-V807
-    if (infos->fileNameExt != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileNameExt[0] == '.')                 // dont show hidden files
-        if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != "."))  // except "." if in directory mode //-V728
+    if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
+        return;
+    }
+
+    if (infos->fileNameExt != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileNameExt[0] == '.') {                 // dont show hidden files
+        if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != ".")) {  // except "." if in directory mode //-V728
             return;
-
-    if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown()) {  // link can have the same extention of a file
-        size_t lpt = infos->fileNameExt.find_last_of('.');
-        if (lpt != std::string::npos) {
-            infos->fileExt = infos->fileNameExt.substr(lpt);
         }
+    }
 
-        if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileNameExt, infos->fileExt, (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0)) {
+    if (infos->FinalizeFileTypeParsing(vFileDialogInternal.puFilterManager.prSelectedFilter.count_dots)) {
+        if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(*infos.get(), (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0)) {
             return;
         }
     }
@@ -1483,18 +1702,12 @@ IGFD_API void IGFD::FileManager::AddPath(const FileDialogInternal& vFileDialogIn
     infos->fileNameExt_optimized = Utils::LowerCaseString(infos->fileNameExt);
     infos->fileType              = vFileType;
 
-    if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) return;                            // filename empty or filename is the current dir '.' //-V807
-    if (infos->fileNameExt != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileNameExt[0] == '.')                 // dont show hidden files
-        if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != "."))  // except "." if in directory mode //-V728
-            return;
+    if (infos->fileNameExt.empty() || (infos->fileNameExt == "." && !vFileDialogInternal.puFilterManager.puDLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
+        return;
+    }
 
-    if (infos->fileType.isFile() || infos->fileType.isLinkToUnknown()) {  // link can have the same extention of a file
-        size_t lpt = infos->fileNameExt.find_last_of('.');
-        if (lpt != std::string::npos) {
-            infos->fileExt = infos->fileNameExt.substr(lpt);
-        }
-
-        if (!vFileDialogInternal.puFilterManager.IsCoveredByFilters(infos->fileNameExt, infos->fileExt, (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_CaseInsensitiveExtention) != 0)) {
+    if (infos->fileNameExt != ".." && (vFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos->fileNameExt[0] == '.') {                 // dont show hidden files
+        if (!vFileDialogInternal.puFilterManager.puDLGFilters.empty() || (vFileDialogInternal.puFilterManager.puDLGFilters.empty() && infos->fileNameExt != ".")) {  // except "." if in directory mode //-V728
             return;
         }
     }
@@ -1584,8 +1797,7 @@ IGFD_API void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogIn
                         auto filePath = path + std::string(1u, PATH_SEP) + ent->d_name;
 #endif
 
-                        int result = stat(filePath.c_str(), &sb);
-                        if (result == 0) {
+                        if (!stat(filePath.c_str(), &sb)) {
                             if (sb.st_mode & S_IFLNK) {
                                 fileType.SetSymLink(true);
                                 fileType.SetContent(FileType::ContentType::LinkToUnknown);  // by default if we can't figure out the target type.
@@ -1604,8 +1816,7 @@ IGFD_API void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogIn
                 }
 
                 if (fileType.isValid()) {
-                    auto fileNameExt = ent->d_name;
-                    AddFile(vFileDialogInternal, path, fileNameExt, fileType);
+                    AddFile(vFileDialogInternal, path, ent->d_name, fileType);
                 }
             }
 
@@ -1624,11 +1835,6 @@ IGFD_API void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogIn
 #if defined(USE_QUICK_PATH_SELECT)
 IGFD_API void IGFD::FileManager::ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal, const std::string& vPath) {
     std::string path = vPath;
-
-    /*if (prCurrentPathDecomposition.empty())
-    {
-        SetCurrentDir(path);
-    }*/
 
     if (!path.empty()) {
 #ifdef _IGFD_WIN_
@@ -1675,8 +1881,7 @@ IGFD_API void IGFD::FileManager::ScanDirForPathSelection(const FileDialogInterna
                 }
 
                 if (ent->d_type == DT_DIR || (ent->d_type == DT_UNKNOWN && result == 0 && sb.st_mode & S_IFDIR)) {
-                    auto fileNameExt = ent->d_name;
-                    AddPath(vFileDialogInternal, path, fileNameExt, FileType(FileType::ContentType::Directory, false));
+                    AddPath(vFileDialogInternal, path, ent->d_name, FileType(FileType::ContentType::Directory, false));
                 }
             }
 
@@ -1805,7 +2010,7 @@ IGFD_API void IGFD::FileManager::ApplyFilteringOnFileList(const FileDialogIntern
     for (const auto& file : vFileInfosList) {
         if (!file.use_count()) continue;
         bool show = true;
-        if (!file->IsTagFound(vFileDialogInternal.puSearchManager.puSearchTag))  // if search tag
+        if (!file->SearchForTag(vFileDialogInternal.puSearchManager.puSearchTag))  // if search tag
             show = false;
         if (puDLGDirectoryMode && !file->fileType.isDir()) show = false;
         if (show) vFileInfosFilteredList.push_back(file);
@@ -2090,8 +2295,7 @@ IGFD_API void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileD
             if (prSelectedFileNames.find(vInfos->fileNameExt) == prSelectedFileNames.end())  // not found +> add
             {
                 prAddFileNameInSelection(vInfos->fileNameExt, true);
-            } else  // found +> remove
-            {
+            } else {  // found +> remove
                 prRemoveFileNameInSelection(vInfos->fileNameExt);
             }
         } else  // selection limited by size
@@ -2100,8 +2304,7 @@ IGFD_API void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileD
                 if (prSelectedFileNames.find(vInfos->fileNameExt) == prSelectedFileNames.end())  // not found +> add
                 {
                     prAddFileNameInSelection(vInfos->fileNameExt, true);
-                } else  // found +> remove
-                {
+                } else {  // found +> remove
                     prRemoveFileNameInSelection(vInfos->fileNameExt);
                 }
             }
@@ -2117,7 +2320,7 @@ IGFD_API void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileD
                 if (!file.use_count()) continue;
 
                 bool canTake = true;
-                if (!file->IsTagFound(vFileDialogInternal.puSearchManager.puSearchTag)) canTake = false;
+                if (!file->SearchForTag(vFileDialogInternal.puSearchManager.puSearchTag)) canTake = false;
                 if (canTake)  // if not filtered, we will take files who are filtered by the dialog
                 {
                     if (file->fileNameExt == prLastSelectedFileName) {
@@ -2127,8 +2330,7 @@ IGFD_API void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileD
                         if (puDLGcountSelectionMax == 0)  // infinite selection
                         {
                             prAddFileNameInSelection(file->fileNameExt, false);
-                        } else  // selection limited by size
-                        {
+                        } else {  // selection limited by size
                             if (prSelectedFileNames.size() < puDLGcountSelectionMax) {
                                 prAddFileNameInSelection(file->fileNameExt, false);
                             } else {
@@ -2360,9 +2562,9 @@ IGFD_API std::map<std::string, std::string> IGFD::FileManager::GetResultingSelec
     return res;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE DIALOG INTERNAL ///////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region FileDialogInternal
 
 IGFD_API void IGFD::FileDialogInternal::NewFrame() {
     puCanWeContinue               = true;   // reset flag for possibily validate the dialog
@@ -2417,9 +2619,13 @@ IGFD_API void IGFD::FileDialogInternal::EndFrame() {
 IGFD_API void IGFD::FileDialogInternal::ResetForNewDialog() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// THUMBNAIL FEATURE //////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma endregion
+
+#pragma region Optional Features
+
+#pragma region ThumbnailFeature
 
 IGFD_API IGFD::ThumbnailFeature::ThumbnailFeature() {
 #ifdef USE_THUMBNAILS
@@ -2491,10 +2697,8 @@ IGFD_API void IGFD::ThumbnailFeature::prThreadThumbnailFileDatasExtractionFunc()
             if (file.use_count()) {
                 if (file->fileType.isFile())  //-V522
                 {
-                    if (file->fileExt == ".png" || file->fileExt == ".bmp" || file->fileExt == ".tga" || file->fileExt == ".jpg" || file->fileExt == ".jpeg" || file->fileExt == ".gif" || file->fileExt == ".psd" || file->fileExt == ".pic" ||
-                        file->fileExt == ".ppm" || file->fileExt == ".pgm"
-                        //|| file->fileExt == ".hdr" => format float so in few times
-                    ) {
+                    //|| file->fileExtLevels == ".hdr" => format float so in few times
+                    if (file->SearchForExts(".png,.bmp,.tga,.jpg,.jpeg,.gif,.psd,.pic,.ppm,.pgm", true)) {
                         auto fpn = file->filePath + std::string(1u, PATH_SEP) + file->fileNameExt;
 
                         int w          = 0;
@@ -2540,7 +2744,7 @@ IGFD_API void IGFD::ThumbnailFeature::prThreadThumbnailFileDatasExtractionFunc()
                     }
                 }
 
-                // peu importe le resultat on vire le fichicer
+                // peu importe le resultat on vire le fichier
                 // remove form this list
                 // write => thread concurency issues
                 prThumbnailFileDatasToGetMutex.lock();
@@ -2548,12 +2752,12 @@ IGFD_API void IGFD::ThumbnailFeature::prThreadThumbnailFileDatasExtractionFunc()
                 prThumbnailFileDatasToGetMutex.unlock();
             }
         } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 }
 
-IGFD_API inline void inVariadicProgressBar(float fraction, const ImVec2& size_arg, const char* fmt, ...) {
+IGFD_API void IGFD::ThumbnailFeature::prVariadicProgressBar(float fraction, const ImVec2& size_arg, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     char TempBuffer[512];
@@ -2567,8 +2771,9 @@ IGFD_API inline void inVariadicProgressBar(float fraction, const ImVec2& size_ar
 IGFD_API void IGFD::ThumbnailFeature::prDrawThumbnailGenerationProgress() {
     if (prThumbnailGenerationThread.use_count() && prThumbnailGenerationThread->joinable()) {
         if (!prThumbnailFileDatasToGet.empty()) {
-            const auto p = (float)((double)prCountFiles / (double)prThumbnailFileDatasToGet.size());                     // read => no thread concurency issues
-            inVariadicProgressBar(p, ImVec2(50, 0), "%u/%u", prCountFiles, (uint32_t)prThumbnailFileDatasToGet.size());  // read => no thread concurency issues
+            const auto p = (float)((double)prCountFiles / (double)prThumbnailFileDatasToGet.size());  // read => no thread concurency issues
+            prVariadicProgressBar(p, ImVec2(50, 0), "%u/%u", prCountFiles,
+                                  (uint32_t)prThumbnailFileDatasToGet.size());  // read => no thread concurency issues
             ImGui::SameLine();
         }
     }
@@ -2577,10 +2782,8 @@ IGFD_API void IGFD::ThumbnailFeature::prDrawThumbnailGenerationProgress() {
 IGFD_API void IGFD::ThumbnailFeature::prAddThumbnailToLoad(const std::shared_ptr<FileInfos>& vFileInfos) {
     if (vFileInfos.use_count()) {
         if (vFileInfos->fileType.isFile()) {
-            if (vFileInfos->fileExt == ".png" || vFileInfos->fileExt == ".bmp" || vFileInfos->fileExt == ".tga" || vFileInfos->fileExt == ".jpg" || vFileInfos->fileExt == ".jpeg" || vFileInfos->fileExt == ".gif" || vFileInfos->fileExt == ".psd" ||
-                vFileInfos->fileExt == ".pic" || vFileInfos->fileExt == ".ppm" || vFileInfos->fileExt == ".pgm"
-                //|| file->fileExt == ".hdr" => format float so in few times
-            ) {
+            //|| file->fileExtLevels == ".hdr" => format float so in few times
+            if (vFileInfos->SearchForExts(".png,.bmp,.tga,.jpg,.jpeg,.gif,.psd,.pic,.ppm,.pgm", true)) {
                 // write => thread concurency issues
                 prThumbnailFileDatasToGetMutex.lock();
                 prThumbnailFileDatasToGet.push_back(vFileInfos);
@@ -2680,9 +2883,9 @@ IGFD_API void IGFD::ThumbnailFeature::ManageGPUThumbnails() {
 
 #endif  // USE_THUMBNAILS
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// BOOKMARK FEATURE ///////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region BookMarkFeature
 
 IGFD_API IGFD::BookMarkFeature::BookMarkFeature() {
 #ifdef USE_BOOKMARK
@@ -2821,9 +3024,9 @@ IGFD_API bool IGFD::BookMarkFeature::RemoveBookmark(const std::string& vBookMark
 }
 #endif  // USE_BOOKMARK
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// KEY EXPLORER FEATURE ///////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma region KeyExplorerFeature
 
 KeyExplorerFeature::KeyExplorerFeature() = default;
 
@@ -3034,7 +3237,8 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(const char* label,
     ItemSize(size, 0.0f);
 
     // Fill horizontal space
-    // We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitly right-aligned sizes not visibly match other widgets.
+    // We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitly right-aligned sizes not visibly match
+    // other widgets.
     const bool span_all_columns = (flags & ImGuiSelectableFlags_SpanAllColumns) != 0;
     const float min_x           = span_all_columns ? window->ParentWorkRect.Min.x : pos.x;
     const float max_x           = span_all_columns ? window->ParentWorkRect.Max.x : window->WorkRect.Max.x;
@@ -3174,9 +3378,11 @@ IGFD_API void IGFD::KeyExplorerFeature::SetFlashingAttenuationInSeconds(float vA
 }
 #endif  // USE_EXPLORATION_BY_KEYS
 
-/////////////////////////////////////////////////////////////////////////////////////
-//// FILE DIALOG CONSTRUCTOR / DESTRUCTOR ///////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
+#pragma endregion
+
+#pragma endregion
+
+#pragma region FileDialog
 
 IGFD_API IGFD::FileDialog::FileDialog() : BookMarkFeature(), KeyExplorerFeature(), ThumbnailFeature() {
 }
@@ -3508,7 +3714,7 @@ IGFD_API void IGFD::FileDialog::prDrawContent() {
             // size.x -= prBookmarkWidth;
             float otherWidth = size.x - prBookmarkWidth;
             ImGui::PushID("##splitterbookmark");
-            IGFD::Utils::Splitter(true, 4.0f, &prBookmarkWidth, &otherWidth, 10.0f, 10.0f + prFileDialogInternal.puDLGoptionsPaneWidth, size.y);
+            IGFD::Utils::ImSplitter(true, 4.0f, &prBookmarkWidth, &otherWidth, 10.0f, 10.0f + prFileDialogInternal.puDLGoptionsPaneWidth, size.y);
             ImGui::PopID();
             size.x -= otherWidth;
             prDrawBookmarkPane(prFileDialogInternal, size);
@@ -3521,7 +3727,7 @@ IGFD_API void IGFD::FileDialog::prDrawContent() {
 
     if (prFileDialogInternal.puDLGoptionsPane) {
         ImGui::PushID("##splittersidepane");
-        IGFD::Utils::Splitter(true, 4.0f, &size.x, &prFileDialogInternal.puDLGoptionsPaneWidth, 10.0f, 10.0f, size.y);
+        IGFD::Utils::ImSplitter(true, 4.0f, &size.x, &prFileDialogInternal.puDLGoptionsPaneWidth, 10.0f, 10.0f, size.y);
         ImGui::PopID();
     }
 
@@ -3676,7 +3882,7 @@ IGFD_API bool IGFD::FileDialog::prDrawFooter() {
     float width = ImGui::GetContentRegionAvail().x;
     if (!fdFile.puDLGDirectoryMode) {
         ImGuiContext& g = *GImGui;
-        width -= FILTER_COMBO_WIDTH + g.Style.ItemSpacing.x;
+        width -= prFileDialogInternal.puFilterManager.GetFilterComboBoxWidth() + g.Style.ItemSpacing.x;
     }
 
     ImGui::PushItemWidth(width);
@@ -3916,7 +4122,7 @@ IGFD_API void IGFD::FileDialog::prDrawFileListView(ImVec2 vSize) {
                     }
                     if (ImGui::TableNextColumn())  // file type
                     {
-                        ImGui::Text("%s", infos->fileExt.c_str());
+                        ImGui::Text("%s", infos->fileExtLevels[0].c_str());
                     }
                     if (ImGui::TableNextColumn())  // file size
                     {
@@ -4096,7 +4302,7 @@ IGFD_API void IGFD::FileDialog::prDrawThumbnailsListView(ImVec2 vSize) {
                     }
                     if (ImGui::TableNextColumn())  // file type
                     {
-                        ImGui::Text("%s", infos->fileExt.c_str());
+                        ImGui::Text("%s", infos->fileExtLevels[0].c_str());
                     }
                     if (ImGui::TableNextColumn())  // file size
                     {
@@ -4161,8 +4367,7 @@ IGFD_API void IGFD::FileDialog::prDrawSidePane(float vHeight) {
 
     ImGui::BeginChild("##FileTypes", ImVec2(0, vHeight));
 
-    prFileDialogInternal.puDLGoptionsPane(prFileDialogInternal.puFilterManager.GetSelectedFilter().filter.c_str(), prFileDialogInternal.puDLGuserDatas, &prFileDialogInternal.puCanWeContinue);
-
+    prFileDialogInternal.puDLGoptionsPane(prFileDialogInternal.puFilterManager.GetSelectedFilter().getFirstFilter().c_str(), prFileDialogInternal.puDLGuserDatas, &prFileDialogInternal.puCanWeContinue);
     ImGui::EndChild();
 }
 
@@ -4215,7 +4420,7 @@ IGFD_API std::string IGFD::FileDialog::GetCurrentFileName() {
 }
 
 IGFD_API std::string IGFD::FileDialog::GetCurrentFilter() {
-    return prFileDialogInternal.puFilterManager.GetSelectedFilter().filter;
+    return prFileDialogInternal.puFilterManager.GetSelectedFilter().title;
 }
 
 IGFD_API std::map<std::string, std::string> IGFD::FileDialog::GetSelection() {
@@ -4328,13 +4533,16 @@ IGFD_API bool IGFD::FileDialog::prConfirm_Or_OpenOverWriteFileDialog_IfNeeded(bo
 
     return false;
 }
+
+#pragma endregion
+
 }  // namespace IGFD
+
+#pragma endregion
 
 #endif  // __cplusplus
 
-/////////////////////////////////////////////////////////////////
-///// C Interface ///////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
+#pragma region IGFD_C_API
 
 // Return an initialized IGFD_Selection_Pair
 IGFD_C_API IGFD_Selection_Pair IGFD_Selection_Pair_Get(void) {
@@ -4605,7 +4813,8 @@ IGFD_C_API void* IGFD_GetUserDatas(ImGuiFileDialog* vContext) {
     return nullptr;
 }
 
-IGFD_C_API void IGFD_SetFileStyle(ImGuiFileDialog* vContext, IGFD_FileStyleFlags vFlags, const char* vCriteria, ImVec4 vColor, const char* vIcon, ImFont* vFont)  //-V813
+IGFD_C_API void IGFD_SetFileStyle(ImGuiFileDialog* vContext, IGFD_FileStyleFlags vFlags, const char* vCriteria, ImVec4 vColor, const char* vIcon,
+                                  ImFont* vFont)  //-V813
 {
     if (vContext) {
         vContext->SetFileStyle(vFlags, vCriteria, vColor, vIcon, vFont);
@@ -4722,3 +4931,5 @@ IGFD_C_API void ManageGPUThumbnails(ImGuiFileDialog* vContext) {
     }
 }
 #endif  // USE_THUMBNAILS
+
+#pragma endregion

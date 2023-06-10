@@ -5,6 +5,7 @@ project(ImGuiFileDialog)
 add_library(ImGuiFileDialog STATIC
     ImGuiFileDialog.cpp
     ImGuiFileDialog.h
+    ImGuiFileDialogConfig.h
 )
 
 target_include_directories(ImGuiFileDialog PUBLIC 
