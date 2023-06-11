@@ -1,7 +1,7 @@
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Win/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AWin)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Linux/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3ALinux)
 [<img src="https://github.com/aiekick/ImGuiFileDialog/workflows/Osx/badge.svg"/>](https://github.com/aiekick/ImGuiFileDialog/actions?query=workflow%3AOsx)
-[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.89.5-blue.svg)](https://github.com/ocornut/imgui)
+[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.89.7-blue.svg)](https://github.com/ocornut/imgui)
 
 # ImGuiFileDialog
 
@@ -14,7 +14,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.5 
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.7 
 
 ## Structure
 
