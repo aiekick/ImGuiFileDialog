@@ -63,7 +63,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.5 WIP
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.7 WIP
 
 ## Structure
 
@@ -982,7 +982,7 @@ ImGuiFontStudio is using also ImGuiFileDialog.
 
 #pragma region IGFD VERSION
 
-// compatible with 1.89.5 WIP
+// compatible with 1.89.7 WIP
 #define IMGUIFILEDIALOG_VERSION "v0.6.6"
 
 #pragma endregion

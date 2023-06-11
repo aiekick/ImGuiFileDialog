@@ -3123,12 +3123,12 @@ IGFD_API void IGFD::KeyExplorerFeature::prExploreWithkeys(FileDialogInternal& vF
 
         if (g.NavId && g.NavId == vListViewID) {
             if (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter) || ImGui::IsKeyPressed(ImGuiKey_Space)) {
-                ImGui::ActivateItem(vListViewID);
+                ImGui::ActivateItemByID(vListViewID);
                 ImGui::SetActiveID(vListViewID, g.CurrentWindow);
             }
         }
 
-        if (vListViewID == g.LastActiveId - 1)  // if listview id is the last acticated nav id (ImGui::ActivateItem(vListViewID);)
+        if (vListViewID == g.LastActiveId - 1)  // if listview id is the last acticated nav id (ImGui::ActivateItemByID(vListViewID);)
             canWeExplore = true;
 
         if (canWeExplore && ImGui::IsWindowFocused()) {
