@@ -119,3 +119,11 @@ SetTest(Test_IGFD_FileManager_Filtering_asterisk_3)
 ## Test_IGFD_FileManager -- Filtering Divers
 SetTest(Test_IGFD_FileManager_Filtering_divers_0)
 SetTest(Test_IGFD_FileManager_Filtering_divers_1)
+
+## Test_IGFD_FileStyle
+SetTest(Test_IGFD_FileStyle_ByExtention_0)
+SetTest(Test_IGFD_FileStyle_ByExtention_1)
+SetTest(Test_IGFD_FileStyle_ByExtention_2)
+SetTest(Test_IGFD_FileStyle_ByExtention_3)
+SetTest(Test_IGFD_FileStyle_ByExtention_4)
+SetTest(Test_IGFD_FileStyle_ByExtention_5)
