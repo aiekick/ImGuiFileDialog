@@ -13,3 +13,4 @@
 [submodule "ImGuiFileDialog"]
 	path = ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
+	branch = master
