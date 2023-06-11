@@ -83,6 +83,8 @@ Android Requirements : Api 21 mini
 - Can tune validation buttons (placements, widths, inversion)
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
 - regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
+- multi layer extentions like : .a.b.c .json.cpp .vcxproj.filters etc..
+- advanced behavior regarding asterisk based filter. like : .* .*.* .vcx.* .*.filters .vcs*.filt.* etc.. (internally regex is used)
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
