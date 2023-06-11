@@ -42,7 +42,9 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-static void glfw_error_callback(int error, const char* description) { fprintf(stderr, "Glfw Error %d: %s\n", error, description); }
+static void glfw_error_callback(int error, const char* description) {
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
 static bool canValidateDialog = false;
 
@@ -99,7 +101,9 @@ inline bool RadioButtonLabeled(const char* label, const char* help, bool active,
         window->DrawList->AddRect(check_bb.Min, check_bb.Max, GetColorU32(ImGuiCol_Border), style.FrameRounding);
     }
 
-    if (label_size.x > 0.0f) { RenderText(check_bb.GetCenter() - label_size * 0.5f, label); }
+    if (label_size.x > 0.0f) {
+        RenderText(check_bb.GetCenter() - label_size * 0.5f, label);
+    }
 
     if (help && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", help);
 
@@ -154,8 +158,12 @@ public:
     static CustomDrawReadOnlyCheckBoxFileDialog* Instance(CustomDrawReadOnlyCheckBoxFileDialog* vCopy = nullptr, bool vForce = false) {
         static CustomDrawReadOnlyCheckBoxFileDialog _instance;
         static CustomDrawReadOnlyCheckBoxFileDialog* _instance_copy = nullptr;
-        if (vCopy || vForce) { _instance_copy = vCopy; }
-        if (_instance_copy) { return _instance_copy; }
+        if (vCopy || vForce) {
+            _instance_copy = vCopy;
+        }
+        if (_instance_copy) {
+            return _instance_copy;
+        }
         return &_instance;
     }
 
@@ -165,7 +173,9 @@ public:
         ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vPath, vFileName, vCountSelectionMax, vUserDatas, vFlags);
     }
 
-    bool isReadOnly() { return m_ReadOnly; }
+    bool isReadOnly() {
+        return m_ReadOnly;
+    }
 
 protected:
     bool prDrawFooter() override {
@@ -188,8 +198,12 @@ protected:
 
         ImGui::PushItemWidth(width);
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-        if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) { flags |= ImGuiInputTextFlags_ReadOnly; }
-        if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) { prFileDialogInternal.puIsOk = true; }
+        if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) {
+            flags |= ImGuiInputTextFlags_ReadOnly;
+        }
+        if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) {
+            prFileDialogInternal.puIsOk = true;
+        }
         if (ImGui::GetItemID() == ImGui::GetActiveID()) prFileDialogInternal.puFileInputIsActive = true;
         ImGui::PopItemWidth();
 
@@ -222,7 +236,9 @@ int main(int, char**) {
 #endif
 
     auto loc = std::setlocale(LC_ALL, ".UTF8");
-    if (!loc) { printf("setlocale fail to apply with this compiler. it seems the unicode will be NOK\n"); }
+    if (!loc) {
+        printf("setlocale fail to apply with this compiler. it seems the unicode will be NOK\n");
+    }
 
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -273,9 +289,9 @@ int main(int, char**) {
     (void)io;
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
-    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
-    io.FontAllowUserScaling = true;                      // zoom wiht ctrl + mouse wheel
+    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
+    io.FontAllowUserScaling = true;  // zoom wiht ctrl + mouse wheel
 
     // Setup Dear ImGui style
     // ImGui::StyleColorsDark();
@@ -480,6 +496,9 @@ int main(int, char**) {
     static std::string userDatas;
     static std::vector<std::pair<std::string, std::string>> selection = {};
 
+    static bool _UseWindowContraints  = true;
+    static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
+
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         // Poll and handle events (inputs, window resize, etc.)
@@ -501,15 +520,15 @@ int main(int, char**) {
         if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        ImGui::Begin("imGuiFileDialog Demo");  // Create a window called "Hello, world!" and append into it.
         {
-            ImGui::Begin("imGuiFileDialog Demo");  // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Checkbox("Demo Window", &show_demo_window);  // Edit bools storing our window open/close state
+            ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
             ImGui::Separator();
 
-            ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
-            ImGui::Indent();
-            {
+            ImGui::ColorEdit3("clear color", (float*)&clear_color);  // Edit 3 floats representing a color
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Checkbox("Demo Window", &show_demo_window);  // Edit bools storing our window open/close state
+            if (ImGui::CollapsingHeader("Settings")) {
 #ifdef USE_EXPLORATION_BY_KEYS
                 static float flashingAttenuationInSeconds = 1.0f;
                 if (ImGui::Button("R##resetflashlifetime")) {
@@ -531,13 +550,11 @@ int main(int, char**) {
                 }
                 ImGui::PopItemWidth();
 #endif
-                static bool _UseWindowContraints = true;
                 ImGui::Separator();
                 ImGui::Checkbox("Use file dialog constraint", &_UseWindowContraints);
                 ImGui::Text("Constraints is used here for define min/max file dialog size");
                 ImGui::Separator();
 
-                static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
                 ImGui::Text("ImGuiFileDialog Flags : ");
                 ImGui::Indent();
                 {
@@ -567,8 +584,9 @@ int main(int, char**) {
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Case Insensitive Extentions", "will not take into account the case of file extentions", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtention);
                 }
                 ImGui::Unindent();
+            }
 
-                ImGui::Text("Singleton acces :");
+            if (ImGui::CollapsingHeader("Singleton acces :")) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
@@ -595,7 +613,9 @@ int main(int, char**) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, filePathName, 1, nullptr, flags);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) { ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags); }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) {
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
+                }
 
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
                     const char* filters = ".a.b";
@@ -603,13 +623,11 @@ int main(int, char**) {
                 }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
                     const char* filters = ".*.*";
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr,
-                                                            flags);
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
                 }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
                     const char* filters = "multi layers{.filters, .a.b }";
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr,
-                                                            flags);
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
                 }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
@@ -620,8 +638,9 @@ int main(int, char**) {
                     const char* filters = "C/C++ File (*.c *.cpp){.c,.cpp}, Header File (*.h){.h}";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", 1, IGFDUserDatas("SaveFile"), ImGuiFileDialogFlags_ConfirmOverwrite);
                 }
+            }
 
-                ImGui::Text("Other Instance (multi dialog demo) :");
+            if (ImGui::CollapsingHeader("Other Instance (multi dialog demo) :")) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog")) {
                     // let filters be null for open directory chooser
                     fileDialog2.OpenDialog("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".", 1, nullptr, flags);
@@ -630,10 +649,9 @@ int main(int, char**) {
                     // set filters be null for open directory chooser
                     fileDialog2.OpenDialog("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".", "", 5, nullptr, flags);
                 }
+            }
 
-                ImGui::Separator();
-
-                ImGui::Text("Draw Override of the FileDialog for have a read only checkbox");
+            if (ImGui::CollapsingHeader("Draw Override of the FileDialog for have a read only checkbox")) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open A Draww Override FileDialog with a read only btn")) {
                     const char* filters =
                         "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
@@ -644,17 +662,18 @@ int main(int, char**) {
                 /////////////////////////////////////////////////////////////////
                 // C Interface
                 /////////////////////////////////////////////////////////////////
-                ImGui::Text("C Instance demo :");
+            }
+
+            if (ImGui::CollapsingHeader("C API instance demo")) {
                 if (ImGui::Button("C " ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
                     IGFD_OpenPaneDialog(cfileDialog, "ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", &InfosPane, 350, 1, (void*)("SaveFile"), flags);
                 }
-                /////////////////////////////////////////////////////////////////
-                /////////////////////////////////////////////////////////////////
+            }
+            /////////////////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////
 
-                ImGui::Separator();
-
-                ImGui::Text("Embedded Dialog demo :");
+            if (ImGui::CollapsingHeader("Embedded Dialog demo :")) {
                 fileDialogEmbedded3.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr,
                                                ImGuiFileDialogFlags_NoDialog |
 #ifdef USE_BOOKMARK
@@ -671,155 +690,147 @@ int main(int, char**) {
                         if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
                         auto sel = ImGuiFileDialog::Instance()->GetSelection();  // multiselection
                         selection.clear();
-                        for (auto s : sel) { selection.emplace_back(s.first, s.second); }
+                        for (auto s : sel) {
+                            selection.emplace_back(s.first, s.second);
+                        }
                         // action
                     }
                     fileDialogEmbedded3.Close();
                 }
+            }
 
-                ImGui::Separator();
-
-                ImVec2 minSize = ImVec2(0, 0);
-                ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
-
-                if (_UseWindowContraints) {
-                    maxSize = ImVec2((float)display_w, (float)display_h) * 0.7f;
-                    minSize = maxSize * 0.25f;
-                }
-
-                // you can define your flags and min/max window size (theses three settings ae defined by default :
-                // flags => ImGuiWindowFlags_NoCollapse
-                // minSize => 0,0
-                // maxSize => FLT_MAX, FLT_MAX (defined is float.h)
-
-                if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                    if (ImGuiFileDialog::Instance()->IsOk()) {
-                        filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-                        filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
-                        filter       = ImGuiFileDialog::Instance()->GetCurrentFilter();
-                        // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
-                        auto sel = ImGuiFileDialog::Instance()->GetSelection();  // multiselection
-                        selection.clear();
-                        for (auto s : sel) { selection.emplace_back(s.first, s.second); }
-                        // action
-                    }
-                    ImGuiFileDialog::Instance()->Close();
-                }
-
-                if (fileDialog2.Display("ChooseDirDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                    if (fileDialog2.IsOk()) {
-                        filePathName = fileDialog2.GetFilePathName();
-                        filePath     = fileDialog2.GetCurrentPath();
-                        filter       = fileDialog2.GetCurrentFilter();
-                        // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        if (fileDialog2.GetUserDatas()) userDatas = std::string((const char*)fileDialog2.GetUserDatas());
-                        auto sel = fileDialog2.GetSelection();  // multiselection
-                        selection.clear();
-                        for (auto s : sel) { selection.emplace_back(s.first, s.second); }
-                        // action
-                    }
-                    fileDialog2.Close();
-                }
-
-                if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                    if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->IsOk()) { _IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly(); }
-                    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Close();
-                }
-
-                /////////////////////////////////////////////////////////////////
-                // C Interface
-                /////////////////////////////////////////////////////////////////
-                if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-                    if (IGFD_IsOk(cfileDialog)) {
-                        char* cfilePathName = IGFD_GetFilePathName(cfileDialog);
-                        if (cfilePathName) filePathName = cfilePathName;
-                        char* cfilePath = IGFD_GetCurrentPath(cfileDialog);
-                        if (cfilePath) filePath = cfilePath;
-                        char* cfilter = IGFD_GetCurrentFilter(cfileDialog);
-                        if (cfilter) filter = cfilter;
-                        // here convert from string because a string was passed as a userDatas, but it can be what you want
-                        void* cdatas = IGFD_GetUserDatas(cfileDialog);
-                        if (cdatas) userDatas = (const char*)cdatas;
-                        IGFD_Selection csel = IGFD_GetSelection(cfileDialog);  // multiselection
-
-                        selection.clear();
-                        for (size_t i = 0; i < csel.count; i++) {
-                            std::string _fileName     = csel.table[i].fileName;
-                            std::string _filePathName = csel.table[i].filePathName;
-                            selection.emplace_back(_fileName, _filePathName);
-                        }
-
-                        // destroy
-                        free(cfilePathName);
-                        free(cfilePath);
-                        free(cfilter);
-                        IGFD_Selection_DestroyContent(&csel);
-                    }
-                    IGFD_CloseDialog(cfileDialog);
-                }
-                /////////////////////////////////////////////////////////////////
-                /////////////////////////////////////////////////////////////////
-                /////////////////////////////////////////////////////////////////
-
-                ImGui::Separator();
-
-                ImGui::Text("ImGuiFileDialog Return's :\n");
+            if (ImGui::CollapsingHeader("ImGuiFileDialog Return's :")) {
+                ImGui::Text("GetFilePathName() : %s", filePathName.c_str());
+                ImGui::Text("GetFilePath() : %s", filePath.c_str());
+                ImGui::Text("GetCurrentFilter() : %s", filter.c_str());
+                ImGui::Text("GetUserDatas() (was a std::string in this sample) : %s", userDatas.c_str());
+                ImGui::Text("GetSelection() : ");
                 ImGui::Indent();
                 {
-                    ImGui::Text("GetFilePathName() : %s", filePathName.c_str());
-                    ImGui::Text("GetFilePath() : %s", filePath.c_str());
-                    ImGui::Text("GetCurrentFilter() : %s", filter.c_str());
-                    ImGui::Text("GetUserDatas() (was a std::string in this sample) : %s", userDatas.c_str());
-                    ImGui::Text("GetSelection() : ");
-                    ImGui::Indent();
-                    {
-                        static int selected = false;
-                        if (ImGui::BeginTable("##GetSelection", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
-                            ImGui::TableSetupScrollFreeze(0, 1);  // Make top row always visible
-                            ImGui::TableSetupColumn("File Name", ImGuiTableColumnFlags_WidthStretch, -1, 0);
-                            ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthFixed, -1, 1);
-                            ImGui::TableHeadersRow();
+                    static int selected = false;
+                    if (ImGui::BeginTable("##GetSelection", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
+                        ImGui::TableSetupScrollFreeze(0, 1);  // Make top row always visible
+                        ImGui::TableSetupColumn("File Name", ImGuiTableColumnFlags_WidthStretch, -1, 0);
+                        ImGui::TableSetupColumn("File Path name", ImGuiTableColumnFlags_WidthFixed, -1, 1);
+                        ImGui::TableHeadersRow();
 
-                            ImGuiListClipper clipper;
-                            clipper.Begin((int)selection.size(), ImGui::GetTextLineHeightWithSpacing());
-                            while (clipper.Step()) {
-                                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-                                    const auto& sel = selection[i];
-                                    ImGui::TableNextRow();
-                                    if (ImGui::TableSetColumnIndex(0))  // first column
-                                    {
-                                        ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-                                        selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
-                                        if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
-                                    }
-                                    if (ImGui::TableSetColumnIndex(1))  // second column
-                                    {
-                                        ImGui::Text("%s", sel.second.c_str());
-                                    }
+                        ImGuiListClipper clipper;
+                        clipper.Begin((int)selection.size(), ImGui::GetTextLineHeightWithSpacing());
+                        while (clipper.Step()) {
+                            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                                const auto& sel = selection[i];
+                                ImGui::TableNextRow();
+                                if (ImGui::TableSetColumnIndex(0))  // first column
+                                {
+                                    ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
+                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
+                                    if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
+                                }
+                                if (ImGui::TableSetColumnIndex(1))  // second column
+                                {
+                                    ImGui::Text("%s", sel.second.c_str());
                                 }
                             }
-                            clipper.End();
-
-                            ImGui::EndTable();
                         }
+                        clipper.End();
+
+                        ImGui::EndTable();
                     }
-                    ImGui::Unindent();
                 }
                 ImGui::Unindent();
             }
-            ImGui::Unindent();
 
-            ImGui::Separator();
-            ImGui::Text("Window mode :");
-            ImGui::Separator();
+            /////////////////////////////////////////////////////////////////
+            //// DISPLAY ////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////////////////
 
-            ImGui::ColorEdit3("clear color", (float*)&clear_color);  // Edit 3 floats representing a color
+            ImVec2 minSize = ImVec2(0, 0);
+            ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            if (_UseWindowContraints) {
+                maxSize = ImVec2((float)display_w, (float)display_h) * 0.7f;
+                minSize = maxSize * 0.25f;
+            }
 
-            ImGui::End();
+            // you can define your flags and min/max window size (theses three settings ae defined by default :
+            // flags => ImGuiWindowFlags_NoCollapse
+            // minSize => 0,0
+            // maxSize => FLT_MAX, FLT_MAX (defined is float.h)
+
+            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (ImGuiFileDialog::Instance()->IsOk()) {
+                    filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                    filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
+                    filter       = ImGuiFileDialog::Instance()->GetCurrentFilter();
+                    // here convert from string because a string was passed as a userDatas, but it can be what you want
+                    if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
+                    auto sel = ImGuiFileDialog::Instance()->GetSelection();  // multiselection
+                    selection.clear();
+                    for (auto s : sel) {
+                        selection.emplace_back(s.first, s.second);
+                    }
+                    // action
+                }
+                ImGuiFileDialog::Instance()->Close();
+            }
+
+            if (fileDialog2.Display("ChooseDirDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (fileDialog2.IsOk()) {
+                    filePathName = fileDialog2.GetFilePathName();
+                    filePath     = fileDialog2.GetCurrentPath();
+                    filter       = fileDialog2.GetCurrentFilter();
+                    // here convert from string because a string was passed as a userDatas, but it can be what you want
+                    if (fileDialog2.GetUserDatas()) userDatas = std::string((const char*)fileDialog2.GetUserDatas());
+                    auto sel = fileDialog2.GetSelection();  // multiselection
+                    selection.clear();
+                    for (auto s : sel) {
+                        selection.emplace_back(s.first, s.second);
+                    }
+                    // action
+                }
+                fileDialog2.Close();
+            }
+
+            if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->IsOk()) {
+                    _IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly();
+                }
+                CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Close();
+            }
+
+            /////////////////////////////////////////////////////////////////
+            // C Interface
+            /////////////////////////////////////////////////////////////////
+            if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+                if (IGFD_IsOk(cfileDialog)) {
+                    char* cfilePathName = IGFD_GetFilePathName(cfileDialog);
+                    if (cfilePathName) filePathName = cfilePathName;
+                    char* cfilePath = IGFD_GetCurrentPath(cfileDialog);
+                    if (cfilePath) filePath = cfilePath;
+                    char* cfilter = IGFD_GetCurrentFilter(cfileDialog);
+                    if (cfilter) filter = cfilter;
+                    // here convert from string because a string was passed as a userDatas, but it can be what you want
+                    void* cdatas = IGFD_GetUserDatas(cfileDialog);
+                    if (cdatas) userDatas = (const char*)cdatas;
+                    IGFD_Selection csel = IGFD_GetSelection(cfileDialog);  // multiselection
+
+                    selection.clear();
+                    for (size_t i = 0; i < csel.count; i++) {
+                        std::string _fileName     = csel.table[i].fileName;
+                        std::string _filePathName = csel.table[i].filePathName;
+                        selection.emplace_back(_fileName, _filePathName);
+                    }
+
+                    // destroy
+                    free(cfilePathName);
+                    free(cfilePath);
+                    free(cfilter);
+                    IGFD_Selection_DestroyContent(&csel);
+                }
+                IGFD_CloseDialog(cfileDialog);
+            }
         }
+        ImGui::End();
 
         // Cpu Zone : prepare
         ImGui::Render();
