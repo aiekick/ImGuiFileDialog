@@ -3,13 +3,15 @@ name: Osx
 on:
   push:
     branches:
-    - master
+    - DemoApp
 
 jobs:
   build_Osx:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
+      with:
+        ref: DemoApp
     - name: checkout submodules
       run : git submodule update --init --recursive 
     - name: Install OpenGL lib  / Requirement for Glfw3
@@ -19,7 +21,7 @@ jobs:
     - name: build
       run: cmake --build build
     - name: upload artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: ImGuiFileDialog.app
         path: build/ImGuiFileDialog.app
