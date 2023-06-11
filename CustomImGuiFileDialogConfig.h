@@ -12,9 +12,6 @@
 //#define MAX_FILE_DIALOG_NAME_BUFFER 1024
 //#define MAX_PATH_BUFFER_SIZE 1024
 
-// the slash's buttons in path cna be used for quick select parallles directories
-#define USE_QUICK_PATH_SELECT
-
 // the spacing between button path's can be customized. 
 // if disabled the spacing is defined by the imgui theme
 // define the space between path buttons 
