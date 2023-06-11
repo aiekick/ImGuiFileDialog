@@ -616,13 +616,20 @@ int main(int, char**) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) {
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", ".", "", 1, nullptr, flags);
                 }
-
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
                     const char* filters = ".a.b";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
                 }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
                     const char* filters = ".*.*";
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+                }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .vcxproj.*")) {
+                    const char* filters = ".vcxproj.*";
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+                }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with regex (([.]vcx))")) {
+                    const char* filters = "(([.]vcx))";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
                 }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
