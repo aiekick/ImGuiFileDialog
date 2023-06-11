@@ -353,21 +353,6 @@ int main(int, char**) {
     });
 #endif  // USE_THUMBNAILS
 
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'docs/FONTS.txt' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    // io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-    // IM_ASSERT(io.Fonts->AddFontFromFileTTF("arialuni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
-
-    // load icon font file (CustomFont.cpp)
     ImGui::GetIO().Fonts->AddFontDefault();
     static const ImWchar icons_ranges[] = {ICON_MIN_IGFD, ICON_MAX_IGFD, 0};
     ImFontConfig icons_config;
@@ -396,8 +381,8 @@ int main(int, char**) {
     ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
     // set file style with a lambda function
     // return true is a file style was defined
-    ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
-        if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
+    ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFileInfos, IGFD::FileStyle& vOutStyle) -> bool {
+        if (!vFileInfos.fileNameExt.empty() && vFileInfos.fileNameExt[0] == '.') {
             vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE, nullptr);
             return true;
         }
@@ -615,6 +600,16 @@ int main(int, char**) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
                     const char* filters = ".a.b";
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr, flags);
+                }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
+                    const char* filters = ".*.*";
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 0, nullptr,
+                                                            flags);
+                }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
+                    const char* filters = "multi layers{.filters, .a.b }";
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr,
+                                                            flags);
                 }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";

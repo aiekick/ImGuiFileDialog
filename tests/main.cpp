@@ -7,12 +7,7 @@ int main(int argc, char** argv) {
         return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
     }
 
-    // return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::1") ? 0 : 1;
-    // return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Collection::2") ? 0 : 1;
-    // return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Simple::Regex::8") ? 0 : 1;
-    // return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Collection::Regex::1") ? 0 : 1;
-    //return Test_ImGuiFileDialog("IGFD::FilterManager::ParseFilters::Filters::Divers::3") ? 0 : 1;
-    return Test_ImGuiFileDialog("IGFD::FilterManager::ReplaceExtentionWithCurrentFilter::14") ? 0 : 1;
-
+    return Test_ImGuiFileDialog("Test_IGFD_FileManager_Filtering_asterisk_3") ? 0 : 1;
+    
     return 0;
 }
