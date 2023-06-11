@@ -18,8 +18,8 @@ ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 
 
 ## Structure
 
-* The library is in [Lib_Only branch](https://github.com/aiekick/ImGuiFileDialog/tree/Lib_Only)
-* A demo app can be found the [master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+* The library is in [Master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+* A demo app can be found in the [DemoApp branch](https://github.com/aiekick/ImGuiFileDialog/tree/DemoApp)
 
 This library is designed to be dropped into your source code rather than compiled separately.
 
@@ -29,7 +29,7 @@ From your project directory:
 mkdir lib    <or 3rdparty, or externals, etc.>
 cd lib
 git clone https://github.com/aiekick/ImGuiFileDialog.git
-git checkout Lib_Only
+git checkout master
 ```
 
 These commands create a `lib` directory where you can store any third-party dependencies used in your project, downloads
