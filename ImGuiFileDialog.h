@@ -134,6 +134,7 @@ included in the Lib_Only branch for your convenience.
 - regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
 - multi layer extentions like : .a.b.c .json.cpp .vcxproj.filters etc..
 - advanced behavior regarding asterisk based filter. like : .* .*.* .vcx.* .*.filters .vcs*.filt.* etc.. (internally regex is used)
+- result modes GetFilePathName, GetFileName and GetSelection (overwrite file ext, keep file, add ext if no user ext exist)
 
 ################################################################
 ## Filter format
@@ -865,6 +866,90 @@ you can also add filter in the form : .* .*.* .vcx.* .*.filters .vcx*.filt.* etc
 all the * based filter are internally using regex's
 
 ################################################################
+## Result Modes for GetFilePathName, getFileName and GetSelection
+################################################################
+
+you can add have various behavior when you get the file results at dialog end
+
+you can specify a result mode to thoses function :
+
+```cpp
+GetFilePathName(IGFD_ResultMode = IGFD_ResultMode_AddIfNoFileExt)
+GetFileName(IGFD_ResultMode = IGFD_ResultMode_AddIfNoFileExt)
+GetFileSelection(IGFD_ResultMode = IGFD_ResultMode_KeepInputFile)
+```
+You can see these function who their default modes.
+but you can modify them. 
+
+There is 3 Modes :
+```cpp
+IGFD_ResultMode_AddIfNoFileExt [DEFAULT for 
+This mode add the filter ext only if there is no file ext. (compatible multi layer)
+ex : 
+   filter {.cpp,.h} with file :
+     toto.h => toto.h
+     toto.a.h => toto.a.h
+     toto.a. => toto.a.cpp
+     toto. => toto.cpp
+     toto => toto.cpp
+   filter {.z,.a.b} with file :
+     toto.a.h => toto.a.h
+     toto. => toto.z
+     toto => toto.z
+   filter {.g.z,.a} with file :
+     toto.a.h => toto.a.h
+     toto. => toto.g.z
+     toto => toto.g.z
+
+IGFD_ResultMode_OverwriteFileExt
+This mode Overwrite the file extention by the current filter
+This mode is the old behavior for imGuiFileDialog pre v0.6.6
+ex : 
+   filter {.cpp,.h} with file :
+     toto.h => toto.cpp
+     toto.a.h => toto.a.cpp
+     toto.a. => toto.a.cpp
+     toto.a.h.t => toto.a.h.cpp
+     toto. => toto.cpp
+     toto => toto.cpp
+   filter {.z,.a.b} with file :
+     toto.a.h => toto.z
+     toto.a.h.t => toto.a.z
+     toto. => toto.z
+     toto => toto.z
+   filter {.g.z,.a} with file :
+     toto.a.h => toto.g.z
+     toto.a.h.y => toto.a.g.z
+     toto.a. => toto.g.z
+     toto. => toto.g.z
+     toto => toto.g.z
+
+IGFD_ResultMode_KeepInputFile
+This mode keep the input file. no modification
+es :
+   filter {.cpp,.h} with file :
+      toto.h => toto.h
+      toto. => toto.
+      toto => toto
+   filter {.z,.a.b} with file :
+      toto.a.h => toto.a.h
+      toto. => toto.
+      toto => toto
+   filter {.g.z,.a} with file :
+      toto.a.h => toto.a.h
+      toto. => toto.
+      toto => toto
+```
+
+to note :
+  - in case of a collection of filter. the default filter will be the first.
+    so in collection {.cpp,((.vcxproj.*)), .ft.*}, the default filter used for renaming will be .cpp
+  - when you have multilayer filter in collection.
+    we consider a filter to be replaced according to the max dot of filters for a whole collection
+    a collection {.a, .b.z} is a two dots filter, so a file toto.g.z will be replaced by toto.a
+    a collection {.z; .b} is a one dot filter, so a file toto.g.z will be replaced by toto.g.a
+
+################################################################
 ## How to Integrate ImGuiFileDialog in your project
 ################################################################
 
@@ -1039,6 +1124,66 @@ enum ImGuiFileDialogFlags_ {
                                    ImGuiFileDialogFlags_HideColumnType
 };
 
+// flags used for GetFilePathName(flag) or GetSelection(flag)
+typedef int IGFD_ResultMode;  // -> enum IGFD_ResultMode_
+enum IGFD_ResultMode_ {
+    // IGFD_ResultMode_AddIfNoFileExt
+    // add the file ext only if there is no file ext
+    //   filter {.cpp,.h} with file :
+    //     toto.h => toto.h
+    //     toto.a.h => toto.a.h
+    //     toto.a. => toto.a.cpp
+    //     toto. => toto.cpp
+    //     toto => toto.cpp
+    //   filter {.z,.a.b} with file :
+    //     toto.a.h => toto.a.h
+    //     toto. => toto.z
+    //     toto => toto.z
+    //   filter {.g.z,.a} with file :
+    //     toto.a.h => toto.a.h
+    //     toto. => toto.g.z
+    //     toto => toto.g.z
+    IGFD_ResultMode_AddIfNoFileExt = 0,
+
+    // IGFD_ResultMode_OverwriteFileExt
+    // Overwrite the file extention by the current filter :
+    //   filter {.cpp,.h} with file :
+    //     toto.h => toto.cpp
+    //     toto.a.h => toto.a.cpp
+    //     toto.a. => toto.a.cpp
+    //     toto.a.h.t => toto.a.h.cpp
+    //     toto. => toto.cpp
+    //     toto => toto.cpp
+    //   filter {.z,.a.b} with file :
+    //     toto.a.h => toto.z
+    //     toto.a.h.t => toto.a.z
+    //     toto. => toto.z
+    //     toto => toto.z
+    //   filter {.g.z,.a} with file :
+    //     toto.a.h => toto.g.z
+    //     toto.a.h.y => toto.a.g.z
+    //     toto.a. => toto.g.z
+    //     toto. => toto.g.z
+    //     toto => toto.g.z
+    IGFD_ResultMode_OverwriteFileExt = 1, // behavior pre IGFD v0.6.6
+
+    // IGFD_ResultMode_KeepInputFile
+    // keep the input file => no modification : 
+    //   filter {.cpp,.h} with file :
+    //      toto.h => toto.h
+    //      toto. => toto.
+    //      toto => toto
+    //   filter {.z,.a.b} with file :
+    //      toto.a.h => toto.a.h
+    //      toto. => toto.
+    //      toto => toto
+    //   filter {.g.z,.a} with file :
+    //      toto.a.h => toto.a.h
+    //      toto. => toto.
+    //      toto => toto
+    IGFD_ResultMode_KeepInputFile    = 2
+};
+
 #pragma endregion
 
 #pragma region Common Cpp& C Structures
@@ -1137,6 +1282,81 @@ namespace IGFD {
 
 #pragma region INTERNAL
 
+#pragma region SEARCHABLE VECTOR
+
+template <typename T>
+class SearchableVector {
+private:
+    std::unordered_map<T, size_t> m_Dico;
+    std::vector<T> m_Array;
+
+public:
+    void clear() {
+        m_Dico.clear();
+        m_Array.clear();
+    }
+
+    bool empty() const {
+        return m_Array.empty();
+    }
+
+    size_t size() const {
+        return m_Array.size();
+    }
+
+    T& operator[](const size_t& vIdx) {
+        return m_Array[vIdx];
+    }
+
+    T& at(const size_t& vIdx) {
+        return m_Array.at(vIdx);
+    }
+
+    typename
+    std::vector<T>::iterator begin() {
+        return m_Array.begin();
+    }
+
+    typename
+    std::vector<T>::const_iterator begin() const {
+        return m_Array.begin();
+    }
+
+    typename
+    std::vector<T>::iterator end() {
+        return m_Array.end();
+    }
+
+    typename
+    std::vector<T>::const_iterator end() const {
+        return m_Array.end();
+    }
+
+    bool try_add(T vKey) {
+        if (!exist(vKey)) {
+            m_Dico[vKey] = m_Array.size();
+            m_Array.push_back(vKey);
+            return true;
+        }
+        return false;
+    }
+
+    bool try_set_existing(T vKey) {
+        if (exist(vKey)) {
+            auto row     = m_Dico.at(vKey);
+            m_Array[row] = vValue;
+            return true;
+        }
+        return false;
+    }
+
+    bool exist(const std::string& vKey) const {
+        return (m_Dico.find(vKey) != m_Dico.end());
+    }
+};
+
+#pragma endregion
+
 #pragma region Utils
 
 namespace Utils {
@@ -1215,11 +1435,11 @@ private:
     std::string empty_string;
 
 public:
-    std::string title;                        // displayed filter.can be different than rela filter
-    std::set<std::string> filters;            // filters
-    std::set<std::string> filters_optimized;  // optimized filters for case insensitive search
-    std::vector<std::regex> filters_regex;    // collection of regex filter type
-    size_t count_dots = 0U;                   // the max count dot the max per filter of all filters
+    std::string title;                                // displayed filter.can be different than rela filter
+    SearchableVector<std::string> filters;            // filters
+    SearchableVector<std::string> filters_optimized;  // optimized filters for case insensitive search
+    std::vector<std::regex> filters_regex;            // collection of regex filter type
+    size_t count_dots = 0U;                           // the max count dot the max per filter of all filters
 
 public:
     void clear();                                                                 // clear the datas
@@ -1266,7 +1486,7 @@ public:
     bool IsCoveredByFilters(const FileInfos& vFileInfos, bool vIsCaseInsensitive) const;                                                              // check if current file extention (vExt) is covered by current filter, or by regex (vNameExt)
     float GetFilterComboBoxWidth() const;                                                                                                             // will return the current combo box widget width
     bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);                                                                                 // draw the filter combobox 	// get the current selected filter
-    std::string ReplaceExtentionWithCurrentFilter(const std::string& vFile) const;                                                                    // replace the extention of the current file by the selected filter
+    std::string ReplaceExtentionWithCurrentFilterIfNeeded(const std::string& vFileName, IGFD_ResultMode vFlag) const;                                // replace the extention of the current file by the selected filter
     void SetDefaultFilterIfNotDefined();                                                                                                              // define the first filter if no filter is selected
 };
 
@@ -1463,9 +1683,9 @@ public:
 
 public:
     std::string GetResultingPath();
-    std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal);
-    std::string GetResultingFilePathName(FileDialogInternal& vFileDialogInternal);
-    std::map<std::string, std::string> GetResultingSelection();
+    std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
+    std::string GetResultingFilePathName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
+    std::map<std::string, std::string> GetResultingSelection(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
 
 public:
     void DrawDirectoryCreation(const FileDialogInternal& vFileDialogInternal);  // draw directory creation widget
@@ -1756,13 +1976,13 @@ public:
     std::string GetOpenedKey() const;                        // return the dialog key who is opened, return nothing if not opened
 
     // get result
-    bool IsOk() const;                                  // true => Dialog Closed with Ok result / false : Dialog closed with cancel result
-    std::map<std::string, std::string> GetSelection();  // Open File behavior : will return selection via a map<FileName, FilePathName>
-    std::string GetFilePathName();                      // Save File behavior : will always return the content of the field with current filter extention and current path
-    std::string GetCurrentFileName();                   // Save File behavior : will always return the content of the field with current filter extention
-    std::string GetCurrentPath();                       // will return current path
-    std::string GetCurrentFilter();                     // will return selected filter
-    UserDatas GetUserDatas() const;                     // will return user datas send with Open Dialog
+    bool IsOk() const;                                                                                // true => Dialog Closed with Ok result / false : Dialog closed with cancel result
+    std::map<std::string, std::string> GetSelection(IGFD_ResultMode vFlag = IGFD_ResultMode_KeepInputFile);  // Open File behavior : will return selection via a map<FileName, FilePathName>
+    std::string GetFilePathName(IGFD_ResultMode vFlag = IGFD_ResultMode_AddIfNoFileExt);                     // Save File behavior : will return the current file path name
+    std::string GetCurrentFileName(IGFD_ResultMode vFlag = IGFD_ResultMode_AddIfNoFileExt);                  // Save File behavior : will return the content file name
+    std::string GetCurrentPath();                                                                     // will return current file path
+    std::string GetCurrentFilter();                                                                   // will return current filter
+    UserDatas GetUserDatas() const;                                                                   // will return user datas send with Open Dialog
 
     // file style by extentions
     void SetFileStyle(                                        // SetExtention datas for have custom display of particular file type

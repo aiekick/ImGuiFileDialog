@@ -85,6 +85,7 @@ Android Requirements : Api 21 mini
 - regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
 - multi layer extentions like : .a.b.c .json.cpp .vcxproj.filters etc..
 - advanced behavior regarding asterisk based filter. like : .* .*.* .vcx.* .*.filters .vcs*.filt.* etc.. (internally regex is used)
+- result modes GetFilePathName, GetFileName and GetSelection (overwrite file ext, keep file, add ext if no user ext exist)
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
@@ -841,6 +842,99 @@ SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(1.0f, 1.0f, 0.
 OpenDialog("toto", "Choose File", "(([.][0-9]{3}))");
 SetFileStyle(IGFD_FileStyleByFullName, "(([.][0-9]{3}))", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
 ```
+
+</blockquote></details>
+
+<details open><summary><h2>Multi Layer / asterisk based filter :</h2></summary><blockquote>
+
+you can add filter in the form : .a.b.c .json.cpp .vcxproj.filters 
+
+you can also add filter in the form : .* .*.* .vcx.* .*.filters .vcx*.filt.* etc..
+all the * based filter are internally using regex's
+
+</blockquote></details>
+
+<details open><summary><h2>Result Modes for GetFilePathName, getFileName and GetSelection :</h2></summary><blockquote>
+
+you can add have various behavior when you get the file results at dialog end
+
+you can specify a result mode to thoses function :
+
+```cpp
+GetFilePathName(IGFD_ResultMode = IGFD_ResultMode_AddIfNoFileExt)
+GetFileName(IGFD_ResultMode = IGFD_ResultMode_AddIfNoFileExt)
+GetFileSelection(IGFD_ResultMode = IGFD_ResultMode_KeepInputFile)
+```
+You can see these function who their default modes.
+but you can modify them. 
+
+There is 3 Modes :
+```cpp
+IGFD_ResultMode_AddIfNoFileExt [DEFAULT for 
+This mode add the filter ext only if there is no file ext. (compatible multi layer)
+ex : 
+   filter {.cpp,.h} with file :
+     toto.h => toto.h
+     toto.a.h => toto.a.h
+     toto.a. => toto.a.cpp
+     toto. => toto.cpp
+     toto => toto.cpp
+   filter {.z,.a.b} with file :
+     toto.a.h => toto.a.h
+     toto. => toto.z
+     toto => toto.z
+   filter {.g.z,.a} with file :
+     toto.a.h => toto.a.h
+     toto. => toto.g.z
+     toto => toto.g.z
+
+IGFD_ResultMode_OverwriteFileExt
+This mode Overwrite the file extention by the current filter
+This mode is the old behavior for imGuiFileDialog pre v0.6.6
+ex : 
+   filter {.cpp,.h} with file :
+     toto.h => toto.cpp
+     toto.a.h => toto.a.cpp
+     toto.a. => toto.a.cpp
+     toto.a.h.t => toto.a.h.cpp
+     toto. => toto.cpp
+     toto => toto.cpp
+   filter {.z,.a.b} with file :
+     toto.a.h => toto.z
+     toto.a.h.t => toto.a.z
+     toto. => toto.z
+     toto => toto.z
+   filter {.g.z,.a} with file :
+     toto.a.h => toto.g.z
+     toto.a.h.y => toto.a.g.z
+     toto.a. => toto.g.z
+     toto. => toto.g.z
+     toto => toto.g.z
+
+IGFD_ResultMode_KeepInputFile
+This mode keep the input file. no modification
+es :
+   filter {.cpp,.h} with file :
+      toto.h => toto.h
+      toto. => toto.
+      toto => toto
+   filter {.z,.a.b} with file :
+      toto.a.h => toto.a.h
+      toto. => toto.
+      toto => toto
+   filter {.g.z,.a} with file :
+      toto.a.h => toto.a.h
+      toto. => toto.
+      toto => toto
+```
+
+to note :
+  - in case of a collection of filter. the default filter will be the first.
+    so in collection {.cpp,((.vcxproj.*)), .ft.*}, the default filter used for renaming will be .cpp
+  - when you have multilayer filter in collection.
+    we consider a filter to be replaced according to the max dot of filters for a whole collection
+    a collection {.a, .b.z} is a two dots filter, so a file toto.g.z will be replaced by toto.a
+    a collection {.z; .b} is a one dot filter, so a file toto.g.z will be replaced by toto.g.a
 
 </blockquote></details>
 
