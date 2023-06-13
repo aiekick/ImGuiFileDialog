@@ -32,7 +32,7 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Simple_0() {
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != ".*") return false;
-    if (mgr.prParsedFilters[0].getFirstFilter() != "(([.].*))") return false;
+    if (mgr.prParsedFilters[0].getFirstFilter() != "(([.].*$))") return false;
 
 
     return true;
@@ -43,7 +43,7 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Simple_1() {
 
     if (mgr.prParsedFilters.size() != 4U) return false;
     if (mgr.prParsedFilters[0].title != ".*") return false;
-    if (mgr.prParsedFilters[0].getFirstFilter() != "(([.].*))") return false;
+    if (mgr.prParsedFilters[0].getFirstFilter() != "(([.].*$))") return false;
     if (mgr.prParsedFilters[1].getFirstFilter() != ".cpp") return false;
     if (mgr.prParsedFilters[2].getFirstFilter() != ".h") return false;
     if (mgr.prParsedFilters[3].getFirstFilter() != ".hpp") return false;
@@ -136,8 +136,8 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_0() {
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
 
     return true;
 }
@@ -169,13 +169,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_3() {
     if (mgr.prParsedFilters.size() != 2U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != "Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
 
     return true;
 }
@@ -187,13 +187,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_4() {
     if (mgr.prParsedFilters.size() != 2U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != "Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
 
     return true;
 }
@@ -205,13 +205,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_5() {
     if (mgr.prParsedFilters.size() != 2U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != " Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
 
     return true;
 }
@@ -223,8 +223,8 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_6() {
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
 
     return true;
 }
@@ -236,8 +236,8 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_7() {
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
 
     return true;
 }
@@ -249,13 +249,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_8() {
     if (mgr.prParsedFilters.size() != 3U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != " Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
     if (mgr.prParsedFilters[2].getFirstFilter() != ".md") return false;
 
     return true;
@@ -268,18 +268,18 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_9() {
     if (mgr.prParsedFilters.size() != 4U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != " Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
     if (mgr.prParsedFilters[2].getFirstFilter() != ".md") return false;
     if (mgr.prParsedFilters[3].title != "Other Files") return false;
     if (mgr.prParsedFilters[3].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[3].filters.find(".txt") == mgr.prParsedFilters[3].filters.end()) return false;
-    if (mgr.prParsedFilters[3].filters.find(".doc") == mgr.prParsedFilters[3].filters.end()) return false;
+    if (!mgr.prParsedFilters[3].filters.exist(".txt")) return false;
+    if (!mgr.prParsedFilters[3].filters.exist(".doc")) return false;
 
     return true;
 }
@@ -291,13 +291,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_10() {
     if (mgr.prParsedFilters.size() != 3U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != " Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
     if (mgr.prParsedFilters[2].getFirstFilter() != ".md") return false;
 
     return true;
@@ -310,13 +310,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_11() {
     if (mgr.prParsedFilters.size() != 3U) return false;
     if (mgr.prParsedFilters[0].title != "Source Files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 2U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
     if (mgr.prParsedFilters[1].title != " Header Files") return false;
     if (mgr.prParsedFilters[1].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hpp") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
-    if (mgr.prParsedFilters[1].filters.find(".hxx") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hpp")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".hxx")) return false;
     if (mgr.prParsedFilters[2].getFirstFilter() != ".md") return false;
 
     return true;
@@ -463,8 +463,8 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_0() {
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "frames files") return false;
-    if (mgr.prParsedFilters[0].filters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".frames") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist("(([.][0-9]{3}))")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".frames")) return false;
 
     return true;
 }
@@ -476,7 +476,7 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_1() {
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "frames files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 1U) return false;
-    if (mgr.prParsedFilters[0].filters.find(".frames") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".frames")) return false;
 
     return true;
 }
@@ -487,8 +487,8 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_2() {
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "frames files(.frames)") return false;
-    if (mgr.prParsedFilters[0].filters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".frames") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist("(([.][0-9]{3}))")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".frames")) return false;
 
     return true;
 }
@@ -500,9 +500,9 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_3() {
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "frames files(.cpp,.hpp)") return false;
     if (mgr.prParsedFilters[0].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[0].filters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".hpp") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist("(([.][0-9]{3}))")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".hpp")) return false;
 
     return true;
 }
@@ -538,24 +538,24 @@ Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},\
     if (mgr.prParsedFilters.size() != 6U) return false;
     if (mgr.prParsedFilters[0].title != "All files") return false;
     if (mgr.prParsedFilters[0].filters.size() != 1U) return false;
-    if (mgr.prParsedFilters[0].filters.find("(([.].*))") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist("(([.].*$))")) return false;
     if (mgr.prParsedFilters[1].title != "Frames Format 0(.001,.NNN)") return false;
     if (mgr.prParsedFilters[1].filters.size() != 1U) return false;
-    if (mgr.prParsedFilters[1].filters.find("(([.][0-9]{3}))") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist("(([.][0-9]{3}))")) return false;
     if (mgr.prParsedFilters[2].title != "Frames Format 1(XXX.png)") return false;
     if (mgr.prParsedFilters[2].filters.size() != 1U) return false;
-    if (mgr.prParsedFilters[2].filters.find("(([0-9]{3}.png))") == mgr.prParsedFilters[2].filters.end()) return false;
+    if (!mgr.prParsedFilters[2].filters.exist("(([0-9]{3}.png))")) return false;
     if (mgr.prParsedFilters[3].title != "Source files (*.cpp *.h *.hpp)") return false;
     if (mgr.prParsedFilters[3].filters.size() != 3U) return false;
-    if (mgr.prParsedFilters[3].filters.find(".cpp") == mgr.prParsedFilters[3].filters.end()) return false;
-    if (mgr.prParsedFilters[3].filters.find(".h") == mgr.prParsedFilters[3].filters.end()) return false;
-    if (mgr.prParsedFilters[3].filters.find(".hpp") == mgr.prParsedFilters[3].filters.end()) return false;
+    if (!mgr.prParsedFilters[3].filters.exist(".cpp")) return false;
+    if (!mgr.prParsedFilters[3].filters.exist(".h")) return false;
+    if (!mgr.prParsedFilters[3].filters.exist(".hpp")) return false;
     if (mgr.prParsedFilters[4].title != "Image files (*.png *.gif *.jpg *.jpeg)") return false;
     if (mgr.prParsedFilters[4].filters.size() != 4U) return false;
-    if (mgr.prParsedFilters[4].filters.find(".png") == mgr.prParsedFilters[4].filters.end()) return false;
-    if (mgr.prParsedFilters[4].filters.find(".gif") == mgr.prParsedFilters[4].filters.end()) return false;
-    if (mgr.prParsedFilters[4].filters.find(".jpg") == mgr.prParsedFilters[4].filters.end()) return false;
-    if (mgr.prParsedFilters[4].filters.find(".jpeg") == mgr.prParsedFilters[4].filters.end()) return false;
+    if (!mgr.prParsedFilters[4].filters.exist(".png")) return false;
+    if (!mgr.prParsedFilters[4].filters.exist(".gif")) return false;
+    if (!mgr.prParsedFilters[4].filters.exist(".jpg")) return false;
+    if (!mgr.prParsedFilters[4].filters.exist(".jpeg")) return false;
     if (mgr.prParsedFilters[5].title != ".md") return false;
     if (mgr.prParsedFilters[5].filters.size() != 1U) return false;
 
@@ -568,7 +568,7 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Divers_1() {
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "Regex Custom*.h") return false;
-    if (mgr.prParsedFilters[0].filters.find("((Custom.+[.]h))") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist("((Custom.+[.]h))")) return false;
 
     return true;
 }
@@ -579,7 +579,7 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Divers_2() {
 
     if (mgr.prParsedFilters.size() != 1U) return false;
     if (mgr.prParsedFilters[0].title != "C++ File (*.cpp)") return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
 
     return true;
 }
@@ -590,163 +590,415 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Divers_3() {
 
     if (mgr.prParsedFilters.size() != 2U) return false;
     if (mgr.prParsedFilters[0].title != "C/C++ File (*.c *.cpp)") return false;
-    if (mgr.prParsedFilters[0].filters.find(".c") == mgr.prParsedFilters[0].filters.end()) return false;
-    if (mgr.prParsedFilters[0].filters.find(".cpp") == mgr.prParsedFilters[0].filters.end()) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".c")) return false;
+    if (!mgr.prParsedFilters[0].filters.exist(".cpp")) return false;
     if (mgr.prParsedFilters[1].title != " Header File (*.h)") return false;
-    if (mgr.prParsedFilters[1].filters.find(".h") == mgr.prParsedFilters[1].filters.end()) return false;
+    if (!mgr.prParsedFilters[1].filters.exist(".h")) return false;
 
     return true;
 }
 #pragma endregion
 
-#pragma region ReplaceExtentionWithCurrentFilter
+#pragma region ReplaceExtentionWithCurrentFilterIfNeeded
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_0() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_0() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.cpp") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_1() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_1() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.cpp") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_2() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_2() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".code.cpp", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.code.cpp") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_3() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_3() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".code.cpp", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.code.cpp") return false;
 
     return true;
 }
 
 // if regex, the function have no impact
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_4() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_4() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter("((.*\\.a\\.b))", true);
-    auto res                          = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c") return false;
 
     return true;
 }
 
 // many filter in the current collection, no change
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_5() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_5() {
     IGFD::FilterManager mgr;
     mgr.ParseFilters("C/C++ File (*.c,*.cpp){.c,.cpp}");
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c") return false;
 
     return true;
 }
 
 // one filter in the current collection => change
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_6() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_6() {
     IGFD::FilterManager mgr;
     mgr.ParseFilters("C/C++ File (*.cpp){.cpp}");
-    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.cpp") return false;
 
     return true;
 }
 
 // .* => no change
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_7() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_7() {
     IGFD::FilterManager mgr;
     mgr.ParseFilters(".*");
-    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c") return false;
 
     return true;
 }
 
 // one filter .* in one collection => no change
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_8() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_8() {
     IGFD::FilterManager mgr;
     mgr.ParseFilters("All files{.*}");
-    auto res = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_9() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_9() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c.r.x", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c.r.cpp") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_10() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_10() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp.tv", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c.r.x", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c.cpp.tv") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_11() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_11() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter("", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.c.r.x");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c.r.x", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c.r.x") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_12() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_12() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp.tv", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto.");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.cpp.tv") return false;
 
     return true;
 }
 
 // must be ok
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_13() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_13() {
     IGFD::FilterManager mgr;
     mgr.prSelectedFilter.addFilter(".cpp.tv", false);
-    auto res                    = mgr.ReplaceExtentionWithCurrentFilter("toto");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.cpp.tv") return false;
 
     return true;
 }
 
 // if regex, the function have no impact
-bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_14() {
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_14() {
     IGFD::FilterManager mgr;
     mgr.ParseFilters("C/C++ File{((.*\\.a\\.b))}");
-    auto res                          = mgr.ReplaceExtentionWithCurrentFilter("toto.c");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
     if (res != "toto.c") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_15() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Foobar (*.bar){.bar},All files{.*}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.bar") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_16() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Shader files{.a.b,.comp,.vert,.frag}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.a.b") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_17() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Shader files{.z,.comp,.vert,.frag}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.a.z") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_18() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Shader files{.z,.comp,.vert,.frag}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.a.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto..", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto...", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto....", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+    res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.....", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_19() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Shader files{((.*)),((.a.*)),.z,.frag}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.c") return false;
+
+    return true;
+}
+
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_20() {
+    IGFD::FilterManager mgr;
+    mgr.ParseFilters("Shader files{.z,((.*)),((.a.*)),.frag}");
+    auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.c", IGFD_ResultMode_OverwriteFileExt);
+    if (res != "toto.z") return false;
+
+    return true;
+}
+
+// IGFD_ResultMode_OverwriteFileExt
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_21() {
+    
+   {
+        // IGFD_ResultMode_OverwriteFileExt
+        // filter {.cpp,.h} with file :
+        // toto.h => toto.cpp
+        // toto.a.h => toto.a.cpp
+        // toto.a. => toto.a.cpp
+        // toto.a.h.t => toto.a.h.cpp
+        // toto. => toto.cpp
+        // toto => toto.cpp
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.cpp,.h}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.h", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.a.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.a.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h.t", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.a.h.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.cpp") return false;
+    }
+
+    {
+        // IGFD_ResultMode_OverwriteFileExt
+        // filter {.z,.a.b} with file :
+        // toto.a.h => toto.z
+        // toto.a.h.t => toto.a.z
+        // toto. => toto.z
+        // toto => toto.z
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.z,.a.b}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h.t", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.a.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.z") return false;
+    }
+
+    {
+        // IGFD_ResultMode_OverwriteFileExt
+        // filter {.g.z,.a} with file :
+        // toto.a.h => toto.g.z
+        // toto.a.h.y => toto.a.g.z
+        // toto.a. => toto.g.z
+        // toto. => toto.g.z
+        // toto => toto.g.z
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.g.z,.a}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.g.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h.y", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.a.g.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.g.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.g.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_OverwriteFileExt);
+        if (res != "toto.g.z") return false;
+    }
+
+    return true;
+}
+
+// IGFD_ResultMode_KeepInputFile
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_22() {
+
+    {
+        // IGFD_ResultMode_KeepInputFile
+        // filter {.cpp,.h} with file :
+        // toto.h => toto.h
+        // toto. => toto.
+        // toto => toto
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.cpp,.h}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.h", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto") return false;
+    }
+
+    {
+        // IGFD_ResultMode_KeepInputFile
+        // filter {.z,.a.b} with file :
+        // toto.a.h => toto.a.h
+        // toto. => toto.
+        // toto => toto
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.z,.a.b}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.a.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto") return false;
+    }
+
+    {
+        // IGFD_ResultMode_KeepInputFile
+        // filter {.g.z,.a} with file :
+        // toto.a.h => toto.a.h
+        // toto. => toto.
+        // toto => toto
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.g.z,.a}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.h", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto.") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_KeepInputFile);
+        if (res != "toto") return false;
+    }
+
+    return true;
+}
+
+// IGFD_ResultMode_AddIfNoFileExt
+bool Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_23() {
+
+     {
+        // IGFD_ResultMode_AddIfNoFileExt
+        // filter {.cpp,.h} with file :
+        // toto.h => toto.h
+        // toto.a.h => toto.a.h
+        // toto.a. => toto.a.cpp
+        // toto. => toto.cpp
+        // toto => toto.cpp
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.cpp,.h}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.h", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.a.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.a.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.cpp") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.cpp") return false;
+    }
+
+    {
+        // IGFD_ResultMode_AddIfNoFileExt
+        // filter {.z,.a.b} with file :
+        // toto.a.h => toto.a.h
+        // toto. => toto.z
+        // toto => toto.z
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.z,.a.b}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.a.h", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.a.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.z") return false;
+    }
+
+    {
+        // IGFD_ResultMode_AddIfNoFileExt
+        // filter {.g.z,.a} with file :
+        // toto.a.h => toto.a.h
+        // toto. => toto.g.z
+        // toto => toto.g.z
+        IGFD::FilterManager mgr;
+        mgr.ParseFilters("files{.g.z,.a}");
+        auto res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.h", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.h") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto.", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.g.z") return false;
+        res = mgr.ReplaceExtentionWithCurrentFilterIfNeeded("toto", IGFD_ResultMode_AddIfNoFileExt);
+        if (res != "toto.g.z") return false;
+    }
 
     return true;
 }
@@ -856,21 +1108,30 @@ bool Test_FilterManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_1);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_2);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_3);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_0);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_1);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_2);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_3);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_4);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_5);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_6);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_7);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_8);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_9);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_10);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_11);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_12);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_13);
-    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilter_14);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_0);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_1);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_2);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_3);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_4);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_5);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_6);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_7);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_8);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_9);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_10);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_11);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_12);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_13);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_14);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_15);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_16);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_17);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_18);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_19);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_20);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_21);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_22);
+    IfTestExist(Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_23);
     IfTestExist(Test_IGFD_FilterManager_FilterInfos_transformAsteriskBasedFilterToRegex_0);
     IfTestExist(Test_IGFD_FilterManager_IsCoveredByFilters_0);
     IfTestExist(Test_IGFD_FilterManager_IsCoveredByFilters_1);

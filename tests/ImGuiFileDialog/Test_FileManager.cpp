@@ -36,12 +36,19 @@ public:
         }
     };
 
-
     bool isFileExist(const std::string& vFile) {
         if (arr.empty()) {
             compute_name_array();
         }
         return (arr.find(vFile) != arr.end());
+    }
+
+    IGFD::FilterInfos getSelectedFilter() const {
+        return fd.puFilterManager.GetSelectedFilter();
+    }
+
+    IGFD::FileDialogInternal& getFileDialogInternal() {
+        return fd;
     }
 };  
 
@@ -127,6 +134,20 @@ bool Test_IGFD_FileManager_Filtering_divers_1() {
     return true;
 }
 
+bool Test_IGFD_FileManager_Filtering_divers_2() {
+    FileManagerTestHelper mgr;
+    mgr.addFilter("Shader files{.glsl,.comp,.vert,.frag}");
+    mgr.addFiles({"toto.comp", "titi.vert", "toto.frag", "tata.glsl"});
+
+    if (!mgr.isFileExist("toto.comp")) return false;
+    if (!mgr.isFileExist("titi.vert")) return false;
+    if (!mgr.isFileExist("toto.frag")) return false;
+    if (!mgr.isFileExist("tata.glsl")) return false;
+    if (mgr.getSelectedFilter().getFirstFilter() != ".glsl") return false;
+
+    return true;
+}
+
 #pragma endregion
 
 #pragma region Entry Point
@@ -141,6 +162,7 @@ bool Test_FileManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FileManager_Filtering_asterisk_3);
     IfTestExist(Test_IGFD_FileManager_Filtering_divers_0);
     IfTestExist(Test_IGFD_FileManager_Filtering_divers_1);
+    IfTestExist(Test_IGFD_FileManager_Filtering_divers_2);
 
     assert(0);
 

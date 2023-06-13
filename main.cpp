@@ -498,6 +498,7 @@ int main(int, char**) {
 
     static bool _UseWindowContraints  = true;
     static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
+    static IGFD_ResultMode resultMode = IGFD_ResultMode_AddIfNoFileExt;
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -582,8 +583,24 @@ int main(int, char**) {
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Date", "Hide Column file Date by default", &flags, ImGuiFileDialogFlags_HideColumnDate);
 
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Case Insensitive Extentions", "will not take into account the case of file extentions", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtention);
-                    
+
+                    ImGui::SameLine();
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable quick path selection", "Disable the quick path selection", &flags, ImGuiFileDialogFlags_DisableQuickPathSelection);
+                    
+                    ImGui::Separator();
+                    ImGui::Text("Result Modes : for GetFilePathName and GetSelection");
+                    
+                    if (RadioButtonLabeled("Add If No File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_AddIfNoFileExt, false)) {
+                        resultMode = IGFD_ResultMode_::IGFD_ResultMode_AddIfNoFileExt;
+                    }
+                    ImGui::SameLine();
+                    if (RadioButtonLabeled("Overwrite File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_OverwriteFileExt, false)) {
+                        resultMode = IGFD_ResultMode_::IGFD_ResultMode_OverwriteFileExt;
+                    }
+                    ImGui::SameLine();
+                    if (RadioButtonLabeled("Keep Input File", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_KeepInputFile, false)) {
+                        resultMode = IGFD_ResultMode_::IGFD_ResultMode_KeepInputFile;
+                    }
                 }
                 ImGui::Unindent();
             }
@@ -649,7 +666,7 @@ int main(int, char**) {
                 }
             }
 
-            if (ImGui::CollapsingHeader("Other Instance (multi dialog demo) :")) {
+            if (ImGui::CollapsingHeader("Open Directories :")) {
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog")) {
                     // let filters be null for open directory chooser
                     fileDialog2.OpenDialog("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, ".", 1, nullptr, flags);
@@ -692,12 +709,12 @@ int main(int, char**) {
                 // to note, when embedded only the vMinSize do nothing, only the vMaxSize can size the dialog frame
                 if (fileDialogEmbedded3.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0, 0), ImVec2(0, 350))) {
                     if (fileDialogEmbedded3.IsOk()) {
-                        filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                        filePathName = ImGuiFileDialog::Instance()->GetFilePathName(resultMode);
                         filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
                         filter       = ImGuiFileDialog::Instance()->GetCurrentFilter();
                         // here convert from string because a string was passed as a userDatas, but it can be what you want
                         if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
-                        auto sel = ImGuiFileDialog::Instance()->GetSelection();  // multiselection
+                        auto sel = ImGuiFileDialog::Instance()->GetSelection(resultMode);  // multiselection
                         selection.clear();
                         for (auto s : sel) {
                             selection.emplace_back(s.first, s.second);
@@ -768,12 +785,12 @@ int main(int, char**) {
 
             if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 if (ImGuiFileDialog::Instance()->IsOk()) {
-                    filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+                    filePathName = ImGuiFileDialog::Instance()->GetFilePathName(resultMode);
                     filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
                     filter       = ImGuiFileDialog::Instance()->GetCurrentFilter();
                     // here convert from string because a string was passed as a userDatas, but it can be what you want
                     if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
-                    auto sel = ImGuiFileDialog::Instance()->GetSelection();  // multiselection
+                    auto sel = ImGuiFileDialog::Instance()->GetSelection(resultMode);  // multiselection
                     selection.clear();
                     for (auto s : sel) {
                         selection.emplace_back(s.first, s.second);
@@ -785,12 +802,12 @@ int main(int, char**) {
 
             if (fileDialog2.Display("ChooseDirDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 if (fileDialog2.IsOk()) {
-                    filePathName = fileDialog2.GetFilePathName();
+                    filePathName = fileDialog2.GetFilePathName(resultMode);
                     filePath     = fileDialog2.GetCurrentPath();
                     filter       = fileDialog2.GetCurrentFilter();
                     // here convert from string because a string was passed as a userDatas, but it can be what you want
                     if (fileDialog2.GetUserDatas()) userDatas = std::string((const char*)fileDialog2.GetUserDatas());
-                    auto sel = fileDialog2.GetSelection();  // multiselection
+                    auto sel = fileDialog2.GetSelection(resultMode);  // multiselection
                     selection.clear();
                     for (auto s : sel) {
                         selection.emplace_back(s.first, s.second);
