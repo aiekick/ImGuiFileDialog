@@ -829,7 +829,7 @@ int main(int, char**) {
             /////////////////////////////////////////////////////////////////
             if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 if (IGFD_IsOk(cfileDialog)) {
-                    char* cfilePathName = IGFD_GetFilePathName(cfileDialog);
+                    char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
                     if (cfilePathName) filePathName = cfilePathName;
                     char* cfilePath = IGFD_GetCurrentPath(cfileDialog);
                     if (cfilePath) filePath = cfilePath;
@@ -838,7 +838,7 @@ int main(int, char**) {
                     // here convert from string because a string was passed as a userDatas, but it can be what you want
                     void* cdatas = IGFD_GetUserDatas(cfileDialog);
                     if (cdatas) userDatas = (const char*)cdatas;
-                    IGFD_Selection csel = IGFD_GetSelection(cfileDialog);  // multiselection
+                    IGFD_Selection csel = IGFD_GetSelection(cfileDialog, IGFD_ResultMode_KeepInputFile);  // multiselection
 
                     selection.clear();
                     for (size_t i = 0; i < csel.count; i++) {
