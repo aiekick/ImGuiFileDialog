@@ -1344,7 +1344,7 @@ public:
     bool try_set_existing(T vKey) {
         if (exist(vKey)) {
             auto row     = m_Dico.at(vKey);
-            m_Array[row] = vValue;
+            m_Array[row] = vKey;
             return true;
         }
         return false;
