@@ -4683,11 +4683,11 @@ IGFD_C_API bool IGFD_IsOpened(ImGuiFileDialog* vContext) {
     return false;
 }
 
-IGFD_C_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext) {
+IGFD_C_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext, IGFD_ResultMode vMode) {
     IGFD_Selection res = IGFD_Selection_Get();
 
     if (vContext) {
-        auto sel = vContext->GetSelection();
+        auto sel = vContext->GetSelection(vMode);
         if (!sel.empty()) {
             res.count = sel.size();
             res.table = new IGFD_Selection_Pair[res.count];
@@ -4728,11 +4728,11 @@ IGFD_C_API IGFD_Selection IGFD_GetSelection(ImGuiFileDialog* vContext) {
     return res;
 }
 
-IGFD_C_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext) {
+IGFD_C_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext, IGFD_ResultMode vMode) {
     char* res = nullptr;
 
     if (vContext) {
-        auto s = vContext->GetFilePathName();
+        auto s = vContext->GetFilePathName(vMode);
         if (!s.empty()) {
             size_t siz = s.size() + 1U;
             res        = (char*)malloc(siz);
@@ -4750,11 +4750,11 @@ IGFD_C_API char* IGFD_GetFilePathName(ImGuiFileDialog* vContext) {
     return res;
 }
 
-IGFD_C_API char* IGFD_GetCurrentFileName(ImGuiFileDialog* vContext) {
+IGFD_C_API char* IGFD_GetCurrentFileName(ImGuiFileDialog* vContext, IGFD_ResultMode vMode) {
     char* res = nullptr;
 
     if (vContext) {
-        auto s = vContext->GetCurrentFileName();
+        auto s = vContext->GetCurrentFileName(vMode);
         if (!s.empty()) {
             size_t siz = s.size() + 1U;
             res        = (char*)malloc(siz);

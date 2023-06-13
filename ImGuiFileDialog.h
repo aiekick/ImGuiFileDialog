@@ -2183,13 +2183,16 @@ IGFD_C_API bool IGFD_IsOpened(   // say if the dialog is opened somewhere
     ImGuiFileDialog* vContext);  // ImGuiFileDialog context
 
 IGFD_C_API IGFD_Selection IGFD_GetSelection(  // Open File behavior : will return selection via a map<FileName, FilePathName>
-    ImGuiFileDialog* vContext);               // ImGuiFileDialog context
+    ImGuiFileDialog* vContext,                // user datas (can be retrieved in pane)
+    IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetFilePathName(  // Save File behavior : will always return the content of the field with current filter extention and current path, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext);         // ImGuiFileDialog context
+    ImGuiFileDialog* vContext,          // ImGuiFileDialog context
+    IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetCurrentFileName(  // Save File behavior : will always return the content of the field with current filter extention, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext);            // ImGuiFileDialog context
+    ImGuiFileDialog* vContext,             // ImGuiFileDialog context
+    IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetCurrentPath(  // will return current path, WARNINGS you are responsible to free it
     ImGuiFileDialog* vContext);        // ImGuiFileDialog context
