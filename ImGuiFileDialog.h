@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable : 4251)
 
 #pragma region IGFD LICENSE
 
@@ -1206,18 +1207,6 @@ struct IGFD_Thumbnail_Info {
 
 #ifdef __cplusplus
 
-#pragma region IGFD API
-
-// Define attributes of all API symbols declarations (e.g. for DLL under Windows)
-// Using ImGuiFileDialog via a shared library is not recommended, because we don't guarantee
-// backward nor forward ABI compatibility and also function call overhead. If you
-// do use ImGuiFileDialog as a DLL, be sure to call SetImGuiContext (see Miscellanous section).
-#ifndef IGFD_API
-#define IGFD_API
-#endif // IGFD_API
-
-#pragma endregion
-
 #pragma region Includes
 
 #include <imgui.h>
@@ -1237,6 +1226,18 @@ struct IGFD_Thumbnail_Info {
 #include <fstream>
 #include <functional>
 #include <unordered_map>
+
+#pragma endregion
+
+#pragma region IGFD API
+
+// Define attributes of all API symbols declarations (e.g. for DLL under Windows)
+// Using ImGuiFileDialog via a shared library is not recommended, because we don't guarantee
+// backward nor forward ABI compatibility and also function call overhead. If you
+// do use ImGuiFileDialog as a DLL, be sure to call SetImGuiContext (see Miscellanous section).
+#ifndef IGFD_API
+#define IGFD_API
+#endif  // IGFD_API
 
 #pragma endregion
 
@@ -1359,38 +1360,41 @@ public:
 
 #pragma region Utils
 
-namespace Utils {
-struct PathStruct {
-    std::string path;
-    std::string name;
-    std::string ext;
-    bool isOk = false;
+class IGFD_API Utils {
+public:
+    struct IGFD_API PathStruct {
+        std::string path;
+        std::string name;
+        std::string ext;
+        bool isOk = false;
+    };
+
+public:
+    static bool ImSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
+    static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr);
+    static bool IsDirectoryCanBeOpened(const std::string& name);  // by ex protected dirs (not user rights)
+    static bool IsDirectoryExist(const std::string& name);
+    static bool CreateDirectoryIfNotExist(const std::string& name);
+    static PathStruct ParsePathFileName(const std::string& vPathFileName);
+    static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
+    static void ResetBuffer(char* vBuffer);
+    static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
+    static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
+    static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
+    static std::string utf8_encode(const std::wstring& wstr);
+    static std::wstring utf8_decode(const std::string& str);
+    static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
+    static std::vector<std::string> GetDrivesList();
+    static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
+    static size_t GetCharCountInString(const std::string& vString, const char& vChar);
+    static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
 };
-static bool ImSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
-static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr);
-static bool IsDirectoryCanBeOpened(const std::string& name);  // by ex protected dirs (not user rights)
-static bool IsDirectoryExist(const std::string& name);
-static bool CreateDirectoryIfNotExist(const std::string& name);
-static PathStruct ParsePathFileName(const std::string& vPathFileName);
-static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
-static void ResetBuffer(char* vBuffer);
-static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
-static bool WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr);
-static std::vector<std::wstring> WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty);
-static std::string utf8_encode(const std::wstring& wstr);
-static std::wstring utf8_decode(const std::string& str);
-static std::vector<std::string> SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty);
-static std::vector<std::string> GetDrivesList();
-static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
-static size_t GetCharCountInString(const std::string& vString, const char& vChar);
-static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
-}  // namespace Utils
 
 #pragma endregion
 
 #pragma region FileStyle
 
-class IGFD_API FileInfos;
+class FileInfos;
 class IGFD_API FileStyle {
 public:
     typedef std::function<bool(const FileInfos&, FileStyle&)> FileStyleFunctor;
