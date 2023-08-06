@@ -1898,9 +1898,6 @@ protected:
     float prOkCancelButtonWidth = 0.0f;
 
 public:
-    bool puAnyWindowsHovered = false;  // not remember why haha :) todo : to check if we can remove
-
-public:
     // Singleton for easier accces form anywhere but only one dialog at a time
     // vCopy or vForce can be used for share a memory pointer in a new memory space like a dll module
     static FileDialog* Instance(FileDialog* vCopy = nullptr, bool vForce = false) {
@@ -2104,7 +2101,7 @@ IGFD_C_API void IGFD_Selection_DestroyContent(IGFD_Selection* vSelection);  // d
 
 // constructor / destructor
 IGFD_C_API ImGuiFileDialog* IGFD_Create(void);            // create the filedialog context
-IGFD_C_API void IGFD_Destroy(ImGuiFileDialog* vContext);  // destroy the filedialog context
+IGFD_C_API void IGFD_Destroy(ImGuiFileDialog* vContextPtr);  // destroy the filedialog context
 
 typedef void (*IGFD_PaneFun)(const char*, void*, bool*);  // callback fucntion for display the pane
 
@@ -2114,7 +2111,7 @@ typedef void (*IGFD_DestroyThumbnailFun)(IGFD_Thumbnail_Info*);  // callback fuc
 #endif                                                           // USE_THUMBNAILS
 
 IGFD_C_API void IGFD_OpenDialog(   // open a standard dialog
-    ImGuiFileDialog* vContext,     // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,     // ImGuiFileDialog context
     const char* vKey,              // key dialog
     const char* vTitle,            // title
     const char* vFilters,          // filters/filter collections. set it to null for directory mode
@@ -2125,7 +2122,7 @@ IGFD_C_API void IGFD_OpenDialog(   // open a standard dialog
     ImGuiFileDialogFlags vFlags);  // ImGuiFileDialogFlags
 
 IGFD_C_API void IGFD_OpenDialog2(  // open a standard dialog
-    ImGuiFileDialog* vContext,     // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,     // ImGuiFileDialog context
     const char* vKey,              // key dialog
     const char* vTitle,            // title
     const char* vFilters,          // filters/filter collections. set it to null for directory mode
@@ -2135,7 +2132,7 @@ IGFD_C_API void IGFD_OpenDialog2(  // open a standard dialog
     ImGuiFileDialogFlags vFlags);  // ImGuiFileDialogFlags
 
 IGFD_C_API void IGFD_OpenPaneDialog(  // open a standard dialog with pane
-    ImGuiFileDialog* vContext,        // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,        // ImGuiFileDialog context
     const char* vKey,                 // key dialog
     const char* vTitle,               // title
     const char* vFilters,             // filters/filter collections. set it to null for directory mode
@@ -2148,7 +2145,7 @@ IGFD_C_API void IGFD_OpenPaneDialog(  // open a standard dialog with pane
     ImGuiFileDialogFlags vFlags);     // ImGuiFileDialogFlags
 
 IGFD_C_API void IGFD_OpenPaneDialog2(  // open a standard dialog with pane
-    ImGuiFileDialog* vContext,         // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,         // ImGuiFileDialog context
     const char* vKey,                  // key dialog
     const char* vTitle,                // title
     const char* vFilters,              // filters/filter collections. set it to null for directory mode
@@ -2160,55 +2157,55 @@ IGFD_C_API void IGFD_OpenPaneDialog2(  // open a standard dialog with pane
     ImGuiFileDialogFlags vFlags);      // ImGuiFileDialogFlags
 
 IGFD_C_API bool IGFD_DisplayDialog(  // Display the dialog
-    ImGuiFileDialog* vContext,       // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,       // ImGuiFileDialog context
     const char* vKey,                // key dialog to display (if not the same key as defined by OpenDialog => no opening)
     ImGuiWindowFlags vFlags,         // ImGuiWindowFlags
     ImVec2 vMinSize,                 // mininmal size contraint for the ImGuiWindow
     ImVec2 vMaxSize);                // maximal size contraint for the ImGuiWindow
 
 IGFD_C_API void IGFD_CloseDialog(  // Close the dialog
-    ImGuiFileDialog* vContext);    // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);    // ImGuiFileDialog context
 
 IGFD_C_API bool IGFD_IsOk(       // true => Dialog Closed with Ok result / false : Dialog closed with cancel result
-    ImGuiFileDialog* vContext);  // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);  // ImGuiFileDialog context
 
 IGFD_C_API bool IGFD_WasKeyOpenedThisFrame(  // say if the dialog key was already opened this frame
-    ImGuiFileDialog* vContext,               // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,               // ImGuiFileDialog context
     const char* vKey);
 
 IGFD_C_API bool IGFD_WasOpenedThisFrame(  // say if the dialog was already opened this frame
-    ImGuiFileDialog* vContext);           // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);           // ImGuiFileDialog context
 
 IGFD_C_API bool IGFD_IsKeyOpened(    // say if the dialog key is opened
-    ImGuiFileDialog* vContext,       // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,       // ImGuiFileDialog context
     const char* vCurrentOpenedKey);  // the dialog key
 
 IGFD_C_API bool IGFD_IsOpened(   // say if the dialog is opened somewhere
-    ImGuiFileDialog* vContext);  // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);  // ImGuiFileDialog context
 
 IGFD_C_API IGFD_Selection IGFD_GetSelection(  // Open File behavior : will return selection via a map<FileName, FilePathName>
-    ImGuiFileDialog* vContext,                // user datas (can be retrieved in pane)
+    ImGuiFileDialog* vContextPtr,                // user datas (can be retrieved in pane)
     IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetFilePathName(  // Save File behavior : will always return the content of the field with current filter extention and current path, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext,          // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,          // ImGuiFileDialog context
     IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetCurrentFileName(  // Save File behavior : will always return the content of the field with current filter extention, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext,             // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,             // ImGuiFileDialog context
     IGFD_ResultMode vMode);             // Result Mode
 
 IGFD_C_API char* IGFD_GetCurrentPath(  // will return current path, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext);        // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);        // ImGuiFileDialog context
 
 IGFD_C_API char* IGFD_GetCurrentFilter(  // will return selected filter, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext);          // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);          // ImGuiFileDialog context
 
 IGFD_C_API void* IGFD_GetUserDatas(  // will return user datas send with Open Dialog
-    ImGuiFileDialog* vContext);      // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);      // ImGuiFileDialog context
 
 IGFD_C_API void IGFD_SetFileStyle(        // SetExtention datas for have custom display of particular file type
-    ImGuiFileDialog* vContext,            // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,            // ImGuiFileDialog context
     IGFD_FileStyleFlags vFileStyleFlags,  // file style type
     const char* vFilter,                  // extention filter to tune
     ImVec4 vColor,                        // wanted color for the display of the file with extention filter
@@ -2216,14 +2213,14 @@ IGFD_C_API void IGFD_SetFileStyle(        // SetExtention datas for have custom 
     ImFont* vFont);                       // wanted font pointer
 
 IGFD_C_API void IGFD_SetFileStyle2(          // SetExtention datas for have custom display of particular file type
-    ImGuiFileDialog* vContext,               // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,               // ImGuiFileDialog context
     IGFD_FileStyleFlags vFileStyleFlags,     // file style type
     const char* vFilter,                     // extention filter to tune
     float vR, float vG, float vB, float vA,  // wanted color channels RGBA for the display of the file with extention filter
     const char* vIconText,                   // wanted text or icon of the file with extention filter (can be sued with font icon)
     ImFont* vFont);                          // wanted font pointer
 
-IGFD_C_API bool IGFD_GetFileStyle(ImGuiFileDialog* vContext,            // ImGuiFileDialog context
+IGFD_C_API bool IGFD_GetFileStyle(ImGuiFileDialog* vContextPtr,            // ImGuiFileDialog context
                                   IGFD_FileStyleFlags vFileStyleFlags,  // file style type
                                   const char* vFilter,                  // extention filter (same as used in SetExtentionInfos)
                                   ImVec4* vOutColor,                    // color to retrieve
@@ -2231,50 +2228,50 @@ IGFD_C_API bool IGFD_GetFileStyle(ImGuiFileDialog* vContext,            // ImGui
                                   ImFont** vOutFont);                   // font pointer to retrived
 
 IGFD_C_API void IGFD_ClearFilesStyle(  // clear extentions setttings
-    ImGuiFileDialog* vContext);        // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);        // ImGuiFileDialog context
 
 IGFD_C_API void SetLocales(     // set locales to use before and after display
-    ImGuiFileDialog* vContext,  // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,  // ImGuiFileDialog context
     const int vCategory,        // set local category
     const char* vBeginLocale,   // locale to use at begining of the dialog display
     const char* vEndLocale);    // locale to set at end of the dialog display
 
 #ifdef USE_EXPLORATION_BY_KEYS
 IGFD_C_API void IGFD_SetFlashingAttenuationInSeconds(  // set the flashing time of the line in file list when use exploration keys
-    ImGuiFileDialog* vContext,                         // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,                         // ImGuiFileDialog context
     float vAttenValue);                                // set the attenuation (from flashed to not flashed) in seconds
 #endif
 
 #ifdef USE_BOOKMARK
 IGFD_C_API char* IGFD_SerializeBookmarks(    // serialize bookmarks : return bookmark buffer to save in a file, WARNINGS you are responsible to free it
-    ImGuiFileDialog* vContext,               // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,               // ImGuiFileDialog context
     bool vDontSerializeCodeBasedBookmarks);  // for avoid serialization of bookmarks added by code
 
 IGFD_C_API void IGFD_DeserializeBookmarks(  // deserialize bookmarks : load bookmar buffer to load in the dialog (saved from previous use with SerializeBookmarks())
-    ImGuiFileDialog* vContext,              // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,              // ImGuiFileDialog context
     const char* vBookmarks);                // bookmark buffer to load
 
 IGFD_C_API void IGFD_AddBookmark(  // add a bookmark by code
-    ImGuiFileDialog* vContext,     // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,     // ImGuiFileDialog context
     const char* vBookMarkName,     // bookmark name
     const char* vBookMarkPath);    // bookmark path
 
 IGFD_C_API void IGFD_RemoveBookmark(  // remove a bookmark by code, return true if succeed
-    ImGuiFileDialog* vContext,        // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,        // ImGuiFileDialog context
     const char* vBookMarkName);       // bookmark name to remove
 #endif
 
 #ifdef USE_THUMBNAILS
 IGFD_C_API void SetCreateThumbnailCallback(        // define the callback for create the thumbnails texture
-    ImGuiFileDialog* vContext,                     // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,                     // ImGuiFileDialog context
     IGFD_CreateThumbnailFun vCreateThumbnailFun);  // the callback for create the thumbnails texture
 
 IGFD_C_API void SetDestroyThumbnailCallback(         // define the callback for destroy the thumbnails texture
-    ImGuiFileDialog* vContext,                       // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr,                       // ImGuiFileDialog context
     IGFD_DestroyThumbnailFun vDestroyThumbnailFun);  // the callback for destroy the thumbnails texture
 
 IGFD_C_API void ManageGPUThumbnails(  // must be call in gpu zone, possibly a thread, will call the callback for create / destroy the textures
-    ImGuiFileDialog* vContext);       // ImGuiFileDialog context
+    ImGuiFileDialog* vContextPtr);       // ImGuiFileDialog context
 #endif                                // USE_THUMBNAILS
 
 #pragma endregion
