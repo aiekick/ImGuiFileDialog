@@ -492,6 +492,7 @@ IGFD_API std::wstring IGFD::Utils::utf8_decode(const std::string& str) {
 }
 
 IGFD_API bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr) {
+    if (oldStr.compare(newStr) == 0) return false;
     bool res = false;
     size_t pos = 0;
     bool found = false;
