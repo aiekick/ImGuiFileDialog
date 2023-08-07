@@ -491,23 +491,27 @@ IGFD_API std::wstring IGFD::Utils::utf8_decode(const std::string& str) {
     return res;
 }
 
-IGFD_API bool IGFD::Utils::ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr) {
-    bool res = false;
-    size_t pos = 0;
-    bool found = false;
-    do {
-        pos = str.find(oldStr, pos);
-        if (pos != std::string::npos) {
-            found = true;
-            res   = true;
-            str.replace(pos, oldStr.length(), newStr);
-            pos += newStr.length();
-        } else if (found) { // another loop to be sure there is no other pattern ater replacement
-            found = false;
-            pos   = 0;
-        }
-    } while (pos != std::string::npos);
-    return res;
+IGFD_API bool IGFD::Utils::ReplaceString(std::string& str, const ::std::string& oldStr, const ::std::string& newStr, const size_t& vMaxRecursion) {
+    if (!str.empty() && oldStr != newStr) {
+        bool res             = false;
+        size_t pos           = 0;
+        bool found           = false;
+        size_t max_recursion = vMaxRecursion;
+        do {
+            pos = str.find(oldStr, pos);
+            if (pos != std::string::npos) {
+                found = res = true;
+                str.replace(pos, oldStr.length(), newStr);
+                pos += newStr.length();
+            } else if (found && max_recursion > 0) {  // another loop to be sure there is no other pattern after replacement
+                found = false;
+                pos   = 0;
+                --max_recursion;
+            }
+        } while (pos != std::string::npos);
+        return res;
+    }
+    return false;
 }
 
 IGFD_API std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty) {
