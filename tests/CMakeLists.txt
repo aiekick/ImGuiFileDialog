@@ -137,3 +137,19 @@ SetTest(Test_IGFD_FileManager_Filtering_divers_2)
 ##SetTest(Test_IGFD_FileStyle_ByExtention_3)
 ##SetTest(Test_IGFD_FileStyle_ByExtention_4)
 ##SetTest(Test_IGFD_FileStyle_ByExtention_5)
+
+## Test_IGFD_Utils -- ReplaceString
+SetTest(Test_IGFD_Utils_ReplaceString_0)
+SetTest(Test_IGFD_Utils_ReplaceString_1)
+SetTest(Test_IGFD_Utils_ReplaceString_2)
+SetTest(Test_IGFD_Utils_ReplaceString_3)
+SetTest(Test_IGFD_Utils_ReplaceString_4)
+SetTest(Test_IGFD_Utils_ReplaceString_5)
+SetTest(Test_IGFD_Utils_ReplaceString_6)
+SetTest(Test_IGFD_Utils_ReplaceString_7)
+
+## Test_IGFD_Utils -- SplitStringToVector
+SetTest(Test_IGFD_Utils_SplitStringToVector_0)
+SetTest(Test_IGFD_Utils_SplitStringToVector_1)
+SetTest(Test_IGFD_Utils_SplitStringToVector_2)
+SetTest(Test_IGFD_Utils_SplitStringToVector_3)

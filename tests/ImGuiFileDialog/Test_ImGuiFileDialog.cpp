@@ -2,6 +2,7 @@
 #include "Test_FilterManager.h"
 #include "Test_FileManager.h"
 #include "Test_FileStyle.h"
+#include "Test_Utils.h"
 
 bool Test_ImGuiFileDialog(const std::string& vTest) {
     if (vTest.find("IGFD_FilterManager") != std::string::npos) {
@@ -10,6 +11,8 @@ bool Test_ImGuiFileDialog(const std::string& vTest) {
         return Test_FileManager(vTest);
     } else if (vTest.find("IGFD_FileStyle") != std::string::npos) {
         return Test_FileStyle(vTest);
+    } else if (vTest.find("IGFD_Utils") != std::string::npos) {
+        return Test_Utils(vTest);
     }
     return true;
 }

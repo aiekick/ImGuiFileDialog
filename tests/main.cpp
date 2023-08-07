@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
         return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
     }
 
-    return Test_ImGuiFileDialog("Test_IGFD_FilterManager_ReplaceExtentionWithCurrentFilterIfNeeded_23") ? 0 : 1;
+    return Test_ImGuiFileDialog("Test_IGFD_Utils_ReplaceString_3") ? 0 : 1;
     
     return 0;
 }
