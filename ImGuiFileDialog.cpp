@@ -409,54 +409,8 @@ IGFD_API bool IGFD::Utils::ImSplitter(bool split_vertically, float thickness, fl
     return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f);
 }
 
-IGFD_API bool IGFD::Utils::WReplaceString(std::wstring& str, const std::wstring& oldStr, const std::wstring& newStr) {
-    bool found = false;
-#ifdef _IGFD_WIN_
-    size_t pos = 0;
-    while ((pos = str.find(oldStr, pos)) != std::wstring::npos) {
-        found = true;
-        str.replace(pos, oldStr.length(), newStr);
-        pos += newStr.length();
-    }
-#else
-    // Suppress warnings from the compiler.
-    (void)str;
-    (void)oldStr;
-    (void)newStr;
-#endif  // _IGFD_WIN_
-    return found;
-}
-
-IGFD_API std::vector<std::wstring> IGFD::Utils::WSplitStringToVector(const std::wstring& text, char delimiter, bool pushEmpty) {
-    std::vector<std::wstring> arr;
-#ifdef _IGFD_WIN_
-    if (!text.empty()) {
-        std::wstring::size_type start = 0;
-        std::wstring::size_type end   = text.find(delimiter, start);
-        while (end != std::wstring::npos) {
-            std::wstring token = text.substr(start, end - start);
-            if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
-                arr.push_back(token);
-            }
-            start = end + 1;
-            end   = text.find(delimiter, start);
-        }
-        std::wstring token = text.substr(start);
-        if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
-            arr.push_back(token);
-        }
-    }
-#else
-    // Suppress warnings from the compiler.
-    (void)text;
-    (void)delimiter;
-    (void)pushEmpty;
-#endif  // _IGFD_WIN_
-    return arr;
-}
-
 // Convert a wide Unicode string to an UTF8 string
-IGFD_API std::string IGFD::Utils::utf8_encode(const std::wstring& wstr) {
+IGFD_API std::string IGFD::Utils::UTF8Encode(const std::wstring& wstr) {
     std::string res;
 #ifdef _IGFD_WIN_
     if (!wstr.empty()) {
@@ -474,7 +428,7 @@ IGFD_API std::string IGFD::Utils::utf8_encode(const std::wstring& wstr) {
 }
 
 // Convert an UTF8 string to a wide Unicode String
-IGFD_API std::wstring IGFD::Utils::utf8_decode(const std::string& str) {
+IGFD_API std::wstring IGFD::Utils::UTF8Decode(const std::string& str) {
     std::wstring res;
 #ifdef _IGFD_WIN_
     if (!str.empty()) {
@@ -503,7 +457,7 @@ IGFD_API bool IGFD::Utils::ReplaceString(std::string& str, const ::std::string& 
                 found = res = true;
                 str.replace(pos, oldStr.length(), newStr);
                 pos += newStr.length();
-            } else if (found && max_recursion > 0) {  // another loop to be sure there is no other pattern after replacement
+            } else if (found && max_recursion > 0) {  // recursion loop
                 found = false;
                 pos   = 0;
                 --max_recursion;
@@ -514,21 +468,21 @@ IGFD_API bool IGFD::Utils::ReplaceString(std::string& str, const ::std::string& 
     return false;
 }
 
-IGFD_API std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& text, char delimiter, bool pushEmpty) {
+IGFD_API std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty) {
     std::vector<std::string> arr;
-    if (!text.empty()) {
+    if (!vText.empty()) {
         size_t start = 0;
-        size_t end   = text.find(delimiter, start);
+        size_t end   = vText.find(vDelimiter, start);
         while (end != std::string::npos) {
-            auto token = text.substr(start, end - start);
-            if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
+            auto token = vText.substr(start, end - start);
+            if (!token.empty() || (token.empty() && vPushEmpty)) {  //-V728
                 arr.push_back(token);
             }
             start = end + 1;
-            end   = text.find(delimiter, start);
+            end   = vText.find(vDelimiter, start);
         }
-        auto token = text.substr(start);
-        if (!token.empty() || (token.empty() && pushEmpty)) {  //-V728
+        auto token = vText.substr(start);
+        if (!token.empty() || (token.empty() && vPushEmpty)) {  //-V728
             arr.push_back(token);
         }
     }
@@ -561,7 +515,7 @@ IGFD_API bool IGFD::Utils::IsDirectoryCanBeOpened(const std::string& name) {
 #ifdef USE_STD_FILESYSTEM
         namespace fs = std::filesystem;
 #ifdef _IGFD_WIN_
-        std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
+        std::wstring wname = IGFD::Utils::UTF8Decode(name.c_str());
         fs::path pathName  = fs::path(wname);
 #else   // _IGFD_WIN_
         fs::path pathName = fs::path(name);
@@ -600,7 +554,7 @@ IGFD_API bool IGFD::Utils::IsDirectoryExist(const std::string& name) {
 #ifdef USE_STD_FILESYSTEM
         namespace fs = std::filesystem;
 #ifdef _IGFD_WIN_
-        std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
+        std::wstring wname = IGFD::Utils::UTF8Decode(name.c_str());
         fs::path pathName  = fs::path(wname);
 #else   // _IGFD_WIN_
         fs::path pathName = fs::path(name);
@@ -635,11 +589,11 @@ IGFD_API bool IGFD::Utils::CreateDirectoryIfNotExist(const std::string& name) {
 #ifdef _IGFD_WIN_
 #ifdef USE_STD_FILESYSTEM
             namespace fs       = std::filesystem;
-            std::wstring wname = IGFD::Utils::utf8_decode(name.c_str());
+            std::wstring wname = IGFD::Utils::UTF8Decode(name.c_str());
             fs::path pathName  = fs::path(wname);
             res                = fs::create_directory(pathName);
 #else                          // USE_STD_FILESYSTEM
-            std::wstring wname = IGFD::Utils::utf8_decode(name);
+            std::wstring wname = IGFD::Utils::UTF8Decode(name);
             if (CreateDirectoryW(wname.c_str(), nullptr)) {
                 res = true;
             }
@@ -2166,11 +2120,11 @@ IGFD_API void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
     {
 #ifdef _IGFD_WIN_
         DWORD numchar      = 0;
-        std::wstring wpath = IGFD::Utils::utf8_decode(path);
+        std::wstring wpath = IGFD::Utils::UTF8Decode(path);
         numchar            = GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
         std::wstring fpath(numchar, 0);
         GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
-        std::string real_path = IGFD::Utils::utf8_encode(fpath);
+        std::string real_path = IGFD::Utils::UTF8Encode(fpath);
         while (real_path.back() == '\0')  // for fix issue we can have with std::string concatenation.. if there is a \0 at end
             real_path = real_path.substr(0, real_path.size() - 1U);
         if (!real_path.empty())
