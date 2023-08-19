@@ -749,7 +749,7 @@ int main(int, char**) {
                                 if (ImGui::TableSetColumnIndex(0))  // first column
                                 {
                                     ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
+                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
                                     if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
                                 }
                                 if (ImGui::TableSetColumnIndex(1))  // second column
@@ -874,6 +874,7 @@ int main(int, char**) {
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+#ifdef IMGUI_HAS_VIEWPORT
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
         //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
@@ -883,7 +884,7 @@ int main(int, char**) {
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
-
+#endif
         glfwSwapBuffers(window);
     }
 
