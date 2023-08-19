@@ -2487,7 +2487,7 @@ IGFD_API std::string IGFD::FileManager::GetResultingPath() {
     std::string path = prCurrentPath;
     if (puDLGDirectoryMode) { // if directory mode
         std::string selectedDirectory = puFileNameBuffer;
-        if (!selectedDirectory.empty() && selectedDirectory != ".") {
+        if (prSelectedFileNames.size() == 1 && !selectedDirectory.empty() && selectedDirectory != ".") {
             path += std::string(1u, PATH_SEP) + selectedDirectory;
         }
     }
