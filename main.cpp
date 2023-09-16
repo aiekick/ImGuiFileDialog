@@ -657,7 +657,7 @@ int main(int, char**) {
                 }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1,
+                    ImGuiFileDialog::Instance()->OpenDialogWithPane("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1,
                                                             IGFDUserDatas("SaveFile"), flags);
                 }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with Confirm Dialog For Overwrite File if exist")) {
@@ -693,7 +693,7 @@ int main(int, char**) {
             if (ImGui::CollapsingHeader("C API instance demo")) {
                 if (ImGui::Button("C " ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
-                    IGFD_OpenPaneDialog(cfileDialog, "ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", &InfosPane, 350, 1, (void*)("SaveFile"), flags);
+                    IGFD_OpenDialogWithPane(cfileDialog, "ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, ".", "", &InfosPane, 350, 1, (void*)("SaveFile"), flags);
                 }
             }
             /////////////////////////////////////////////////////////////////
@@ -749,7 +749,7 @@ int main(int, char**) {
                                 if (ImGui::TableSetColumnIndex(0))  // first column
                                 {
                                     ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
+                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
                                     if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
                                 }
                                 if (ImGui::TableSetColumnIndex(1))  // second column
