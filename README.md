@@ -153,7 +153,7 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_simple.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/demoApp/doc/dlg_simple.gif)
 
 </blockquote></details>
 
@@ -185,7 +185,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseDirDlgKey", "Choose a Directory",
 
 In this mode you can select any directory with one click and open a directory with a double-click.
 
-![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/directoryChooser.gif)
+![directoryChooser](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/directoryChooser.gif)
 
 </blockquote></details>
 
@@ -249,7 +249,7 @@ void drawGui()
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dlg_with_pane.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/dlg_with_pane.gif)
 
 </blockquote></details>
 
@@ -361,7 +361,7 @@ ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD:
 });
 ```
 
-this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/master/main.cpp) produce the picture above :
+this sample code of [master/main.cpp](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/main.cpp) produce the picture above :
 
 ```cpp
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
@@ -377,7 +377,7 @@ ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileSty
 ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/color_filter.png)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/color_filter.png)
 
 </blockquote></details>
 
@@ -402,7 +402,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IMFDLG_FOLDER_O
 ```
 
 will produce :
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/collectionFilters.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/collectionFilters.gif)
 
 </blockquote></details>
 
@@ -425,7 +425,7 @@ ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".png
    ".", "", std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), 350, 1, "SaveFile"); // 1 file
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/multiSelection.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/multiSelection.gif)
 
 </blockquote></details>
 
@@ -439,7 +439,7 @@ ImVec2 minSize = maxSize * 0.5f;  // Half the display area
 ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize);
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/dialog_constraints.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/dialog_constraints.gif)
 
 </blockquote></details>
 
@@ -457,7 +457,7 @@ You can also uncomment the next lines to define navigation keys:
 
 You can also jump to a point in the file list by pressing the corresponding key of the first filename character.
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/explore_ny_keys.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/explore_ny_keys.gif)
 
 As you see the current item is flashed by default for 1 second. You can define the flashing lifetime with the function
 
@@ -487,7 +487,7 @@ More customization options:
 * You can select each bookmark to edit the displayed name corresponding to a path
 * Double-click on the label to apply the bookmark
 
-![bookmarks.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/bookmarks.gif)
+![bookmarks.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/bookmarks.gif)
 
 You can also serialize/deserialize bookmarks (for example to load/save from/to a file):
 ```cpp
@@ -518,7 +518,7 @@ Pressing the completion key (GLFW uses `enter` by default) validates the new pat
 uses`escape` by default) cancels the manual entry and restores the original path.
 
 Here's the manual entry operation in action:
-![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/inputPathEdition.gif)
+![inputPathEdition.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/inputPathEdition.gif)
 
 </blockquote></details>
 
@@ -566,7 +566,7 @@ Uncomment these line for customization options:
 
 See the result :
 
-![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/ConfirmToOverWrite.gif)
+![ConfirmToOverWrite.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/ConfirmToOverWrite.gif)
 
 </blockquote></details>
 
@@ -597,7 +597,7 @@ std::string GetCurrentFilter();                    // The file extension
 
 You can now, display thumbnails of pictures. 
 
-![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/thumbnails.gif)
+![thumbnails.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/thumbnails.gif)
 
 The file resize use stb/image so the following files extentions are supported :
  * .png (tested sucessfully)
@@ -708,7 +708,7 @@ fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(
 ```
 the result :
 
-![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/Embedded.gif)
+![Embedded.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/Embedded.gif)
 
 </blockquote></details>
 
@@ -724,7 +724,7 @@ you can also customize the spacing between path button's with and without this m
 you can do that by define the compiler flag : #define CUSTOM_PATH_SPACING 2
 if undefined the spacing is defined by the imgui theme
 
-![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/quick_composer_path_select.gif)
+![quick_composer_path_select.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/quick_composer_path_select.gif)
 
 </blockquote></details>
 
@@ -790,19 +790,19 @@ just see theses defines in the config file
 ```
 with Alignement 0.0 => left
 
-![alignement_0.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.0.png)
+![alignement_0.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/alignement_0.0.png)
 
 with Alignement 1.0 => right
 
-![alignement_1.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_1.0.png)
+![alignement_1.0.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/alignement_1.0.png)
 
 with Alignement 0.5 => middle
 
-![alignement_0.5.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/alignement_0.5.png)
+![alignement_0.5.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/alignement_0.5.png)
 
 ok and cancel buttons inverted (cancel on the left and ok on the right)
 
-![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/validation_buttons_inverted.png)
+![validation_buttons_inverted.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/validation_buttons_inverted.png)
 
 </blockquote></details>
 
