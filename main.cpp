@@ -399,7 +399,8 @@ int main(int, char**) {
     // return true is a file style was defined
     ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFileInfos, IGFD::FileStyle& vOutStyle) -> bool {
         if (!vFileInfos.fileNameExt.empty() && vFileInfos.fileNameExt[0] == '.') {
-            vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
+            vOutStyle.color = ImVec4(0.0f, 0.9f, 0.9f, 1.0f);
+            vOutStyle.icon = ICON_IGFD_REMOVE;
             return true;
         }
         return false;
@@ -441,7 +442,8 @@ int main(int, char**) {
     // return true is a file style was defined
     CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
         if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
-            vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
+            vOutStyle.color = ImVec4(0.0f, 0.9f, 0.9f, 1.0f);
+            vOutStyle.icon = ICON_IGFD_REMOVE;
             return true;
         }
         return false;
