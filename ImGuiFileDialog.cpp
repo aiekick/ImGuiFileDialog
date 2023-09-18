@@ -1331,6 +1331,7 @@ IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilterIfNee
                     } else {  // add extention
                         result = vFileName + current_filter;
                     }
+                    break;
                 }
                 case IGFD_ResultMode_AddIfNoFileExt: {
                     const auto& count_dots = Utils::GetCharCountInString(vFileName, '.');
@@ -1342,6 +1343,7 @@ IGFD_API std::string IGFD::FilterManager::ReplaceExtentionWithCurrentFilterIfNee
                         const auto& file_name_without_user_ext = vFileName.substr(0, lp);
                         result = file_name_without_user_ext + current_filter;
                     }
+                    break;
                 }
             }
 

@@ -1,5 +1,14 @@
 #pragma once
+
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"        // warning: unknown warning group 'xxx'
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wpragmas"              // warning: unknown option after '#pragma GCC diagnostic' kind
+#endif
+
+#ifdef _MSC_VER
 #pragma warning(disable : 4251)
+#endif
 
 #pragma region IGFD LICENSE
 
@@ -1976,7 +1985,7 @@ public:
                    // singleton)
     virtual ~FileDialog();  // ImGuiFileDialog Destructor
 
-    // todo : need to refactor all theses function to maybe just one
+    virtual // todo : need to refactor all theses function to maybe just one
     //  standard dialog
     void OpenDialog(                        // open simple dialog (path and fileName can be specified)
         const std::string& vKey,            // key dialog
