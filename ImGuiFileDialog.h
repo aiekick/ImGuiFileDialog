@@ -1,9 +1,9 @@
 #pragma once
 
 #if defined(__clang__)
-#pragma clang diagnostic ignored "-Wunknown-pragmas"        // warning: unknown warning group 'xxx'
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
 #elif defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wpragmas"              // warning: unknown option after '#pragma GCC diagnostic' kind
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
 #ifdef _MSC_VER
