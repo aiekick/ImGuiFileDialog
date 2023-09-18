@@ -12,7 +12,7 @@
 #include "3rdparty/imgui/backends/imgui_impl_glfw.h"
 #include "ImGuiFileDialog.h"
 #include "CustomFont.cpp"
-#include <stdio.h>
+#include <cstdio>
 #include <sstream>
 #include <fstream>
 #include <clocale>
@@ -168,12 +168,12 @@ public:
     }
 
 public:
-    void OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const std::string& vPath, const std::string& vFileName, const int& vCountSelectionMax, IGFD::UserDatas vUserDatas, ImGuiFileDialogFlags vFlags) {
+    void OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const std::string& vPath, const std::string& vFileName, const int& vCountSelectionMax, IGFD::UserDatas vUserDatas, ImGuiFileDialogFlags vFlags) override {
         m_ReadOnly = false;
         ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vPath, vFileName, vCountSelectionMax, vUserDatas, vFlags);
     }
 
-    bool isReadOnly() {
+    bool isReadOnly() const {
         return m_ReadOnly;
     }
 
@@ -262,8 +262,8 @@ int main(int, char**) {
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
-    if (window == NULL) return 1;
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    if (window == nullptr) return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);  // Enable vsync
 
@@ -305,7 +305,7 @@ int main(int, char**) {
     ImGuiFileDialog fileDialogEmbedded3;
 
     // an override for have read only checkbox
-    static bool _IsFileReadOnly = false;
+    static bool IsFileReadOnly = false;
     CustomDrawReadOnlyCheckBoxFileDialog customFileDialog;
 
 #ifdef USE_THUMBNAILS
@@ -355,14 +355,14 @@ int main(int, char**) {
     });
     ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) {
         if (vThumbnail_Info) {
-            GLuint texID = (GLuint)(size_t)vThumbnail_Info->textureID;
+            auto texID = (GLuint)(size_t)vThumbnail_Info->textureID;
             glDeleteTextures(1, &texID);
             glFinish();
         }
     });
     fileDialogEmbedded3.SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) {
         if (vThumbnail_Info) {
-            GLuint texID = (GLuint)(size_t)vThumbnail_Info->textureID;
+            auto texID = (GLuint)(size_t)vThumbnail_Info->textureID;
             glDeleteTextures(1, &texID);
             glFinish();
         }
@@ -399,7 +399,7 @@ int main(int, char**) {
     // return true is a file style was defined
     ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFileInfos, IGFD::FileStyle& vOutStyle) -> bool {
         if (!vFileInfos.fileNameExt.empty() && vFileInfos.fileNameExt[0] == '.') {
-            vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE, nullptr);
+            vOutStyle = IGFD::FileStyle(ImVec4(0.0f, 0.9f, 0.9f, 1.0f), ICON_IGFD_REMOVE);
             return true;
         }
         return false;
@@ -496,7 +496,7 @@ int main(int, char**) {
     static std::string userDatas;
     static std::vector<std::pair<std::string, std::string>> selection = {};
 
-    static bool _UseWindowContraints  = true;
+    static bool UseWindowContraints  = true;
     static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
     static IGFD_ResultMode resultMode = IGFD_ResultMode_AddIfNoFileExt;
 
@@ -552,7 +552,7 @@ int main(int, char**) {
                 ImGui::PopItemWidth();
 #endif
                 ImGui::Separator();
-                ImGui::Checkbox("Use file dialog constraint", &_UseWindowContraints);
+                ImGui::Checkbox("Use file dialog constraint", &UseWindowContraints);
                 ImGui::Text("Constraints is used here for define min/max file dialog size");
                 ImGui::Separator();
 
@@ -683,7 +683,7 @@ int main(int, char**) {
                         "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
                     CustomDrawReadOnlyCheckBoxFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, ".", "", 1, nullptr, flags);
                 }
-                ImGui::Text("Is File Read only ?? : %s", _IsFileReadOnly ? "yes" : "false");
+                ImGui::Text("Is File Read only ?? : %s", IsFileReadOnly ? "yes" : "false");
 
                 /////////////////////////////////////////////////////////////////
                 // C Interface
@@ -716,7 +716,7 @@ int main(int, char**) {
                         if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
                         auto sel = ImGuiFileDialog::Instance()->GetSelection(resultMode);  // multiselection
                         selection.clear();
-                        for (auto s : sel) {
+                        for (const auto& s : sel) {
                             selection.emplace_back(s.first, s.second);
                         }
                         // action
@@ -773,7 +773,7 @@ int main(int, char**) {
             ImVec2 minSize = ImVec2(0, 0);
             ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
-            if (_UseWindowContraints) {
+            if (UseWindowContraints) {
                 maxSize = ImVec2((float)display_w, (float)display_h) * 0.7f;
                 minSize = maxSize * 0.25f;
             }
@@ -792,7 +792,7 @@ int main(int, char**) {
                     if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
                     auto sel = ImGuiFileDialog::Instance()->GetSelection(resultMode);  // multiselection
                     selection.clear();
-                    for (auto s : sel) {
+                    for (const auto& s : sel) {
                         selection.emplace_back(s.first, s.second);
                     }
                     // action
@@ -809,7 +809,7 @@ int main(int, char**) {
                     if (fileDialog2.GetUserDatas()) userDatas = std::string((const char*)fileDialog2.GetUserDatas());
                     auto sel = fileDialog2.GetSelection(resultMode);  // multiselection
                     selection.clear();
-                    for (auto s : sel) {
+                    for (const auto& s : sel) {
                         selection.emplace_back(s.first, s.second);
                     }
                     // action
@@ -819,7 +819,7 @@ int main(int, char**) {
 
             if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->IsOk()) {
-                    _IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly();
+                    IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly();
                 }
                 CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Close();
             }
