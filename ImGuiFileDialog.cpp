@@ -3407,7 +3407,7 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
         button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick;
     }
     if (flags & ImGuiSelectableFlags_AllowItemOverlap) {
-        button_flags |= ImGuiButtonFlags_AllowItemOverlap;
+        button_flags |= ImGuiButtonFlags_AllowOverlap;
     }
 
     const bool was_selected = selected;
