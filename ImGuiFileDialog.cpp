@@ -1412,7 +1412,7 @@ IGFD_API bool IGFD::FileInfos::SearchForExt(
     const std::string& vExt, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
     if (!vExt.empty()) {
         const auto& ext_levels = vIsCaseInsensitive ? fileExtLevels_optimized : fileExtLevels;
-        if (vMaxLevel > 1 && countExtDot >= vMaxLevel) {
+        if (vMaxLevel >= 1 && countExtDot >= vMaxLevel) {
             for (const auto& ext : ext_levels) {
                 if (!ext.empty() && ext == vExt) {
                     return true;
@@ -3317,11 +3317,10 @@ IGFD_API void IGFD::KeyExplorerFeature::prExploreWithkeys(
         }
     }
 }
-
-IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
+ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
     const char* label, bool selected, ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg) {
     using namespace ImGui;
-
+    
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems) return false;
 
@@ -3352,8 +3351,8 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
     if ((flags & ImGuiSelectableFlags_NoPadWithHalfSpacing) == 0) {
         const float spacing_x = span_all_columns ? 0.0f : style.ItemSpacing.x;
         const float spacing_y = style.ItemSpacing.y;
-        const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
-        const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
+        const float spacing_L = IM_TRUNC(spacing_x * 0.50f);
+        const float spacing_U = IM_TRUNC(spacing_y * 0.50f);
         bb.Min.x -= spacing_L;
         bb.Min.y -= spacing_U;
         bb.Max.x += (spacing_x - spacing_L);
@@ -3406,7 +3405,7 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
     if (flags & ImGuiSelectableFlags_AllowDoubleClick) {
         button_flags |= ImGuiButtonFlags_PressedOnClickRelease | ImGuiButtonFlags_PressedOnDoubleClick;
     }
-    if (flags & ImGuiSelectableFlags_AllowItemOverlap) {
+    if ((flags & ImGuiSelectableFlags_AllowOverlap) || (g.LastItemData.InFlags & ImGuiItemFlags_AllowOverlap)) {
         button_flags |= ImGuiButtonFlags_AllowOverlap;
     }
 
@@ -3433,8 +3432,6 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
     }
     if (pressed) MarkItemEdited(id);
 
-    if (flags & ImGuiSelectableFlags_AllowItemOverlap) SetItemAllowOverlap();
-
     // In this branch, Selectable() cannot toggle the selection so this will never trigger.
     if (selected != was_selected)  //-V547
         g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
@@ -3449,7 +3446,7 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
         const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
         RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
     }
-    RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+    if (g.NavId == id) RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 
     if (span_all_columns && window->DC.CurrentColumns)
         PopColumnsBackground();
@@ -3465,7 +3462,7 @@ IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
     return pressed;  //-V1020
-}
+ }
 
 IGFD_API void IGFD::KeyExplorerFeature::prStartFlashItem(size_t vIdx) {
     prFlashAlpha = 1.0f;
