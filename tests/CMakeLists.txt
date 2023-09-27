@@ -130,6 +130,12 @@ SetTest(Test_IGFD_FileManager_Filtering_divers_0)
 SetTest(Test_IGFD_FileManager_Filtering_divers_1)
 SetTest(Test_IGFD_FileManager_Filtering_divers_2)
 
+## Test_IGFD_FileManager -- Filtering Sensitive/Insenstive case
+SetTest(Test_IGFD_FileManager_Filtering_sensitive_case_0)
+SetTest(Test_IGFD_FileManager_Filtering_sensitive_case_1)
+SetTest(Test_IGFD_FileManager_Filtering_insensitive_case_0)
+SetTest(Test_IGFD_FileManager_Filtering_insensitive_case_1)
+
 ## Test_IGFD_FileStyle
 ##SetTest(Test_IGFD_FileStyle_ByExtention_0)
 ##SetTest(Test_IGFD_FileStyle_ByExtention_1)

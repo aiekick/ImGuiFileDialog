@@ -43,6 +43,10 @@ public:
         return (arr.find(vFile) != arr.end());
     }
 
+    void useFlags(ImGuiFileDialogFlags vFlags) {
+        fd.puDLGflags = vFlags;
+    }
+    
     IGFD::FilterInfos getSelectedFilter() const {
         return fd.puFilterManager.GetSelectedFilter();
     }
@@ -150,6 +154,60 @@ bool Test_IGFD_FileManager_Filtering_divers_2() {
 
 #pragma endregion
 
+#pragma region Filtering Sensitive/Insensitive case
+
+// issue #140
+bool Test_IGFD_FileManager_Filtering_sensitive_case_0() {
+    FileManagerTestHelper mgr;
+    mgr.addFilter(".cpp");
+    mgr.addFiles({"toto.cpp", "titi.CPP"});
+
+    if (!mgr.isFileExist("toto.cpp")) return false;
+    if (mgr.isFileExist("titi.CPP")) return false;
+
+    return true;
+}
+
+// issue #140
+bool Test_IGFD_FileManager_Filtering_sensitive_case_1() {
+    FileManagerTestHelper mgr;
+    mgr.addFilter(".CPP");
+    mgr.addFiles({"toto.cpp", "titi.CPP"});
+
+    if (mgr.isFileExist("toto.cpp")) return false;
+    if (!mgr.isFileExist("titi.CPP")) return false;
+
+    return true;
+}
+
+// issue #140
+bool Test_IGFD_FileManager_Filtering_insensitive_case_0() {
+    FileManagerTestHelper mgr;
+    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    mgr.addFilter(".cpp");
+    mgr.addFiles({"toto.cpp", "titi.CPP"});
+
+    if (!mgr.isFileExist("toto.cpp")) return false;
+    if (!mgr.isFileExist("titi.CPP")) return false;
+
+    return true;
+}
+
+// issue #140
+bool Test_IGFD_FileManager_Filtering_insensitive_case_1() {
+    FileManagerTestHelper mgr;
+    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    mgr.addFilter(".CPP");
+    mgr.addFiles({"toto.cpp", "titi.CPP"});
+
+    if (!mgr.isFileExist("toto.cpp")) return false;
+    if (!mgr.isFileExist("titi.CPP")) return false;
+
+    return true;
+}
+
+#pragma endregion
+
 #pragma region Entry Point
 
 #define IfTestExist(v) \
@@ -163,6 +221,10 @@ bool Test_FileManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FileManager_Filtering_divers_0);
     IfTestExist(Test_IGFD_FileManager_Filtering_divers_1);
     IfTestExist(Test_IGFD_FileManager_Filtering_divers_2);
+    IfTestExist(Test_IGFD_FileManager_Filtering_sensitive_case_0);
+    IfTestExist(Test_IGFD_FileManager_Filtering_sensitive_case_1);
+    IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_0);
+    IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_1);
 
     assert(0);
 

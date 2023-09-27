@@ -751,7 +751,7 @@ int main(int, char**) {
                                 if (ImGui::TableSetColumnIndex(0))  // first column
                                 {
                                     ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick;
-                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap;
+                                    selectableFlags |= ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap;
                                     if (ImGui::Selectable(sel.first.c_str(), i == selected, selectableFlags)) selected = i;
                                 }
                                 if (ImGui::TableSetColumnIndex(1))  // second column
