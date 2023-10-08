@@ -3317,10 +3317,11 @@ IGFD_API void IGFD::KeyExplorerFeature::prExploreWithkeys(
         }
     }
 }
+
  IGFD_API bool IGFD::KeyExplorerFeature::prFlashableSelectable(
     const char* label, bool selected, ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg) {
     using namespace ImGui;
-    
+
     ImGuiWindow* window = GetCurrentWindow();
     if (window->SkipItems) return false;
 
@@ -3351,8 +3352,8 @@ IGFD_API void IGFD::KeyExplorerFeature::prExploreWithkeys(
     if ((flags & ImGuiSelectableFlags_NoPadWithHalfSpacing) == 0) {
         const float spacing_x = span_all_columns ? 0.0f : style.ItemSpacing.x;
         const float spacing_y = style.ItemSpacing.y;
-        const float spacing_L = IM_TRUNC(spacing_x * 0.50f);
-        const float spacing_U = IM_TRUNC(spacing_y * 0.50f);
+        const float spacing_L = IM_FLOOR(spacing_x * 0.50f);
+        const float spacing_U = IM_FLOOR(spacing_y * 0.50f);
         bb.Min.x -= spacing_L;
         bb.Min.y -= spacing_U;
         bb.Max.x += (spacing_x - spacing_L);
