@@ -18,6 +18,7 @@ else ()
 endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
+add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
