@@ -1930,7 +1930,7 @@ IGFD_API void IGFD::FileManager::ScanDirForPathSelection(
             for (i = 0; i < n; i++) {
                 struct dirent* ent = files[i];
                 struct stat sb = {};
-                int result;
+                int result = 0;
                 if (ent->d_type == DT_UNKNOWN) {
 #ifdef _IGFD_WIN_
                     auto filePath = path + ent->d_name;
