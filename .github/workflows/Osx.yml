@@ -23,5 +23,5 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog.app
-        path: build/ImGuiFileDialog.app
+        name: ImGuiFileDialog_App_Macos.app
+        path: build/ImGuiFileDialog_App_Macos.app
