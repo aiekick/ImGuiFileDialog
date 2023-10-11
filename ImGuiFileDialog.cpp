@@ -1830,7 +1830,7 @@ IGFD_API void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogIn
                     case DT_DIR: fileType.SetContent(FileType::ContentType::Directory); break;
                     case DT_REG: fileType.SetContent(FileType::ContentType::File); break;
 #if defined(_IGFD_UNIX_) || (DT_LNK != DT_UNKNOWN)
-                    case DT_LNK: {
+                    case DT_LNK:
 #endif
                     case DT_UNKNOWN: {
                         struct stat sb = {};
