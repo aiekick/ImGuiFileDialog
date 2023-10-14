@@ -1244,7 +1244,15 @@ struct IGFD_Thumbnail_Info {
 
 #pragma region Includes
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif // IMGUI_DEFINE_MATH_OPERATORS
+
+#ifdef IMGUI_INCLUDE
+#include IMGUI_INCLUDE
+#else // IMGUI_INCLUDE
 #include <imgui.h>
+#endif // IMGUI_INCLUDE
 
 #include <set>
 #include <map>
@@ -1270,6 +1278,7 @@ struct IGFD_Thumbnail_Info {
 // Using ImGuiFileDialog via a shared library is not recommended, because we don't guarantee
 // backward nor forward ABI compatibility and also function call overhead. If you
 // do use ImGuiFileDialog as a DLL, be sure to call SetImGuiContext (see Miscellanous section).
+
 #ifndef IGFD_API
 #define IGFD_API
 #endif  // IGFD_API
@@ -1333,19 +1342,12 @@ public:
     }
 
     bool empty() const { return m_Array.empty(); }
-
     size_t size() const { return m_Array.size(); }
-
     T& operator[](const size_t& vIdx) { return m_Array[vIdx]; }
-
     T& at(const size_t& vIdx) { return m_Array.at(vIdx); }
-
     typename std::vector<T>::iterator begin() { return m_Array.begin(); }
-
     typename std::vector<T>::const_iterator begin() const { return m_Array.begin(); }
-
     typename std::vector<T>::iterator end() { return m_Array.end(); }
-
     typename std::vector<T>::const_iterator end() const { return m_Array.end(); }
 
     bool try_add(T vKey) {

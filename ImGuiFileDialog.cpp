@@ -33,10 +33,6 @@ SOFTWARE.
 
 #pragma endregion
 
-#ifndef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#endif
-
 #include "ImGuiFileDialog.h"
 
 #ifdef __cplusplus
@@ -1367,28 +1363,17 @@ IGFD_API void IGFD::FilterManager::SetDefaultFilterIfNotDefined() {
 IGFD::FileType::FileType() = default;
 IGFD::FileType::FileType(const ContentType& vContentType, const bool& vIsSymlink)
     : m_Content(vContentType), m_Symlink(vIsSymlink) {}
-
 void IGFD::FileType::SetContent(const ContentType& vContentType) { m_Content = vContentType; }
-
 void IGFD::FileType::SetSymLink(const bool& vIsSymlink) { m_Symlink = vIsSymlink; }
-
 bool IGFD::FileType::isValid() const { return m_Content != ContentType::Invalid; }
-
 bool IGFD::FileType::isDir() const { return m_Content == ContentType::Directory; }
-
 bool IGFD::FileType::isFile() const { return m_Content == ContentType::File; }
-
 bool IGFD::FileType::isLinkToUnknown() const { return m_Content == ContentType::LinkToUnknown; }
-
 bool IGFD::FileType::isSymLink() const { return m_Symlink; }
-
 // Comparisons only care about the content type, ignoring whether it's a symlink or not.
 bool IGFD::FileType::operator==(const FileType& rhs) const { return m_Content == rhs.m_Content; }
-
 bool IGFD::FileType::operator!=(const FileType& rhs) const { return m_Content != rhs.m_Content; }
-
 bool IGFD::FileType::operator<(const FileType& rhs) const { return m_Content < rhs.m_Content; }
-
 bool IGFD::FileType::operator>(const FileType& rhs) const { return m_Content > rhs.m_Content; }
 
 #pragma endregion
@@ -1411,10 +1396,11 @@ IGFD_API bool IGFD::FileInfos::SearchForTag(const std::string& vTag) const {
 IGFD_API bool IGFD::FileInfos::SearchForExt(
     const std::string& vExt, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
     if (!vExt.empty()) {
+        const auto& ext_to_check = vIsCaseInsensitive ? Utils::LowerCaseString(vExt) : vExt;
         const auto& ext_levels = vIsCaseInsensitive ? fileExtLevels_optimized : fileExtLevels;
         if (vMaxLevel >= 1 && countExtDot >= vMaxLevel) {
             for (const auto& ext : ext_levels) {
-                if (!ext.empty() && ext == vExt) {
+                if (!ext.empty() && ext == ext_to_check) {
                     return true;
                 }
             }
