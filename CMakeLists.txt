@@ -73,6 +73,10 @@ add_executable(${PROJECT}
 	${IMGUIIMPL_SOURCES}
 )
 
+if(UNIX)
+    target_compile_options(${PROJECT} PUBLIC "-Wno-unknown-pragmas")
+endif()
+
 if (APPLE)
 	set_target_properties(${PROJECT}
 			PROPERTIES
