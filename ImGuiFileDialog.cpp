@@ -3751,7 +3751,9 @@ IGFD_API bool IGFD::FileDialog::Display(
 
                 // init list of files
                 if (fdFile.IsFileListEmpty() && !fdFile.puShowDrives) {
-                    IGFD::Utils::ReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, "");  // local path
+                    if (fdFile.puDLGpath != ".") // Removes extension seperator in filename if we don't check
+                        IGFD::Utils::ReplaceString(fdFile.puDLGDefaultFileName, fdFile.puDLGpath, "");  // local path
+                    
                     if (!fdFile.puDLGDefaultFileName.empty()) {
                         fdFile.SetDefaultFileName(fdFile.puDLGDefaultFileName);
                         fdFilter.SetSelectedFilterWithExt(fdFilter.puDLGdefaultExt);
