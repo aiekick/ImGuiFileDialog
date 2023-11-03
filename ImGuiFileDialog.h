@@ -1745,14 +1745,12 @@ public:
     void ScanDir(const FileDialogInternal& vFileDialogInternal,
         const std::string& vPath);  // scan the directory for retrieve the file list
 
-public:
     std::string GetResultingPath();
     std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
     std::string GetResultingFilePathName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
     std::map<std::string, std::string> GetResultingSelection(
         FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
 
-public:
     void DrawDirectoryCreation(const FileDialogInternal& vFileDialogInternal);  // draw directory creation widget
     void DrawPathComposer(const FileDialogInternal& vFileDialogInternal);       // draw path composer widget
 };

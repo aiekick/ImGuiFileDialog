@@ -2545,14 +2545,15 @@ IGFD_API void IGFD::FileManager::SetCurrentPath(std::vector<std::string>::iterat
 }
 
 IGFD_API std::string IGFD::FileManager::GetResultingPath() {
-    std::string path = prCurrentPath;
-    if (puDLGDirectoryMode) {  // if directory mode
+    if (puDLGDirectoryMode && prSelectedFileNames.size() == 1) {  // if directory mode with selection 1
         std::string selectedDirectory = puFileNameBuffer;
+        std::string path              = prCurrentPath;
         if (!selectedDirectory.empty() && selectedDirectory != ".") {
             path += std::string(1u, PATH_SEP) + selectedDirectory;
         }
-    }
-    return path;
+        return path;
+    } 
+    return prCurrentPath; // if file mode
 }
 
 IGFD_API std::string IGFD::FileManager::GetResultingFileName(
@@ -2566,19 +2567,22 @@ IGFD_API std::string IGFD::FileManager::GetResultingFileName(
 
 IGFD_API std::string IGFD::FileManager::GetResultingFilePathName(
     FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag) {
-    auto result = GetResultingPath();
-    const auto& filename = GetResultingFileName(vFileDialogInternal, vFlag);
-    if (!filename.empty()) {
+    if (!puDLGDirectoryMode) {  // if not directory mode
+        auto result          = GetResultingPath();
+        const auto& filename = GetResultingFileName(vFileDialogInternal, vFlag);
+        if (!filename.empty()) {
 #ifdef _IGFD_UNIX_
-        if (puFsRoot != result)
+            if (puFsRoot != result)
 #endif  // _IGFD_UNIX_
-        {
-            result += std::string(1u, PATH_SEP);
+            {
+                result += std::string(1u, PATH_SEP);
+            }
+            result += filename;
         }
-        result += filename;
-    }
 
-    return result;
+        return result;
+    }
+    return ""; // file mode
 }
 
 IGFD_API std::map<std::string, std::string> IGFD::FileManager::GetResultingSelection(
@@ -2592,7 +2596,6 @@ IGFD_API std::map<std::string, std::string> IGFD::FileManager::GetResultingSelec
         {
             result += std::string(1u, PATH_SEP);
         }
-
         result +=
             vFileDialogInternal.puFilterManager.ReplaceExtentionWithCurrentFilterIfNeeded(selectedFileName, vFlag);
         res[selectedFileName] = result;
