@@ -18,8 +18,10 @@ jobs:
       run : brew update
     - name: configure
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON
-    - name: build + ctest (only for osx ..)
-      run: cmake --build build --config Release && ctest --test-dir build --output-on-failure
+    - name: build
+      run: cmake --build build --config Release
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
