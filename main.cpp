@@ -178,12 +178,12 @@ public:
     }
 
 protected:
-    bool prDrawFooter() override {
-        auto& fdFile = prFileDialogInternal.puFileManager;
+    bool m_DrawFooter() override {
+        auto& fdFile = m_FileDialogInternal.fileManager;
 
         float posY = ImGui::GetCursorPos().y;  // height of last bar calc
         ImGui::AlignTextToFramePadding();
-        if (!fdFile.puDLGDirectoryMode)
+        if (!fdFile.dLGDirectoryMode)
             ImGui::Text("File Name :");
         else  // directory chooser
             ImGui::Text("Directory Path :");
@@ -191,40 +191,40 @@ protected:
 
         // Input file fields
         float width = ImGui::GetContentRegionAvail().x;
-        if (!fdFile.puDLGDirectoryMode) {
+        if (!fdFile.dLGDirectoryMode) {
             ImGuiContext& g = *GImGui;
             width -= 150.0f + g.Style.ItemSpacing.x;
         }
 
         ImGui::PushItemWidth(width);
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-        if (prFileDialogInternal.puDLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) {
+        if (m_FileDialogInternal.dLGflags & ImGuiFileDialogFlags_ReadOnlyFileNameField) {
             flags |= ImGuiInputTextFlags_ReadOnly;
         }
-        if (ImGui::InputText("##FileName", fdFile.puFileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) {
-            prFileDialogInternal.puIsOk = true;
+        if (ImGui::InputText("##FileName", fdFile.fileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, flags)) {
+            m_FileDialogInternal.isOk = true;
         }
-        if (ImGui::GetItemID() == ImGui::GetActiveID()) prFileDialogInternal.puFileInputIsActive = true;
+        if (ImGui::GetItemID() == ImGui::GetActiveID()) m_FileDialogInternal.fileInputIsActive = true;
         ImGui::PopItemWidth();
 
         // combobox of filters
-        prFileDialogInternal.puFilterManager.DrawFilterComboBox(prFileDialogInternal);
+        m_FileDialogInternal.filterManager.DrawFilterComboBox(m_FileDialogInternal);
 
-        bool res = prDrawValidationButtons();
+        bool res = m_DrawValidationButtons();
 
         ImGui::SameLine();
 
         if (ImGui::Checkbox("Read-Only", &m_ReadOnly)) {
             if (m_ReadOnly) {
                 // remove confirm overwirte check since we are read only
-                prFileDialogInternal.puDLGflags &= ~ImGuiFileDialogFlags_ConfirmOverwrite;
+                m_FileDialogInternal.dLGflags &= ~ImGuiFileDialogFlags_ConfirmOverwrite;
             } else {
                 // add confirm overwirte since is what we want in our case
-                prFileDialogInternal.puDLGflags |= ImGuiFileDialogFlags_ConfirmOverwrite;
+                m_FileDialogInternal.dLGflags |= ImGuiFileDialogFlags_ConfirmOverwrite;
             }
         }
 
-        prFileDialogInternal.puFooterHeight = ImGui::GetCursorPosY() - posY;
+        m_FileDialogInternal.footerHeight = ImGui::GetCursorPosY() - posY;
         return res;
     }
 };
