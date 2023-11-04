@@ -1392,7 +1392,7 @@ public:
 
 class IGFD_API Utils {
 public:
-    struct IGFD_API PathStruct {
+    struct PathStruct {
         std::string path;
         std::string name;
         std::string ext;
