@@ -13,7 +13,7 @@ private:
 
 private:
     void compute_name_array() {
-        for (const auto& file_ptr : fd.puFileManager.prFileList) {
+        for (const auto& file_ptr : fd.fileManager.m_FileList) {
             if (file_ptr) {
                 arr.emplace(file_ptr->fileNameExt);
             }
@@ -22,12 +22,12 @@ private:
 
 public:
     void addFilter(const std::string& vFilter) {
-        fd.puFilterManager.ParseFilters(vFilter.c_str());
-        fd.puFilterManager.SetSelectedFilterWithExt(vFilter);
+        fd.filterManager.ParseFilters(vFilter.c_str());
+        fd.filterManager.SetSelectedFilterWithExt(vFilter);
     }
 
     void addFile(const std::string& vFile) {
-        fd.puFileManager.AddFile(fd, ".", vFile, IGFD::FileType(IGFD::FileType::ContentType::File, false));
+        fd.fileManager.m_AddFile(fd, ".", vFile, IGFD::FileType(IGFD::FileType::ContentType::File, false));
     };
 
     void addFiles(const std::vector<std::string>& vFiles) {
@@ -44,11 +44,11 @@ public:
     }
 
     void useFlags(ImGuiFileDialogFlags vFlags) {
-        fd.puDLGflags = vFlags;
+        fd.dLGflags = vFlags;
     }
     
     IGFD::FilterInfos getSelectedFilter() const {
-        return fd.puFilterManager.GetSelectedFilter();
+        return fd.filterManager.GetSelectedFilter();
     }
 
     IGFD::FileDialogInternal& getFileDialogInternal() {

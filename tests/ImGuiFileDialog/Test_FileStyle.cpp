@@ -22,8 +22,8 @@ private:
 
 public:
     void addFilter(const std::string& vFilter) {
-        fd.puFilterManager.ParseFilters(vFilter.c_str());
-        fd.puFilterManager.SetSelectedFilterWithExt(vFilter);
+        fd.filterManager.ParseFilters(vFilter.c_str());
+        fd.filterManager.SetSelectedFilterWithExt(vFilter);
     }
 
     void addFile(const std::string& vFile) {

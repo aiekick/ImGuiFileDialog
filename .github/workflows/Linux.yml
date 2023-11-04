@@ -17,11 +17,14 @@ jobs:
     - name: Install OpenGL lib  / Requirement for Glfw3
       run : sudo apt-get update && sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
     - name: configure
-      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON
     - name: build
       run: cmake --build build
+    - name: CTest
+      run: ctest --test-dir build --output-on-failure
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: ImGuiFileDialog
         path: build/ImGuiFileDialog
+      
