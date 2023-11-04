@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0079 NEW) # for line 67
 
 set(PROJECT ImGuiFileDialog_App)
 
@@ -7,7 +8,7 @@ project(${PROJECT} CXX)
 
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" ON)
-option(USE_TEST "Enable tests" OFF)
+option(USE_TEST "Enable tests" ON)
 
 include(cmake/3rdparty.cmake)
 
@@ -20,7 +21,7 @@ endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
-add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="../../../CustomImGuiFileDialogConfig.h")
+add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if (USE_NEW_IMGUI_KEY_SYSTEM)
@@ -57,8 +58,16 @@ include_directories(
 		${CMAKE_SOURCE_DIR}
 )
 
+if (USE_TEST)
+	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+endif()
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
-	
+
+target_link_libraries(ImGuiFileDialog PRIVATE
+		${IMGUI_LIBRARIES}
+)
+
 add_executable(${PROJECT}
 	MACOSX_BUNDLE
 	##${ICON}
@@ -126,6 +135,5 @@ target_include_directories(ImGuiFileDialog PRIVATE
 
 if (USE_TEST)
 	enable_testing()
-	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
 endif()

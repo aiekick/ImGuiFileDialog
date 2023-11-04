@@ -17,11 +17,7 @@ add_executable(${PROJECT}
 )
 	
 target_link_libraries(${PROJECT} PRIVATE
-	${OPENGL_LIBRARIES}
-	${GLFW_LIBRARIES}
-	${GLAD_LIBRARIES}
-	${IMGUI_LIBRARIES}
-	ImGuiFileDialog
+		ImGuiFileDialog
 )
 
 set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
