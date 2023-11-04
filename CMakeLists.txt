@@ -57,12 +57,6 @@ include_directories(
 		${CMAKE_SOURCE_DIR}
 )
 
-if (USE_TEST)
-	enable_testing()
-	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
-endif()
-
 add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
 	
 add_executable(${PROJECT}
@@ -80,16 +74,16 @@ endif()
 
 if (APPLE)
 	set_target_properties(${PROJECT}
-			PROPERTIES
-			OUTPUT_NAME "${PROJECT}_Macos"
-			MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT}"
-			MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT}"
-			FOLDER "${PROJECT}"
-			##RESOURCE icon.icns
-			MACOSX_BUNDLE_SHORT_VERSION_STRING ""
-			MACOSX_BUNDLE_LONG_VERSION_STRING ""
-			##MACOSX_BUNDLE_ICON_FILE icon.icns
-			MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
+		PROPERTIES
+		OUTPUT_NAME "${PROJECT}_Macos"
+		MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT}"
+		MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT}"
+		FOLDER "${PROJECT}"
+		##RESOURCE icon.icns
+		MACOSX_BUNDLE_SHORT_VERSION_STRING ""
+		MACOSX_BUNDLE_LONG_VERSION_STRING ""
+		##MACOSX_BUNDLE_ICON_FILE icon.icns
+		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
 elseif(WIN32)
 	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_WIn32")
 elseif(UNIX)
@@ -129,3 +123,9 @@ set_target_properties(ImGuiFileDialog PROPERTIES FOLDER Lib)
 target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_SOURCE_DIR}
 )
+
+if (USE_TEST)
+	enable_testing()
+	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+endif()
