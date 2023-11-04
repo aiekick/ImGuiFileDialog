@@ -15,7 +15,14 @@ add_executable(${PROJECT}
 	##${ICON}
 	${PROJECT_TEST_SRC_RECURSE}
 )
-	
+
+if (APPLE)
+	set_target_properties(${PROJECT}
+		PROPERTIES
+		OUTPUT_NAME "${PROJECT}"
+		FOLDER "${PROJECT}")
+endif()
+
 target_link_libraries(${PROJECT} PRIVATE
 		ImGuiFileDialog
 )
