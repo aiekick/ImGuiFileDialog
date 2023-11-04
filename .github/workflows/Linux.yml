@@ -20,7 +20,7 @@ jobs:
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON
     - name: build DemoApp
       run: cmake --build build --config Release -t ImGuiFileDialog_App
-    - name: CTest build test app
+    - name: build TestApp
       run: cmake --build build --config Release -t ImGuiFileDialog_Test
     - name: CTest
       run: ctest --test-dir build --output-on-failure
