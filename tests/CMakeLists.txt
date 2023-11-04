@@ -11,17 +11,8 @@ file(GLOB_RECURSE PROJECT_TEST_SRC_RECURSE
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PROJECT_TEST_SRC_RECURSE})
 
 add_executable(${PROJECT} 
-	MACOSX_BUNDLE
-	##${ICON}
 	${PROJECT_TEST_SRC_RECURSE}
 )
-
-if (APPLE)
-	set_target_properties(${PROJECT}
-		PROPERTIES
-		OUTPUT_NAME "${PROJECT}"
-		FOLDER "${PROJECT}")
-endif()
 
 target_link_libraries(${PROJECT} PRIVATE
 		ImGuiFileDialog
