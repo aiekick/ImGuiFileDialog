@@ -13,8 +13,9 @@ include(cmake/3rdparty.cmake)
 
 if(MSVC)
     add_definitions(-DMSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
 endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
