@@ -1403,17 +1403,12 @@ public:
     static bool ImSplitter(
         bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
     static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr, const size_t& vMaxRecursion = 10U);
-    static bool IsDirectoryCanBeOpened(const std::string& name);  // by ex protected dirs (not user rights)
-    static bool IsDirectoryExist(const std::string& name);
-    static bool CreateDirectoryIfNotExist(const std::string& name);
-    static PathStruct ParsePathFileName(const std::string& vPathFileName);
     static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
     static void ResetBuffer(char* vBuffer);
     static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
     static std::string UTF8Encode(const std::wstring& wstr);
     static std::wstring UTF8Decode(const std::string& str);
     static std::vector<std::string> SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty);
-    static std::vector<std::string> GetDrivesList();
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
@@ -1608,6 +1603,23 @@ public:
 
 #pragma endregion
 
+#pragma region FILE SYSTEM INTERFACE
+
+class IFileSystem {
+public:
+    virtual bool IsDirectoryCanBeOpened(const std::string& vName)                       = 0;
+    virtual bool IsDirectoryExist(const std::string& vName)                             = 0;
+    virtual bool CreateDirectoryIfNotExist(const std::string& vName)                    = 0;
+    virtual IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) = 0;
+    virtual std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath)        = 0;
+    virtual bool IsSymLink(const std::string& vFilePathName)                            = 0;
+    virtual bool IsRegularFile(const std::string& vFilePathName)                        = 0;
+    virtual bool IsDirectory(const std::string& vFilePathName)                          = 0;
+    virtual std::vector<std::string> GetDrivesList()                                    = 0;
+};
+
+#pragma endregion
+
 #pragma region FileManager
 
 class IGFD_API FileManager {
@@ -1636,6 +1648,7 @@ private:
     std::string m_LastSelectedFileName;                          // for shift multi selection
     std::set<std::string> m_SelectedFileNames;                   // the user selection of FilePathNames
     bool m_CreateDirectoryMode = false;                          // for create directory widget
+    std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
 
 public:
     bool inputPathActivated = false;                             // show input for path edition
@@ -1743,7 +1756,11 @@ public:
     std::map<std::string, std::string> GetResultingSelection(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
 
     void DrawDirectoryCreation(const FileDialogInternal& vFileDialogInternal);  // draw directory creation widget
-    void DrawPathComposer(const FileDialogInternal& vFileDialogInternal);       // draw path composer widget
+    void DrawPathComposer(const FileDialogInternal& vFileDialogInternal); 
+
+    IFileSystem* GetFileSystemInstance() {
+        return m_FileSystemPtr.get();
+    }
 };
 
 #pragma endregion
