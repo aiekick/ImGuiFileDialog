@@ -7,7 +7,7 @@
 
 //this options need c++17
 // in this app its defined in CMakeLists.txt
-// #define USE_STD_FILESYSTEM
+#define USE_STD_FILESYSTEM
  
 //#define MAX_FILE_DIALOG_NAME_BUFFER 1024
 //#define MAX_PATH_BUFFER_SIZE 1024
