@@ -97,6 +97,11 @@ SOFTWARE.
 #include "imgui.h"
 #include "imgui_internal.h"
 
+// legacy compatibility 1.89
+#ifndef IM_TRUNC
+#define IM_TRUNC IM_FLOOR
+#endif
+
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
