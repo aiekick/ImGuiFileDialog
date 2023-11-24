@@ -1612,8 +1612,6 @@ public:
     virtual bool CreateDirectoryIfNotExist(const std::string& vName)                    = 0;
     virtual IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) = 0;
     virtual std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath)        = 0;
-    virtual bool IsSymLink(const std::string& vFilePathName)                            = 0;
-    virtual bool IsRegularFile(const std::string& vFilePathName)                        = 0;
     virtual bool IsDirectory(const std::string& vFilePathName)                          = 0;
     virtual std::vector<std::string> GetDrivesList()                                    = 0;
 };

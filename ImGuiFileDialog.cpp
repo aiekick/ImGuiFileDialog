@@ -538,14 +538,6 @@ public:
         }
         return res;
     }
-    bool IsSymLink(const std::string& vFilePathName) override {
-        namespace fs = std::filesystem;
-        return fs::is_symlink(vFilePathName);
-    }
-    bool IsRegularFile(const std::string& vFilePathName) override {
-        namespace fs = std::filesystem;
-        return fs::is_regular_file(vFilePathName);
-    }
     bool IsDirectory(const std::string& vFilePathName) override {
         namespace fs = std::filesystem;
         return fs::is_directory(vFilePathName);
@@ -554,11 +546,6 @@ public:
 #define FILE_SYSTEM_OVERRIDE FileSystemStd
 #else
 class FileSystemDirent : public IGFD::IFileSystem {
-private:
-    int inAlphaSort(const struct dirent** a, const struct dirent** b) {
-        return strcoll((*a)->d_name, (*b)->d_name);
-    }
-
 public:
     bool IsDirectoryCanBeOpened(const std::string& vName) override {
         if (!vName.empty()) {
@@ -622,7 +609,8 @@ public:
 
         return res;
     }
-    std::vector<std::string> IGFD::Utils::GetDrivesList() {
+
+    std::vector<std::string> GetDrivesList() {
         std::vector<std::string> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
@@ -640,7 +628,7 @@ public:
     }
 
     IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) {
-        PathStruct res;
+        IGFD::Utils::PathStruct res;
         if (!vPathFileName.empty()) {
             std::string pfn = vPathFileName;
             std::string separator(1u, PATH_SEP);
@@ -672,39 +660,38 @@ public:
     std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath) override {
         std::vector<IGFD::FileInfos> res;
         struct dirent** files = nullptr;
-        size_t n              = scandir(path.c_str(), &files, nullptr, inAlphaSort);
+        size_t n              = scandir(vPath.c_str(), &files, nullptr,                         //
+                                        [](const struct dirent** a, const struct dirent** b) {  //
+                               return strcoll((*a)->d_name, (*b)->d_name);
+                           });
         if (n && files) {
-            size_t i;
-
-            for (i = 0; i < n; i++) {
+            for (size_t i = 0; i < n; ++i) {
                 struct dirent* ent = files[i];
-
-                FileType fileType;
+                IGFD::FileType fileType;
                 switch (ent->d_type) {
-                    case DT_DIR: fileType.SetContent(FileType::ContentType::Directory); break;
-                    case DT_REG: fileType.SetContent(FileType::ContentType::File); break;
+                    case DT_DIR: fileType.SetContent(IGFD::FileType::ContentType::Directory); break;
+                    case DT_REG: fileType.SetContent(IGFD::FileType::ContentType::File); break;
 #if defined(_IGFD_UNIX_) || (DT_LNK != DT_UNKNOWN)
                     case DT_LNK:
 #endif
                     case DT_UNKNOWN: {
                         struct stat sb = {};
 #ifdef _IGFD_WIN_
-                        auto filePath  = path + ent->d_name;
+                        auto filePath  = vPath + ent->d_name;
 #else
-                        auto filePath = path + std::string(1u, PATH_SEP) + ent->d_name;
+                        auto filePath = vPath + std::string(1u, PATH_SEP) + ent->d_name;
 #endif
-
                         if (!stat(filePath.c_str(), &sb)) {
                             if (sb.st_mode & S_IFLNK) {
                                 fileType.SetSymLink(true);
-                                fileType.SetContent(FileType::ContentType::LinkToUnknown);  // by default if we can't figure out the
-                                                                                            // target type.
+                                // by default if we can't figure out the target type.
+                                fileType.SetContent(IGFD::FileType::ContentType::LinkToUnknown); 
                             }
                             if (sb.st_mode & S_IFREG) {
-                                fileType.SetContent(FileType::ContentType::File);
+                                fileType.SetContent(IGFD::FileType::ContentType::File);
                                 break;
                             } else if (sb.st_mode & S_IFDIR) {
-                                fileType.SetContent(FileType::ContentType::Directory);
+                                fileType.SetContent(IGFD::FileType::ContentType::Directory);
                                 break;
                             }
                         }
@@ -712,28 +699,23 @@ public:
                     }
                     default: break;  // leave it invalid (devices, etc.)
                 }
-
                 if (fileType.isValid()) {
-                    m_AddFile(vFileDialogInternal, path, ent->d_name, fileType);
+                    IGFD::FileInfos _file;
+                    _file.filePath    = vPath;
+                    _file.fileNameExt = ent->d_name;
+                    _file.fileType    = fileType;
+                    res.push_back(_file);
                 }
             }
-
-            for (i = 0; i < n; i++) {
+            for (size_t i = 0; i < n; ++i) {
                 free(files[i]);
             }
-
             free(files);
         }
         return res;
     }
-    bool IsSymLink(const std::string& vFilePathName) override {
-        return true;
-    }
-    bool IsRegularFile(const std::string& vFilePathName) override {
-        return true;
-    }
     bool IsDirectory(const std::string& vFilePathName) override {
-        return true;
+        return (opendir(vFilePathName.c_str()) != nullptr);
     }
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemDirent
@@ -2204,7 +2186,6 @@ void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
         path += std::string(1u, PATH_SEP);
 #endif  // _IGFD_WIN_
 
-    namespace fs = std::filesystem;
     bool dir_opened = m_FileSystemPtr->IsDirectory(path);
     if (!dir_opened) {
         path = ".";
