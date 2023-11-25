@@ -30,7 +30,7 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_Unix_Std_FS
+        name: ImGuiFileDialog_App_Unix_Dirent_FS
         path: build/ImGuiFileDialog_App_Unix
       
   App_Linux_Std_FS:
