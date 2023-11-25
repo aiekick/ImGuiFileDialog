@@ -80,8 +80,8 @@ endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
 
 target_link_libraries(ImGuiFileDialog PRIVATE
-		${IMGUI_LIBRARIES}
-		${BOOST_FILESYSTEM_LIBRARIES}
+	${IMGUI_LIBRARIES}
+	${BOOST_FILESYSTEM_LIBRARIES}
 )
 
 add_executable(${PROJECT}
