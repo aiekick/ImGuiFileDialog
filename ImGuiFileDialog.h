@@ -1607,13 +1607,22 @@ public:
 
 class IFileSystem {
 public:
-    virtual bool IsDirectoryCanBeOpened(const std::string& vName)                       = 0;
-    virtual bool IsDirectoryExist(const std::string& vName)                             = 0;
-    virtual bool CreateDirectoryIfNotExist(const std::string& vName)                    = 0;
+    // say if a directory can be openened or for any reason locked
+    virtual bool IsDirectoryCanBeOpened(const std::string& vName) = 0;
+    // say if a directory exist
+    virtual bool IsDirectoryExist(const std::string& vName) = 0;
+    // say if a file exist
+    virtual bool IsFileExist(const std::string& vName) = 0;
+    // say if a directory was created, return false if vName is invalid or alreayd exist
+    virtual bool CreateDirectoryIfNotExist(const std::string& vName) = 0;
+    // extract the component of a file apth name, like path, name, ext
     virtual IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) = 0;
-    virtual std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath)        = 0;
-    virtual bool IsDirectory(const std::string& vFilePathName)                          = 0;
-    virtual std::vector<std::string> GetDrivesList()                                    = 0;
+    // will return a list of files inside a path
+    virtual std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath) = 0;
+    // say if the path is well a directory
+    virtual bool IsDirectory(const std::string& vFilePathName) = 0;
+    // return a drive list on windows, bu can be used on android or linux for give to the suer a list of root dir
+    virtual std::vector<std::string> GetDrivesList() = 0;
 };
 
 #pragma endregion
@@ -1739,7 +1748,6 @@ public:
     bool SetPathOnParentDirectoryIfAny();                                  // compose paht on parent directory
     std::string GetCurrentPath();                                          // get the current path
     void SetCurrentPath(const std::string& vCurrentPath);                  // set the current path
-    static bool IsFileExist(const std::string& vFile);
     void SetDefaultFileName(const std::string& vFileName);
     bool SelectDirectory(const std::shared_ptr<FileInfos>& vInfos);  // enter directory
     void SelectFileName(const FileDialogInternal& vFileDialogInternal,

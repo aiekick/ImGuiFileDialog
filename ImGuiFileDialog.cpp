@@ -437,6 +437,9 @@ public:
         }
         return false;  // this is not a directory!
     }
+    bool IsFileExist(const std::string& vName) override {
+        return fs::is_regular_file(vName);
+    }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {
         bool res = false;
         if (!vName.empty()) {
@@ -582,6 +585,14 @@ public:
             }
         }
         return bExists;
+    }
+    bool IsFileExist(const std::string& vName) override {
+        std::ifstream docFile(vName, std::ios::in);
+        if (docFile.is_open()) {
+            docFile.close();
+            return true;
+        }
+        return false;
     }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {
         bool res = false;
@@ -2293,15 +2304,6 @@ void IGFD::FileManager::SetCurrentPath(const std::string& vCurrentPath) {
         m_CurrentPath = ".";
     else
         m_CurrentPath = vCurrentPath;
-}
-
-bool IGFD::FileManager::IsFileExist(const std::string& vFile) {
-    std::ifstream docFile(vFile, std::ios::in);
-    if (docFile.is_open()) {
-        docFile.close();
-        return true;
-    }
-    return false;
 }
 
 void IGFD::FileManager::SetDefaultFileName(const std::string& vFileName) {
@@ -4694,7 +4696,7 @@ bool IGFD::FileDialog::m_Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastA
         (m_FileDialogInternal.dLGflags & ImGuiFileDialogFlags_ConfirmOverwrite)) {
         if (m_FileDialogInternal.isOk)  // catched only one time
         {
-            if (!m_FileDialogInternal.fileManager.IsFileExist(GetFilePathName()))  // not existing => quit dialog
+            if (!m_FileDialogInternal.fileManager.GetFileSystemInstance()->IsFileExist(GetFilePathName()))  // not existing => quit dialog
             {
                 m_QuitFrame();
                 return true;
