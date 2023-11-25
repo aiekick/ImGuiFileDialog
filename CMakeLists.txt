@@ -144,7 +144,6 @@ target_link_libraries(${PROJECT} PRIVATE
 	${GLFW_LIBRARIES}
 	${GLAD_LIBRARIES}
 	${IMGUI_LIBRARIES}
-	boost_filesystem
 	ImGuiFileDialog
 )
 
