@@ -43,21 +43,21 @@ SOFTWARE.
 /*
 // generated with "Text to ASCII Art Generator (TAAG)"
 // https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.5
-  _____            _____       _ ______ _ _      _____  _       _
- |_   _|          / ____|     (_)  ____(_) |    |  __ \(_)     | |
-   | |  _ __ ___ | |  __ _   _ _| |__   _| | ___| |  | |_  __ _| | ___   __ _
-   | | | '_ ` _ \| | |_ | | | | |  __| | | |/ _ \ |  | | |/ _` | |/ _ \ / _` |
-  _| |_| | | | | | |__| | |_| | | |    | | |  __/ |__| | | (_| | | (_) | (_| |
- |_____|_| |_| |_|\_____|\__,_|_|_|    |_|_|\___|_____/|_|\__,_|_|\___/ \__, |
-  _________________________________________________________________________/ |
- |__________________________________________________________________________/
-                            ___      __      __
-                           / _ \    / /     / /
-                   __   __| | | |  / /_    / /_
-                   \ \ / /| | | | | '_ \  | '_ \
-                    \ V / | |_| |_| (_) |_| (_) |
-                     \_/   \___/(_)\___/(_)\___/
 
+  _____              _____         _  ______  _  _        _____   _         _
+ |_   _|            / ____|       (_)|  ____|(_)| |      |  __ \ (_)       | |
+   | |   _ __ ___  | |  __  _   _  _ | |__    _ | |  ___ | |  | | _   __ _ | |  ___    __ _
+   | |  | '_ ` _ \ | | |_ || | | || ||  __|  | || | / _ \| |  | || | / _` || | / _ \  / _` |
+  _| |_ | | | | | || |__| || |_| || || |     | || ||  __/| |__| || || (_| || || (_) || (_| |
+ |_____||_| |_| |_| \_____| \__,_||_||_|     |_||_| \___||_____/ |_| \__,_||_| \___/  \__, |
+                                                                                       __/ |
+                                                                                      |___/
+                                  ___      __    ______
+                                 / _ \    / /   |____  |
+                         __   __| | | |  / /_       / /
+                         \ \ / /| | | | | '_ \     / /
+                          \ V / | |_| |_| (_) |_  / /
+                           \_/   \___/(_)\___/(_)/_/
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
@@ -73,7 +73,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.89.7 WIP
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.90.1 WIP
 
 ## Structure
 
@@ -1121,8 +1121,8 @@ The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFon
 
 #pragma region IGFD VERSION
 
-// compatible with 1.89.7 WIP
-#define IMGUIFILEDIALOG_VERSION "v0.6.6"
+// compatible with 1.90.1 WIP
+#define IMGUIFILEDIALOG_VERSION "v0.6.7"
 
 #pragma endregion
 
