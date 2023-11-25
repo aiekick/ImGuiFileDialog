@@ -92,7 +92,6 @@ target_link_libraries(ImGuiFileDialog PRIVATE
 
 add_executable(${PROJECT}
 	MACOSX_BUNDLE
-	##${ICON}
 	${RES_SOURCES}
 	${MAIN_SOURCES}
 	${BOOST_SOURCES}
