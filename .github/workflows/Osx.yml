@@ -4,9 +4,14 @@ on:
   push:
     branches:
     - DemoApp
+    paths-ignore:
+    - 'cmake/**'
+    - '.github/**'
+    - 'doc/**'
+    - 'samples/**'
 
 jobs:
-  ImGuiFileDialog_App_Osx_Dirent_FileSystem:
+  App_Macos_Dirent_FS:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,7 +33,7 @@ jobs:
         name: ImGuiFileDialog_App_Macos.app
         path: build/ImGuiFileDialog_App_Macos.app
 
-  ImGuiFileDialog_App_Osx_Std_FileSystem:
+  App_Macos_Std_FS:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -50,7 +55,7 @@ jobs:
         name: ImGuiFileDialog_App_Macos.app
         path: build/ImGuiFileDialog_App_Macos.app
 
-  ImGuiFileDialog_App_Osx_Boost_Demo_FileSystem:
+  App_Macos_Boost_FS:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
