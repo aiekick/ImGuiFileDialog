@@ -44,6 +44,12 @@ endif()
 
 file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
 file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
+
+if (USE_BOOST_DEMO_FILESYSTEM)
+	file(GLOB BOOST_SOURCES ${CMAKE_SOURCE_DIR}/FileSystemBoost.hpp)
+	source_group(src\\Boost FILES ${BOOST_SOURCES})
+endif()
+
 file(GLOB RES_SOURCES 
 		${CMAKE_SOURCE_DIR}/CustomFont.cpp 
 		${CMAKE_SOURCE_DIR}/CustomFont.h)
@@ -89,6 +95,7 @@ add_executable(${PROJECT}
 	##${ICON}
 	${RES_SOURCES}
 	${MAIN_SOURCES}
+	${BOOST_SOURCES}
 	${CUSTOM_SOURCES}
 	${IMGUIIMPL_SOURCES}
 )
