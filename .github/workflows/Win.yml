@@ -6,7 +6,7 @@ on:
     - DemoApp
 
 jobs:
-  build_Win_latest:
+  ImGuiFileDialog_App_Win32_Dirent_FileSystem:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -25,3 +25,44 @@ jobs:
       with:
         name: ImGuiFileDialog_App_WIn32
         path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        
+  ImGuiFileDialog_App_Win32_Std_FileSystem:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: DemoApp
+    - name: checkout submodules
+      run : git submodule update --init --recursive 
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON -DUSE_STD_FILESYSTEM=ON
+    - name: build
+      run: cmake --build build --config Release
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ImGuiFileDialog_App_WIn32
+        path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        
+  ImGuiFileDialog_App_Win32_Boost_Demo_FileSystem:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: DemoApp
+    - name: checkout submodules
+      run : git submodule update --init --recursive 
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON -DUSE_BOOST_DEMO_FILESYSTEM=ON
+    - name: build
+      run: cmake --build build --config Release
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ImGuiFileDialog_App_WIn32
+        path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        

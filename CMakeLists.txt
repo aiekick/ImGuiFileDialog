@@ -6,17 +6,31 @@ set(PROJECT ImGuiFileDialog_App)
 enable_language(C CXX)
 project(${PROJECT} CXX)
 
-option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" ON)
 option(USE_TEST "Enable tests" ON)
 
+option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
+option(USE_BOOST_DEMO_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
+
 include(cmake/3rdparty.cmake)
+
+if (USE_BOOST_DEMO_FILESYSTEM)
+	add_definitions(-DCUSTOM_FILESYSTEM_INCLUDE="${CMAKE_SOURCE_DIR}/FileSystemBoost.hpp")
+endif()
 
 if(MSVC)
     add_definitions(-DMSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+	if (USE_STD_FILESYSTEM)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+	else()
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
+	endif()
 else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+	if (USE_STD_FILESYSTEM)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+	else()
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+	endif()
 endif ()
 
 add_definitions(${GLFW_DEFINITIONS})
@@ -111,7 +125,11 @@ else()
 	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
 	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 11)
 	set_target_properties(imgui PROPERTIES CXX_STANDARD 11)
-	message("USE C++11 and DIRENT")
+	if (USE_BOOST_DEMO_FILESYSTEM)
+		message("USE C++11 and BOOST as demo custom filesystem")
+	else()
+		message("USE C++11 and DIRENT")
+	endif()
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -131,6 +149,12 @@ set_target_properties(ImGuiFileDialog PROPERTIES FOLDER Lib)
 
 target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_SOURCE_DIR}
+	${CMAKE_SOURCE_DIR}/3rdparty/boost_filesystem/include/
+)
+
+target_include_directories(${PROJECT} PRIVATE
+	${CMAKE_SOURCE_DIR}
+	${CMAKE_SOURCE_DIR}/3rdparty/boost_filesystem/include/
 )
 
 if (USE_TEST)

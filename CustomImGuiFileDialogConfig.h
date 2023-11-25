@@ -5,6 +5,10 @@
 
 // uncomment and modify defines under for customize ImGuiFileDialog
 
+// if you need to use your FileSystem Interface, you msut define the include of your FileSystem Interface file
+// if commented, you have two default interface, std::filesystem or dirent
+//#define CUSTOM_FILESYSTEM_INCLUDE
+
 //this options need c++17
 // in this app its defined in CMakeLists.txt
 //#define USE_STD_FILESYSTEM

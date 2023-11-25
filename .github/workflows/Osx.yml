@@ -6,7 +6,7 @@ on:
     - DemoApp
 
 jobs:
-  build_Osx:
+  ImGuiFileDialog_App_Osx_Dirent_FileSystem:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -18,6 +18,50 @@ jobs:
       run : brew update
     - name: configure
       run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON
+    - name: build
+      run: cmake --build build --config Release
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ImGuiFileDialog_App_Macos.app
+        path: build/ImGuiFileDialog_App_Macos.app
+
+  ImGuiFileDialog_App_Osx_Std_FileSystem:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: DemoApp
+    - name: checkout submodules
+      run : git submodule update --init --recursive 
+    - name: Install OpenGL lib  / Requirement for Glfw3
+      run : brew update
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON -DUSE_STD_FILESYSTEM=ON
+    - name: build
+      run: cmake --build build --config Release
+    - name: ctest
+      run: ctest --test-dir build --output-on-failure
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ImGuiFileDialog_App_Macos.app
+        path: build/ImGuiFileDialog_App_Macos.app
+
+  ImGuiFileDialog_App_Osx_Boost_Demo_FileSystem:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: DemoApp
+    - name: checkout submodules
+      run : git submodule update --init --recursive 
+    - name: Install OpenGL lib  / Requirement for Glfw3
+      run : brew update
+    - name: configure
+      run: mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_TEST=ON -DUSE_BOOST_DEMO_FILESYSTEM=ON
     - name: build
       run: cmake --build build --config Release
     - name: ctest
