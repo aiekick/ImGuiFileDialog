@@ -14,3 +14,7 @@
 	path = ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
 	branch = master
+[submodule "3rdparty/boost"]
+	path = 3rdparty/boost
+	url = https://github.com/boostorg/boost.git
+	branch = master

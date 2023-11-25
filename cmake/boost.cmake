@@ -30,4 +30,5 @@ set(BOOST_FILESYSTEM_LIBRARIES
     boost_type_traits
 )
 
-set_target_properties(boost PROPERTIES FOLDER 3rdparty/boost)
+set_target_properties(boost_filesystem PROPERTIES FOLDER 3rdparty/boost)
+
