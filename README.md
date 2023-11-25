@@ -938,9 +938,28 @@ to note :
 
 </blockquote></details>
 
-<details open><summary><h2>Api's C/C++ :</h2></summary><blockquote>
+<details open><summary><h2>Custom FileSystem</h2></summary><blockquote>
 
-### the C Api
+you can use your custom file system interface.
+
+by default IGFD come with the File System Interfaces for Dirent or std::filesystem
+but you have now a FileSystem interface called IFileSystem who can be overrided with your needs
+by ex for android, emscripten, or boost
+
+2 steps :
+
+1) create a include file who must contain :
+   - your override of IGFD::IFileSystem
+   - a define of your class name in FILE_SYSTEM_OVERRIDE (ex : #define FILE_SYSTEM_OVERRIDE FileSystemBoost)
+
+2) define your file system include file path in the preprocessor var "CUSTOM_FILESYSTEM_INCLUDE"
+   ex : #define CUSTOM_FILESYSTEM_INCLUDE "src/FileSystemBoost.hpp"
+
+you can check the DemoApp who is using an override for the Boost::filesystem
+
+</blockquote></details>
+
+<details open><summary><h2>C Api :</h2></summary><blockquote>
 
 this api was sucessfully tested with CImGui
 
