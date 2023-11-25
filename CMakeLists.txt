@@ -63,13 +63,14 @@ if (APPLE)
 endif()
 
 include_directories(
-		${PLOG_INCLUDE_DIR}
-		${GLM_INCLUDE_DIR}
-		${OPENGL_INCLUDE_DIR}
-		${GLFW_INCLUDE_DIR}
-		${GLAD_INCLUDE_DIR}
-		${IMGUI_INCLUDE_DIR}
-		${CMAKE_SOURCE_DIR}
+	${GLM_INCLUDE_DIR}
+	${PLOG_INCLUDE_DIR}
+	${GLFW_INCLUDE_DIR}
+	${GLAD_INCLUDE_DIR}
+	${CMAKE_SOURCE_DIR}
+	${IMGUI_INCLUDE_DIR}
+	${OPENGL_INCLUDE_DIR}
+	${BOOST_FILESYSTEM_INCLUDE_DIRS}
 )
 
 if (USE_TEST)
@@ -80,6 +81,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
 
 target_link_libraries(ImGuiFileDialog PRIVATE
 		${IMGUI_LIBRARIES}
+		${BOOST_FILESYSTEM_LIBRARIES}
 )
 
 add_executable(${PROJECT}
@@ -142,6 +144,7 @@ target_link_libraries(${PROJECT} PRIVATE
 	${GLFW_LIBRARIES}
 	${GLAD_LIBRARIES}
 	${IMGUI_LIBRARIES}
+	boost_filesystem
 	ImGuiFileDialog
 )
 
@@ -149,12 +152,6 @@ set_target_properties(ImGuiFileDialog PROPERTIES FOLDER Lib)
 
 target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_SOURCE_DIR}
-	${CMAKE_SOURCE_DIR}/3rdparty/boost_filesystem/include/
-)
-
-target_include_directories(${PROJECT} PRIVATE
-	${CMAKE_SOURCE_DIR}
-	${CMAKE_SOURCE_DIR}/3rdparty/boost_filesystem/include/
 )
 
 if (USE_TEST)
