@@ -30,8 +30,8 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog
-        path: build/ImGuiFileDialog
+        name: ImGuiFileDialog_App_Unix_Std_FS
+        path: build/ImGuiFileDialog_App_Unix
       
   App_Linux_Std_FS:
     runs-on: ubuntu-latest
@@ -52,8 +52,8 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog
-        path: build/ImGuiFileDialog
+        name: ImGuiFileDialog_App_Unix_Std_FS
+        path: build/ImGuiFileDialog_App_Unix
       
   App_Linux_Boost_FS:
     runs-on: ubuntu-latest
@@ -74,6 +74,6 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog
-        path: build/ImGuiFileDialog
+        name: ImGuiFileDialog_App_Unix_Boost_FS
+        path: build/ImGuiFileDialog_App_Unix
       

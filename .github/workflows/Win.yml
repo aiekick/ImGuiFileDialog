@@ -28,8 +28,8 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_WIn32
-        path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        name: ImGuiFileDialog_App_Win32_Dirent_FS
+        path: build\Release\ImGuiFileDialog_App_Win32.exe
         
   App_Win32_Std_FS:
     runs-on: windows-latest
@@ -48,8 +48,8 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_WIn32
-        path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        name: ImGuiFileDialog_App_Win32_Std_FS
+        path: build\Release\ImGuiFileDialog_App_Win32.exe
         
   App_Win32_Boost_FS:
     runs-on: windows-latest
@@ -68,6 +68,6 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_WIn32
-        path: build\Release\ImGuiFileDialog_App_WIn32.exe
+        name: ImGuiFileDialog_App_Win32_Boost_FS
+        path: build\Release\ImGuiFileDialog_App_Win32.exe
         

@@ -30,7 +30,7 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_Macos.app
+        name: ImGuiFileDialog_App_Macos_Dirent_FS.app
         path: build/ImGuiFileDialog_App_Macos.app
 
   App_Macos_Std_FS:
@@ -52,7 +52,7 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_Macos.app
+        name: ImGuiFileDialog_App_Macos_Std_FS.app
         path: build/ImGuiFileDialog_App_Macos.app
 
   App_Macos_Boost_FS:
@@ -74,5 +74,5 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ImGuiFileDialog_App_Macos.app
+        name: ImGuiFileDialog_App_Macos_Boost_FS.app
         path: build/ImGuiFileDialog_App_Macos.app

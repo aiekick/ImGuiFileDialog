@@ -117,7 +117,7 @@ if (APPLE)
 		##MACOSX_BUNDLE_ICON_FILE icon.icns
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
 elseif(WIN32)
-	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_WIn32")
+	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_Win32")
 elseif(UNIX)
 	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_Unix")
 endif()
