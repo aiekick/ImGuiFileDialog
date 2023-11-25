@@ -45,6 +45,7 @@ SOFTWARE.
 #include <sstream>
 #include <iomanip>
 #include <ctime>
+#include <memory>
 #include <sys/stat.h>
 #include <cstdio>
 #include <cerrno>
@@ -392,7 +393,9 @@ public:
 
 #pragma endregion
 
-#ifndef USE_CUSTOM_FILESYSTEM
+#pragma region FILE SYSTEM INTERFACE
+
+#ifndef CUSTOM_FILESYSTEM_INCLUDE
 #ifdef USE_STD_FILESYSTEM
 class FileSystemStd : public IGFD::IFileSystem {
 public:
@@ -720,7 +723,11 @@ public:
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemDirent
 #endif  // USE_STD_FILESYSTEM
+#else
+#include CUSTOM_FILESYSTEM_INCLUDE
 #endif  // USE_CUSTOM_FILESYSTEM
+
+#pragma endregion
 
 #pragma region Utils
 
@@ -1616,7 +1623,9 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
 
 IGFD::FileManager::FileManager() {
     fsRoot = std::string(1u, PATH_SEP);
-    m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
+    // std::make_unique is not available un cpp11
+    m_FileSystemPtr = std::unique_ptr<FILE_SYSTEM_OVERRIDE>(new FILE_SYSTEM_OVERRIDE());
+    //m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
 }
 
 void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInternal) {
