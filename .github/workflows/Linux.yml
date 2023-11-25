@@ -55,7 +55,7 @@ jobs:
         name: ImGuiFileDialog
         path: build/ImGuiFileDialog
       
-  App_Linux_Boost_Demo_FS:
+  App_Linux_Boost_FS:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
