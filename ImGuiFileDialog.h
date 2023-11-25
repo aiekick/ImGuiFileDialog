@@ -760,7 +760,7 @@ ImGuiFileDialog::Instance()->ManageGPUThumbnails();
 
 The dialog can be embedded in another user frame than the standard or modal dialog
 
-You have to create a variable of type ImGuiFileDialog. (if you are suing the singleton, you will not have the
+You have to create a variable of type ImGuiFileDialog. (if you are using the singleton, you will not have the
 possibility to open other dialog)
 
 ex :
@@ -769,7 +769,7 @@ ex :
 ImGuiFileDialog fileDialog;
 
 // open dialog; in this case, Bookmark, directory creation are disabled with, and also the file input field is readonly.
-// btw you can od what you want
+// btw you can do what you want
 fileDialog.OpenDialog("embedded", "Select File", ".*", "", -1, nullptr,
     ImGuiFileDialogFlags_NoDialog |
     ImGuiFileDialogFlags_DisableBookmarkMode |
@@ -790,8 +790,8 @@ the result :
 you have a separator between two directories in the path composer
 when you click on it you can explore a list of parrallels directories of this point
 
-this feature is disabled by default
-you can enable it with the compiler flag : flags
+this feature is enabled by default
+you can disable it with the flag : ImGuiFileDialogFlags_DisableQuickPathSelection
 
 you can also customize the spacing between path button's with and without this mode
 you can do that by define the compiler flag : #define CUSTOM_PATH_SPACING 2
@@ -915,7 +915,7 @@ but you can modify them.
 
 There is 3 Modes :
 ```cpp
-IGFD_ResultMode_AddIfNoFileExt [DEFAULT for
+IGFD_ResultMode_AddIfNoFileExt [DEFAULT]
 This mode add the filter ext only if there is no file ext. (compatible multi layer)
 ex :
    filter {.cpp,.h} with file :
@@ -980,6 +980,27 @@ to note :
     we consider a filter to be replaced according to the max dot of filters for a whole collection
     a collection {.a, .b.z} is a two dots filter, so a file toto.g.z will be replaced by toto.a
     a collection {.z; .b} is a one dot filter, so a file toto.g.z will be replaced by toto.g.a
+
+################################################################
+## Custom FileSystem
+################################################################
+
+you can use your custom file system interface.
+
+by default IGFD come with the File System Interfaces for Dirent or std::filesystem
+but you have now a FileSystem interface called IFileSystem who can be overrided with your needs
+by ex for android, emscripten, or boost
+
+2 steps :
+
+1) create a include file who must contain :
+   - your override of IGFD::IFileSystem
+   - a define of your class name in FILE_SYSTEM_OVERRIDE (ex : #define FILE_SYSTEM_OVERRIDE FileSystemBoost)
+
+2) define your file system include file path in the preprocessor var "CUSTOM_FILESYSTEM_INCLUDE"
+   ex : #define CUSTOM_FILESYSTEM_INCLUDE "src/FileSystemBoost.hpp"
+
+you can check the DemoApp who is using an override for the Boost::filesystem
 
 ################################################################
 ## How to Integrate ImGuiFileDialog in your project
