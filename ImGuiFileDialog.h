@@ -1678,6 +1678,7 @@ private:
     std::string m_LastSelectedFileName;                          // for shift multi selection
     std::set<std::string> m_SelectedFileNames;                   // the user selection of FilePathNames
     bool m_CreateDirectoryMode = false;                          // for create directory widget
+    std::string m_FileSystemName;
     std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
 
 public:
@@ -1789,6 +1790,9 @@ public:
 
     IFileSystem* GetFileSystemInstance() {
         return m_FileSystemPtr.get();
+    }
+    const std::string& GetFileSystemName() {
+        return m_FileSystemName;
     }
 };
 
