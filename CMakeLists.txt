@@ -48,6 +48,8 @@ file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
 if (USE_BOOST_DEMO_FILESYSTEM)
 	file(GLOB BOOST_SOURCES ${CMAKE_SOURCE_DIR}/FileSystemBoost.hpp)
 	source_group(src\\Boost FILES ${BOOST_SOURCES})
+elseif (USE_STD_FILESYSTEM)
+	add_definitions(-DUSE_STD_FILESYSTEM)
 endif()
 
 file(GLOB RES_SOURCES 
@@ -122,7 +124,6 @@ elseif(UNIX)
 endif()
 
 if (USE_STD_FILESYSTEM)
-	add_definitions(-DUSE_STD_FILESYSTEM)
 	set(CMAKE_CXX_STANDARD 17)
 	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 17)
 	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 17)
