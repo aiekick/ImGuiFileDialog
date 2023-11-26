@@ -438,6 +438,7 @@ public:
         return false;  // this is not a directory!
     }
     bool IsFileExist(const std::string& vName) override {
+        namespace fs = std::filesystem;
         return fs::is_regular_file(vName);
     }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {

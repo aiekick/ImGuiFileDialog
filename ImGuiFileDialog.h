@@ -1628,6 +1628,7 @@ public:
 
 class IFileSystem {
 public:
+    virtual ~IFileSystem() = default;
     // say if a directory can be openened or for any reason locked
     virtual bool IsDirectoryCanBeOpened(const std::string& vName) = 0;
     // say if a directory exist
