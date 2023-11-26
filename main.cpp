@@ -502,6 +502,8 @@ int main(int, char**) {
     static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
     static IGFD_ResultMode resultMode = IGFD_ResultMode_AddIfNoFileExt;
 
+    static IGFD::FileManager fileManager;
+
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         // Poll and handle events (inputs, window resize, etc.)
@@ -523,9 +525,11 @@ int main(int, char**) {
         if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        ImGui::Begin("imGuiFileDialog Demo");  // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin("ImGuiFileDialog Demo");  // Create a window called "Hello, world!" and append into it.
         {
-            ImGui::Text("imGuiFileDialog Demo %s : ", IMGUIFILEDIALOG_VERSION);
+            ImGui::Text("ImGuiFileDialog Demo : %s", IMGUIFILEDIALOG_VERSION);
+            ImGui::Text("FileSystem Interface : %s", fileManager.GetFileSystemName().c_str());
+
             ImGui::Separator();
 
             ImGui::ColorEdit3("clear color", (float*)&clear_color);  // Edit 3 floats representing a color
