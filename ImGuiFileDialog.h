@@ -42,8 +42,7 @@ SOFTWARE.
 
 /*
 // generated with "Text to ASCII Art Generator (TAAG)"
-// https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.5
-
+// https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.7
   _____              _____         _  ______  _  _        _____   _         _
  |_   _|            / ____|       (_)|  ____|(_)| |      |  __ \ (_)       | |
    | |   _ __ ___  | |  __  _   _  _ | |__    _ | |  ___ | |  | | _   __ _ | |  ___    __ _
@@ -52,13 +51,12 @@ SOFTWARE.
  |_____||_| |_| |_| \_____| \__,_||_||_|     |_||_| \___||_____/ |_| \__,_||_| \___/  \__, |
                                                                                        __/ |
                                                                                       |___/
-                                  ___      __      __    __
-                                 / _ \    / /     / /   /_ |
-                         __   __| | | |  / /_    / /_    | |
-                         \ \ / /| | | | | '_ \  | '_ \   | |
-                          \ V / | |_| |_| (_) |_| (_) |_ | |
-                           \_/   \___/(_)\___/(_)\___/(_)|_|
-
+                                  ___      __    ______
+                                 / _ \    / /   |____  |
+                         __   __| | | |  / /_       / /
+                         \ \ / /| | | | | '_ \     / /
+                          \ V / | |_| |_| (_) |_  / /
+                           \_/   \___/(_)\___/(_)/_/
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
