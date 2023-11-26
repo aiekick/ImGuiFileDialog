@@ -52,12 +52,13 @@ SOFTWARE.
  |_____||_| |_| |_| \_____| \__,_||_||_|     |_||_| \___||_____/ |_| \__,_||_| \___/  \__, |
                                                                                        __/ |
                                                                                       |___/
-                                  ___      __    ______
-                                 / _ \    / /   |____  |
-                         __   __| | | |  / /_       / /
-                         \ \ / /| | | | | '_ \     / /
-                          \ V / | |_| |_| (_) |_  / /
-                           \_/   \___/(_)\___/(_)/_/
+                                  ___      __      __    __
+                                 / _ \    / /     / /   /_ |
+                         __   __| | | |  / /_    / /_    | |
+                         \ \ / /| | | | | '_ \  | '_ \   | |
+                          \ V / | |_| |_| (_) |_| (_) |_ | |
+                           \_/   \___/(_)\___/(_)\___/(_)|_|
+
 
 github repo : https://github.com/aiekick/ImGuiFileDialog
 this section is the content of the ReadMe.md file
@@ -1122,7 +1123,7 @@ The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFon
 #pragma region IGFD VERSION
 
 // compatible with 1.90.1 WIP
-#define IMGUIFILEDIALOG_VERSION "v0.6.7"
+#define IMGUIFILEDIALOG_VERSION "v0.6.6.1"
 
 #pragma endregion
 
