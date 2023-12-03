@@ -4,7 +4,7 @@ project(ImGuiFileDialog)
 
 set(IMGUI_FILEDIALOG_CONFIG "ImGuiFileDialogConfig.h" CACHE FILEPATH "Change this to supply a custom ImGuiFileDialogConfig.h")
 
-add_library(ImGuiFileDialog STATIC
+add_library(ImGuiFileDialog
     ImGuiFileDialog.cpp
     ImGuiFileDialog.h
     ${IMGUI_FILEDIALOG_CONFIG}
