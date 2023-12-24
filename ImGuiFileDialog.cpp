@@ -210,10 +210,10 @@ SOFTWARE.
 #define fileEntryString "[File]"
 #endif  // fileEntryString
 #ifndef fileNameString
-#define fileNameString "File Name :"
+#define fileNameString "File Name:"
 #endif  // fileNameString
 #ifndef dirNameString
-#define dirNameString "Directory Path :"
+#define dirNameString "Directory Path:"
 #endif  // dirNameString
 #ifndef buttonResetSearchString
 #define buttonResetSearchString "Reset search"
@@ -261,10 +261,10 @@ SOFTWARE.
 #define fileSizeGigaBytes "Go"
 #endif  // fileSizeGigaBytes
 #ifndef OverWriteDialogTitleString
-#define OverWriteDialogTitleString "The file Already Exist !"
+#define OverWriteDialogTitleString "The selected file already exists!"
 #endif  // OverWriteDialogTitleString
 #ifndef OverWriteDialogMessageString
-#define OverWriteDialogMessageString "Would you like to OverWrite it ?"
+#define OverWriteDialogMessageString "Are you sure you want to overwrite it?"
 #endif  // OverWriteDialogMessageString
 #ifndef OverWriteDialogConfirmButtonString
 #define OverWriteDialogConfirmButtonString "Confirm"
