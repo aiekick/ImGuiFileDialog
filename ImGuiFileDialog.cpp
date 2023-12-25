@@ -2277,6 +2277,9 @@ std::string IGFD::FileManager::ComposeNewPath(std::vector<std::string>::iterator
 #ifdef _IGFD_UNIX_  // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
             if (res[0] != PATH_SEP)
                 res = PATH_SEP + res;
+#else
+            if (res.back() != PATH_SEP)
+                res.push_back(PATH_SEP);
 #endif  // defined(_IGFD_UNIX_)
             break;
         }
