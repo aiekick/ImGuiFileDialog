@@ -1038,7 +1038,7 @@ config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas v
 };
 ```
 
-![user_file_attributes.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_file_attributes.gif)
+![user_file_attributes.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_file_attributes.png)
 
 </blockquote></details>
 
