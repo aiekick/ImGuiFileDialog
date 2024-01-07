@@ -2042,9 +2042,9 @@ std::string IGFD::FileManager::m_FormatFileSize(size_t vByteSize) {
             return m_RoundNumber(v / ko, 2) + " " + fileSizeMegaBytes;  // Mo
         else
             return m_RoundNumber(v / mo, 2) + " " + fileSizeGigaBytes;  // Go
-    }
+    } 
 
-    return "";
+    return "0 " fileSizeBytes;
 }
 
 void IGFD::FileManager::m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos) {
