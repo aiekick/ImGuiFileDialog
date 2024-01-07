@@ -736,7 +736,7 @@ int main(int, char**) {
                     config.path               = ".";
                     config.countSelectionMax  = 0;
                     config.flags              = flags;
-                    config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
+                    /*config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
                         if (vFileInfosPtr != nullptr) {
                             // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
                             if (vFileInfosPtr->SearchForExt(".gltf", true)) {
@@ -755,7 +755,7 @@ int main(int, char**) {
                             }
                         }
                         return true;
-                    };
+                    };*/
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
             }
