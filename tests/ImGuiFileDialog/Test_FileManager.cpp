@@ -44,7 +44,7 @@ public:
     }
 
     void useFlags(ImGuiFileDialogFlags vFlags) {
-        fd.dLGflags = vFlags;
+        fd.getDialogConfigRef().flags = vFlags;
     }
     
     IGFD::FilterInfos getSelectedFilter() const {
