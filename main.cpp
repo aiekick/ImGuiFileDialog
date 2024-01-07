@@ -20,9 +20,10 @@
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define stat _stat
-#else
+#else  // UNIX
 #include <sys/types.h>
-#endif // __WIN32__
+#include <sys/stat.h>
+#endif  // __WIN32__
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -177,7 +178,7 @@ public:
     void OpenDialog(const std::string& vKey,                                                
                     const std::string& vTitle,                                               
                     const char* vFilters,                                                    
-                    const IGFD::FileDialogConfig& vConfig) {
+                    const IGFD::FileDialogConfig& vConfig) override {
         m_ReadOnly = false;
         ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vConfig);
     }
