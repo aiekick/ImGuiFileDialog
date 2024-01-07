@@ -1074,6 +1074,23 @@ config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas v
 };
 ```
 
+you can also display a tootlip for a file displayed when the mouse is over a dedicated column
+
+you juste need to set your message for the FileDialogConfig.tooltipMessage
+and specify the column in FileDialogConfig.tooltipColumn
+
+ex code from the DemoApp branch for display the decomposition of gltf total size
+
+syntax :
+```cpp
+vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",             //
+    (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),             //
+    IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize).c_str(),     //
+    (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),              //
+    IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
+vFileInfosPtr->tooltipColumn  = 1;
+```
+
 ################################################################
 ## How to Integrate ImGuiFileDialog in your project
 ################################################################
@@ -1501,6 +1518,8 @@ public:
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
     static std::string GetPathSeparator(); // return the slash for any OS ( \\ win, / unix)
+    static std::string RoundNumber(double vvalue, int n);  // custom rounding number
+    static std::string FormatFileSize(size_t vByteSize);   // format file size field
 };
 
 #pragma endregion
@@ -1675,6 +1694,8 @@ public:
     std::string fileName;                                            // file name only
     std::string fileNameExt;                                         // filename of the file (file name + extention) (but no path)
     std::string fileNameExt_optimized;                               // optimized for search => insensitivecase
+    std::string tooltipMessage;                                      // message to display on the tooltip, is not empty
+    int32_t tooltipColumn = -1;                                      // the tooltip will appears only when the mouse is over the tooltipColumn if > -1
     size_t fileSize = 0U;                                            // for sorting operations
     std::string formatedFileSize;                                    // file size formated (10 o, 10 ko, 10 mo, 10 go)
     std::string fileModifDate;                                       // file user defined format of the date (data + time by default)
@@ -1787,8 +1808,6 @@ public:
 #else
 private:
 #endif
-    static std::string m_RoundNumber(double vvalue, int n);                        // custom rounding number
-    static std::string m_FormatFileSize(size_t vByteSize);                         // format file size field
     static void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);     // set time and date infos of a file (detail view mode)
     void m_RemoveFileNameInSelection(const std::string& vFileName);                // selection : remove a file name
     void m_m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
@@ -2217,6 +2236,8 @@ protected:
         std::string& vOutStr,
         ImFont** vOutFont);                                               // begin style apply of filter with color an icon if any
     void m_EndFileColorIconStyle(const bool& vShowColor, ImFont* vFont);  // end style apply of filter
+
+    void m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos);
 };
 
 #pragma endregion
