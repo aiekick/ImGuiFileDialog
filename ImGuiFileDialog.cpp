@@ -623,7 +623,7 @@ public:
         return res;
     }
 
-    std::vector<std::string> GetDrivesList() {
+    std::vector<std::string> GetDrivesList() override {
         std::vector<std::string> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
@@ -640,7 +640,7 @@ public:
         return res;
     }
 
-    IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) {
+    IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) override {
         IGFD::Utils::PathStruct res;
         if (!vPathFileName.empty()) {
             std::string pfn = vPathFileName;
