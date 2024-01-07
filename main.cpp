@@ -18,6 +18,10 @@
 #include <clocale>
 #include <string>
 
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+#define stat _stat
+#endif // __WIN32__
+
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
 //  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
@@ -713,14 +717,6 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with custom size according to gltf files")) {
-                    const char* filters = ".gltf";
-                    IGFD::FileDialogConfig config;
-                    config.path = ".";
-                    config.countSelectionMax = 0;
-                    config.flags             = flags;
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
-                }
                 if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
                     IGFD::FileDialogConfig config;
@@ -731,6 +727,34 @@ int main(int, char**) {
                     config.userDatas         = IGFDUserDatas("SaveFile");
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, config);
+                }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with custom size according to gltf files")) {
+                    const char* filters = ".gltf";
+                    IGFD::FileDialogConfig config;
+                    config.path               = ".";
+                    config.countSelectionMax  = 0;
+                    config.flags              = flags;
+                    config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
+                        if (vFileInfosPtr != nullptr) {
+                            // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
+                            if (vFileInfosPtr->SearchForExt(".gltf", true)) {
+                                auto bin_file_path_name = vFileInfosPtr->filePath + IGFD::Utils::GetPathSeparator() + vFileInfosPtr->fileNameLevels[0] + ".bin";
+                                struct stat statInfos   = {};
+                                char timebuf[100];
+                                int result = stat(bin_file_path_name.c_str(), &statInfos);
+                                if (!result) {
+                                    vFileInfosPtr->fileSize += (size_t)statInfos.st_size;
+                                } else {  
+                                    // no bin, so escaped.
+                                    // normally we must parse the file and check the uri for get the buffer file
+                                    // but here we keep the example as easy for demo.
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    };
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
             }
 

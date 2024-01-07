@@ -996,6 +996,52 @@ you can check the DemoApp who is using an override for the Boost::filesystem
 
 </blockquote></details>
 
+<details open><summary><h2>Modify file infos during scan by a callback</h2></summary><blockquote>
+
+In some case, it can be unsefull to modify file infos during scan
+so you can define your callback and attached it in the FileDialogConfig struct in the field userFileAttributes
+
+the callback stamp is :
+```cpp
+bool (IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas)
+```
+if the callback is returning false, the file is ignored, so not displayed by the dialog
+
+example : with the gltf separated files : (see the branch DemoApp for example use)
+
+A gltf file can have data description and datas files separated.
+in this case only the file with description will be shown in the dialog, so with not the full size of all attached datas
+
+with this function, you can compose the path of the bin file, get his size, sum it to the desciption file size and use it
+
+syntax :
+```cpp
+config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
+    if (vFileInfosPtr != nullptr) {
+        // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
+        if (vFileInfosPtr->SearchForExt(".gltf", true)) {
+            auto bin_file_path_name = vFileInfosPtr->filePath + IGFD::Utils::GetPathSeparator() + vFileInfosPtr->fileNameLevels[0] + ".bin";
+            struct stat statInfos   = {};
+            char timebuf[100];
+            int result = stat(bin_file_path_name.c_str(), &statInfos);
+            if (!result) {
+                vFileInfosPtr->fileSize += (size_t)statInfos.st_size; // add the size of bin file to the size of the gltf file
+            } else {
+                // no bin, so escaped.
+                // normally we must parse the file and check the uri for get the buffer file
+                // but here we keep the example as easy for demo.
+                return false;
+            }
+        }
+    }
+    return true;
+};
+```
+
+![user_file_attributes.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_file_attributes.gif)
+
+</blockquote></details>
+
 <details open><summary><h2>C Api :</h2></summary><blockquote>
 
 this api was sucessfully tested with CImGui
