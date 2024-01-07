@@ -1040,11 +1040,29 @@ config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas v
 
 Before the User of the userAttribute callback :
 
-![user_files_attributes_before.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_files_attributes_before.png)
+![user_files_attributes_before.png](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_files_attributes_before.png)
 
 After :
 
-![user_files_attributes_after.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_files_attributes_after.png)
+![user_files_attributes_after.png](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/user_files_attributes_after.png)
+
+You can also display a tootlip for a file displayed when the mouse is over a dedicated column
+
+you juste need to set your message for the FileDialogConfig.tooltipMessage
+and specify the column in FileDialogConfig.tooltipColumn
+
+ex code from the DemoApp branch for display the decomposition of gltf total size
+
+syntax :
+```cpp
+vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",             //
+    (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),             //
+    IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize).c_str(),     //
+    (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),              //
+    IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
+vFileInfosPtr->tooltipColumn  = 1; // column of file size
+```
+![file_tooltip_message.png](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/file_tooltip_message.png)
 
 </blockquote></details>
 

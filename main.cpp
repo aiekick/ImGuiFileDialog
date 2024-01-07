@@ -238,6 +238,18 @@ protected:
     }
 };
 
+std::string toStr(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char TempBuffer[3072 + 1];  // 3072 = 1024 * 3
+    const int w = vsnprintf(TempBuffer, 3072, fmt, args);
+    va_end(args);
+    if (w) {
+        return std::string(TempBuffer, (size_t)w);
+    }
+    return std::string();
+}
+
 int main(int, char**) {
 #ifdef _MSC_VER
     // active memory leak detector
@@ -736,7 +748,7 @@ int main(int, char**) {
                     config.path               = ".";
                     config.countSelectionMax  = 0;
                     config.flags              = flags;
-                    /*config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
+                    config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
                         if (vFileInfosPtr != nullptr) {
                             // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
                             if (vFileInfosPtr->SearchForExt(".gltf", true)) {
@@ -745,6 +757,12 @@ int main(int, char**) {
                                 char timebuf[100];
                                 int result = stat(bin_file_path_name.c_str(), &statInfos);
                                 if (!result) {
+                                    vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",                                               //
+                                                                          (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),             //
+                                                                          IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize).c_str(),     //
+                                                                          (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),              //
+                                                                          IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
+                                    vFileInfosPtr->tooltipColumn  = 1;
                                     vFileInfosPtr->fileSize += (size_t)statInfos.st_size;
                                 } else {  
                                     // no bin, so escaped.
@@ -755,7 +773,7 @@ int main(int, char**) {
                             }
                         }
                         return true;
-                    };*/
+                    };
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
             }
