@@ -20,6 +20,8 @@
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define stat _stat
+#else
+#include <sys/types.h>
 #endif // __WIN32__
 
 // About Desktop OpenGL function loaders:
