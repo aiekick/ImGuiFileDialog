@@ -1031,6 +1031,50 @@ by ex for android, emscripten, or boost
 you can check the DemoApp who is using an override for the Boost::filesystem
 
 ################################################################
+## Modify file infos during scan by a callback
+################################################################
+
+in some case, it can be unsefull for modify file infos
+so you can define your callback and attached it in the FileDialogConfig struct in the field userFileAttributes
+
+the callback stamp is :
+```cpp
+bool (IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas)
+```
+if the callback is returning false, the file is ignored, so not displayed by the dailog
+
+example in the gltf separated files : (see the branch DemoApp for example use)
+
+A gltf file can have data description and datas files separated.
+in this case only the file with description will be shown in the dialog, so with not the full size of all attached datas
+
+With the file format .gltf who is containing datas in a separate .bin
+
+syntax :
+```cpp
+config.userFileAttributes = [](IGFD::FileInfos* vFileInfosPtr, IGFD::UserDatas vUserDatas) -> bool {
+    if (vFileInfosPtr != nullptr) {
+        // this demo not take into account .gltf who have data insise. besauce keepd easy just for demo
+        if (vFileInfosPtr->SearchForExt(".gltf", true)) {
+            auto bin_file_path_name = vFileInfosPtr->filePath + IGFD::Utils::GetPathSeparator() + vFileInfosPtr->fileNameLevels[0] + ".bin";
+            struct stat statInfos   = {};
+            char timebuf[100];
+            int result = stat(bin_file_path_name.c_str(), &statInfos);
+            if (!result) {
+                vFileInfosPtr->fileSize = (size_t)statInfos.st_size;
+            } else {
+                // no bin, so escaped.
+                // normally we must parse the file and check the uri for get the buffer file
+                // but here we keep the example as easy for demo.
+                return false;
+            }
+        }
+    }
+    return true;
+};
+```
+
+################################################################
 ## How to Integrate ImGuiFileDialog in your project
 ################################################################
 
@@ -1456,6 +1500,7 @@ public:
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
+    static std::string GetPathSeparator(); // return the slash for any OS ( \\ win, / unix)
 };
 
 #pragma endregion
@@ -1621,10 +1666,14 @@ public:
     // 10 level max are sufficient i guess. the others levels will be checked if countExtDot > 1
     std::array<std::string, EXT_MAX_LEVEL> fileExtLevels;
     std::array<std::string, EXT_MAX_LEVEL> fileExtLevels_optimized;  // optimized for search => insensitivecase
+    // same for file name, can be sued in userFileAttributesFun
+    std::array<std::string, EXT_MAX_LEVEL> fileNameLevels;
+    std::array<std::string, EXT_MAX_LEVEL> fileNameLevels_optimized;  // optimized for search => insensitivecase
     size_t countExtDot = 0U;                                         // count dots in file extention. this count will give the levels in fileExtLevels
     FileType fileType;                                               // fileType
     std::string filePath;                                            // path of the file
-    std::string fileNameExt;                                         // filename of the file (file name + extention) (but no pat
+    std::string fileName;                                            // file name only
+    std::string fileNameExt;                                         // filename of the file (file name + extention) (but no path)
     std::string fileNameExt_optimized;                               // optimized for search => insensitivecase
     size_t fileSize = 0U;                                            // for sorting operations
     std::string formatedFileSize;                                    // file size formated (10 o, 10 ko, 10 mo, 10 go)
@@ -1740,7 +1789,7 @@ private:
 #endif
     static std::string m_RoundNumber(double vvalue, int n);                        // custom rounding number
     static std::string m_FormatFileSize(size_t vByteSize);                         // format file size field
-    static void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& FileInfos);  // set time and date infos of a file (detail view mode)
+    static void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);     // set time and date infos of a file (detail view mode)
     void m_RemoveFileNameInSelection(const std::string& vFileName);                // selection : remove a file name
     void m_m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
     void m_AddFile(const FileDialogInternal& vFileDialogInternal,
@@ -1762,6 +1811,7 @@ private:
     void m_SortFields(const FileDialogInternal& vFileDialogInternal,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);  // will sort a column
+    bool m_CompleteFileInfosWithUserFileAttirbutes(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos);
 
 public:
     FileManager();
@@ -1824,6 +1874,7 @@ public:
 
 typedef void* UserDatas;
 typedef std::function<void(const char*, UserDatas, bool*)> PaneFun;  // side pane function binding
+typedef std::function<bool(FileInfos*, UserDatas)> UserFileAttributesFun;  // custom file Attributes call back, reject file if false
 
 struct IGFD_API FileDialogConfig {
     std::string path;                                        // path
@@ -1834,6 +1885,7 @@ struct IGFD_API FileDialogConfig {
     ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_None;  // ImGuiFileDialogFlags
     PaneFun sidePane;                                        // side pane callback
     float sidePaneWidth = 250.0f;                            // side pane width
+    UserFileAttributesFun userFileAttributes;                // user file Attibutes callback
 };
 
 class IGFD_API FileDialogInternal {
@@ -2063,11 +2115,11 @@ public:
     virtual ~FileDialog();  // ImGuiFileDialog Destructor
 
     //  standard dialog
-    virtual void OpenDialog(               // open simple dialog
-        const std::string& vKey,           // key dialog
-        const std::string& vTitle,         // title
-        const char* vFilters,              // filters, if null, will display only directories
-        const FileDialogConfig& vConfig);  // FileDialogConfig
+    virtual void OpenDialog(                    // open simple dialog
+        const std::string& vKey,                // key dialog
+        const std::string& vTitle,              // title
+        const char* vFilters,                   // filters, if null, will display only directories
+        const FileDialogConfig& vConfig = {});  // FileDialogConfig
 
     // Display / Close dialog form
     bool Display(                                               // Display the dialog. return true if a result was obtained (Ok or not)
@@ -2244,12 +2296,12 @@ typedef void (*IGFD_CreateThumbnailFun)(IGFD_Thumbnail_Info*);   // callback fun
 typedef void (*IGFD_DestroyThumbnailFun)(IGFD_Thumbnail_Info*);  // callback fucntion for destroy thumbnail texture
 #endif                                                           // USE_THUMBNAILS
 
-IGFD_C_API void IGFD_OpenDialog(                 // open a standard dialog
-    ImGuiFileDialog* vContextPtr,                // ImGuiFileDialog context
-    const char* vKey,                            // key dialog
-    const char* vTitle,                          // title
-    const char* vFilters,                        // filters/filter collections. set it to null for directory mode
-    const IGFD_FileDialog_Config vConfig = {});  // config
+IGFD_C_API void IGFD_OpenDialog(            // open a standard dialog
+    ImGuiFileDialog* vContextPtr,           // ImGuiFileDialog context
+    const char* vKey,                       // key dialog
+    const char* vTitle,                     // title
+    const char* vFilters,                   // filters/filter collections. set it to null for directory mode
+    const IGFD_FileDialog_Config vConfig);  // config
 
 IGFD_C_API bool IGFD_DisplayDialog(  // Display the dialog
     ImGuiFileDialog* vContextPtr,    // ImGuiFileDialog context

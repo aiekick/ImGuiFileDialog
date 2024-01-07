@@ -692,7 +692,7 @@ public:
 #ifdef _IGFD_WIN_
                         auto filePath  = vPath + ent->d_name;
 #else
-                        auto filePath = vPath + std::string(1u, PATH_SEP) + ent->d_name;
+                        auto filePath = vPath + IGFD::Utils::GetPathSeparator() + ent->d_name;
 #endif
                         if (!stat(filePath.c_str(), &sb)) {
                             if (sb.st_mode & S_IFLNK) {
@@ -903,6 +903,10 @@ size_t IGFD::Utils::GetLastCharPosWithMinCharCount(const std::string& vString, c
         return last_dot_pos;
     }
     return std::string::npos;
+}
+
+std::string IGFD::Utils::GetPathSeparator() {
+    return std::string(1U, PATH_SEP);
 }
 
 #pragma endregion
@@ -1533,7 +1537,6 @@ bool IGFD::FileType::operator>(const FileType& rhs) const {
 bool IGFD::FileInfos::SearchForTag(const std::string& vTag) const {
     if (!vTag.empty()) {
         if (fileNameExt_optimized == "..") return true;
-
         return fileNameExt_optimized.find(vTag) != std::string::npos ||  // first try without case and accents
                fileNameExt.find(vTag) != std::string::npos;              // second if searched with case and accents
     }
@@ -1586,6 +1589,8 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
         }
         if (lpt != std::string::npos) {
             size_t lvl                   = 0U;
+            fileNameLevels[lvl]          = fileNameExt.substr(0, lpt);
+            fileNameLevels[lvl]          = Utils::LowerCaseString(fileNameLevels[lvl]);
             fileExtLevels[lvl]           = fileNameExt.substr(lpt);
             fileExtLevels_optimized[lvl] = Utils::LowerCaseString(fileExtLevels[lvl]);
             if (countExtDot > 1U) {  // multi layer ext
@@ -1595,6 +1600,8 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
                     if (fileNameExt.size() > lpt) {
                         lpt = fileNameExt.find_first_of('.', lpt);
                         if (lpt != std::string::npos) {
+                            fileNameLevels[lvl]          = fileNameExt.substr(0, lpt);
+                            fileNameLevels[lvl]          = Utils::LowerCaseString(fileNameLevels[lvl]);
                             fileExtLevels[lvl]           = fileNameExt.substr(lpt);
                             fileExtLevels_optimized[lvl] = Utils::LowerCaseString(fileExtLevels[lvl]);
                         }
@@ -1612,7 +1619,7 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
 #pragma region FileManager
 
 IGFD::FileManager::FileManager() {
-    fsRoot           = std::string(1u, PATH_SEP);
+    fsRoot           = IGFD::Utils::GetPathSeparator();
     m_FileSystemName = typeid(FILE_SYSTEM_OVERRIDE).name();
     // std::make_unique is not available un cpp11
     m_FileSystemPtr = std::unique_ptr<FILE_SYSTEM_OVERRIDE>(new FILE_SYSTEM_OVERRIDE());
@@ -1793,6 +1800,19 @@ void IGFD::FileManager::m_SortFields(const FileDialogInternal& vFileDialogIntern
     m_ApplyFilteringOnFileList(vFileDialogInternal, vFileInfosList, vFileInfosFilteredList);
 }
 
+bool IGFD::FileManager::m_CompleteFileInfosWithUserFileAttirbutes(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos) {
+    if (vFileDialogInternal.getDialogConfig().userFileAttributes != nullptr) {
+        if (!vFileDialogInternal.getDialogConfig().userFileAttributes(vInfos.get(), vFileDialogInternal.getDialogConfig().userDatas)) {
+            return false;  // the file will be ignored, so not added to the file list, so not displayed
+        } else {
+            if (!vInfos->fileType.isDir()) {
+                vInfos->formatedFileSize = m_FormatFileSize(vInfos->fileSize);
+            }
+        }
+    }
+    return true; // file will be added to file list, so displayed
+}
+
 void IGFD::FileManager::ClearFileLists() {
     m_FilteredFileList.clear();
     m_FileList.clear();
@@ -1830,7 +1850,10 @@ void IGFD::FileManager::m_AddFile(const FileDialogInternal& vFileDialogInternal,
     vFileDialogInternal.filterManager.m_FillFileStyle(infos);
 
     m_CompleteFileInfos(infos);
-    m_FileList.push_back(infos);
+
+    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, infos)) {
+        m_FileList.push_back(infos);
+    }
 }
 
 void IGFD::FileManager::m_AddPath(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType) {
@@ -1856,7 +1879,10 @@ void IGFD::FileManager::m_AddPath(const FileDialogInternal& vFileDialogInternal,
     vFileDialogInternal.filterManager.m_FillFileStyle(infos);
 
     m_CompleteFileInfos(infos);
-    m_PathList.push_back(infos);
+
+    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, infos)) {
+        m_PathList.push_back(infos);
+    }
 }
 
 void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogInternal, const std::string& vPath) {
@@ -1868,7 +1894,7 @@ void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogInternal, c
 
     if (!m_CurrentPathDecomposition.empty()) {
 #ifdef _IGFD_WIN_
-        if (path == fsRoot) path += std::string(1u, PATH_SEP);
+        if (path == fsRoot) path += IGFD::Utils::GetPathSeparator();
 #endif  // _IGFD_WIN_
 
         ClearFileLists();
@@ -1887,7 +1913,7 @@ void IGFD::FileManager::m_ScanDirForPathSelection(const FileDialogInternal& vFil
 
     if (!path.empty()) {
 #ifdef _IGFD_WIN_
-        if (path == fsRoot) path += std::string(1u, PATH_SEP);
+        if (path == fsRoot) path += IGFD::Utils::GetPathSeparator();
 #endif  // _IGFD_WIN_
 
         ClearPathLists();
@@ -2069,7 +2095,9 @@ void IGFD::FileManager::m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vI
         std::string fpn;
 
         // FIXME: so the condition is always true?
-        if (vInfos->fileType.isFile() || vInfos->fileType.isLinkToUnknown() || vInfos->fileType.isDir()) fpn = vInfos->filePath + std::string(1u, PATH_SEP) + vInfos->fileNameExt;
+        if (vInfos->fileType.isFile() || vInfos->fileType.isLinkToUnknown() || vInfos->fileType.isDir()) {
+            fpn = vInfos->filePath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
+        }
 
         struct stat statInfos = {};
         char timebuf[100];
@@ -2121,7 +2149,7 @@ void IGFD::FileManager::m_m_AddFileNameInSelection(const std::string& vFileName,
 void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
     std::string path = vPath;
 #ifdef _IGFD_WIN_
-    if (fsRoot == path) path += std::string(1u, PATH_SEP);
+    if (fsRoot == path) path += IGFD::Utils::GetPathSeparator();
 #endif  // _IGFD_WIN_
 
     bool dir_opened = m_FileSystemPtr->IsDirectory(path);
@@ -2153,7 +2181,7 @@ void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
             IGFD::Utils::SetBuffer(inputPathBuffer, MAX_PATH_BUFFER_SIZE, m_CurrentPath);
             m_CurrentPathDecomposition = IGFD::Utils::SplitStringToVector(m_CurrentPath, PATH_SEP, false);
 #ifdef _IGFD_UNIX_  // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
-            m_CurrentPathDecomposition.insert(m_CurrentPathDecomposition.begin(), std::string(1u, PATH_SEP));
+            m_CurrentPathDecomposition.insert(m_CurrentPathDecomposition.begin(), IGFD::Utils::GetPathSeparator());
 #endif  // _IGFD_UNIX_
             if (!m_CurrentPathDecomposition.empty()) {
 #ifdef _IGFD_WIN_
@@ -2166,7 +2194,7 @@ void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
 
 bool IGFD::FileManager::CreateDir(const std::string& vPath) {
     if (!vPath.empty()) {
-        std::string path = m_CurrentPath + std::string(1u, PATH_SEP) + vPath;
+        std::string path = m_CurrentPath + IGFD::Utils::GetPathSeparator() + vPath;
         return m_FileSystemPtr->CreateDirectoryIfNotExist(path);
     }
     return false;
@@ -2178,7 +2206,7 @@ std::string IGFD::FileManager::ComposeNewPath(std::vector<std::string>::iterator
     while (true) {
         if (!res.empty()) {
 #ifdef _IGFD_WIN_
-            res = *vIter + std::string(1u, PATH_SEP) + res;
+            res = *vIter + IGFD::Utils::GetPathSeparator() + res;
 #elif defined(_IGFD_UNIX_)  // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
             if (*vIter == fsRoot)
                 res = *vIter + res;
@@ -2239,14 +2267,14 @@ bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos
         std::string newPath;
 
         if (showDrives) {
-            newPath = vInfos->fileNameExt + std::string(1u, PATH_SEP);
+            newPath = vInfos->fileNameExt + IGFD::Utils::GetPathSeparator();
         } else {
 #ifdef __linux__
             if (fsRoot == m_CurrentPath)
                 newPath = m_CurrentPath + vInfos->fileNameExt;
             else
 #endif  // __linux__
-                newPath = m_CurrentPath + std::string(1u, PATH_SEP) + vInfos->fileNameExt;
+                newPath = m_CurrentPath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
         }
 
         if (m_FileSystemPtr->IsDirectoryCanBeOpened(newPath)) {
@@ -2365,7 +2393,7 @@ void IGFD::FileManager::DrawDirectoryCreation(const FileDialogInternal& vFileDia
         if (IMGUI_BUTTON(okButtonString)) {
             std::string newDir = std::string(directoryNameBuffer);
             if (CreateDir(newDir)) {
-                SetCurrentPath(m_CurrentPath + std::string(1u, PATH_SEP) + newDir);
+                SetCurrentPath(m_CurrentPath + IGFD::Utils::GetPathSeparator() + newDir);
                 OpenCurrentPath(vFileDialogInternal);
             }
 
@@ -2488,7 +2516,7 @@ std::string IGFD::FileManager::GetResultingPath() {
         std::string selectedDirectory = fileNameBuffer;
         std::string path              = m_CurrentPath;
         if (!selectedDirectory.empty() && selectedDirectory != ".") {
-            path += std::string(1u, PATH_SEP) + selectedDirectory;
+            path += IGFD::Utils::GetPathSeparator() + selectedDirectory;
         }
         return path;
     }
@@ -2512,7 +2540,7 @@ std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFil
             if (fsRoot != result)
 #endif  // _IGFD_UNIX_
             {
-                result += std::string(1u, PATH_SEP);
+                result += IGFD::Utils::GetPathSeparator();
             }
             result += filename;
         }
@@ -2530,7 +2558,7 @@ std::map<std::string, std::string> IGFD::FileManager::GetResultingSelection(File
         if (fsRoot != result)
 #endif  // _IGFD_UNIX_
         {
-            result += std::string(1u, PATH_SEP);
+            result += IGFD::Utils::GetPathSeparator();
         }
         result += vFileDialogInternal.filterManager.ReplaceExtentionWithCurrentFilterIfNeeded(selectedFileName, vFlag);
         res[selectedFileName] = result;
@@ -2726,7 +2754,7 @@ void IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc() {
                 {
                     //|| file->fileExtLevels == ".hdr" => format float so in few times
                     if (file->SearchForExts(".png,.bmp,.tga,.jpg,.jpeg,.gif,.psd,.pic,.ppm,.pgm", true)) {
-                        auto fpn = file->filePath + std::string(1u, PATH_SEP) + file->fileNameExt;
+                        auto fpn = file->filePath + IGFD::Utils::GetPathSeparator() + file->fileNameExt;
 
                         int w          = 0;
                         int h          = 0;
