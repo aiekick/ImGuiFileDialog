@@ -233,7 +233,7 @@ inline void InfosPane(cosnt char *vFilter, IGFDUserDatas vUserDatas, bool *vCant
 void drawGui()
 {
   // open Dialog with Pane
-  if (ImGui::Button("Open File Dialog with a custom pane"))
+  if (ImGui::Button("Open File Dialog with a custom pane")) {
 	IGFD::FileDialogConfig config;
 	config.path = ".";
 	config.countSelectionMax = 1;
@@ -241,7 +241,8 @@ void drawGui()
 	config.sidePaneWidth = 350.0f;
 	config.useDatas = UserDatas("InfosPane");
 	config.flags = ImGuiFileDialogFlags_Modal;
-    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config); 
+  }
 
   // display and action if ok
   if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
