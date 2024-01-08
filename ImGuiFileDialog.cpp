@@ -2536,13 +2536,17 @@ std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFil
         auto result          = GetResultingPath();
         const auto& filename = GetResultingFileName(vFileDialogInternal, vFlag);
         if (!filename.empty()) {
+            if (m_FileSystemPtr != nullptr && m_FileSystemPtr->IsFileExist(filename)) {
+                result = filename; // #144, exist file, so absolute, so return it (maybe set by user in inputText)
+            } else { // #144, else concate path with current filename
 #ifdef _IGFD_UNIX_
-            if (fsRoot != result)
+                if (fsRoot != result)
 #endif  // _IGFD_UNIX_
-            {
-                result += IGFD::Utils::GetPathSeparator();
+                {
+                    result += IGFD::Utils::GetPathSeparator();
+                }
+                result += filename;
             }
-            result += filename;
         }
 
         return result;
