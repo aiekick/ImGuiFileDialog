@@ -391,6 +391,18 @@ public:
 
 #pragma endregion
 
+#if defined(USE_THUMBNAILS) || defined(USE_PLATFORM_ICONS)
+#ifdef CUSTOM_BACKEND_TEXTURE_PROVIDER_INCLUDE
+#include CUSTOM_BACKEND_TEXTURE_PROVIDER_INCLUDE
+#endif  // CUSTOM_BACKEND_TEXTURE_PROVIDER_INCLUDE
+#endif  // USE_THUMBNAILS // USE_PLATFORM_ICONS
+
+#if defined(USE_PLATFORM_ICONS)
+#ifdef CUSTOM_PLATFORM_ICON_PROVIDER_INCLUDE
+#include CUSTOM_PLATFORM_ICON_PROVIDER_INCLUDE
+#endif // CUSTOM_PLATFORM_ICON_PROVIDER_INCLUDE
+#endif // USE_PLATFORM_ICONS
+
 #pragma region FILE SYSTEM INTERFACE
 
 #ifndef CUSTOM_FILESYSTEM_INCLUDE
@@ -1643,14 +1655,298 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
 
 #pragma endregion
 
+#pragma region PLATFORM ICON PROVIDER INTERFACE
+
+#if defined(USE_PLATFORM_ICONS)
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+#include <shellapi.h>
+class WinIconProvider : public IGFD::IPlatformIconProvider {
+public:
+    virtual ~WinIconProvider() = default;
+    IGFD_Texture_Info* GetPlatformIcon(const std::string& vPath, IGFD::IFileSystem* vFSPtr, IGFD::IBackendTextureProvider* vBTPtr) override {
+        if (vFSPtr != nullptr && vBTPtr != nullptr) {
+            if (m_Icons.count(vPath) > 0) {
+                return &m_Icons[vPath];
+            }
+
+            auto pathU8     = vPath;
+            auto& texInfos = m_Icons[pathU8] = {};
+
+            DWORD attrs = 0;
+            UINT flags  = SHGFI_ICON | SHGFI_LARGEICON;
+            if (!vFSPtr->IsFileExist(pathU8)) {
+                flags |= SHGFI_USEFILEATTRIBUTES;
+                attrs = FILE_ATTRIBUTE_DIRECTORY;
+            }
+
+            SHFILEINFOW fileInfo = {0};
+            IGFD::Utils::ReplaceString(pathU8, "/", "\\");
+            std::wstring pathW = IGFD::Utils::UTF8Decode(pathU8);
+            SHGetFileInfoW(pathW.c_str(), attrs, &fileInfo, sizeof(SHFILEINFOW), flags);
+
+            if (fileInfo.hIcon == nullptr) {
+                return nullptr;
+            }
+
+            // check if icon is already loaded
+            auto itr = std::find(m_IconIndices.begin(), m_IconIndices.end(), fileInfo.iIcon);
+            if (itr != m_IconIndices.end()) {
+                const std::string& existingIconFilepath = m_IconPaths[itr - m_IconIndices.begin()];
+                m_Icons[pathU8]                         = m_Icons[existingIconFilepath];
+                return &m_Icons[pathU8];
+            }
+
+            m_IconIndices.push_back(fileInfo.iIcon);
+            m_IconPaths.push_back(pathU8);
+
+            ICONINFO iconInfo = {0};
+            GetIconInfo(fileInfo.hIcon, &iconInfo);
+
+            if (iconInfo.hbmColor == nullptr) {
+                return nullptr;
+            }
+
+            DIBSECTION ds;
+            GetObject(iconInfo.hbmColor, sizeof(ds), &ds);
+            int byteSize = ds.dsBm.bmWidth * ds.dsBm.bmHeight * (ds.dsBm.bmBitsPixel / 8);
+
+            if (byteSize == 0) return nullptr;
+
+            uint8_t* data = (uint8_t*)malloc(byteSize);
+            if (data) {
+                GetBitmapBits(iconInfo.hbmColor, byteSize, data);
+                texInfos.textureWidth = 32;
+                texInfos.textureHeight = 32;
+                vBTPtr->CreateTexture(&texInfos);
+                free(data);
+            }
+
+            return &m_Icons[pathU8];
+        }
+        return nullptr;
+    }
+};
+#define PLATFORM_ICON_PROVIDER_OVERRIDE WinIconProvider
+
+#elif defined(__APPLE__)
+
+class MacOsIconProvider : public IGFD::IPlatformIconProvider {
+protected:
+    std::unordered_map<std::string, void*> m_Icons;
+
+public:
+    virtual ~MacOsIconProvider() = default;
+    void* GetPlatformIcon(const std::string& vPath) override {
+        if (m_Icons.count(vPath.string()) > 0) return m_Icons[vPath.string()];
+
+        std::string pathU8 = vPath.string();
+
+        std::error_code ec;
+        m_Icons[pathU8] = nullptr;
+
+        std::string apath = ghc::filesystem::absolute(vPath, ec).string();
+        NSImage* icon     = nullptr;
+        struct stat fileInfo;
+
+        if (ghc::filesystem::exists(apath, ec)) {
+            if (stat(vPath.string().c_str(), &fileInfo) == -1) return nullptr;
+            icon = [[NSWorkspace sharedWorkspace] iconForFile:[NSString stringWithUTF8String:apath.c_str()]];
+        } else {
+            if (stat("/bin", &fileInfo) == -1) return nullptr;
+            icon = [[NSWorkspace sharedWorkspace] iconForFile:@"/bin"];
+        }
+
+        if (icon == nullptr) return nullptr;
+        // check if icon is already loaded
+        auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), (int)fileInfo.st_ino);
+        if (itr != m_iconIndices.end()) {
+            const std::string& existingIconFilepath = m_iconFilepaths[itr - m_iconIndices.begin()];
+            m_Icons[pathU8]                         = m_Icons[existingIconFilepath];
+            return m_Icons[pathU8];
+        }
+
+        m_iconIndices.push_back(fileInfo.st_ino);
+        m_iconFilepaths.push_back(pathU8);
+
+        [icon setSize:NSMakeSize(DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE)];
+
+        CGImageSourceRef source = CGImageSourceCreateWithData((CFDataRef)[icon TIFFRepresentation], nullptr);
+        CGImageRef imageRef     = CGImageSourceCreateImageAtIndex(source, 0, nullptr);
+
+        NSUInteger width  = CGImageGetWidth(imageRef);
+        NSUInteger height = CGImageGetHeight(imageRef);
+
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        unsigned char* rawData     = (unsigned char*)calloc(height * width * 4, sizeof(unsigned char));
+
+        if (rawData) {
+            NSUInteger bytesPerPixel    = 4;
+            NSUInteger bytesPerRow      = bytesPerPixel * width;
+            NSUInteger bitsPerComponent = 8;
+            CGContextRef context        = CGBitmapContextCreate(rawData, width, height, bitsPerComponent, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+            CGColorSpaceRelease(colorSpace);
+            CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+            CGContextRelease(context);
+            unsigned char* invData = (unsigned char*)calloc(height * width * 4, sizeof(unsigned char));
+            if (invData) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int index          = (y * width + x) * 4;
+                        invData[index + 2] = rawData[index + 0];
+                        invData[index + 1] = rawData[index + 1];
+                        invData[index + 0] = rawData[index + 2];
+                        invData[index + 3] = rawData[index + 3];
+                    }
+                }
+                m_Icons[pathU8] = this->CreateTexture(invData, width, height, 0);
+                free(invData);
+            }
+            free(rawData);
+        }
+
+        return m_Icons[pathU8];
+    }
+};
+
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__)
+
+class LinuxIconProvider : public IGFD::IPlatformIconProvider {
+protected:
+    std::unordered_map<std::string, void*> m_Icons;
+
+public:
+    virtual ~LinuxIconProvider() = default;
+    void* GetPlatformIcon(const std::string& vPath) override {
+        if (m_Icons.count(vPath.string()) > 0) return m_Icons[vPath.string()];
+
+        std::string pathU8 = vPath.string();
+
+        std::error_code ec;
+        m_Icons[pathU8] = nullptr;
+
+        std::string apath = ghc::filesystem::absolute(vPath, ec).string();
+        struct stat fileInfo;
+        GFile* file = nullptr;
+
+        if (ghc::filesystem::exists(apath, ec)) {
+            if (stat(vPath.string().c_str(), &fileInfo) == -1) return nullptr;
+            file = g_file_new_for_path(apath.c_str());
+        } else {
+            if (stat("/bin", &fileInfo) == -1) return nullptr;
+            file = g_file_new_for_path("/bin");
+        }
+
+        if (!G_IS_OBJECT(file)) return nullptr;
+        GFileInfo* file_info = g_file_query_info(file, "standard::*", G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
+        if (!G_IS_OBJECT(file_info)) {
+            if (G_IS_OBJECT(file)) g_object_unref(file);
+            return nullptr;
+        }
+
+        GIcon* icon = g_file_info_get_icon(file_info);
+        if (!G_IS_OBJECT(icon)) {
+            if (G_IS_OBJECT(file_info)) g_object_unref(file_info);
+            if (G_IS_OBJECT(file)) g_object_unref(file);
+            return nullptr;
+        }
+
+        // check if icon is already loaded
+        auto itr = std::find(m_iconIndices.begin(), m_iconIndices.end(), (int)fileInfo.st_ino);
+        if (itr != m_iconIndices.end()) {
+            const std::string& existingIconFilepath = m_iconFilepaths[itr - m_iconIndices.begin()];
+            m_Icons[pathU8]                         = m_Icons[existingIconFilepath];
+            return m_Icons[pathU8];
+        }
+
+        m_iconIndices.push_back(fileInfo.st_ino);
+        m_iconFilepaths.push_back(pathU8);
+        if (!G_IS_OBJECT(icon) || !G_IS_THEMED_ICON(icon)) {
+            if (G_IS_OBJECT(file_info)) g_object_unref(file_info);
+            if (G_IS_OBJECT(file)) g_object_unref(file);
+            return nullptr;
+        }
+        const char* const* fnames = g_themed_icon_get_names(G_THEMED_ICON(icon));
+        GtkIconInfo* gtkicon_info = nullptr;
+
+        static bool gtkinit;
+        if (!gtkinit) gtk_init(nullptr, nullptr);
+        gtkinit = true;
+
+        gtkicon_info = gtk_icon_theme_choose_icon(gtk_icon_theme_get_default(), (const char**)fnames, 32, (GtkIconLookupFlags)0);
+        if (gtkicon_info) {
+            const char* fname = gtk_icon_info_get_filename(gtkicon_info);
+            int width, height, nrChannels;
+            unsigned char* image = nullptr;
+            std::string ext      = ghc::filesystem::vPath(fname).extension().string();
+            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga") {
+                image = stbi_load(fname, &width, &height, &nrChannels, STBI_rgb_alpha);
+                if (image) {
+                    unsigned char* invData = (unsigned char*)calloc(height * width * 4, sizeof(unsigned char));
+                    if (invData) {
+                        for (int y = 0; y < height; y++) {
+                            for (int x = 0; x < width; x++) {
+                                int index          = (y * width + x) * 4;
+                                invData[index + 2] = image[index + 0];
+                                invData[index + 1] = image[index + 1];
+                                invData[index + 0] = image[index + 2];
+                                invData[index + 3] = image[index + 3];
+                            }
+                        }
+                        m_Icons[pathU8] = this->CreateTexture(invData, width, height, 0);
+                        free(invData);
+                        free(image);
+                    } else {
+                        m_Icons[pathU8] = this->CreateTexture(image, width, height, 0);
+                        free(image);
+                    }
+                }
+            } else if (ext == ".svg") {
+                std::uint32_t width = 32, height = 32;
+                std::uint32_t bgColor = 0x00000000;
+                auto document         = Document::loadFromFile(fname);
+                if (document) {
+                    auto bitmap = document->renderToBitmap(width, height, bgColor);
+                    if (bitmap.valid()) {
+                        m_Icons[pathU8] = this->CreateTexture(bitmap.data(), width, height, 0);
+                    }
+                }
+            }
+        }
+        if (G_IS_OBJECT(gtkicon_info)) g_object_unref(gtkicon_info);
+        if (G_IS_OBJECT(file_info)) g_object_unref(file_info);
+        if (G_IS_OBJECT(file)) g_object_unref(file);
+        return m_Icons[pathU8];
+    }
+};
+
+#elif defined(__EMSCRIPTEN__)
+
+class EmscriptenIconProvider : public IGFD::IPlatformIconProvider {
+protected:
+    std::unordered_map<std::string, void*> m_Icons;
+
+public:
+    virtual ~LinuxIconProvider() = default;
+    void* GetPlatformIcon(const std::string& vPath) override;
+};
+#endif // __EMSCRIPTEN__
+#endif // USE_PLATFORM_ICONS
+
+#pragma endregion
+
 #pragma region FileManager
 
 IGFD::FileManager::FileManager() {
     fsRoot           = IGFD::Utils::GetPathSeparator();
     m_FileSystemName = typeid(FILE_SYSTEM_OVERRIDE).name();
-    // std::make_unique is not available un cpp11
+    // std::make_unique is not available on cpp11
     m_FileSystemPtr = std::unique_ptr<FILE_SYSTEM_OVERRIDE>(new FILE_SYSTEM_OVERRIDE());
-    // m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
+#if defined(USE_THUMBNAILS) || defined(USE_PLATFORM_ICONS)
+    m_BackendTexturePtr = std::unique_ptr<BACKEND_TEXTURE_PROVIDER_OVERRIDE>(new BACKEND_TEXTURE_PROVIDER_OVERRIDE());
+#endif  // USE_THUMBNAILS // USE_PLATFORM_ICONS
+#if defined(USE_PLATFORM_ICONS)
+    m_PlatformIconProviderPtr = std::unique_ptr<PLATFORM_ICON_PROVIDER_OVERRIDE>(new PLATFORM_ICON_PROVIDER_OVERRIDE());
+#endif  // USE_PLATFORM_ICONS
 }
 
 void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInternal) {
@@ -2863,7 +3159,7 @@ void IGFD::ThumbnailFeature::m_AddThumbnailToCreate(const std::shared_ptr<FileIn
     }
 }
 
-void IGFD::ThumbnailFeature::m_AddThumbnailToDestroy(const IGFD_Thumbnail_Info& vIGFD_Thumbnail_Info) {
+void IGFD::ThumbnailFeature::m_AddThumbnailToDestroy(const IGFD_Texture_Info& vIGFD_Thumbnail_Info) {
     // write => thread concurency issues
     m_ThumbnailToDestroyMutex.lock();
     m_ThumbnailToDestroy.push_back(vIGFD_Thumbnail_Info);

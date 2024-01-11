@@ -731,7 +731,7 @@ ex, for opengl :
 
 ```cpp
 // Create thumbnails texture
-ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *vThumbnail_Info) -> void
+ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Texture_Info *vThumbnail_Info) -> void
 {
     if (vThumbnail_Info &&
         vThumbnail_Info->isReadyToUpload &&
@@ -763,7 +763,7 @@ ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info *
 
 ```cpp
 // Destroy thumbnails texture
-ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info)
+ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Texture_Info* vThumbnail_Info)
 {
     if (vThumbnail_Info)
     {
@@ -1326,8 +1326,8 @@ enum IGFD_ResultMode_ {
 
 #pragma region Common Cpp& C Structures
 
-#ifdef USE_THUMBNAILS
-struct IGFD_Thumbnail_Info {
+#if defined(USE_THUMBNAILS) || defined(USE_PLATFORM_ICONS)
+struct IGFD_Texture_Info {
     int isReadyToDisplay = 0;             // ready to be rendered, so texture created
     int isReadyToUpload = 0;              // ready to upload to gpu
     int isLoadingOrLoaded = 0;            // was sent to laoding or loaded
@@ -1338,7 +1338,7 @@ struct IGFD_Thumbnail_Info {
     void* textureID = 0;                  // 2d texture id (void* is like ImtextureID type) (GL, DX, VK, Etc..)
     void* userDatas = 0;                  // user datas
 };
-#endif  // USE_THUMBNAILS
+#endif  // USE_THUMBNAILS // USE_PLATFORM_ICONS
 
 #pragma endregion
 
@@ -1701,7 +1701,7 @@ public:
     std::string fileModifDate;                                       // file user defined format of the date (data + time by default)
     std::shared_ptr<FileStyle> fileStyle = nullptr;                  // style of the file
 #ifdef USE_THUMBNAILS
-    IGFD_Thumbnail_Info thumbnailInfo;  // structre for the display for image file tetxure
+    IGFD_Texture_Info thumbnailInfo;  // structure for the display for image file tetxure
 #endif                                  // USE_THUMBNAILS
 
 public:
@@ -1742,6 +1742,38 @@ public:
 
 #pragma endregion
 
+#pragma region BACKEND TEXTURE PROVIDER
+
+#if defined(USE_THUMBNAILS) || defined(USE_PLATFORM_ICONS)
+
+class IBackendTextureProvider {
+public:
+    virtual ~IBackendTextureProvider() = default;
+    virtual bool CreateTexture(IGFD_Texture_Info*) = 0;
+    virtual bool DestroyTexture(IGFD_Texture_Info*) = 0;
+};
+
+#endif  // USE_THUMBNAILS // USE_PLATFORM_ICONS
+
+#pragma endregion
+
+#pragma region PLATFORM ICON PROVIDER INTERFACE
+
+#if defined(USE_PLATFORM_ICONS)
+class IPlatformIconProvider {
+protected:
+    std::unordered_map<std::string, IGFD_Texture_Info> m_Icons;
+    std::vector<int32_t> m_IconIndices;
+    std::vector<std::string> m_IconPaths;
+
+public:
+    virtual ~IPlatformIconProvider()                                                         = default;
+    virtual IGFD_Texture_Info* GetPlatformIcon(const std::string& vPath, IGFD::IFileSystem* vFSPtr, IGFD::IBackendTextureProvider* vBTPtr) = 0;
+};
+#endif  // USE_PLATFORM_ICONS
+
+#pragma endregion
+
 #pragma region FileManager
 
 class IGFD_API FileManager {
@@ -1772,6 +1804,12 @@ private:
     bool m_CreateDirectoryMode = false;                          // for create directory widget
     std::string m_FileSystemName;
     std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
+#if defined(USE_THUMBNAILS) || defined(USE_PLATFORM_ICONS)
+    std::unique_ptr<IBackendTextureProvider> m_BackendTextureProviderPtr = nullptr;
+#endif  // USE_THUMBNAILS // USE_PLATFORM_ICONS
+#if defined(USE_PLATFORM_ICONS)
+    std::unique_ptr<IPlatformIconProvider> m_PlatformIconProviderPtr = nullptr;
+#endif // USE_PLATFORM_ICONS
 
 public:
     bool inputPathActivated = false;                             // show input for path edition
@@ -1958,8 +1996,8 @@ public:
 #pragma region ThumbnailFeature
 
 #ifdef USE_THUMBNAILS
-typedef std::function<void(IGFD_Thumbnail_Info*)> CreateThumbnailFun;   // texture 2d creation function binding
-typedef std::function<void(IGFD_Thumbnail_Info*)> DestroyThumbnailFun;  // texture 2d destroy function binding
+typedef std::function<void(IGFD_Texture_Info*)> CreateThumbnailFun;   // texture 2d creation function binding
+typedef std::function<void(IGFD_Texture_Info*)> DestroyThumbnailFun;  // texture 2d destroy function binding
 #endif
 class IGFD_API ThumbnailFeature {
 protected:
@@ -1982,7 +2020,7 @@ private:
     std::mutex m_ThumbnailFileDatasToGetMutex;
     std::list<std::shared_ptr<FileInfos>> m_ThumbnailToCreate;  // base container
     std::mutex m_ThumbnailToCreateMutex;
-    std::list<IGFD_Thumbnail_Info> m_ThumbnailToDestroy;  // base container
+    std::list<IGFD_Texture_Info> m_ThumbnailToDestroy;  // base container
     std::mutex m_ThumbnailToDestroyMutex;
 
     CreateThumbnailFun m_CreateThumbnailFun = nullptr;
@@ -2002,7 +2040,7 @@ protected:
     void m_DrawThumbnailGenerationProgress();                                 // a little progressbar who will display the texture gen status
     void m_AddThumbnailToLoad(const std::shared_ptr<FileInfos>& vFileInfos);  // add texture to load in the thread
     void m_AddThumbnailToCreate(const std::shared_ptr<FileInfos>& vFileInfos);
-    void m_AddThumbnailToDestroy(const IGFD_Thumbnail_Info& vIGFD_Thumbnail_Info);
+    void m_AddThumbnailToDestroy(const IGFD_Texture_Info& vIGFD_Thumbnail_Info);
     void m_DrawDisplayModeToolBar();  // draw display mode toolbar (file list, thumbnails list, small thumbnails grid, big thumbnails grid)
     void m_ClearThumbnails(FileDialogInternal& vFileDialogInternal);
 
@@ -2313,8 +2351,8 @@ IGFD_C_API ImGuiFileDialog* IGFD_Create(void);               // create the filed
 IGFD_C_API void IGFD_Destroy(ImGuiFileDialog* vContextPtr);  // destroy the filedialog context
 
 #ifdef USE_THUMBNAILS
-typedef void (*IGFD_CreateThumbnailFun)(IGFD_Thumbnail_Info*);   // callback function for create thumbnail texture
-typedef void (*IGFD_DestroyThumbnailFun)(IGFD_Thumbnail_Info*);  // callback fucntion for destroy thumbnail texture
+typedef void (*IGFD_CreateThumbnailFun)(IGFD_Texture_Info*);   // callback function for create thumbnail texture
+typedef void (*IGFD_DestroyThumbnailFun)(IGFD_Texture_Info*);  // callback fucntion for destroy thumbnail texture
 #endif                                                           // USE_THUMBNAILS
 
 IGFD_C_API void IGFD_OpenDialog(            // open a standard dialog
