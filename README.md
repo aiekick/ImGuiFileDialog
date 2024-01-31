@@ -133,20 +133,15 @@ instance_b.method_of_your_choice();
 <details open><summary><h2>Simple Dialog :</h2></summary><blockquote>
 
 ```cpp
-void drawGui()
-{ 
+void drawGui() { 
   // open Dialog Simple
-  if (ImGui::Button("Open File Dialog"))
-	IGFD::FileDialogConfig config;
-	config.path = ".";
+  if (ImGui::Button("Open File Dialog")) {
+    IGFD::FileDialogConfig config;config.path = ".";
     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);
-
+  }
   // display
-  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
-  {
-    // action if OK
-    if (ImGuiFileDialog::Instance()->IsOk())
-    {
+  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+    if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
       std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
       std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
       // action
