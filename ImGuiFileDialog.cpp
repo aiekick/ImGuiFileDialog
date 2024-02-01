@@ -559,8 +559,8 @@ public:
             // this func will fail
             pDir = opendir(vName.c_str());
             if (pDir != nullptr) {
-                return true;
                 (void)closedir(pDir);
+                return true;
             }
         }
         return false;
@@ -728,7 +728,12 @@ public:
         return res;
     }
     bool IsDirectory(const std::string& vFilePathName) override {
-        return (opendir(vFilePathName.c_str()) != nullptr);
+        DIR *pDir = opendir(vFilePathName.c_str());
+        if (pDir) {
+            (void)closedir(pDir);
+            return true;
+        }
+        return false;
     }
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemDirent
