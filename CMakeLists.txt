@@ -12,6 +12,10 @@ option(USE_TEST "Enable tests" ON)
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_BOOST_DEMO_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
+if (UNIX)
+	option(USE_LEAK_SANITIZER "Enable the Leak Sanitizer" OFF)
+endif()
+
 include(cmake/3rdparty.cmake)
 
 if (USE_BOOST_DEMO_FILESYSTEM)
@@ -83,6 +87,11 @@ include_directories(
 
 if (USE_TEST)
 	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+endif()
+
+if (USE_LEAK_SANITIZER)
+	add_compile_options(-fexceptions -pthread -ldl -lGL -Wall -Werror -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all -fstack-check)
+	add_link_options(-fexceptions -pthread -ldl -lGL -Wall -Werror -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all -fstack-check)
 endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/ImGuiFileDialog)
