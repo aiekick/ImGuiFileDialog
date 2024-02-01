@@ -660,6 +660,15 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
+                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex (([a-zA-Z0-9]+)) for extention less files")) {
+                    // the regex for being recognized at regex need to be between ( and )
+                    const char* filters = "Regex ext less {(([a-zA-Z0-9]+))}";
+                    IGFD::FileDialogConfig config;
+                    config.path              = ".";
+                    config.countSelectionMax = 1;
+                    config.flags             = flags;
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                }
                 if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     IGFD::FileDialogConfig config;
