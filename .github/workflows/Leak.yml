@@ -1,7 +1,7 @@
 name: Leak
 
 on:
-  push:
+  workflow_dispatch:
     branches:
     - DemoApp
     paths-ignore:
