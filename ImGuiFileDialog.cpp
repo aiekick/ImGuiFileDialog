@@ -1926,12 +1926,14 @@ void IGFD::FileManager::ScanDir(const FileDialogInternal& vFileDialogInternal, c
 
     if (!m_CurrentPathDecomposition.empty()) {
 #ifdef _IGFD_WIN_
-        if (path == fsRoot) path += IGFD::Utils::GetPathSeparator();
+        if (path == fsRoot) {
+            path += IGFD::Utils::GetPathSeparator();
+        }
 #endif  // _IGFD_WIN_
 
         ClearFileLists();
 
-        const auto& files = m_FileSystemPtr->ScanDirectory(vPath);
+        const auto& files = m_FileSystemPtr->ScanDirectory(path);
         for (const auto& file : files) {
             m_AddFile(vFileDialogInternal, path, file.fileNameExt, file.fileType);
         }
