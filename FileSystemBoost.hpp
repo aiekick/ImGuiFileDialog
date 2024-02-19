@@ -82,8 +82,9 @@ public:
         }
         return res;
     }
-    std::vector<std::string> GetDrivesList() override {
-        std::vector<std::string> res;
+
+    std::vector<std::pair<std::string, std::string>> GetDevicesList() override {
+        std::vector<std::pair<std::string, std::string>> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -93,7 +94,18 @@ public:
         if (countChars > 0U && countChars < 2049U) {
             std::string var = std::string(lpBuffer, (size_t)countChars);
             IGFD::Utils::ReplaceString(var, "\\", "");
-            res = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            wchar_t szVolumeName[2048];
+            std::pair<std::string, std::string> path_name;
+            for (auto& a : arr) {
+                path_name.first = a;
+                path_name.second.clear();
+                std::wstring wpath = IGFD::Utils::UTF8Decode(a);
+                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, NULL, NULL, NULL, NULL, 0)) {
+                    path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
+                }
+                res.push_back(path_name);
+            }
         }
 #endif  // _IGFD_WIN_
         return res;
