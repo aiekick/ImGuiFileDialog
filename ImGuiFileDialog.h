@@ -1695,6 +1695,7 @@ public:
     std::string fileName;                                            // file name only
     std::string fileNameExt;                                         // filename of the file (file name + extention) (but no path)
     std::string fileNameExt_optimized;                               // optimized for search => insensitivecase
+    std::string deviceInfos;                                         // quick infos to display after name for devices
     std::string tooltipMessage;                                      // message to display on the tooltip, is not empty
     int32_t tooltipColumn = -1;                                      // the tooltip will appears only when the mouse is over the tooltipColumn if > -1
     size_t fileSize = 0U;                                            // for sorting operations
@@ -1731,14 +1732,14 @@ public:
     virtual bool IsFileExist(const std::string& vName) = 0;
     // say if a directory was created, return false if vName is invalid or alreayd exist
     virtual bool CreateDirectoryIfNotExist(const std::string& vName) = 0;
-    // extract the component of a file apth name, like path, name, ext
+    // extract the component of a file path name, like path, name, ext
     virtual IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) = 0;
     // will return a list of files inside a path
     virtual std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath) = 0;
     // say if the path is well a directory
     virtual bool IsDirectory(const std::string& vFilePathName) = 0;
-    // return a drive list on windows, bu can be used on android or linux for give to the suer a list of root dir
-    virtual std::vector<std::string> GetDrivesList() = 0;
+    // return a device list (<path, device name>) on windows, but can be used on other platforms for give to the user a list of devices paths.
+    virtual std::vector<std::pair<std::string, std::string>> GetDevicesList() = 0;
 };
 
 #pragma endregion

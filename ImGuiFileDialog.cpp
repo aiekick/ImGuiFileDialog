@@ -467,8 +467,9 @@ public:
         }
         return res;
     }
-    std::vector<std::string> GetDrivesList() override {
-        std::vector<std::string> res;
+
+    std::vector<std::pair<std::string, std::string> > GetDevicesList() override {
+        std::vector<std::pair<std::string, std::string> > res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -478,7 +479,18 @@ public:
         if (countChars > 0U && countChars < 2049U) {
             std::string var = std::string(lpBuffer, (size_t)countChars);
             IGFD::Utils::ReplaceString(var, "\\", "");
-            res = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            wchar_t szVolumeName[2048];
+            std::pair<std::string, std::string> path_name;
+            for (auto& a : arr) {
+                path_name.first = a;
+                path_name.second.clear();
+                std::wstring wpath = IGFD::Utils::UTF8Decode(a);
+                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, NULL, NULL, NULL, NULL, 0)) {
+                    path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
+                }
+                res.push_back(path_name);
+            }
         }
 #endif  // _IGFD_WIN_
         return res;
@@ -623,8 +635,8 @@ public:
         return res;
     }
 
-    std::vector<std::string> GetDrivesList() override {
-        std::vector<std::string> res;
+    std::vector<std::pair<std::string, std::string>> GetDevicesList() override {
+        std::vector<std::pair<std::string, std::string>> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -634,7 +646,18 @@ public:
         if (countChars > 0U && countChars < 2049U) {
             std::string var = std::string(lpBuffer, (size_t)countChars);
             IGFD::Utils::ReplaceString(var, "\\", "");
-            res = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
+            wchar_t szVolumeName[2048];
+            std::pair<std::string, std::string> path_name;
+            for (auto& a : arr) {
+                path_name.first = a;
+                path_name.second.clear();
+                std::wstring wpath = IGFD::Utils::UTF8Decode(a);
+                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, NULL, NULL, NULL, NULL, 0)) {
+                    path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
+                }
+                res.push_back(path_name);
+            }
         }
 #endif  // _IGFD_WIN_
         return res;
@@ -1971,15 +1994,16 @@ void IGFD::FileManager::m_OpenPathPopup(const FileDialogInternal& vFileDialogInt
 }
 
 bool IGFD::FileManager::GetDrives() {
-    auto drives = m_FileSystemPtr->GetDrivesList();
+    auto drives = m_FileSystemPtr->GetDevicesList();
     if (!drives.empty()) {
         m_CurrentPath.clear();
         m_CurrentPathDecomposition.clear();
         ClearFileLists();
         for (auto& drive : drives) {
             auto info                   = std::make_shared<FileInfos>();
-            info->fileNameExt           = drive;
-            info->fileNameExt_optimized = Utils::LowerCaseString(drive);
+            info->fileNameExt           = drive.first;
+            info->fileNameExt_optimized = Utils::LowerCaseString(drive.first);
+            info->deviceInfos           = drive.second;
             info->fileType.SetContent(FileType::ContentType::Directory);
 
             if (!info->fileNameExt.empty()) {
@@ -4085,18 +4109,18 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
                     ImGui::TableNextRow();
 
                     column_id = 0;
-                    if (ImGui::TableNextColumn())  // file name
-                    {
+                    if (ImGui::TableNextColumn()) {  // file name
+                        if (!infos->deviceInfos.empty()) {
+                            _str += " " + infos->deviceInfos;
+                        }
                         m_SelectableItem(i, infos, selected, _str.c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file type
-                    {
+                    if (ImGui::TableNextColumn()) {  // file type
                         ImGui::Text("%s", infos->fileExtLevels[0].c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file size
-                    {
+                    if (ImGui::TableNextColumn()) {  // file size
                         if (!infos->fileType.isDir()) {
                             ImGui::Text("%s ", infos->formatedFileSize.c_str());
                         } else {
@@ -4104,8 +4128,7 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
                         }
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file date + time
-                    {
+                    if (ImGui::TableNextColumn()) {  // file date + time
                         ImGui::Text("%s", infos->fileModifDate.c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
@@ -4273,18 +4296,19 @@ void IGFD::FileDialog::m_DrawThumbnailsListView(ImVec2 vSize) {
                     ImGui::TableNextRow();
 
                     column_id = 0;
-                    if (ImGui::TableNextColumn())  // file name
-                    {
+                    if (ImGui::TableNextColumn()) {  // file name
+                        if (!infos->deviceInfos.empty()) {
+                            _str += " " + infos->deviceInfos;
+                        }
                         m_SelectableItem(i, infos, selected, _str.c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file type
-                    {
+                    if (ImGui::TableNextColumn()) 
+                    {  // file type
                         ImGui::Text("%s", infos->fileExtLevels[0].c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file size
-                    {
+                    if (ImGui::TableNextColumn()) {  // file size
                         if (!infos->fileType.isDir()) {
                             ImGui::Text("%s ", infos->formatedFileSize.c_str());
                         } else {
@@ -4292,13 +4316,11 @@ void IGFD::FileDialog::m_DrawThumbnailsListView(ImVec2 vSize) {
                         }
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file date + time
-                    {
+                    if (ImGui::TableNextColumn()) {  // file date + time
                         ImGui::Text("%s", infos->fileModifDate.c_str());
                         m_DisplayFileInfosTooltip(i, column_id++, infos);
                     }
-                    if (ImGui::TableNextColumn())  // file thumbnails
-                    {
+                    if (ImGui::TableNextColumn()) {  // file thumbnails
                         auto th = &infos->thumbnailInfo;
 
                         if (!th->isLoadingOrLoaded) {
