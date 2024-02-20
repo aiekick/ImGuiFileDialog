@@ -126,10 +126,10 @@
 //#define defaultSortOrderDate true
 //#define defaultSortOrderThumbnails true
 
-//#define USE_BOOKMARK
-//#define bookmarkPaneWith 150.0f
+//#define USE_PLACES_FEATURE
+//#define placesPaneWith 150.0f
 //#define IMGUI_TOGGLE_BUTTON ToggleButton
-//#define bookmarksButtonString "Bookmark"
-//#define bookmarksButtonHelpString "Bookmark"
-//#define addBookmarkButtonString "+"
-//#define removeBookmarkButtonString "-"
+//#define placesButtonString "Place"
+//#define placesButtonHelpString "Place"
+//#define addPlaceButtonString "+"
+//#define removePlaceButtonString "-"

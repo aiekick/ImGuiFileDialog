@@ -326,22 +326,25 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 ///////////////////////////////
 // BOOKMARKS
 ///////////////////////////////
-#ifdef USE_BOOKMARK
-#ifndef defaultBookmarkPaneWith
-#define defaultBookmarkPaneWith 150.0f
-#endif  // defaultBookmarkPaneWith
-#ifndef bookmarksButtonString
-#define bookmarksButtonString "Bookmark"
-#endif  // bookmarksButtonString
-#ifndef bookmarksButtonHelpString
-#define bookmarksButtonHelpString "Bookmark"
-#endif  // bookmarksButtonHelpString
-#ifndef addBookmarkButtonString
-#define addBookmarkButtonString "+"
-#endif  // addBookmarkButtonString
-#ifndef removeBookmarkButtonString
-#define removeBookmarkButtonString "-"
-#endif  // removeBookmarkButtonString
+#ifdef USE_PLACES_FEATURE
+#ifndef defaultPlacePaneWith
+#define defaultPlacePaneWith 150.0f
+#endif  // defaultPlacePaneWith
+#ifndef placesButtonString
+#define placesButtonString "Place"
+#endif  // placesButtonString
+#ifndef bookmarksGroupString
+#define bookmarksGroupString "Bookmarks"
+#endif  // bookmarksGroupString
+#ifndef placesButtonHelpString
+#define placesButtonHelpString "Place"
+#endif  // placesButtonHelpString
+#ifndef addPlaceButtonString
+#define addPlaceButtonString "+"
+#endif  // addPlaceButtonString
+#ifndef removePlaceButtonString
+#define removePlaceButtonString "-"
+#endif  // removePlaceButtonString
 #ifndef IMGUI_TOGGLE_BUTTON
 inline bool inToggleButton(const char* vLabel, bool* vToggled) {
     bool pressed = false;
@@ -369,7 +372,7 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 }
 #define IMGUI_TOGGLE_BUTTON inToggleButton
 #endif  // IMGUI_TOGGLE_BUTTON
-#endif  // USE_BOOKMARK
+#endif  // USE_PLACES_FEATURE
 
 #pragma endregion
 
@@ -468,8 +471,8 @@ public:
         return res;
     }
 
-    std::vector<std::pair<std::string, std::string> > GetDevicesList() override {
-        std::vector<std::pair<std::string, std::string> > res;
+    std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
+        std::vector<IGFD::PathDisplayedName> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -481,7 +484,7 @@ public:
             IGFD::Utils::ReplaceString(var, "\\", "");
             auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
             wchar_t szVolumeName[2048];
-            std::pair<std::string, std::string> path_name;
+            IGFD::PathDisplayedName path_name;
             for (auto& a : arr) {
                 path_name.first = a;
                 path_name.second.clear();
@@ -635,8 +638,8 @@ public:
         return res;
     }
 
-    std::vector<std::pair<std::string, std::string>> GetDevicesList() override {
-        std::vector<std::pair<std::string, std::string>> res;
+    std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
+        std::vector<IGFD::PathDisplayedName> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -648,7 +651,7 @@ public:
             IGFD::Utils::ReplaceString(var, "\\", "");
             auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
             wchar_t szVolumeName[2048];
-            std::pair<std::string, std::string> path_name;
+            IGFD::PathDisplayedName path_name;
             for (auto& a : arr) {
                 path_name.first = a;
                 path_name.second.clear();
@@ -2979,83 +2982,97 @@ void IGFD::ThumbnailFeature::ManageGPUThumbnails() {
 
 #pragma endregion
 
-#pragma region BookMarkFeature
+#pragma region PlacesFeature
 
-IGFD::BookMarkFeature::BookMarkFeature() {
-#ifdef USE_BOOKMARK
-    m_BookmarkWidth = defaultBookmarkPaneWith;
-#endif  // USE_BOOKMARK
+IGFD::PlacesFeature::PlacesFeature() {
+#ifdef USE_PLACES_FEATURE
+    m_PlacesPaneWidth = defaultPlacePaneWith;
+#endif  // USE_PLACES_FEATURE
 }
 
-#ifdef USE_BOOKMARK
-void IGFD::BookMarkFeature::m_DrawBookmarkButton() {
-    IMGUI_TOGGLE_BUTTON(bookmarksButtonString, &m_BookmarkPaneShown);
-
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(bookmarksButtonHelpString);
+#ifdef USE_PLACES_FEATURE
+void IGFD::PlacesFeature::m_DrawPlacesButton() {
+    IMGUI_TOGGLE_BUTTON(placesButtonString, &m_PlacesPaneShown);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip(placesButtonHelpString);
 }
 
-bool IGFD::BookMarkFeature::m_DrawBookmarkPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize) {
+bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize) {
     bool res = false;
 
-    ImGui::BeginChild("##bookmarkpane", vSize);
+    ImGui::BeginChild("##placespane", vSize);
 
-    static int selectedBookmarkForEdition = -1;
-
-    if (IMGUI_BUTTON(addBookmarkButtonString "##ImGuiFileDialogAddBookmark")) {
-        if (!vFileDialogInternal.fileManager.IsComposerEmpty()) {
-            BookmarkStruct bookmark;
-            bookmark.name = vFileDialogInternal.fileManager.GetBack();
-            bookmark.path = vFileDialogInternal.fileManager.GetCurrentPath();
-            m_Bookmarks.push_back(bookmark);
-        }
-    }
-    if (selectedBookmarkForEdition >= 0 && selectedBookmarkForEdition < (int)m_Bookmarks.size()) {
-        ImGui::SameLine();
-        if (IMGUI_BUTTON(removeBookmarkButtonString "##ImGuiFileDialogAddBookmark")) {
-            m_Bookmarks.erase(m_Bookmarks.begin() + selectedBookmarkForEdition);
-            if (selectedBookmarkForEdition == (int)m_Bookmarks.size()) selectedBookmarkForEdition--;
-        }
-
-        if (selectedBookmarkForEdition >= 0 && selectedBookmarkForEdition < (int)m_Bookmarks.size()) {
-            ImGui::SameLine();
-
-            ImGui::PushItemWidth(vSize.x - ImGui::GetCursorPosX());
-            if (ImGui::InputText("##ImGuiFileDialogBookmarkEdit", m_BookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER)) {
-                m_Bookmarks[(size_t)selectedBookmarkForEdition].name = std::string(m_BookmarkEditBuffer);
-            }
-            ImGui::PopItemWidth();
-        }
-    }
-
-    ImGui::Separator();
-
-    if (!m_Bookmarks.empty()) {
-        m_BookmarkClipper.Begin((int)m_Bookmarks.size(), ImGui::GetTextLineHeightWithSpacing());
-        while (m_BookmarkClipper.Step()) {
-            for (int i = m_BookmarkClipper.DisplayStart; i < m_BookmarkClipper.DisplayEnd; i++) {
-                if (i < 0) continue;
-                const BookmarkStruct& bookmark = m_Bookmarks[(size_t)i];
-                ImGui::PushID(i);
-                if (ImGui::Selectable(bookmark.name.c_str(), selectedBookmarkForEdition == i,
-                                      ImGuiSelectableFlags_AllowDoubleClick) ||
-                    (selectedBookmarkForEdition == -1 && bookmark.path == vFileDialogInternal.fileManager.GetCurrentPath()))  // select if path is current
-                {
-                    selectedBookmarkForEdition = i;
-                    IGFD::Utils::ResetBuffer(m_BookmarkEditBuffer);
-                    IGFD::Utils::AppendToBuffer(m_BookmarkEditBuffer, MAX_FILE_DIALOG_NAME_BUFFER, bookmark.name);
-
-                    if (ImGui::IsMouseDoubleClicked(0))  // apply path
-                    {
-                        vFileDialogInternal.fileManager.SetCurrentPath(bookmark.path);
-                        vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
-                        res = true;
+    for (const auto& group : m_OrderedGroups) {
+        auto group_ptr = group.second.lock();
+        if (group_ptr != nullptr) {
+            if (ImGui::CollapsingHeader(group_ptr->name.c_str())) {
+                if (group_ptr->canBeEdited) {
+                    ImGui::PushID(group_ptr.get());
+                    if (IMGUI_BUTTON(addPlaceButtonString "##ImGuiFileDialogAddPlace")) {
+                        if (!vFileDialogInternal.fileManager.IsComposerEmpty()) {
+                            PlaceStruct place;
+                            place.name = vFileDialogInternal.fileManager.GetBack();
+                            place.path = vFileDialogInternal.fileManager.GetCurrentPath();
+                            group_ptr->places.push_back(place);
+                        }
                     }
+                    if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
+                        ImGui::SameLine();
+                        if (IMGUI_BUTTON(removePlaceButtonString "##ImGuiFileDialogAddPlace")) {
+                            group_ptr->places.erase(group_ptr->places.begin() + group_ptr->selectedPlaceForEdition);
+                            if (group_ptr->selectedPlaceForEdition == (int)group_ptr->places.size()) {
+                                --group_ptr->selectedPlaceForEdition;
+                            }
+                        }
+
+                        if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
+                            ImGui::SameLine();
+                            ImGui::PushItemWidth(vSize.x - ImGui::GetCursorPosX());
+                            if (ImGui::InputText("##ImGuiFileDialogPlaceEdit", group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER)) {
+                                group_ptr->places[(size_t)group_ptr->selectedPlaceForEdition].name = std::string(group_ptr->editBuffer);
+                            }
+                            ImGui::PopItemWidth();
+                        }
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
                 }
-                ImGui::PopID();
-                if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", bookmark.path.c_str());  //-V111
+
+                if (!group_ptr->places.empty()) {
+                    group_ptr->clipper.Begin((int)group_ptr->places.size(), ImGui::GetTextLineHeightWithSpacing());
+                    while (group_ptr->clipper.Step()) {
+                        for (int i = group_ptr->clipper.DisplayStart; i < group_ptr->clipper.DisplayEnd; i++) {
+                            if (i < 0) continue;
+                            const PlaceStruct& place = group_ptr->places[(size_t)i];
+                            ImGui::PushID(i);
+
+                            std::string place_name = place.name;
+                            if (!place.style.icon.empty()) {
+                                place_name = place.style.icon + " " + place_name;
+                            }
+                            if (ImGui::Selectable(place_name.c_str(), group_ptr->selectedPlaceForEdition == i,
+                                                  ImGuiSelectableFlags_AllowDoubleClick) ||
+                                (group_ptr->selectedPlaceForEdition == -1 && place.path == vFileDialogInternal.fileManager.GetCurrentPath()))  // select if path is current
+                            {
+                                group_ptr->selectedPlaceForEdition = i;
+                                IGFD::Utils::ResetBuffer(group_ptr->editBuffer);
+                                IGFD::Utils::AppendToBuffer(group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER, place.name);
+
+                                if (ImGui::IsMouseDoubleClicked(0))  // apply path
+                                {
+                                    vFileDialogInternal.fileManager.SetCurrentPath(place.path);
+                                    vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
+                                    res = true;
+                                }
+                            }
+                            ImGui::PopID();
+                            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", place.path.c_str());  //-V111
+                        }
+                    }
+                    group_ptr->clipper.End();
+                }
+
             }
         }
-        m_BookmarkClipper.End();
     }
 
     ImGui::EndChild();
@@ -3063,61 +3080,87 @@ bool IGFD::BookMarkFeature::m_DrawBookmarkPane(FileDialogInternal& vFileDialogIn
     return res;
 }
 
-std::string IGFD::BookMarkFeature::SerializeBookmarks(const bool& vDontSerializeCodeBasedBookmarks) {
+std::string IGFD::PlacesFeature::SerializePlaces(const bool& vForceSerialisationForAll) {
+    // todo : do the code
     std::string res;
-
-    size_t idx = 0;
-    for (auto& it : m_Bookmarks) {
-        if (vDontSerializeCodeBasedBookmarks && it.defined_by_code) continue;
-
+    /*size_t idx = 0;
+    for (auto& it : m_Groups) {
+        if (vForceSerialisationForAll && it.canBeSaved) continue;
         if (idx++ != 0) res += "##";  // ## because reserved by imgui, so an input text cant have ##
-
         res += it.name + "##" + it.path;
-    }
-
+    }*/
     return res;
 }
 
-void IGFD::BookMarkFeature::DeserializeBookmarks(const std::string& vBookmarks) {
-    if (!vBookmarks.empty()) {
-        m_Bookmarks.clear();
-        auto arr = IGFD::Utils::SplitStringToVector(vBookmarks, '#', false);
+void IGFD::PlacesFeature::DeserializePlaces(const std::string& vPlaces) {
+    // todo : do the code
+    /*if (!vPlaces.empty()) {
+        m_Groups.clear();
+        auto arr = IGFD::Utils::SplitStringToVector(vPlaces, '#', false);
         for (size_t i = 0; i < arr.size(); i += 2) {
-            if (i + 1 < arr.size())  // for avoid crash if arr size is impair due to user mistake after edition
-            {
-                BookmarkStruct bookmark;
-                bookmark.name = arr[i];
-                // if bad format we jump this bookmark
-                bookmark.path = arr[i + 1];
-                m_Bookmarks.push_back(bookmark);
+            if (i + 1 < arr.size()) {  // for avoid crash if arr size is impair due to user mistake after edition
+                PlaceStruct place;
+                place.name = arr[i];
+                // if bad format we jump this place
+                place.path = arr[i + 1];
+                m_Bookmarks.push_back(place);
             }
         }
+    }*/
+}
+
+bool IGFD::PlacesFeature::AddGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited) {
+    if (vGroupName.empty()) {
+        return false;
     }
+    auto group_ptr = std::make_shared<GroupStruct>();
+    group_ptr->displayOrder  = vDisplayOrder;
+    group_ptr->name         = vGroupName;
+    group_ptr->canBeEdited   = vCanBeEdited;
+    m_Groups[vGroupName]     = group_ptr;
+    // tofix the set of existing order number
+    m_OrderedGroups[group_ptr->displayOrder] = group_ptr;
+    return true;
 }
 
-void IGFD::BookMarkFeature::AddBookmark(const std::string& vBookMarkName, const std::string& vBookMarkPath) {
-    if (vBookMarkName.empty() || vBookMarkPath.empty()) return;
-
-    BookmarkStruct bookmark;
-    bookmark.name            = vBookMarkName;
-    bookmark.path            = vBookMarkPath;
-    bookmark.defined_by_code = true;
-    m_Bookmarks.push_back(bookmark);
-}
-
-bool IGFD::BookMarkFeature::RemoveBookmark(const std::string& vBookMarkName) {
-    if (vBookMarkName.empty()) return false;
-
-    for (auto bookmark_it = m_Bookmarks.begin(); bookmark_it != m_Bookmarks.end(); ++bookmark_it) {
-        if ((*bookmark_it).name == vBookMarkName) {
-            m_Bookmarks.erase(bookmark_it);
+bool IGFD::PlacesFeature::RemoveGroup(const std::string& vGroupName) {
+    for (auto it = m_Groups.begin(); it != m_Groups.end(); ++it) {
+        if ((*it).second->name == vGroupName) {
+            m_Groups.erase(it);
             return true;
         }
     }
-
     return false;
 }
-#endif  // USE_BOOKMARK
+
+IGFD::PlacesFeature::GroupStruct* IGFD::PlacesFeature::getGroupPtr(const std::string& vGroupName) {
+    if (m_Groups.find(vGroupName) != m_Groups.end()) {
+        return m_Groups.at(vGroupName).get();
+    }
+    return nullptr;
+}
+
+bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, const std::string& vPlacePath, const bool& vCanBeSaved, const FileStyle& vStyle) {
+    if (vPlaceName.empty() || vPlacePath.empty()) return false;
+    PlaceStruct place;
+    place.name       = vPlaceName;
+    place.path       = vPlacePath;
+    place.canBeSaved = vCanBeSaved;
+    place.style      = vStyle;
+    places.push_back(place);
+}
+
+bool IGFD::PlacesFeature::GroupStruct::RemovePlace(const std::string& vPlaceName) {
+    if (vPlaceName.empty()) return false;
+    for (auto places_it = places.begin(); places_it != places.end(); ++places_it) {
+        if ((*places_it).name == vPlaceName) {
+            places.erase(places_it);
+            return true;
+        }
+    }
+    return false;
+}
+#endif  // USE_PLACES_FEATURE
 
 #pragma endregion
 
@@ -3497,7 +3540,7 @@ void IGFD::KeyExplorerFeature::SetFlashingAttenuationInSeconds(float vAttenValue
 
 #pragma region FileDialog
 
-IGFD::FileDialog::FileDialog() : BookMarkFeature(), KeyExplorerFeature(), ThumbnailFeature() {
+IGFD::FileDialog::FileDialog() : PlacesFeature(), KeyExplorerFeature(), ThumbnailFeature() {
 }
 IGFD::FileDialog::~FileDialog() = default;
 
@@ -3606,8 +3649,8 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
                 }
 
                 // draw dialog parts
-                m_DrawHeader();        // bookmark, directory, path
-                m_DrawContent();       // bookmark, files view, side pane
+                m_DrawHeader();        // place, directory, path
+                m_DrawContent();       // place, files view, side pane
                 res = m_DrawFooter();  // file field, filter combobox, ok/cancel buttons
 
                 m_EndFrame();
@@ -3655,20 +3698,20 @@ void IGFD::FileDialog::m_QuitFrame() {
 }
 
 void IGFD::FileDialog::m_DrawHeader() {
-#ifdef USE_BOOKMARK
-    if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableBookmarkMode)) {
-        m_DrawBookmarkButton();
+#ifdef USE_PLACES_FEATURE
+    if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode)) {
+        m_DrawPlacesButton();
         ImGui::SameLine();
     }
 
-#endif  // USE_BOOKMARK
+#endif  // USE_PLACES_FEATURE
 
     m_FileDialogInternal.fileManager.DrawDirectoryCreation(m_FileDialogInternal);
 
     if (
-#ifdef USE_BOOKMARK
-        !(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableBookmarkMode) ||
-#endif  // USE_BOOKMARK
+#ifdef USE_PLACES_FEATURE
+        !(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode) ||
+#endif  // USE_PLACES_FEATURE
         !(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableCreateDirectoryButton)) {
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ImGui::SameLine();
@@ -3690,20 +3733,20 @@ void IGFD::FileDialog::m_DrawHeader() {
 void IGFD::FileDialog::m_DrawContent() {
     ImVec2 size = ImGui::GetContentRegionAvail() - ImVec2(0.0f, m_FileDialogInternal.footerHeight);
 
-#ifdef USE_BOOKMARK
-    if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableBookmarkMode)) {
-        if (m_BookmarkPaneShown) {
-            // size.x -= m_BookmarkWidth;
-            float otherWidth = size.x - m_BookmarkWidth;
-            ImGui::PushID("##splitterbookmark");
-            IGFD::Utils::ImSplitter(true, 4.0f, &m_BookmarkWidth, &otherWidth, 10.0f, 10.0f + m_FileDialogInternal.getDialogConfig().sidePaneWidth, size.y);
+#ifdef USE_PLACES_FEATURE
+    if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode)) {
+        if (m_PlacesPaneShown) {
+            // size.x -= m_PlaceWidth;
+            float otherWidth = size.x - m_PlacesPaneWidth;
+            ImGui::PushID("##splitterplaces");
+            IGFD::Utils::ImSplitter(true, 4.0f, &m_PlacesPaneWidth, &otherWidth, 10.0f, 10.0f + m_FileDialogInternal.getDialogConfig().sidePaneWidth, size.y);
             ImGui::PopID();
             size.x -= otherWidth;
-            m_DrawBookmarkPane(m_FileDialogInternal, size);
+            m_DrawPlacesPane(m_FileDialogInternal, size);
             ImGui::SameLine();
         }
     }
-#endif  // USE_BOOKMARK
+#endif  // USE_PLACES_FEATURE
 
     size.x = ImGui::GetContentRegionAvail().x - m_FileDialogInternal.getDialogConfig().sidePaneWidth;
 
@@ -4877,12 +4920,12 @@ IGFD_C_API void IGFD_SetFlashingAttenuationInSeconds(ImGuiFileDialog* vContextPt
 }
 #endif
 
-#ifdef USE_BOOKMARK
-IGFD_C_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContextPtr, bool vDontSerializeCodeBasedBookmarks) {
+#ifdef USE_PLACES_FEATURE
+IGFD_C_API char* IGFD_SerializePlaces(ImGuiFileDialog* vContextPtr, bool vDontSerializeCodeBasedPlaces) {
     char* res = nullptr;
 
     if (vContextPtr != nullptr) {
-        auto s = vContextPtr->SerializeBookmarks(vDontSerializeCodeBasedBookmarks);
+        auto s = vContextPtr->SerializePlaces(vDontSerializeCodeBasedPlaces);
         if (!s.empty()) {
             size_t siz = s.size() + 1U;
             res        = (char*)malloc(siz);
@@ -4900,21 +4943,23 @@ IGFD_C_API char* IGFD_SerializeBookmarks(ImGuiFileDialog* vContextPtr, bool vDon
     return res;
 }
 
-IGFD_C_API void IGFD_DeserializeBookmarks(ImGuiFileDialog* vContextPtr, const char* vBookmarks) {
+IGFD_C_API void IGFD_DeserializePlaces(ImGuiFileDialog* vContextPtr, const char* vPlaces) {
     if (vContextPtr != nullptr) {
-        vContextPtr->DeserializeBookmarks(vBookmarks);
+        vContextPtr->DeserializePlaces(vPlaces);
     }
 }
 
-IGFD_C_API void IGFD_AddBookmark(ImGuiFileDialog* vContextPtr, const char* vBookMarkName, const char* vBookMarkPath) {
+IGFD_C_API void IGFD_AddPlace(ImGuiFileDialog* vContextPtr, const char* vPlaceName, const char* vPlacePath) {
     if (vContextPtr != nullptr) {
-        vContextPtr->AddBookmark(vBookMarkName, vBookMarkPath);
+        // todo : do the code
+        //vContextPtr->AddPlace(vPlaceName, vPlacePath);
     }
 }
 
-IGFD_C_API void IGFD_RemoveBookmark(ImGuiFileDialog* vContextPtr, const char* vBookMarkName) {
+IGFD_C_API void IGFD_RemovePlace(ImGuiFileDialog* vContextPtr, const char* vPlaceName) {
     if (vContextPtr != nullptr) {
-        vContextPtr->RemoveBookmark(vBookMarkName);
+        //todo : do the code
+        //vContextPtr->RemovePlace(vPlaceName);
     }
 }
 
