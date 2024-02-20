@@ -126,10 +126,21 @@
 //#define defaultSortOrderDate true
 //#define defaultSortOrderThumbnails true
 
-//#define USE_BOOKMARK
-//#define bookmarkPaneWith 150.0f
+//#define USE_PLACES_FEATURE
+//#define placesPaneWith 150.0f
 //#define IMGUI_TOGGLE_BUTTON ToggleButton
-//#define bookmarksButtonString "Bookmark"
-//#define bookmarksButtonHelpString "Bookmark"
-//#define addBookmarkButtonString "+"
-//#define removeBookmarkButtonString "-"
+//#define placesButtonString "Place"
+//#define placesButtonHelpString "Places"
+//#define addPlaceButtonString "+"
+//#define removePlaceButtonString "-"
+
+// a group for bookmarks will be added by default, but you can also create it yourself and many more
+// #define USE_PLACES_BOOKMARKS
+// #define PLACE_BOOKMARKS_NAME "Bookmarks"
+// #define PLACE_BOOKMARKS_DISPLAY_ORDER 0  // to the first
+
+// a group for system devices (returned by IFileSystem), but you can also add yours
+// #define USE_PLACES_DEVICES
+// #define PLACE_DEVICES_NAME "Devices"
+// #define PLACE_DEVICES_DISPLAY_ORDER 10  // to the end
+// #define PLACE_DEVICES_ICON ""
