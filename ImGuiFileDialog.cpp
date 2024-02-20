@@ -2763,11 +2763,11 @@ void IGFD::ThumbnailFeature::m_StartThumbnailFileDatasExtraction() {
     if (!res) {
         m_IsWorking                 = true;
         m_CountFiles                = 0U;
-        m_ThumbnailGenerationThread = std::shared_ptr<std::thread>(new std::thread(&IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc, this), [this](std::thread* obj) {
+        m_ThumbnailGenerationThread = std::shared_ptr<std::thread>(new std::thread(&IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc, this), [this](std::thread* obj_ptr) {
             m_IsWorking = false;
-            if (obj) {
+            if (obj_ptr != nullptr) {
                 m_ThumbnailFileDatasToGetCv.notify_all();
-                obj->join();
+                obj_ptr->join();
             }
         });
     }
@@ -2778,14 +2778,12 @@ bool IGFD::ThumbnailFeature::m_StopThumbnailFileDatasExtraction() {
     if (res) {
         m_ThumbnailGenerationThread.reset();
     }
-
     return res;
 }
 
 void IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc() {
     m_CountFiles = 0U;
     m_IsWorking  = true;
-
     // infinite loop while is thread working
     while (m_IsWorking) {
         std::unique_lock<std::mutex> thumbnailFileDatasToGetLock(m_ThumbnailFileDatasToGetMutex);
@@ -2796,15 +2794,12 @@ void IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc() {
             file = (*m_ThumbnailFileDatasToGet.begin());
             m_ThumbnailFileDatasToGet.pop_front();
             thumbnailFileDatasToGetLock.unlock();
-
             // retrieve datas of the texture file if its an image file
             if (file.use_count()) {
-                if (file->fileType.isFile())  //-V522
-                {
+                if (file->fileType.isFile()) {  //-V522
                     //|| file->fileExtLevels == ".hdr" => format float so in few times
                     if (file->SearchForExts(".png,.bmp,.tga,.jpg,.jpeg,.gif,.psd,.pic,.ppm,.pgm", true)) {
-                        auto fpn = file->filePath + IGFD::Utils::GetPathSeparator() + file->fileNameExt;
-
+                        auto fpn       = file->filePath + IGFD::Utils::GetPathSeparator() + file->fileNameExt;
                         int w          = 0;
                         int h          = 0;
                         int chans      = 0;
@@ -2816,34 +2811,26 @@ void IGFD::ThumbnailFeature::m_ThreadThumbnailFileDatasExtractionFunc() {
                                 const float newX   = DisplayMode_ThumbailsList_ImageHeight * ratioX;
                                 float newY         = w / ratioX;
                                 if (newX < w) newY = DisplayMode_ThumbailsList_ImageHeight;
-
-                                const auto newWidth   = (int)newX;
-                                const auto newHeight  = (int)newY;
-                                const auto newBufSize = (size_t)(newWidth * newHeight * 4U);  //-V112 //-V1028
-                                auto resizedData      = new uint8_t[newBufSize];
-
-                                const int resizeSucceeded = stbir_resize_uint8(datas, w, h, 0, resizedData, newWidth, newHeight, 0,
-                                                                               4);  //-V112
-
+                                const auto newWidth       = (int)newX;
+                                const auto newHeight      = (int)newY;
+                                const auto newBufSize     = (size_t)(newWidth * newHeight * 4U);  //-V112 //-V1028
+                                auto resizedData          = new uint8_t[newBufSize];
+                                const int resizeSucceeded = stbir_resize_uint8(datas, w, h, 0, resizedData, newWidth, newHeight, 0, 4);  //-V112
                                 if (resizeSucceeded) {
-                                    auto th = &file->thumbnailInfo;
-
+                                    auto th              = &file->thumbnailInfo;
                                     th->textureFileDatas = resizedData;
                                     th->textureWidth     = newWidth;
                                     th->textureHeight    = newHeight;
                                     th->textureChannels  = 4;  //-V112
-
                                     // we set that at least, because will launch the gpu creation of the texture in the
                                     // main thread
                                     th->isReadyToUpload = true;
-
                                     // need gpu loading
                                     m_AddThumbnailToCreate(file);
                                 }
                             } else {
                                 printf("image loading fail : w:%i h:%i c:%i\n", w, h, 4);  //-V112
                             }
-
                             stbi_image_free(datas);
                         }
                     }
@@ -2869,9 +2856,8 @@ void IGFD::ThumbnailFeature::m_VariadicProgressBar(float fraction, const ImVec2&
 void IGFD::ThumbnailFeature::m_DrawThumbnailGenerationProgress() {
     if (m_ThumbnailGenerationThread.use_count() && m_ThumbnailGenerationThread->joinable()) {
         if (!m_ThumbnailFileDatasToGet.empty()) {
-            const auto p = (float)((double)m_CountFiles / (double)m_ThumbnailFileDatasToGet.size());  // read => no thread concurency issues
-            m_VariadicProgressBar(p, ImVec2(50, 0), "%u/%u", m_CountFiles,
-                                  (uint32_t)m_ThumbnailFileDatasToGet.size());  // read => no thread concurency issues
+            const auto p = (float)((double)m_CountFiles / (double)m_ThumbnailFileDatasToGet.size());                     // read => no thread concurency issues
+            m_VariadicProgressBar(p, ImVec2(50, 0), "%u/%u", m_CountFiles, (uint32_t)m_ThumbnailFileDatasToGet.size());  // read => no thread concurency issues
             ImGui::SameLine();
         }
     }
