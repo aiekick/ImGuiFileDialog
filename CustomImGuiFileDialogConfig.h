@@ -109,10 +109,18 @@
 //#define tableHeaderFileSizeString " Size"
 //#define tableHeaderFileDateString " Date"
 
-#define USE_BOOKMARK
-//#define bookmarkPaneWith 150.0f
+#define USE_PLACES_FEATURE
+//#define placesPaneWith 150.0f
 //#define IMGUI_TOGGLE_BUTTON ToggleButton
-#define bookmarksButtonString ICON_IGFD_BOOKMARK
-//#define bookmarksButtonHelpString "bookmark"
-#define addBookmarkButtonString ICON_IGFD_ADD
-#define removeBookmarkButtonString ICON_IGFD_REMOVE
+#define placesButtonString ICON_IGFD_PLACES
+//#define placesButtonHelpString "places"
+#define addPlaceButtonString ICON_IGFD_ADD
+#define removePlaceButtonString ICON_IGFD_REMOVE
+
+#define USE_PLACES_BOOKMARKS
+#define PLACE_BOOKMARKS_NAME "Bookmarks"
+#define PLACE_BOOKMARKS_DISPLAY_ORDER 0 // to the first
+
+#define USE_PLACES_DEVICES
+#define PLACE_DEVICES_NAME "Devices"
+#define PLACE_DEVICES_DISPLAY_ORDER 10 // to the end

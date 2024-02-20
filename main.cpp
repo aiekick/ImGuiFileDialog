@@ -20,6 +20,7 @@
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define stat _stat
+#include <ShlObj.h> // for get known folders
 #else  // UNIX
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -483,36 +484,69 @@ int main(int, char**) {
     IGFD_SetFileStyle(cfileDialog, IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC, nullptr);
     IGFD_SetFileStyle(cfileDialog, IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK, nullptr);
 
-#ifdef USE_BOOKMARK
-    // load bookmarks
-    std::ifstream docFile_1("bookmarks_1.conf", std::ios::in);
+#ifdef USE_PLACES_FEATURE
+    // load place
+    std::ifstream docFile_1("places_1.conf", std::ios::in);
     if (docFile_1.is_open()) {
         std::stringstream strStream;
         strStream << docFile_1.rdbuf();  // read the file
-        ImGuiFileDialog::Instance()->DeserializeBookmarks(strStream.str());
+        ImGuiFileDialog::Instance()->DeserializePlaces(strStream.str());
         docFile_1.close();
     }
 
-    std::ifstream docFile_2("bookmarks_2.conf", std::ios::in);
+    std::ifstream docFile_2("places_2.conf", std::ios::in);
     if (docFile_2.is_open()) {
         std::stringstream strStream;
         strStream << docFile_2.rdbuf();  // read the file
-        fileDialog2.DeserializeBookmarks(strStream.str());
+        fileDialog2.DeserializePlaces(strStream.str());
         docFile_2.close();
     }
 
     // c interface
-    std::ifstream docFile_c("bookmarks_c.conf", std::ios::in);
+    std::ifstream docFile_c("places_c.conf", std::ios::in);
     if (docFile_c.is_open()) {
         std::stringstream strStream;
         strStream << docFile_c.rdbuf();  // read the file
-        IGFD_DeserializeBookmarks(cfileDialog, strStream.str().c_str());
+        IGFD_DeserializePlaces(cfileDialog, strStream.str().c_str());
         docFile_c.close();
     }
 
-    // add bookmark by code (why ? because we can :-) )
-    ImGuiFileDialog::Instance()->AddBookmark("Current Dir", ".");
+    // add places :
+    ImGuiFileDialog::Instance()->AddPlacesGroup("Places", 1, false);
+
+    // Places :
+    auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr("Places");
+    if (places_ptr != nullptr) {
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+#define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                         \
+    {                                                                                       \
+        PWSTR path = NULL;                                                                  \
+        HRESULT hr = SHGetKnownFolderPath(knownFolder, 0, NULL, &path);                     \
+        if (SUCCEEDED(hr)) {                                                                \
+            IGFD::FileStyle style;                                                          \
+            style.icon = folderIcon;                                                        \
+            places_ptr->AddPlace(folderLabel, IGFD::Utils::UTF8Encode(path), false, style); \
+        }                                                                                   \
+        CoTaskMemFree(path);                                                                \
+    }
+        addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP)
+        addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME)
+        addKnownFolderAsPlace(FOLDERID_Downloads, "Downloads", ICON_IGFD_DOWNLOADS)
+        addKnownFolderAsPlace(FOLDERID_Pictures, "Pictures", ICON_IGFD_PICTURE)
+        addKnownFolderAsPlace(FOLDERID_Music, "Music", ICON_IGFD_MUSIC)
+        addKnownFolderAsPlace(FOLDERID_Videos, "Videos", ICON_IGFD_FILM)
+
+#undef addKnownFolderAsPlace
+#else
 #endif
+        places_ptr = nullptr;
+    }
+
+    // add place by code (why ? because we can :-) )
+    //ImGuiFileDialog->
+    // todo : do the code
+    //ImGuiFileDialog::Instance()->AddPlace("Current Dir", ".");
+#endif // USE_PLACES_FEATURE
 
     static std::string filePathName;
     static std::string filePath;
@@ -598,10 +632,10 @@ int main(int, char**) {
 #ifdef USE_THUMBNAILS
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable thumbnails mode", "Disable thumbnails display in dialo", &flags, ImGuiFileDialogFlags_DisableThumbnailMode);
 #endif  // USE_THUMBNAILS
-#ifdef USE_BOOKMARK
+#ifdef USE_PLACES_FEATURE
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable bookmark mode", "Disable bookmark display in dialo", &flags, ImGuiFileDialogFlags_DisableBookmarkMode);
-#endif  // USE_BOOKMARK
+                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable place mode", "Disable place display in dialo", &flags, ImGuiFileDialogFlags_DisablePlaceMode);
+#endif  // USE_PLACES_FEATURE
 
                     ImGui::Text("Hide Column by default : (saved in imgui.ini, \n\tso defined when the imgui.ini is not existing)");
                     RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Type", "Hide Column file type by default", &flags, ImGuiFileDialogFlags_HideColumnType);
@@ -842,9 +876,9 @@ int main(int, char**) {
                 IGFD::FileDialogConfig config;
                 config.countSelectionMax = -1;
                 config.flags             = ImGuiFileDialogFlags_NoDialog |  // permit the embedded, because no frame is used
-#ifdef USE_BOOKMARK
-                               ImGuiFileDialogFlags_DisableBookmarkMode | // bookmark mode
-#endif                                                                              // USE_BOOKMARK
+#ifdef USE_PLACES_FEATURE
+                               ImGuiFileDialogFlags_DisablePlaceMode | // place mode
+#endif                                                                              // USE_PLACES_FEATURE
                                ImGuiFileDialogFlags_DisableCreateDirectoryButton |  // no directory creation button
                                ImGuiFileDialogFlags_ReadOnlyFileNameField;          // file name filed is read only
                 fileDialogEmbedded3.OpenDialog("embedded", "Select File", ".*", config);
@@ -1030,26 +1064,27 @@ int main(int, char**) {
         glfwSwapBuffers(window);
     }
 
-#ifdef USE_BOOKMARK
-    // remove bookmark
-    ImGuiFileDialog::Instance()->RemoveBookmark("Current Dir");
+#ifdef USE_PLACES_FEATURE
+    // remove place
+    // todo : do the code
+    //ImGuiFileDialog::Instance()->RemovePlace("Current Dir");
 
-    // save bookmarks dialog 1
-    std::ofstream configFileWriter_1("bookmarks_1.conf", std::ios::out);
+    // save place dialog 1
+    std::ofstream configFileWriter_1("places_1.conf", std::ios::out);
     if (!configFileWriter_1.bad()) {
-        configFileWriter_1 << ImGuiFileDialog::Instance()->SerializeBookmarks();
+        configFileWriter_1 << ImGuiFileDialog::Instance()->SerializePlaces();
         configFileWriter_1.close();
     }
-    // save bookmarks dialog 2
-    std::ofstream configFileWriter_2("bookmarks_2.conf", std::ios::out);
+    // save place dialog 2
+    std::ofstream configFileWriter_2("places_2.conf", std::ios::out);
     if (!configFileWriter_2.bad()) {
-        configFileWriter_2 << fileDialog2.SerializeBookmarks();
+        configFileWriter_2 << fileDialog2.SerializePlaces();
         configFileWriter_2.close();
     }
-    // save bookmarks dialog c interface
-    std::ofstream configFileWriter_c("bookmarks_c.conf", std::ios::out);
+    // save place dialog c interface
+    std::ofstream configFileWriter_c("places_c.conf", std::ios::out);
     if (!configFileWriter_c.bad()) {
-        char* s = IGFD_SerializeBookmarks(cfileDialog, true);
+        char* s = IGFD_SerializePlaces(cfileDialog, true);
         if (s) {
             configFileWriter_c << std::string(s);
             configFileWriter_c.close();
