@@ -70,7 +70,7 @@ SOFTWARE.
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define _IGFD_WIN_
-#define stat _stat
+#define stat _stati64
 #define stricmp _stricmp
 #include <cctype>
 // this option need c++17
