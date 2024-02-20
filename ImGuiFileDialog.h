@@ -1514,6 +1514,7 @@ public:
     static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
     static std::string UTF8Encode(const std::wstring& wstr);
     static std::wstring UTF8Decode(const std::string& str);
+    static std::vector<std::string> SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool& vPushEmpty);
     static std::vector<std::string> SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty);
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
@@ -2038,6 +2039,7 @@ private:
     };
 
     struct GroupStruct {
+        bool canBeSaved     = false;                       // defined by code, can be used for prevent serialization / deserialization
         size_t displayOrder = 0U;                         // the display order will be usedf first, then alphanumeric
         std::string name;                                 // the group name, will be displayed
         std::vector<PlaceStruct> places;                  // the places (name + path)
@@ -2068,14 +2070,14 @@ protected:
     bool m_DrawPlacesPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize);  // draw place Pane
 
 public:
-    std::string SerializePlaces(                              // serialize place : return place buffer to save in a file
-        const bool& vForceSerialisationForAll = true);        // for avoid serialization of places with flag canBeSaved to false
-    void DeserializePlaces(                                   // deserialize place : load place buffer to load in the dialog (saved from
-        const std::string& vPlaces);                          // previous use with SerializePlaces()) place buffer to load
+    std::string SerializePlaces(                                    // serialize place : return place buffer to save in a file
+        const bool& vForceSerialisationForAll = true);              // for avoid serialization of places with flag canBeSaved to false
+    void DeserializePlaces(                                         // deserialize place : load place buffer to load in the dialog (saved from
+        const std::string& vPlaces);                                // previous use with SerializePlaces()) place buffer to load
     bool AddPlacesGroup(                                            // add a group
-        const std::string& vGroupName,                        // the group name
-        const size_t& vDisplayOrder,                          // the display roder of the group
-        const bool& vCanBeEdited);                            // let the user add/remove place in the group
+        const std::string& vGroupName,                              // the group name
+        const size_t& vDisplayOrder,                                // the display roder of the group
+        const bool& vCanBeEdited);                                  // let the user add/remove place in the group
     bool RemovePlacesGroup(const std::string& vGroupName);          // remove the group
     GroupStruct* GetPlacesGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
 #endif  // USE_PLACES_FEATURE
@@ -2447,14 +2449,29 @@ IGFD_C_API void IGFD_DeserializePlaces(  // deserialize place : load bookmar buf
     ImGuiFileDialog* vContextPtr,           // ImGuiFileDialog context
     const char* vPlaces);                // place buffer to load
 
-IGFD_C_API void IGFD_AddPlace(  // add a place by code
-    ImGuiFileDialog* vContextPtr,  // ImGuiFileDialog context
-    const char* vPlaceName,     // place name
-    const char* vPlacePath);    // place path
-
-IGFD_C_API void IGFD_RemovePlace(  // remove a place by code, return true if succeed
+IGFD_C_API bool IGFD_AddPlacesGroup(  // add a places group by code
     ImGuiFileDialog* vContextPtr,     // ImGuiFileDialog context
+    const char* vGroupName,           // the group name
+    size_t vDisplayOrder,             // the display roder of the group
+    bool vCanBeEdited);               // let the user add/remove place in the group
+
+IGFD_C_API bool IGFD_RemovePlacesGroup(  // remove a place group by code, return true if succeed
+    ImGuiFileDialog* vContextPtr,        // ImGuiFileDialog context
+    const char* vGroupName);             // place name to remove
+
+IGFD_C_API bool IGFD_AddPlace(     // add a place by code
+    ImGuiFileDialog* vContextPtr,  // ImGuiFileDialog context
+    const char* vGroupName,        // the group name
+    const char* vPlaceName,        // place name
+    const char* vPlacePath,        // place path
+    bool vCanBeSaved,              // place can be saved
+    const char* vIconText);        // wanted text or icon of the file with extention filter (can be used with font icon)
+
+IGFD_C_API bool IGFD_RemovePlace(  // remove a place by code, return true if succeed
+    ImGuiFileDialog* vContextPtr,  // ImGuiFileDialog context
+    const char* vGroupName,        // the group name
     const char* vPlaceName);       // place name to remove
+
 #endif
 
 #ifdef USE_THUMBNAILS

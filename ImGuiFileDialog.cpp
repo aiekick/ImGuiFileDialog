@@ -837,6 +837,27 @@ bool IGFD::Utils::ReplaceString(std::string& str, const ::std::string& oldStr, c
     return false;
 }
 
+std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool& vPushEmpty) {
+    std::vector<std::string> arr;
+    if (!vText.empty()) {
+        size_t start = 0;
+        size_t end   = vText.find(vDelimiterPattern, start);
+        while (end != std::string::npos) {
+            auto token = vText.substr(start, end - start);
+            if (!token.empty() || (token.empty() && vPushEmpty)) {  //-V728
+                arr.push_back(token);
+            }
+            start = end + vDelimiterPattern.size();
+            end   = vText.find(vDelimiterPattern, start);
+        }
+        auto token = vText.substr(start);
+        if (!token.empty() || (token.empty() && vPushEmpty)) {  //-V728
+            arr.push_back(token);
+        }
+    }
+    return arr;
+}
+
 std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty) {
     std::vector<std::string> arr;
     if (!vText.empty()) {
@@ -3071,45 +3092,52 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
 }
 
 std::string IGFD::PlacesFeature::SerializePlaces(const bool& vForceSerialisationForAll) {
-    // todo : do the code
     std::string res;
-    /*size_t idx = 0;
-    for (auto& it : m_Groups) {
-        if (vForceSerialisationForAll && it.canBeSaved) continue;
-        if (idx++ != 0) res += "##";  // ## because reserved by imgui, so an input text cant have ##
-        res += it.name + "##" + it.path;
-    }*/
+    size_t idx = 0;
+    for (const auto& group : m_Groups) {
+        if (group.second->canBeSaved) {
+            // ## is used because reserved by imgui, so an input text cannot have ##
+            res += "###" + group.first + "###";
+            for (const auto& place : group.second->places) {
+                if (place.canBeSaved) {
+                    if (idx++ != 0) res += "##";
+                    res += place.name + "##" + place.path;
+                }
+            }
+        }
+    }
     return res;
 }
 
 void IGFD::PlacesFeature::DeserializePlaces(const std::string& vPlaces) {
-    // todo : do the code
-    /*if (!vPlaces.empty()) {
-        m_Groups.clear();
-        auto arr = IGFD::Utils::SplitStringToVector(vPlaces, '#', false);
-        for (size_t i = 0; i < arr.size(); i += 2) {
-            if (i + 1 < arr.size()) {  // for avoid crash if arr size is impair due to user mistake after edition
-                PlaceStruct place;
-                place.name = arr[i];
-                // if bad format we jump this place
-                place.path = arr[i + 1];
-                m_Bookmarks.push_back(place);
+    if (!vPlaces.empty()) {
+        const auto& groups = IGFD::Utils::SplitStringToVector(vPlaces, "###", false);
+        if (groups.size() > 1) {
+            for (size_t i = 0; i < groups.size(); i += 2) {
+                auto group_ptr = GetPlacesGroupPtr(groups[i]);
+                if (group_ptr != nullptr) {
+                    const auto& places = IGFD::Utils::SplitStringToVector(groups[i + 1], "##", false);
+                    if (places.size() > 1) {
+                        for (size_t j = 0; j < places.size(); j += 2) {
+                            group_ptr->AddPlace(places[j], places[j + 1], true);  // was saved so we set canBeSaved to true
+                        }
+                    }
+                }
             }
         }
-    }*/
+    }
 }
 
 bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited) {
     if (vGroupName.empty()) {
         return false;
     }
-    auto group_ptr = std::make_shared<GroupStruct>();
-    group_ptr->displayOrder  = vDisplayOrder;
+    auto group_ptr          = std::make_shared<GroupStruct>();
+    group_ptr->displayOrder = vDisplayOrder;
     group_ptr->name         = vGroupName;
-    group_ptr->canBeEdited   = vCanBeEdited;
+    group_ptr->canBeSaved = group_ptr->canBeEdited = vCanBeEdited; // can be user edited mean can be saved
     m_Groups[vGroupName]     = group_ptr;
-    // tofix the set of existing order number
-    m_OrderedGroups[group_ptr->displayOrder] = group_ptr;
+    m_OrderedGroups[group_ptr->displayOrder] = group_ptr; // an exisitng display order will be overwrote for code simplicity
     return true;
 }
 
@@ -3131,7 +3159,10 @@ IGFD::PlacesFeature::GroupStruct* IGFD::PlacesFeature::GetPlacesGroupPtr(const s
 }
 
 bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, const std::string& vPlacePath, const bool& vCanBeSaved, const FileStyle& vStyle) {
-    if (vPlaceName.empty() || vPlacePath.empty()) return false;
+    if (vPlaceName.empty() || vPlacePath.empty()) {
+        return false;
+    }
+    canBeSaved |= vCanBeSaved; // if one place must be saved so we mark the group to be saved
     PlaceStruct place;
     place.name       = vPlaceName;
     place.path       = vPlacePath;
@@ -3141,7 +3172,9 @@ bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, c
 }
 
 bool IGFD::PlacesFeature::GroupStruct::RemovePlace(const std::string& vPlaceName) {
-    if (vPlaceName.empty()) return false;
+    if (vPlaceName.empty()) {
+        return false;
+    }
     for (auto places_it = places.begin(); places_it != places.end(); ++places_it) {
         if ((*places_it).name == vPlaceName) {
             places.erase(places_it);
@@ -4931,19 +4964,41 @@ IGFD_C_API void IGFD_DeserializePlaces(ImGuiFileDialog* vContextPtr, const char*
     }
 }
 
-IGFD_C_API void IGFD_AddPlace(ImGuiFileDialog* vContextPtr, const char* vPlaceName, const char* vPlacePath) {
+IGFD_C_API bool IGFD_AddPlacesGroup(ImGuiFileDialog* vContextPtr, const char* vGroupName, size_t vDisplayOrder, bool vCanBeEdited) {
     if (vContextPtr != nullptr) {
-        // todo : do the code
-        //vContextPtr->AddPlace(vPlaceName, vPlacePath);
+        return vContextPtr->AddPlacesGroup(vGroupName, vDisplayOrder, vCanBeEdited);
     }
+    return false;
 }
 
-IGFD_C_API void IGFD_RemovePlace(ImGuiFileDialog* vContextPtr, const char* vPlaceName) {
+IGFD_C_API bool IGFD_RemovePlacesGroup(ImGuiFileDialog* vContextPtr, const char* vGroupName) {
     if (vContextPtr != nullptr) {
-        //todo : do the code
-        //vContextPtr->RemovePlace(vPlaceName);
+        return vContextPtr->RemovePlacesGroup(vGroupName);
     }
+    return false;
 }
+
+IGFD_C_API bool IGFD_AddPlace(ImGuiFileDialog* vContextPtr, const char* vGroupName, const char* vPlaceName, const char* vPlacePath, bool vCanBeSaved, const char* vIconText) {
+    if (vContextPtr != nullptr) {
+        auto group_ptr = vContextPtr->GetPlacesGroupPtr(vGroupName);
+        if (group_ptr != nullptr) {
+            IGFD::FileStyle style;
+            style.icon = vIconText;
+            return group_ptr->AddPlace(vPlaceName, vPlacePath, vCanBeSaved, style);
+        }
+    }
+    return false;
+}
+
+IGFD_C_API bool IGFD_RemovePlace(ImGuiFileDialog* vContextPtr, const char* vGroupName, const char* vPlaceName) {
+    if (vContextPtr != nullptr) {
+        auto group_ptr = vContextPtr->GetPlacesGroupPtr(vGroupName);
+        if (group_ptr != nullptr) {
+            return group_ptr->RemovePlace(vPlaceName);
+        }
+    }
+    return false;
+}     
 
 #endif
 
