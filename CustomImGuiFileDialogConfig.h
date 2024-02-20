@@ -109,10 +109,20 @@
 //#define tableHeaderFileSizeString " Size"
 //#define tableHeaderFileDateString " Date"
 
-#define USE_BOOKMARK
-//#define bookmarkPaneWith 150.0f
+#define USE_PLACES_FEATURE
+//#define placesPaneWith 150.0f
 //#define IMGUI_TOGGLE_BUTTON ToggleButton
-#define bookmarksButtonString ICON_IGFD_BOOKMARK
-//#define bookmarksButtonHelpString "bookmark"
-#define addBookmarkButtonString ICON_IGFD_ADD
-#define removeBookmarkButtonString ICON_IGFD_REMOVE
+#define placesButtonString ICON_IGFD_PLACES
+// #define placesButtonHelpString "Places"
+#define addPlaceButtonString ICON_IGFD_ADD
+#define removePlaceButtonString ICON_IGFD_REMOVE
+
+// a group for bookmarks will be added by default, but you can also create it yourself and many more
+#define USE_PLACES_BOOKMARKS
+#define placesBookmarksGroupName ICON_IGFD_BOOKMARK " Bookmarks"
+#define placesBookmarksDisplayOrder 0 // to the first
+
+// a group for system devices (returned by IFileSystem), but you can also add yours
+#define USE_PLACES_DEVICES
+#define placesDevicesGroupName ICON_IGFD_DRIVES " Devices"
+#define placesDevicesDisplayOrder 10 // to the end

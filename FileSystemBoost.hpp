@@ -83,8 +83,8 @@ public:
         return res;
     }
 
-    std::vector<std::pair<std::string, std::string>> GetDevicesList() override {
-        std::vector<std::pair<std::string, std::string>> res;
+    std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
+        std::vector<IGFD::PathDisplayedName> res;
 #ifdef _IGFD_WIN_
         const DWORD mydrives = 2048;
         char lpBuffer[2048];
@@ -96,7 +96,7 @@ public:
             IGFD::Utils::ReplaceString(var, "\\", "");
             auto arr = IGFD::Utils::SplitStringToVector(var, '\0', false);
             wchar_t szVolumeName[2048];
-            std::pair<std::string, std::string> path_name;
+            IGFD::PathDisplayedName path_name;
             for (auto& a : arr) {
                 path_name.first = a;
                 path_name.second.clear();
