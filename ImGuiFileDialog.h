@@ -2064,6 +2064,7 @@ protected:
     bool m_PlacesPaneShown = false;
 
 protected:
+    void m_InitPlaces(FileDialogInternal& vFileDialogInternal);
     void m_DrawPlacesButton();                                                            // draw place button
     bool m_DrawPlacesPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize);  // draw place Pane
 
@@ -2072,12 +2073,12 @@ public:
         const bool& vForceSerialisationForAll = true);        // for avoid serialization of places with flag canBeSaved to false
     void DeserializePlaces(                                   // deserialize place : load place buffer to load in the dialog (saved from
         const std::string& vPlaces);                          // previous use with SerializePlaces()) place buffer to load
-    bool AddGroup(                                            // add a group
+    bool AddPlacesGroup(                                            // add a group
         const std::string& vGroupName,                        // the group name
         const size_t& vDisplayOrder,                          // the display roder of the group
         const bool& vCanBeEdited);                            // let the user add/remove place in the group
-    bool RemoveGroup(const std::string& vGroupName);          // remove the group
-    GroupStruct* getGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
+    bool RemovePlacesGroup(const std::string& vGroupName);          // remove the group
+    GroupStruct* GetPlacesGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
 #endif  // USE_PLACES_FEATURE
 };
 

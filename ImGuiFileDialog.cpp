@@ -2452,12 +2452,12 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
     if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonResetPathString);
 
 #ifdef _IGFD_WIN_
-    ImGui::SameLine();
+    /*ImGui::SameLine();
 
     if (IMGUI_BUTTON(drivesButtonString)) {
         drivesClicked = true;
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonDriveString);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonDriveString);*/
 #endif  // _IGFD_WIN_
 
     ImGui::SameLine();
@@ -2991,6 +2991,25 @@ IGFD::PlacesFeature::PlacesFeature() {
 }
 
 #ifdef USE_PLACES_FEATURE
+void IGFD::PlacesFeature::m_InitPlaces(FileDialogInternal& vFileDialogInternal) {
+#ifdef USE_PLACES_BOOKMARKS
+    AddPlacesGroup(PLACE_BOOKMARKS_NAME, PLACE_BOOKMARKS_DISPLAY_ORDER, true);
+#endif  // USE_PLACES_BOOKMARK
+#ifdef USE_PLACES_DEVICES
+    AddPlacesGroup(PLACE_DEVICES_NAME, PLACE_DEVICES_DISPLAY_ORDER, false);
+    auto devices_ptr = GetPlacesGroupPtr(PLACE_DEVICES_NAME);
+    if (devices_ptr != nullptr && vFileDialogInternal.fileManager.GetFileSystemInstance() != nullptr) {
+        const auto& devices = vFileDialogInternal.fileManager.GetFileSystemInstance()->GetDevicesList();
+        IGFD::FileStyle style;
+        style.icon = ICON_IGFD_DRIVES;
+        for (const auto& device : devices) {
+            devices_ptr->AddPlace(device.first + " " + device.second, device.first, false, style);
+        }
+        devices_ptr = nullptr;
+    }
+#endif  // USE_PLACES_DEVICES
+}
+
 void IGFD::PlacesFeature::m_DrawPlacesButton() {
     IMGUI_TOGGLE_BUTTON(placesButtonString, &m_PlacesPaneShown);
     if (ImGui::IsItemHovered()) ImGui::SetTooltip(placesButtonHelpString);
@@ -3109,7 +3128,7 @@ void IGFD::PlacesFeature::DeserializePlaces(const std::string& vPlaces) {
     }*/
 }
 
-bool IGFD::PlacesFeature::AddGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited) {
+bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited) {
     if (vGroupName.empty()) {
         return false;
     }
@@ -3123,7 +3142,7 @@ bool IGFD::PlacesFeature::AddGroup(const std::string& vGroupName, const size_t& 
     return true;
 }
 
-bool IGFD::PlacesFeature::RemoveGroup(const std::string& vGroupName) {
+bool IGFD::PlacesFeature::RemovePlacesGroup(const std::string& vGroupName) {
     for (auto it = m_Groups.begin(); it != m_Groups.end(); ++it) {
         if ((*it).second->name == vGroupName) {
             m_Groups.erase(it);
@@ -3133,7 +3152,7 @@ bool IGFD::PlacesFeature::RemoveGroup(const std::string& vGroupName) {
     return false;
 }
 
-IGFD::PlacesFeature::GroupStruct* IGFD::PlacesFeature::getGroupPtr(const std::string& vGroupName) {
+IGFD::PlacesFeature::GroupStruct* IGFD::PlacesFeature::GetPlacesGroupPtr(const std::string& vGroupName) {
     if (m_Groups.find(vGroupName) != m_Groups.end()) {
         return m_Groups.at(vGroupName).get();
     }
@@ -3541,6 +3560,7 @@ void IGFD::KeyExplorerFeature::SetFlashingAttenuationInSeconds(float vAttenValue
 #pragma region FileDialog
 
 IGFD::FileDialog::FileDialog() : PlacesFeature(), KeyExplorerFeature(), ThumbnailFeature() {
+    m_InitPlaces(m_FileDialogInternal);
 }
 IGFD::FileDialog::~FileDialog() = default;
 
