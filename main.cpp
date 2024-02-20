@@ -513,21 +513,24 @@ int main(int, char**) {
 
     // add places :
     ImGuiFileDialog::Instance()->AddPlacesGroup("Places", 1, false);
+    IGFD_AddPlacesGroup(cfileDialog, "Places", 1, false);
 
     // Places :
     auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr("Places");
     if (places_ptr != nullptr) {
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
-#define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                         \
-    {                                                                                       \
-        PWSTR path = NULL;                                                                  \
-        HRESULT hr = SHGetKnownFolderPath(knownFolder, 0, NULL, &path);                     \
-        if (SUCCEEDED(hr)) {                                                                \
-            IGFD::FileStyle style;                                                          \
-            style.icon = folderIcon;                                                        \
-            places_ptr->AddPlace(folderLabel, IGFD::Utils::UTF8Encode(path), false, style); \
-        }                                                                                   \
-        CoTaskMemFree(path);                                                                \
+#define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                                   \
+    {                                                                                                 \
+        PWSTR path = NULL;                                                                            \
+        HRESULT hr = SHGetKnownFolderPath(knownFolder, 0, NULL, &path);                               \
+        if (SUCCEEDED(hr)) {                                                                          \
+            IGFD::FileStyle style;                                                                    \
+            style.icon      = folderIcon;                                                             \
+            auto place_path = IGFD::Utils::UTF8Encode(path);                                          \
+            places_ptr->AddPlace(folderLabel, place_path, false, style);                              \
+            IGFD_AddPlace(cfileDialog, "Places", folderLabel, place_path.c_str(), false, folderIcon); \
+        }                                                                                             \
+        CoTaskMemFree(path);                                                                          \
     }
         addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP)
         addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME)
@@ -1003,6 +1006,7 @@ int main(int, char**) {
             /////////////////////////////////////////////////////////////////
             // C Interface
             /////////////////////////////////////////////////////////////////
+
             if (IGFD_DisplayDialog(cfileDialog, "ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
                 if (IGFD_IsOk(cfileDialog)) {
                     char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);

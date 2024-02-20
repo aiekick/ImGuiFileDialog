@@ -73,10 +73,10 @@ bool Test_IGFD_Utils_ReplaceString_7() {
 }
 
 ////////////////////////////////////////////////////////////////////////////
-//// SplitStringToVector ///////////////////////////////////////////////////
+//// SplitStringToVector // Delimiter char /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool Test_IGFD_Utils_SplitStringToVector_0() {
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_0() {
     std::string code = "TOTO;VA;AU;ZOO";
     auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
     if (arr.size() != 4U) return false;
@@ -87,7 +87,7 @@ bool Test_IGFD_Utils_SplitStringToVector_0() {
     return true;
 }
 
-bool Test_IGFD_Utils_SplitStringToVector_1() {
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_1() {
     std::string code = "TOTO;VA;AU;;ZOO";
     auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
     if (arr.size() != 4U) return false;
@@ -98,7 +98,7 @@ bool Test_IGFD_Utils_SplitStringToVector_1() {
     return true;
 }
 
-bool Test_IGFD_Utils_SplitStringToVector_2() {
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_2() {
     std::string code = "TOTO;VA;AU;;ZOO";
     auto arr         = IGFD::Utils::SplitStringToVector(code, ';', true);
     if (arr.size() != 5U) return false;
@@ -110,9 +110,57 @@ bool Test_IGFD_Utils_SplitStringToVector_2() {
     return true;
 }
 
-bool Test_IGFD_Utils_SplitStringToVector_3() {
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_3() {
     std::string code = "TOTO:VA;AU;;ZOO";
     auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
+    if (arr.size() != 3U) return false;
+    if (arr[0] != "TOTO:VA") return false;
+    if (arr[1] != "AU") return false;
+    if (arr[2] != "ZOO") return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// SplitStringToVector // Delimiter std::string //////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0() {
+    std::string code = "TOTO##VA##AU##ZOO";
+    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
+    if (arr.size() != 4U) return false;
+    if (arr[0] != "TOTO") return false;
+    if (arr[1] != "VA") return false;
+    if (arr[2] != "AU") return false;
+    if (arr[3] != "ZOO") return false;
+    return true;
+}
+
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1() {
+    std::string code = "TOTO##VA##AU####ZOO";
+    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
+    if (arr.size() != 4U) return false;
+    if (arr[0] != "TOTO") return false;
+    if (arr[1] != "VA") return false;
+    if (arr[2] != "AU") return false;
+    if (arr[3] != "ZOO") return false;
+    return true;
+}
+
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2() {
+    std::string code = "TOTO##VA##AU####ZOO";
+    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", true);
+    if (arr.size() != 5U) return false;
+    if (arr[0] != "TOTO") return false;
+    if (arr[1] != "VA") return false;
+    if (arr[2] != "AU") return false;
+    if (arr[3] != "") return false;
+    if (arr[4] != "ZOO") return false;
+    return true;
+}
+
+bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
+    std::string code = "TOTO:VA##AU####ZOO";
+    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
     if (arr.size() != 3U) return false;
     if (arr[0] != "TOTO:VA") return false;
     if (arr[1] != "AU") return false;
@@ -138,10 +186,15 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_ReplaceString_6);
     else IfTestExist(Test_IGFD_Utils_ReplaceString_7);
 
-    IfTestExist(Test_IGFD_Utils_SplitStringToVector_0);
-    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_1);
-    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_2);
-    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_3);
+    IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_char_0);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_char_1);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_char_2);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_char_3);
+
+    IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2);
+    else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3);
 
     assert(0);
 

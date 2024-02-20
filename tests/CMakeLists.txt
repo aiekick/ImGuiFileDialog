@@ -148,8 +148,14 @@ SetTest(Test_IGFD_Utils_ReplaceString_5)
 SetTest(Test_IGFD_Utils_ReplaceString_6)
 SetTest(Test_IGFD_Utils_ReplaceString_7)
 
-## Test_IGFD_Utils -- SplitStringToVector
-SetTest(Test_IGFD_Utils_SplitStringToVector_0)
-SetTest(Test_IGFD_Utils_SplitStringToVector_1)
-SetTest(Test_IGFD_Utils_SplitStringToVector_2)
-SetTest(Test_IGFD_Utils_SplitStringToVector_3)
+## Test_IGFD_Utils -- SplitStringToVector delimiter char
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_char_0)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_char_1)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_char_2)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_char_3)
+
+## Test_IGFD_Utils -- SplitStringToVector delimiter std::string
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2)
+SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3)
