@@ -801,7 +801,6 @@ int main(int, char**) {
                             if (vFileInfosPtr->SearchForExt(".gltf", true)) {
                                 auto bin_file_path_name = vFileInfosPtr->filePath + IGFD::Utils::GetPathSeparator() + vFileInfosPtr->fileNameLevels[0] + ".bin";
                                 struct stat statInfos   = {};
-                                char timebuf[100];
                                 int result = stat(bin_file_path_name.c_str(), &statInfos);
                                 if (!result) {
                                     vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",                                               //
