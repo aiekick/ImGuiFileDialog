@@ -5,7 +5,7 @@
 #pragma once
 
 #define FONT_ICON_BUFFER_NAME_IGFD IGFD_compressed_data_base85
-#define FONT_ICON_BUFFER_SIZE_IGFD 0x159a
+#define FONT_ICON_BUFFER_SIZE_IGFD 0x174d
 
 #define ICON_MIN_IGFD 0xf001
 #define ICON_MAX_IGFD 0xf26c
@@ -27,6 +27,7 @@
 #define ICON_IGFD_FILM u8"\uf008"
 #define ICON_IGFD_FOLDER u8"\uf07b"
 #define ICON_IGFD_FOLDER_OPEN u8"\uf07c"
+#define ICON_IGFD_HEART u8"\uf004"
 #define ICON_IGFD_HOME u8"\uf015"
 #define ICON_IGFD_LINK u8"\uf1c9"
 #define ICON_IGFD_LINKEDIN u8"\uf0e1"
@@ -39,4 +40,6 @@
 #define ICON_IGFD_RESET u8"\uf064"
 #define ICON_IGFD_SAVE u8"\uf0c7"
 #define ICON_IGFD_SEARCH u8"\uf002"
+#define ICON_IGFD_SHORTCUTS u8"\uf233"
+#define ICON_IGFD_STAR u8"\uf005"
 #define ICON_IGFD_STEP_FORWARD u8"\uf051"

@@ -21,6 +21,8 @@
 			<glyphs>
 				<glyph orgId="61441" newId="61441" orgName="music" newName="music" trans="0;0" scale="1;1"/>
 				<glyph orgId="61442" newId="61442" orgName="search" newName="search" trans="0;0" scale="1;1"/>
+				<glyph orgId="61444" newId="61444" orgName="heart" newName="heart" trans="0;0" scale="1;1"/>
+				<glyph orgId="61445" newId="61445" orgName="star" newName="star" trans="0;0" scale="1;1"/>
 				<glyph orgId="61448" newId="61448" orgName="film" newName="film" trans="0;0" scale="1;1"/>
 				<glyph orgId="61450" newId="61450" orgName="th" newName="file_grid_thumbnails" trans="0;-192" scale="1;1"/>
 				<glyph orgId="61451" newId="61451" orgName="th_list" newName="file_list_thumbnails" trans="0;-182.857" scale="1;1"/>
@@ -48,6 +50,7 @@
 				<glyph orgId="61787" newId="61787" orgName="file" newName="file" trans="0;0" scale="1;1"/>
 				<glyph orgId="61893" newId="61893" orgName="_425" newName="file_pic" trans="0;0" scale="1;1"/>
 				<glyph orgId="61897" newId="61897" orgName="_429" newName="link" trans="0;0" scale="1;1"/>
+				<glyph orgId="62003" newId="62003" orgName="_528" newName="shortcuts" trans="0;0" scale="1;1"/>
 				<glyph orgId="62060" newId="62060" orgName="_582" newName="desktop" trans="75.629;0" scale="1;1"/>
 			</glyphs>
 			<prefix>IGFD</prefix>
@@ -92,6 +95,8 @@
 		<finalselection>
 			<selection orgId="61441" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61442" font="fontawesome-webfont.ttf"/>
+			<selection orgId="61444" font="fontawesome-webfont.ttf"/>
+			<selection orgId="61445" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61448" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61450" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61451" font="fontawesome-webfont.ttf"/>
@@ -119,6 +124,7 @@
 			<selection orgId="61787" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61893" font="fontawesome-webfont.ttf"/>
 			<selection orgId="61897" font="fontawesome-webfont.ttf"/>
+			<selection orgId="62003" font="fontawesome-webfont.ttf"/>
 			<selection orgId="62060" font="fontawesome-webfont.ttf"/>
 		</finalselection>
 		<fonttest>

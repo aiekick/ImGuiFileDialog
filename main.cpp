@@ -512,25 +512,26 @@ int main(int, char**) {
     }
 
     // add places :
-    ImGuiFileDialog::Instance()->AddPlacesGroup("Places", 1, false);
-    IGFD_AddPlacesGroup(cfileDialog, "Places", 1, false);
+    const char* group_name = ICON_IGFD_SHORTCUTS " Places";
+    ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, 1, false);
+    IGFD_AddPlacesGroup(cfileDialog, group_name, 1, false);
 
     // Places :
-    auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr("Places");
+    auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr(group_name);
     if (places_ptr != nullptr) {
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
-#define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                                   \
-    {                                                                                                 \
-        PWSTR path = NULL;                                                                            \
-        HRESULT hr = SHGetKnownFolderPath(knownFolder, 0, NULL, &path);                               \
-        if (SUCCEEDED(hr)) {                                                                          \
-            IGFD::FileStyle style;                                                                    \
-            style.icon      = folderIcon;                                                             \
-            auto place_path = IGFD::Utils::UTF8Encode(path);                                          \
-            places_ptr->AddPlace(folderLabel, place_path, false, style);                              \
-            IGFD_AddPlace(cfileDialog, "Places", folderLabel, place_path.c_str(), false, folderIcon); \
-        }                                                                                             \
-        CoTaskMemFree(path);                                                                          \
+#define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                                     \
+    {                                                                                                   \
+        PWSTR path = NULL;                                                                              \
+        HRESULT hr = SHGetKnownFolderPath(knownFolder, 0, NULL, &path);                                 \
+        if (SUCCEEDED(hr)) {                                                                            \
+            IGFD::FileStyle style;                                                                      \
+            style.icon      = folderIcon;                                                               \
+            auto place_path = IGFD::Utils::UTF8Encode(path);                                            \
+            places_ptr->AddPlace(folderLabel, place_path, false, style);                                \
+            IGFD_AddPlace(cfileDialog, group_name, folderLabel, place_path.c_str(), false, folderIcon); \
+        }                                                                                               \
+        CoTaskMemFree(path);                                                                            \
     }
         addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP)
         addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME)
