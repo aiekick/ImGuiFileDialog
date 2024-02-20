@@ -15,7 +15,7 @@
 /*
 MIT License
 
-Copyright (c) 2018-2023 Stephane Cuillerdier (aka aiekick)
+Copyright (c) 2018-2024 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.90.1 WIP
+ImGuiFileDialog follow the master and docking branch of ImGui . currently ImGui 1.90.4 WIP
 
 ## Structure
 
@@ -1217,8 +1217,8 @@ The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFon
 
 #pragma region IGFD VERSION
 
-// compatible with 1.90.1 WIP
-#define IMGUIFILEDIALOG_VERSION "v0.6.6.1"
+// compatible with 1.90.4 WIP
+#define IMGUIFILEDIALOG_VERSION "v0.6.7"
 
 #pragma endregion
 

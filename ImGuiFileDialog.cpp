@@ -10,7 +10,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Stephane Cuillerdier (aka aiekick)
+Copyright (c) 2019-2024 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3387,8 +3387,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     ItemSize(size, 0.0f);
 
     // Fill horizontal space
-    // We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitly right-aligned sizes not visibly match
-    // other widgets.
+    // We don't support (size < 0.0f) in Selectable() because the ItemSpacing extension would make explicitly right-aligned sizes not visibly match other widgets.
     const bool span_all_columns = (flags & ImGuiSelectableFlags_SpanAllColumns) != 0;
     const float min_x           = span_all_columns ? window->ParentWorkRect.Min.x : pos.x;
     const float max_x           = span_all_columns ? window->ParentWorkRect.Max.x : window->WorkRect.Max.x;
@@ -3412,7 +3411,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     }
     // if (g.IO.KeyCtrl) { GetForegroundDrawList()->AddRect(bb.Min, bb.Max, IM_COL32(0, 255, 0, 255)); }
 
-    // Modify ClipRect for the ItemAdd(), faster than doing a PushColumnsBackground/PushTableBackground for every Selectable..
+    // Modify ClipRect for the ItemAdd(), faster than doing a PushColumnsBackground/PushTableBackgroundChannel for every Selectable..
     const float backup_clip_rect_min_x = window->ClipRect.Min.x;
     const float backup_clip_rect_max_x = window->ClipRect.Max.x;
     if (span_all_columns) {
@@ -3435,10 +3434,14 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
 
     // FIXME: We can standardize the behavior of those two, we could also keep the fast path of override ClipRect + full push on render only,
     // which would be advantageous since most selectable are not selected.
-    if (span_all_columns && window->DC.CurrentColumns)
-        PushColumnsBackground();
-    else if (span_all_columns && g.CurrentTable)
-        TablePushBackgroundChannel();
+    if (span_all_columns) {
+        if (g.CurrentTable)
+            TablePushBackgroundChannel();
+        else if (window->DC.CurrentColumns)
+            PushColumnsBackground();
+        g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_HasClipRect;
+        g.LastItemData.ClipRect = window->ClipRect;
+    }
 
     // We use NoHoldingActiveID on menus so user can click and _hold_ on a menu then drag to browse child entries
     ImGuiButtonFlags button_flags = 0;
@@ -3498,12 +3501,14 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
         const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
         RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
     }
-    if (g.NavId == id) RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+    if (g.NavId == id) RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding);
 
-    if (span_all_columns && window->DC.CurrentColumns)
-        PopColumnsBackground();
-    else if (span_all_columns && g.CurrentTable)
-        TablePopBackgroundChannel();
+    if (span_all_columns) {
+        if (g.CurrentTable)
+            TablePopBackgroundChannel();
+        else if (window->DC.CurrentColumns)
+            PopColumnsBackground();
+    }
 
     RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
 
