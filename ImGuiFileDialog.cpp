@@ -2001,7 +2001,6 @@ bool IGFD::FileManager::GetDrives() {
             info->fileNameExt_optimized = Utils::LowerCaseString(drive.first);
             info->deviceInfos           = drive.second;
             info->fileType.SetContent(FileType::ContentType::Directory);
-
             if (!info->fileNameExt.empty()) {
                 m_FileList.push_back(info);
             }
@@ -2980,7 +2979,7 @@ void IGFD::PlacesFeature::m_InitPlaces(FileDialogInternal& vFileDialogInternal) 
         IGFD::FileStyle style;
         style.icon = PLACE_DEVICES_ICON;
         for (const auto& device : devices) {
-            devices_ptr->AddPlace(device.first + " " + device.second, device.first, false, style);
+            devices_ptr->AddPlace(device.first + " " + device.second, device.first + IGFD::Utils::GetPathSeparator(), false, style);
         }
         devices_ptr = nullptr;
     }
@@ -3040,21 +3039,16 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                             if (i < 0) continue;
                             const PlaceStruct& place = group_ptr->places[(size_t)i];
                             ImGui::PushID(i);
-
                             std::string place_name = place.name;
                             if (!place.style.icon.empty()) {
                                 place_name = place.style.icon + " " + place_name;
                             }
-                            if (ImGui::Selectable(place_name.c_str(), group_ptr->selectedPlaceForEdition == i,
-                                                  ImGuiSelectableFlags_AllowDoubleClick) ||
-                                (group_ptr->selectedPlaceForEdition == -1 && place.path == vFileDialogInternal.fileManager.GetCurrentPath()))  // select if path is current
-                            {
+                            if (ImGui::Selectable(place_name.c_str(), group_ptr->selectedPlaceForEdition == i, ImGuiSelectableFlags_AllowDoubleClick) ||
+                                (group_ptr->selectedPlaceForEdition == -1 && place.path == vFileDialogInternal.fileManager.GetCurrentPath())) {  // select if path is current
                                 group_ptr->selectedPlaceForEdition = i;
                                 IGFD::Utils::ResetBuffer(group_ptr->editBuffer);
                                 IGFD::Utils::AppendToBuffer(group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER, place.name);
-
-                                if (ImGui::IsMouseDoubleClicked(0))  // apply path
-                                {
+                                if (ImGui::IsMouseDoubleClicked(0)) {  // apply path
                                     vFileDialogInternal.fileManager.SetCurrentPath(place.path);
                                     vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
                                     res = true;
