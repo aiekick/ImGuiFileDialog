@@ -190,9 +190,6 @@ SOFTWARE.
 #ifndef resetButtonString
 #define resetButtonString "R"
 #endif  // resetButtonString
-#ifndef drivesButtonString
-#define drivesButtonString "Drives"
-#endif  // drivesButtonString
 #ifndef editPathButtonString
 #define editPathButtonString "E"
 #endif  // editPathButtonString
@@ -217,9 +214,6 @@ SOFTWARE.
 #ifndef buttonResetSearchString
 #define buttonResetSearchString "Reset search"
 #endif  // buttonResetSearchString
-#ifndef buttonDriveString
-#define buttonDriveString "Drives"
-#endif  // buttonDriveString
 #ifndef buttonEditPathString
 #define buttonEditPathString "Edit path\nYou can also right click on path buttons"
 #endif  // buttonEditPathString
@@ -1685,7 +1679,6 @@ IGFD::FileManager::FileManager() {
 }
 
 void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInternal) {
-    showDrives = false;
     ClearComposer();
     ClearFileLists();
     if (dLGDirectoryMode) {  // directory mode
@@ -2013,7 +2006,6 @@ bool IGFD::FileManager::GetDrives() {
                 m_FileList.push_back(info);
             }
         }
-        showDrives = true;
         return true;
     }
     return false;
@@ -2300,24 +2292,15 @@ bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos
     } else {
         std::string newPath;
 
-        if (showDrives) {
-            newPath = vInfos->fileNameExt + IGFD::Utils::GetPathSeparator();
-        } else {
 #ifdef __linux__
             if (fsRoot == m_CurrentPath)
                 newPath = m_CurrentPath + vInfos->fileNameExt;
             else
 #endif  // __linux__
                 newPath = m_CurrentPath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
-        }
 
         if (m_FileSystemPtr->IsDirectoryCanBeOpened(newPath)) {
-            if (showDrives) {
-                m_CurrentPath = vInfos->fileNameExt;
-                fsRoot        = m_CurrentPath;
-            } else {
-                m_CurrentPath = newPath;  //-V820
-            }
+            m_CurrentPath = newPath;  //-V820
             pathClick = true;
         }
     }
@@ -2637,12 +2620,6 @@ void IGFD::FileDialogInternal::EndFrame() {
     // directory change
     if (fileManager.puPathClicked) {
         fileManager.OpenCurrentPath(*this);
-    }
-
-    if (fileManager.drivesClicked) {
-        if (fileManager.GetDrives()) {
-            fileManager.ApplyFilteringOnFileList(*this);
-        }
     }
 
     if (fileManager.inputPathActivated) {
@@ -3001,7 +2978,7 @@ void IGFD::PlacesFeature::m_InitPlaces(FileDialogInternal& vFileDialogInternal) 
     if (devices_ptr != nullptr && vFileDialogInternal.fileManager.GetFileSystemInstance() != nullptr) {
         const auto& devices = vFileDialogInternal.fileManager.GetFileSystemInstance()->GetDevicesList();
         IGFD::FileStyle style;
-        style.icon = ICON_IGFD_DRIVES;
+        style.icon = PLACE_DEVICES_ICON;
         for (const auto& device : devices) {
             devices_ptr->AddPlace(device.first + " " + device.second, device.first, false, style);
         }
@@ -3360,15 +3337,6 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
                                 m_LocateFileByInputChar_lastFileIdx = 0;
                             }
                         }
-#ifdef _IGFD_WIN_
-                        else {
-                            if (fdi.GetComposerSize() == 1U) {
-                                if (fdi.GetDrives()) {
-                                    fdi.ApplyFilteringOnFileList(vFileDialogInternal);
-                                }
-                            }
-                        }
-#endif  // _IGFD_WIN_
                     }
                 }
             }
@@ -3656,7 +3624,7 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
                 fdFilter.SetDefaultFilterIfNotDefined();
 
                 // init list of files
-                if (fdFile.IsFileListEmpty() && !fdFile.showDrives) {
+                if (fdFile.IsFileListEmpty()) {
                     if (fdFile.dLGpath != ".")                                                      // Removes extension seperator in filename if we don't check
                         IGFD::Utils::ReplaceString(fdFile.dLGDefaultFileName, fdFile.dLGpath, "");  // local path
 

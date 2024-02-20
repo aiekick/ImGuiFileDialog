@@ -1798,7 +1798,6 @@ public:
         defaultSortOrderFilename, defaultSortOrderType, defaultSortOrderSize, defaultSortOrderDate};
 #endif
     SortingFieldEnum sortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
-    bool showDrives = false;                                           // drives are shown (only on os windows)
 
     std::string dLGpath;               // base path set by user when OpenDialog was called
     std::string dLGDefaultFileName;    // base default file path name set by user when OpenDialog was called
