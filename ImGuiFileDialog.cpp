@@ -3169,6 +3169,7 @@ bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, c
     place.canBeSaved = vCanBeSaved;
     place.style      = vStyle;
     places.push_back(place);
+    return true;
 }
 
 bool IGFD::PlacesFeature::GroupStruct::RemovePlace(const std::string& vPlaceName) {
