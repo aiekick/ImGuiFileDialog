@@ -493,47 +493,58 @@ ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
 
 </blockquote></details>
 
-<details open><summary><h2>Bookmarks :</h2></summary><blockquote>
+<details open><summary><h2>Places :</h2></summary><blockquote>
 
-You can create/edit/call path bookmarks and load/save them.
+the Places system is a generic way for add custom links in the left side pane
 
-Activate this feature by uncommenting: `#define USE_BOOKMARK` in your custom config file (CustomImGuiFileDialogConfig.h)
+you can organize them by groups
 
-More customization options:
+The bookmarks and devices are now groups in the left side pane.
 
+for using it you need to 
 ```cpp
-#define bookmarkPaneWith 150.0f => width of the bookmark pane
-#define IMGUI_TOGGLE_BUTTON ToggleButton => customize the Toggled button (button stamp must be : (const char* label, bool *toggle)
-#define bookmarksButtonString "Bookmark" => the text in the toggle button
-#define bookmarksButtonHelpString "Bookmark" => the helper text when mouse over the button
-#define addBookmarkButtonString "+" => the button for add a bookmark
-#define removeBookmarkButtonString "-" => the button for remove the selected bookmark
+#define USE_PLACES_FEATURE 
+
+// for have default bookmark editable groups
+#define USE_PLACES_BOOKMARKS
+
+// for have default groups for system devices (returned by the IFileSystem interface)
+#define USE_PLACES_DEVICES
 ```
 
-* You can select each bookmark to edit the displayed name corresponding to a path
-* Double-click on the label to apply the bookmark
+see the config file for more customization
 
-![bookmarks.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/bookmarks.gif)
+you can also add your custom groups editable or not like what is done 
+the DemoApp branch with the "quick access" paths of win10
 
-You can also serialize/deserialize bookmarks (for example to load/save from/to a file):
-```cpp
-Load => ImGuiFileDialog::Instance()->DeserializeBookmarks(bookmarString);
-Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks();
-```
-
-you can also add/remove bookmark by code :
-
-and in this case, you can also avoid serialization of code based bookmark
+You must add a group first, then add a place to it :
 
 ```cpp
-Add => ImGuiFileDialog::Instance()->AddBookmark(bookmark_name, bookmark_path);
-Remove => ImGuiFileDialog::Instance()->RemoveBookmark(bookmark_name);
-
-// true for prevent serialization of code based bookmarks
-Save => std::string bookmarkString = ImGuiFileDialog::Instance()->SerializeBookmarks(true);
+// you must add a group first, specifu display order, and say if the user can add or remove palce like (bookmarks)
+ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, display_order, can_be_user_edited);
+// then you must get the group
+auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr(group_name);
+if (places_ptr != nullptr) {
+	// then add a place to the group
+	// you msut specify the place name, the palce path, say if the palce can be serialized, and sepcify the style
+	// for the moment the style support only the icon, can be extended if user needed in futur
+	places_ptr->AddPlace(place_name, place_path, can_be_saved, style);     
+}
 ```
 
-(please see example code for details)
+for editable group :
+* You can select each place to edit the displayed name corresponding to a path
+* Double-click on the label to apply the place
+
+![places.gif](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/places.gif)
+
+You can also serialize/deserialize groups and places (for example to load/save from/to a file):
+```cpp
+Load => ImGuiFileDialog::Instance()->DeserializePlaces(placesString);
+Save => std::string placesString = ImGuiFileDialog::Instance()->SerializePlaces();
+```
+
+(please see DemoApp branch for details)
 
 </blockquote></details>
 

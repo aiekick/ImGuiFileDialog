@@ -562,47 +562,6 @@ As you see the current item is flashed by default for 1 second. You can define t
 ```cpp
 ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(1.0f);
 ```
-
-################################################################
-## Places
-################################################################
-
-You can create/edit/call path place and load/save them.
-
-Activate this feature by uncommenting: `#define USE_PLACES_FEATURE` in your custom config file (CustomImGuiFileDialogConfig.h)
-
-More customization options:
-
-```cpp
-#define placesPaneWith 150.0f => width of the place pane
-#define IMGUI_TOGGLE_BUTTON ToggleButton => customize the Toggled button (button stamp must be : (const char* label,
-bool *toggle) #define placesButtonString "Place" => the text in the toggle button #define
-placesButtonHelpString "Place" => the helper text when mouse over the button #define addPlaceButtonString "+"
-=> the button for add a place #define removePlaceButtonString "-" => the button for remove the selected place
-```
-
-* You can select each place to edit the displayed name corresponding to a path
-* Double-click on the label to apply the place
-
-![place.gif](https://github.com/aiekick/ImGuiFileDialog/blob/master/doc/place.gif)
-
-You can also serialize/deserialize place (for example to load/save from/to a file):
-```cpp
-Load => ImGuiFileDialog::Instance()->DeserializePlaces(bookmarString);
-Save => std::string placesString = ImGuiFileDialog::Instance()->SerializePlaces();
-```
-(please see example code for details)
-
-you can also add/remove place by code :
-and in this case, you can also avoid serialization of code based place
-
-```cpp
-Add => ImGuiFileDialog::Instance()->AddPlace(places_name, places_path);
-Remove => ImGuiFileDialog::Instance()->RemovePlace(places_name);
-Save => std::string placesString = ImGuiFileDialog::Instance()->SerializePlaces(true); // true for prevent
-serialization of code based place
-```
-
 ################################################################
 ## Path Edition :
 ################################################################
@@ -1090,6 +1049,59 @@ vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",             //
     IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
 vFileInfosPtr->tooltipColumn  = 1;
 ```
+
+################################################################
+## Places
+################################################################
+
+the Places system is a generic way for add custom links in the left side pane
+
+you can organize them by groups
+
+The bookmarks and devices are now groups in the left side pane.
+
+for using it you need to
+```cpp
+#define USE_PLACES_FEATURE
+
+// for have default bookmark editable groups
+#define USE_PLACES_BOOKMARKS
+
+// for have default groups for system devices (returned by the IFileSystem interface)
+#define USE_PLACES_DEVICES
+```
+
+see the config file for more customization
+
+you can also add your custom groups editable or not like what is done
+the DemoApp branch with the "quick access" paths of win10
+
+You must add a group first, then add a place to it :
+
+```cpp
+// you must add a group first, specifu display order, and say if the user can add or remove palce like (bookmarks)
+ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, display_order, can_be_user_edited);
+// then you must get the group
+auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr(group_name);
+if (places_ptr != nullptr) {
+    // then add a place to the group
+    // you msut specify the place name, the palce path, say if the palce can be serialized, and sepcify the style
+    // for the moment the style support only the icon, can be extended if user needed in futur
+    places_ptr->AddPlace(place_name, place_path, can_be_saved, style);
+}
+```
+
+for editable group :
+* You can select each place to edit the displayed name corresponding to a path
+* Double-click on the label to apply the place
+
+You can also serialize/deserialize groups and places (for example to load/save from/to a file):
+```cpp
+Load => ImGuiFileDialog::Instance()->DeserializePlaces(placesString);
+Save => std::string placesString = ImGuiFileDialog::Instance()->SerializePlaces();
+```
+
+(please see DemoApp branch for details)
 
 ################################################################
 ## How to Integrate ImGuiFileDialog in your project

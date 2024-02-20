@@ -325,14 +325,23 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 #define defaultPlacePaneWith 150.0f
 #endif  // defaultPlacePaneWith
 #ifndef placesButtonString
-#define placesButtonString "Place"
+#define placesButtonString "Places"
 #endif  // placesButtonString
-#ifndef bookmarksGroupString
-#define bookmarksGroupString "Bookmarks"
-#endif  // bookmarksGroupString
 #ifndef placesButtonHelpString
-#define placesButtonHelpString "Place"
+#define placesButtonHelpString "Places"
 #endif  // placesButtonHelpString
+#ifndef placesBookmarksGroupName
+#define placesBookmarksGroupName "Bookmarks"
+#endif  // placesBookmarksName
+#ifndef placesBookmarksDisplayOrder
+#define placesBookmarksDisplayOrder 0
+#endif  // placesBookmarksDisplayOrder
+#ifndef placesDevicesGroupName
+#define placesDevicesGroupName "Devices"
+#endif  // placesDevicesGroupName
+#ifndef placesDevicesDisplayOrder
+#define placesDevicesDisplayOrder 10
+#endif  // placesDevicesDisplayOrder
 #ifndef addPlaceButtonString
 #define addPlaceButtonString "+"
 #endif  // addPlaceButtonString
@@ -2990,17 +2999,15 @@ IGFD::PlacesFeature::PlacesFeature() {
 #ifdef USE_PLACES_FEATURE
 void IGFD::PlacesFeature::m_InitPlaces(FileDialogInternal& vFileDialogInternal) {
 #ifdef USE_PLACES_BOOKMARKS
-    AddPlacesGroup(PLACE_BOOKMARKS_NAME, PLACE_BOOKMARKS_DISPLAY_ORDER, true);
+    AddPlacesGroup(placesBookmarksGroupName, placesBookmarksDisplayOrder, true);
 #endif  // USE_PLACES_BOOKMARK
 #ifdef USE_PLACES_DEVICES
-    AddPlacesGroup(PLACE_DEVICES_NAME, PLACE_DEVICES_DISPLAY_ORDER, false);
-    auto devices_ptr = GetPlacesGroupPtr(PLACE_DEVICES_NAME);
+    AddPlacesGroup(placesDevicesGroupName, placesDevicesDisplayOrder, false);
+    auto devices_ptr = GetPlacesGroupPtr(placesDevicesGroupName);
     if (devices_ptr != nullptr && vFileDialogInternal.fileManager.GetFileSystemInstance() != nullptr) {
         const auto& devices = vFileDialogInternal.fileManager.GetFileSystemInstance()->GetDevicesList();
-        IGFD::FileStyle style;
-        style.icon = PLACE_DEVICES_ICON;
         for (const auto& device : devices) {
-            devices_ptr->AddPlace(device.first + " " + device.second, device.first + IGFD::Utils::GetPathSeparator(), false, style);
+            devices_ptr->AddPlace(device.first + " " + device.second, device.first + IGFD::Utils::GetPathSeparator(), false);
         }
         devices_ptr = nullptr;
     }
@@ -3014,9 +3021,7 @@ void IGFD::PlacesFeature::m_DrawPlacesButton() {
 
 bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize) {
     bool res = false;
-
     ImGui::BeginChild("##placespane", vSize);
-
     for (const auto& group : m_OrderedGroups) {
         auto group_ptr = group.second.lock();
         if (group_ptr != nullptr) {
@@ -3025,10 +3030,7 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                     ImGui::PushID(group_ptr.get());
                     if (IMGUI_BUTTON(addPlaceButtonString "##ImGuiFileDialogAddPlace")) {
                         if (!vFileDialogInternal.fileManager.IsComposerEmpty()) {
-                            PlaceStruct place;
-                            place.name = vFileDialogInternal.fileManager.GetBack();
-                            place.path = vFileDialogInternal.fileManager.GetCurrentPath();
-                            group_ptr->places.push_back(place);
+                            group_ptr->AddPlace(vFileDialogInternal.fileManager.GetBack(), vFileDialogInternal.fileManager.GetCurrentPath(), true);
                         }
                     }
                     if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
@@ -3039,7 +3041,6 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                                 --group_ptr->selectedPlaceForEdition;
                             }
                         }
-
                         if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
                             ImGui::SameLine();
                             ImGui::PushItemWidth(vSize.x - ImGui::GetCursorPosX());
@@ -3052,7 +3053,6 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                     ImGui::PopID();
                     ImGui::Separator();
                 }
-
                 if (!group_ptr->places.empty()) {
                     group_ptr->clipper.Begin((int)group_ptr->places.size(), ImGui::GetTextLineHeightWithSpacing());
                     while (group_ptr->clipper.Step()) {
@@ -3081,13 +3081,10 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                     }
                     group_ptr->clipper.End();
                 }
-
             }
         }
     }
-
     ImGui::EndChild();
-
     return res;
 }
 
