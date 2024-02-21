@@ -2048,6 +2048,7 @@ private:
         std::string path;  // absolute path of the place
         bool canBeSaved = true;  // defined by code, can be used for prevent serialization / deserialization
         FileStyle style;
+        float thickness = 0.0f; // when more than 0.0f, is a separator
     };
 
     struct GroupStruct {
@@ -2064,6 +2065,7 @@ private:
             const std::string& vPlacePath,                // place path
             const bool& vCanBeSaved,                      // prevent serialization
             const FileStyle& vStyle = {});                     // style
+        void AddPlaceSeparator(const float& vThickness = 1.0f);
         bool RemovePlace(                                 // remove a place by code, return true if succeed
             const std::string& vPlaceName);               // place name to remove
     };

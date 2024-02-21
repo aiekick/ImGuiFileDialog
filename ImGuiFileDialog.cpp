@@ -348,6 +348,12 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 #ifndef removePlaceButtonString
 #define removePlaceButtonString "-"
 #endif  // removePlaceButtonString
+#ifndef validatePlaceButtonString
+#define validatePlaceButtonString "ok"
+#endif  // validatePlaceButtonString
+#ifndef editPlaceButtonString
+#define editPlaceButtonString "E"
+#endif  // editPlaceButtonString
 #ifndef IMGUI_TOGGLE_BUTTON
 inline bool inToggleButton(const char* vLabel, bool* vToggled) {
     bool pressed = false;
@@ -3012,6 +3018,7 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
         auto group_ptr = group.second.lock();
         if (group_ptr != nullptr) {
             if (ImGui::CollapsingHeader(group_ptr->name.c_str())) {
+                ImGui::BeginChild(group_ptr->name.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
                 if (group_ptr->canBeEdited) {
                     ImGui::PushID(group_ptr.get());
                     if (IMGUI_BUTTON(addPlaceButtonString "##ImGuiFileDialogAddPlace")) {
@@ -3021,13 +3028,18 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                     }
                     if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
                         ImGui::SameLine();
-                        if (IMGUI_BUTTON(removePlaceButtonString "##ImGuiFileDialogAddPlace")) {
+                        if (IMGUI_BUTTON(removePlaceButtonString "##ImGuiFileDialogRemovePlace")) {
                             group_ptr->places.erase(group_ptr->places.begin() + group_ptr->selectedPlaceForEdition);
                             if (group_ptr->selectedPlaceForEdition == (int)group_ptr->places.size()) {
                                 --group_ptr->selectedPlaceForEdition;
                             }
                         }
                         if (group_ptr->selectedPlaceForEdition >= 0 && group_ptr->selectedPlaceForEdition < (int)group_ptr->places.size()) {
+                            ImGui::SameLine();
+                            if (IMGUI_BUTTON(validatePlaceButtonString "##ImGuiFileDialogOkPlace")) {
+                                group_ptr->places[(size_t)group_ptr->selectedPlaceForEdition].name = std::string(group_ptr->editBuffer);
+                                group_ptr->selectedPlaceForEdition                                 = -1;
+                            }
                             ImGui::SameLine();
                             ImGui::PushItemWidth(vSize.x - ImGui::GetCursorPosX());
                             if (ImGui::InputText("##ImGuiFileDialogPlaceEdit", group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER)) {
@@ -3040,33 +3052,53 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
                     ImGui::Separator();
                 }
                 if (!group_ptr->places.empty()) {
+                    const auto& current_path = vFileDialogInternal.fileManager.GetCurrentPath();
                     group_ptr->clipper.Begin((int)group_ptr->places.size(), ImGui::GetTextLineHeightWithSpacing());
                     while (group_ptr->clipper.Step()) {
                         for (int i = group_ptr->clipper.DisplayStart; i < group_ptr->clipper.DisplayEnd; i++) {
-                            if (i < 0) continue;
+                            if (i < 0) {
+                                continue;
+                            }
                             const PlaceStruct& place = group_ptr->places[(size_t)i];
-                            ImGui::PushID(i);
-                            std::string place_name = place.name;
-                            if (!place.style.icon.empty()) {
-                                place_name = place.style.icon + " " + place_name;
-                            }
-                            if (ImGui::Selectable(place_name.c_str(), group_ptr->selectedPlaceForEdition == i, ImGuiSelectableFlags_AllowDoubleClick) ||
-                                (group_ptr->selectedPlaceForEdition == -1 && place.path == vFileDialogInternal.fileManager.GetCurrentPath())) {  // select if path is current
-                                group_ptr->selectedPlaceForEdition = i;
-                                IGFD::Utils::ResetBuffer(group_ptr->editBuffer);
-                                IGFD::Utils::AppendToBuffer(group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER, place.name);
-                                if (ImGui::IsMouseDoubleClicked(0)) {  // apply path
-                                    vFileDialogInternal.fileManager.SetCurrentPath(place.path);
-                                    vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
-                                    res = true;
+                            if (place.thickness > 0.0f) {
+                                ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal, place.thickness);
+                            } else {
+                                ImGui::PushID(i);
+                                std::string place_name = place.name;
+                                if (!place.style.icon.empty()) {
+                                    place_name = place.style.icon + " " + place_name;
                                 }
-                            }
-                            ImGui::PopID();
-                            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", place.path.c_str());  //-V111
+                                if (group_ptr->canBeEdited) {
+                                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+                                    if (ImGui::SmallButton(editPlaceButtonString "##ImGuiFileDialogPlaceEditButton")) {
+                                        group_ptr->selectedPlaceForEdition = i;
+                                        IGFD::Utils::ResetBuffer(group_ptr->editBuffer);
+                                        IGFD::Utils::AppendToBuffer(group_ptr->editBuffer, MAX_FILE_DIALOG_NAME_BUFFER, place.name);
+                                    }
+                                    ImGui::PopStyleVar();
+                                    ImGui::PopStyleColor();
+                                    ImGui::SameLine();
+                                }
+                                if (ImGui::Selectable(place_name.c_str(), current_path == place.path || group_ptr->selectedPlaceForEdition == i, ImGuiSelectableFlags_AllowDoubleClick)) {  // select if path is current
+                                    if (ImGui::IsMouseDoubleClicked(0)) {
+                                        group_ptr->selectedPlaceForEdition = -1; // stop edition
+                                        // apply path
+                                        vFileDialogInternal.fileManager.SetCurrentPath(place.path);
+                                        vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
+                                        res = true;
+                                    }
+                                }
+                                ImGui::PopID();
+                                if (ImGui::IsItemHovered()) {
+                                    ImGui::SetTooltip("%s", place.path.c_str());
+                                }
+                            }                            
                         }
                     }
                     group_ptr->clipper.End();
                 }
+                ImGui::EndChild();
             }
         }
     }
@@ -3153,6 +3185,12 @@ bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, c
     place.style      = vStyle;
     places.push_back(place);
     return true;
+}
+
+void IGFD::PlacesFeature::GroupStruct::AddPlaceSeparator(const float& vThickness) {
+    PlaceStruct place;
+    place.thickness = vThickness;
+    places.push_back(place);
 }
 
 bool IGFD::PlacesFeature::GroupStruct::RemovePlace(const std::string& vPlaceName) {
