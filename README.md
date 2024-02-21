@@ -14,7 +14,7 @@ solutions.
 
 ## Possible Dialog Customization
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/demoApp/doc/demo_dialog.png)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/demo_dialog.png)
 
 ## ImGui Supported Version
 
@@ -156,7 +156,7 @@ void drawGui() {
 }
 ```
 
-![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/demoApp/doc/dlg_simple.gif)
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/dlg_simple.gif)
 
 </blockquote></details>
 
