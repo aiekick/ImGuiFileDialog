@@ -1,7 +1,12 @@
 #pragma once
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
 //#include <imgui.h>
 #include <CustomFont.h>
+#include <ImWidgets.h>
 
 // uncomment and modify defines under for customize ImGuiFileDialog
 
@@ -56,16 +61,16 @@
 
 // widget
 // begin combo widget
-//#define IMGUI_BEGIN_COMBO ImGui::BeginCombo
+#define IMGUI_BEGIN_COMBO ImGui::BeginContrastedCombo
 // uncomment if you want to have the combo resized by its content
 // when auto resized, FILTER_COMBO_MIN_WIDTH will be considered has minimum width
 #define FILTER_COMBO_AUTO_SIZE 1
 // filter combobox minimal width
 #define FILTER_COMBO_MIN_WIDTH 50.0f
 // button widget use for compose path
-//#define IMGUI_PATH_BUTTON ImGui::Button
+#define IMGUI_PATH_BUTTON ImGui::ContrastedButton_For_Dialogs
 // standard button
-//#define IMGUI_BUTTON ImGui::Button
+#define IMGUI_BUTTON ImGui::ContrastedButton_For_Dialogs
 
 // locales string
 #define createDirButtonString ICON_IGFD_ADD

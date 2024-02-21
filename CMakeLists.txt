@@ -40,6 +40,7 @@ endif ()
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h")
+add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_SOURCE_DIR}/CustomImWidgetsConfig.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if (USE_NEW_IMGUI_KEY_SYSTEM)
@@ -47,7 +48,9 @@ if (USE_NEW_IMGUI_KEY_SYSTEM)
 endif()
 
 file(GLOB MAIN_SOURCES ${CMAKE_SOURCE_DIR}/main.cpp)
-file(GLOB CUSTOM_SOURCES ${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h)
+file(GLOB CUSTOM_SOURCES 
+	${CMAKE_SOURCE_DIR}/CustomImGuiFileDialogConfig.h
+	${CMAKE_SOURCE_DIR}/CustomImWidgetsConfig.h)
 
 if (USE_BOOST_DEMO_FILESYSTEM)
 	file(GLOB BOOST_SOURCES ${CMAKE_SOURCE_DIR}/FileSystemBoost.hpp)
@@ -58,7 +61,12 @@ endif()
 
 file(GLOB RES_SOURCES 
 		${CMAKE_SOURCE_DIR}/CustomFont.cpp 
-		${CMAKE_SOURCE_DIR}/CustomFont.h)
+		${CMAKE_SOURCE_DIR}/CustomFont.h
+		${CMAKE_SOURCE_DIR}/Roboto_Medium.cpp
+		${CMAKE_SOURCE_DIR}/Roboto_Medium.h)
+file(GLOB RES_WIDGETS 
+		${CMAKE_SOURCE_DIR}/ImWidgets.cpp
+		${CMAKE_SOURCE_DIR}/ImWidgets.h)
 file(GLOB IMGUIIMPL_SOURCES 
 		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
 		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
@@ -66,8 +74,9 @@ file(GLOB IMGUIIMPL_SOURCES
 		${CMAKE_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
 source_group(main FILES ${MAIN_SOURCES})
 source_group(src\\Custom FILES ${CUSTOM_SOURCES})
-source_group(src\\Res FILES ${RES_SOURCES})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
+source_group(src\\Res FILES ${RES_SOURCES})
+source_group(src\\Widgets FILES ${RES_WIDGETS})
 
 if (APPLE)
 	##set(ICON icon.icns)
@@ -104,6 +113,7 @@ target_link_libraries(ImGuiFileDialog PRIVATE
 add_executable(${PROJECT}
 	MACOSX_BUNDLE
 	${RES_SOURCES}
+	${RES_WIDGETS}
 	${MAIN_SOURCES}
 	${BOOST_SOURCES}
 	${CUSTOM_SOURCES}

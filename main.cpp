@@ -5,6 +5,7 @@
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
+
 #include "imgui.h"
 #include "imgui_internal.h"
 
@@ -12,11 +13,14 @@
 #include "3rdparty/imgui/backends/imgui_impl_glfw.h"
 #include "ImGuiFileDialog.h"
 #include "CustomFont.cpp"
+#include "Roboto_Medium.cpp"
 #include <cstdio>
 #include <sstream>
 #include <fstream>
 #include <clocale>
 #include <string>
+
+#include <ImWidgets.h>
 
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define stat _stat
@@ -70,92 +74,104 @@ inline void InfosPane(const char* vFilter, IGFDUserDatas vUserDatas, bool* vCant
     if (vCantContinue) *vCantContinue = canValidateDialog;
 }
 
-inline bool RadioButtonLabeled(const char* label, const char* help, bool active, bool disabled) {
-    using namespace ImGui;
+void ApplyOrangeBlueTheme() {
+    ImGuiStyle style;
+    style.Colors[ImGuiCol_Text]                  = ImVec4(0.85f, 0.85f, 0.85f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.15f, 0.16f, 0.17f, 1.00f);
+    style.Colors[ImGuiCol_ChildBg]               = ImVec4(0.15f, 0.16f, 0.17f, 1.00f);
+    style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.15f, 0.16f, 0.17f, 1.00f);
+    style.Colors[ImGuiCol_Border]                = ImVec4(0.26f, 0.28f, 0.29f, 1.00f);
+    style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.32f, 0.34f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_FrameBg]               = ImVec4(0.21f, 0.29f, 0.36f, 1.00f);
+    style.Colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.26f, 0.59f, 0.98f, 0.71f);
+    style.Colors[ImGuiCol_FrameBgActive]         = ImVec4(0.26f, 0.59f, 0.98f, 0.93f);
+    style.Colors[ImGuiCol_TitleBg]               = ImVec4(0.18f, 0.20f, 0.21f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive]         = ImVec4(0.23f, 0.25f, 0.26f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.30f, 0.33f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_MenuBarBg]             = ImVec4(0.15f, 0.16f, 0.17f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.21f, 0.29f, 0.36f, 0.89f);
+    style.Colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.13f, 0.52f, 0.94f, 0.45f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.13f, 0.71f, 1.00f, 0.89f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.24f, 0.78f, 0.78f, 0.31f);
+    style.Colors[ImGuiCol_CheckMark]             = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrab]            = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_Button]                = ImVec4(1.00f, 0.60f, 0.00f, 0.80f);
+    style.Colors[ImGuiCol_ButtonHovered]         = ImVec4(1.00f, 0.48f, 0.00f, 0.80f);
+    style.Colors[ImGuiCol_ButtonActive]          = ImVec4(1.00f, 0.40f, 0.00f, 0.80f);
+    style.Colors[ImGuiCol_Header]                = ImVec4(0.13f, 0.52f, 0.94f, 0.66f);
+    style.Colors[ImGuiCol_HeaderHovered]         = ImVec4(0.13f, 0.52f, 0.94f, 1.00f);
+    style.Colors[ImGuiCol_HeaderActive]          = ImVec4(0.13f, 0.52f, 0.94f, 0.59f);
+    style.Colors[ImGuiCol_Separator]             = ImVec4(0.18f, 0.35f, 0.58f, 0.59f);
+    style.Colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+    style.Colors[ImGuiCol_SeparatorActive]       = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+    style.Colors[ImGuiCol_ResizeGrip]            = ImVec4(0.26f, 0.59f, 0.98f, 0.20f);
+    style.Colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+    style.Colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+    style.Colors[ImGuiCol_Tab]                   = ImVec4(0.20f, 0.41f, 0.68f, 0.00f);
+    style.Colors[ImGuiCol_TabHovered]            = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+    style.Colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.41f, 0.68f, 1.00f);
+    style.Colors[ImGuiCol_TabUnfocused]          = ImVec4(0.20f, 0.41f, 0.68f, 0.00f);
+    style.Colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.20f, 0.41f, 0.68f, 1.00f);
+    style.Colors[ImGuiCol_PlotLines]             = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram]         = ImVec4(0.13f, 0.52f, 0.94f, 0.95f);
+    style.Colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.19f, 0.19f, 0.20f, 1.00f);
+    style.Colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.31f, 0.31f, 0.35f, 1.00f);
+    style.Colors[ImGuiCol_TableBorderLight]      = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+    style.Colors[ImGuiCol_TableRowBg]            = ImVec4(0.15f, 0.16f, 0.17f, 1.00f);
+    style.Colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+    style.Colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+    style.Colors[ImGuiCol_DragDropTarget]        = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+    style.Colors[ImGuiCol_NavHighlight]          = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+    style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+    style.Colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+    style.Colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-    ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems) return false;
+    style.Colors[ImGuiCol_WindowBg].w   = 1.00f;
+    style.Colors[ImGuiCol_ChildBg].w    = 0.00f;
+    style.Colors[ImGuiCol_MenuBarBg]    = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
 
-    ImGuiContext& g         = *GImGui;
-    const ImGuiStyle& style = g.Style;
-    float w                 = CalcItemWidth();
-    if (w == window->ItemWidthDefault) w = 0.0f;  // no push item width
-    const ImGuiID id        = window->GetID(label);
-    const ImVec2 label_size = CalcTextSize(label, nullptr, true);
-    ImVec2 bb_size          = ImVec2(style.FramePadding.x * 2 - 1, style.FramePadding.y * 2 - 1) + label_size;
-    bb_size.x               = ImMax(w, bb_size.x);
+    // Main
+    style.WindowPadding     = ImVec2(4.00f, 4.00f);
+    style.FramePadding      = ImVec2(4.00f, 4.00f);
+    style.ItemSpacing       = ImVec2(4.00f, 4.00f);
+    style.ItemInnerSpacing  = ImVec2(4.00f, 4.00f);
+    style.TouchExtraPadding = ImVec2(0.00f, 0.00f);
+    style.IndentSpacing     = 8.00f;
+    style.ScrollbarSize     = 10.00f;
+    style.GrabMinSize       = 8.00f;
 
-    const ImRect check_bb(window->DC.CursorPos, window->DC.CursorPos + bb_size);
-    ItemSize(check_bb, style.FramePadding.y);
+    // Borders
+    style.WindowBorderSize = 0.00f;
+    style.ChildBorderSize  = 0.00f;
+    style.PopupBorderSize  = 1.00f;
+    style.FrameBorderSize  = 0.00f;
+    style.TabBorderSize    = 0.00f;
 
-    if (!ItemAdd(check_bb, id)) return false;
+    // Rounding
+    style.WindowRounding    = 2.00f;
+    style.ChildRounding     = 2.00f;
+    style.FrameRounding     = 2.00f;
+    style.PopupRounding     = 2.00f;
+    style.ScrollbarRounding = 2.00f;
+    style.GrabRounding      = 2.00f;
+    style.TabRounding       = 2.00f;
 
-    // check
-    bool pressed = false;
-    if (!disabled) {
-        bool hovered, held;
-        pressed = ButtonBehavior(check_bb, id, &hovered, &held);
+    // Alignment
+    style.WindowTitleAlign         = ImVec2(0.50f, 0.50f);
+    style.WindowMenuButtonPosition = ImGuiDir_Left;
+    style.ColorButtonPosition      = ImGuiDir_Right;
+    style.ButtonTextAlign          = ImVec2(0.50f, 0.50f);
+    style.SelectableTextAlign      = ImVec2(0.00f, 0.50f);
 
-        window->DrawList->AddRectFilled(check_bb.Min, check_bb.Max, GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), style.FrameRounding);
-        if (active) {
-            const ImU32 col = GetColorU32((hovered && held) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
-            window->DrawList->AddRectFilled(check_bb.Min, check_bb.Max, col, style.FrameRounding);
-        }
-    }
+    // Safe Area Padding
+    style.DisplaySafeAreaPadding = ImVec2(3.00f, 3.00f);
 
-    // circle shadow + bg
-    if (style.FrameBorderSize > 0.0f) {
-        window->DrawList->AddRect(check_bb.Min + ImVec2(1, 1), check_bb.Max, GetColorU32(ImGuiCol_BorderShadow), style.FrameRounding);
-        window->DrawList->AddRect(check_bb.Min, check_bb.Max, GetColorU32(ImGuiCol_Border), style.FrameRounding);
-    }
-
-    if (label_size.x > 0.0f) {
-        RenderText(check_bb.GetCenter() - label_size * 0.5f, label);
-    }
-
-    if (help && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", help);
-
-    return pressed;
-}
-
-template <typename T>
-inline bool RadioButtonLabeled_BitWize(const char* vLabel, const char* vHelp, T* vContainer, T vFlag,
-                                       bool vOneOrZeroAtTime     = false,  // only one selected at a time
-                                       bool vAlwaysOne           = true,   // radio behavior, always one selected
-                                       T vFlagsToTakeIntoAccount = (T)0, bool vDisableSelection = false,
-                                       ImFont* vLabelFont = nullptr)  // radio witl use only theses flags
-{
-    (void)vLabelFont;  // remove unused warnings
-
-    bool selected  = (*vContainer) & vFlag;
-    const bool res = RadioButtonLabeled(vLabel, vHelp, selected, vDisableSelection);
-    if (res) {
-        if (!selected) {
-            if (vOneOrZeroAtTime) {
-                if (vFlagsToTakeIntoAccount) {
-                    if (vFlag & vFlagsToTakeIntoAccount) {
-                        *vContainer = (T)(*vContainer & ~vFlagsToTakeIntoAccount);  // remove these flags
-                        *vContainer = (T)(*vContainer | vFlag);                     // add
-                    }
-                } else
-                    *vContainer = vFlag;  // set
-            } else {
-                if (vFlagsToTakeIntoAccount) {
-                    if (vFlag & vFlagsToTakeIntoAccount) {
-                        *vContainer = (T)(*vContainer & ~vFlagsToTakeIntoAccount);  // remove these flags
-                        *vContainer = (T)(*vContainer | vFlag);                     // add
-                    }
-                } else
-                    *vContainer = (T)(*vContainer | vFlag);  // add
-            }
-        } else {
-            if (vOneOrZeroAtTime) {
-                if (!vAlwaysOne) *vContainer = (T)(0);  // remove all
-            } else
-                *vContainer = (T)(*vContainer & ~vFlag);  // remove one
-        }
-    }
-    return res;
+    ImGui::GetStyle() = style;
 }
 
 class CustomDrawReadOnlyCheckBoxFileDialog : public ImGuiFileDialog {
@@ -316,9 +332,13 @@ int main(int, char**) {
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
     io.FontAllowUserScaling = true;  // zoom wiht ctrl + mouse wheel
 
+    ImGui::CustomStyle::Init();
+    ImGui::SetPUSHID(4577);
+    
     // Setup Dear ImGui style
     // ImGui::StyleColorsDark();
-    ImGui::StyleColorsClassic();
+    //ImGui::StyleColorsClassic();
+    ApplyOrangeBlueTheme();
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -392,7 +412,7 @@ int main(int, char**) {
     });
 #endif  // USE_THUMBNAILS
 
-    ImGui::GetIO().Fonts->AddFontDefault();
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, 15.0f);
     static const ImWchar icons_ranges[] = {ICON_MIN_IGFD, ICON_MAX_IGFD, 0};
     ImFontConfig icons_config;
     icons_config.MergeMode  = true;
@@ -598,7 +618,7 @@ int main(int, char**) {
             if (ImGui::CollapsingHeader("Settings")) {
 #ifdef USE_EXPLORATION_BY_KEYS
                 static float flashingAttenuationInSeconds = 1.0f;
-                if (ImGui::Button("R##resetflashlifetime")) {
+                if (ImGui::ContrastedButton("R##resetflashlifetime")) {
                     flashingAttenuationInSeconds = 1.0f;
                     ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
                     fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
@@ -626,45 +646,45 @@ int main(int, char**) {
                 ImGui::Indent();
                 {
                     ImGui::Text("Commons :");
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Modal", "Open dialog in modal mode", &flags, ImGuiFileDialogFlags_Modal);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Modal", "Open dialog in modal mode", &flags, ImGuiFileDialogFlags_Modal);
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Overwrite", "Overwrite verification before dialog closing", &flags, ImGuiFileDialogFlags_ConfirmOverwrite);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Overwrite", "Overwrite verification before dialog closing", &flags, ImGuiFileDialogFlags_ConfirmOverwrite);
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Hidden Files", "Hide Hidden Files", &flags, ImGuiFileDialogFlags_DontShowHiddenFiles);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Hide Hidden Files", "Hide Hidden Files", &flags, ImGuiFileDialogFlags_DontShowHiddenFiles);
 
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable Directory Creation", "Disable Directory Creation button in dialog", &flags, ImGuiFileDialogFlags_DisableCreateDirectoryButton);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable Directory Creation", "Disable Directory Creation button in dialog", &flags, ImGuiFileDialogFlags_DisableCreateDirectoryButton);
 #ifdef USE_THUMBNAILS
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable thumbnails mode", "Disable thumbnails display in dialo", &flags, ImGuiFileDialogFlags_DisableThumbnailMode);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable thumbnails mode", "Disable thumbnails display in dialo", &flags, ImGuiFileDialogFlags_DisableThumbnailMode);
 #endif  // USE_THUMBNAILS
 #ifdef USE_PLACES_FEATURE
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable place mode", "Disable place display in dialo", &flags, ImGuiFileDialogFlags_DisablePlaceMode);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable place mode", "Disable place display in dialo", &flags, ImGuiFileDialogFlags_DisablePlaceMode);
 #endif  // USE_PLACES_FEATURE
 
                     ImGui::Text("Hide Column by default : (saved in imgui.ini, \n\tso defined when the imgui.ini is not existing)");
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Type", "Hide Column file type by default", &flags, ImGuiFileDialogFlags_HideColumnType);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Hide Column Type", "Hide Column file type by default", &flags, ImGuiFileDialogFlags_HideColumnType);
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Size", "Hide Column file Size by default", &flags, ImGuiFileDialogFlags_HideColumnSize);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Hide Column Size", "Hide Column file Size by default", &flags, ImGuiFileDialogFlags_HideColumnSize);
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Hide Column Date", "Hide Column file Date by default", &flags, ImGuiFileDialogFlags_HideColumnDate);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Hide Column Date", "Hide Column file Date by default", &flags, ImGuiFileDialogFlags_HideColumnDate);
 
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Case Insensitive Extentions", "will not take into account the case of file extentions", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtention);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Case Insensitive Extentions", "will not take into account the case of file extentions", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtention);
 
                     ImGui::SameLine();
-                    RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>("Disable quick path selection", "Disable the quick path selection", &flags, ImGuiFileDialogFlags_DisableQuickPathSelection);
+                    ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable quick path selection", "Disable the quick path selection", &flags, ImGuiFileDialogFlags_DisableQuickPathSelection);
                     
                     ImGui::Separator();
                     ImGui::Text("Result Modes : for GetFilePathName and GetSelection");
                     
-                    if (RadioButtonLabeled("Add If No File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_AddIfNoFileExt, false)) {
+                    if (ImGui::RadioButtonLabeled(0.0f, "Add If No File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_AddIfNoFileExt, false)) {
                         resultMode = IGFD_ResultMode_::IGFD_ResultMode_AddIfNoFileExt;
                     }
                     ImGui::SameLine();
-                    if (RadioButtonLabeled("Overwrite File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_OverwriteFileExt, false)) {
+                    if (ImGui::RadioButtonLabeled(0.0f, "Overwrite File Ext", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_OverwriteFileExt, false)) {
                         resultMode = IGFD_ResultMode_::IGFD_ResultMode_OverwriteFileExt;
                     }
                     ImGui::SameLine();
-                    if (RadioButtonLabeled("Keep Input File", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_KeepInputFile, false)) {
+                    if (ImGui::RadioButtonLabeled(0.0f, "Keep Input File", nullptr, resultMode == IGFD_ResultMode_::IGFD_ResultMode_KeepInputFile, false)) {
                         resultMode = IGFD_ResultMode_::IGFD_ResultMode_KeepInputFile;
                     }
                 }
@@ -672,7 +692,7 @@ int main(int, char**) {
             }
 
             if (ImGui::CollapsingHeader("Singleton acces :")) {
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -680,7 +700,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters")) {
                     const char* filters =
                         "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
                     IGFD::FileDialogConfig config;
@@ -689,7 +709,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex ((Custom.+[.]h))")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex ((Custom.+[.]h))")) {
                     // the regex for being recognized at regex need to be between ( and )
                     const char* filters = "Regex Custom*.h{((Custom.+[.]h))}";
                     IGFD::FileDialogConfig config;
@@ -698,7 +718,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex (([a-zA-Z0-9]+)) for extention less files")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex (([a-zA-Z0-9]+)) for extention less files")) {
                     // the regex for being recognized at regex need to be between ( and )
                     const char* filters = "Regex ext less {(([a-zA-Z0-9]+))}";
                     IGFD::FileDialogConfig config;
@@ -707,7 +727,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -715,7 +735,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with infinite selection")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with infinite selection")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -723,7 +743,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with last file path name")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with last file path name")) {
                     const char* filters = ".*,.cpp,.h,.hpp";
                     IGFD::FileDialogConfig config;
                     config.path = ".";
@@ -732,14 +752,14 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) {
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
                     config.countSelectionMax = 1;
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
                     const char* filters = ".a.b";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -747,7 +767,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
                     const char* filters = ".*.*";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -755,7 +775,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .vcxproj.*")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .vcxproj.*")) {
                     const char* filters = ".vcxproj.*";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -763,7 +783,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with regex (([.]vcx))")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with regex (([.]vcx))")) {
                     const char* filters = "(([.]vcx))";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -771,7 +791,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
                     const char* filters = "multi layers{.filters, .a.b }";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -779,7 +799,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
                     IGFD::FileDialogConfig config;
                     config.path  = ".";
@@ -790,7 +810,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open File Dialog with custom size according to gltf files")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with custom size according to gltf files")) {
                     const char* filters = ".gltf";
                     IGFD::FileDialogConfig config;
                     config.path               = ".";
@@ -826,7 +846,7 @@ int main(int, char**) {
             }
 
             if (ImGui::CollapsingHeader("Open Directories :")) {
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog")) {
                     // let filters be null for open directory chooser
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -834,7 +854,7 @@ int main(int, char**) {
                     config.flags             = flags;
                     fileDialog2.OpenDialog("ChooseDirDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a Directory", nullptr, config);
                 }
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog with selection of 5 items")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open Directory Dialog with selection of 5 items")) {
                     // set filters be null for open directory chooser
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
@@ -845,7 +865,7 @@ int main(int, char**) {
             }
 
             if (ImGui::CollapsingHeader("Draw Override of the FileDialog for have a read only checkbox")) {
-                if (ImGui::Button(ICON_IGFD_FOLDER_OPEN " Open A Draww Override FileDialog with a read only btn")) {
+                if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open A Draww Override FileDialog with a read only btn")) {
                     const char* filters =
                         "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
                     IGFD::FileDialogConfig config;
@@ -860,7 +880,7 @@ int main(int, char**) {
             }
 
             if (ImGui::CollapsingHeader("C API instance demo")) {
-                if (ImGui::Button("C " ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
+                if (ImGui::ContrastedButton("C " ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                     const char* filters = "C++ File (*.cpp){.cpp}";
                     IGFD_FileDialog_Config config = IGFD_FileDialog_Config_Get();
                     config.path              = ".";
