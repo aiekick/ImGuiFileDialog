@@ -1,11 +1,5 @@
 #pragma once
 
-#if defined(__clang__)
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4251)
 #endif
