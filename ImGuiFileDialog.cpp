@@ -405,7 +405,7 @@ private:
 public:
     IGFDException(const std::string& vMessage) : m_Message(vMessage) {
     }
-    const char* what() {
+    const char* what() const override {
         return m_Message.c_str();
     }
 };
@@ -549,26 +549,30 @@ public:
                 res.push_back(file_two_dot);
             }
             for (const auto& file : dir_iter) {
-                IGFD::FileType fileType;
-                if (file.is_symlink()) {
-                    fileType.SetSymLink(file.is_symlink());
-                    fileType.SetContent(IGFD::FileType::ContentType::LinkToUnknown);
-                }
-                if (file.is_directory()) {
-                    fileType.SetContent(IGFD::FileType::ContentType::Directory);
-                }  // directory or symlink to directory
-                else if (file.is_regular_file()) {
-                    fileType.SetContent(IGFD::FileType::ContentType::File);
-                }
-                if (fileType.isValid()) {
-                    auto fileNameExt = file.path().filename().string();
-                    {
-                        IGFD::FileInfos _file;
-                        _file.filePath    = vPath;
-                        _file.fileNameExt = fileNameExt;
-                        _file.fileType    = fileType;
-                        res.push_back(_file);
+                try {
+                    IGFD::FileType fileType;
+                    if (file.is_symlink()) {
+                        fileType.SetSymLink(file.is_symlink());
+                        fileType.SetContent(IGFD::FileType::ContentType::LinkToUnknown);
                     }
+                    if (file.is_directory()) {
+                        fileType.SetContent(IGFD::FileType::ContentType::Directory);
+                    }  // directory or symlink to directory
+                    else if (file.is_regular_file()) {
+                        fileType.SetContent(IGFD::FileType::ContentType::File);
+                    }
+                    if (fileType.isValid()) {
+                        auto fileNameExt = file.path().filename().string();
+                        {
+                            IGFD::FileInfos _file;
+                            _file.filePath    = vPath;
+                            _file.fileNameExt = fileNameExt;
+                            _file.fileType    = fileType;
+                            res.push_back(_file);
+                        }
+                    }
+                } catch (const std::exception& ex) {
+                    printf("%s", ex.what());
                 }
             }
         } catch (const std::exception& ex) {
