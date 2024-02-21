@@ -116,6 +116,8 @@
 // #define placesButtonHelpString "Places"
 #define addPlaceButtonString ICON_IGFD_ADD
 #define removePlaceButtonString ICON_IGFD_REMOVE
+#define validatePlaceButtonString ICON_IGFD_OK
+#define editPlaceButtonString ICON_IGFD_EDIT
 
 // a group for bookmarks will be added by default, but you can also create it yourself and many more
 #define USE_PLACES_BOOKMARKS

@@ -533,13 +533,13 @@ int main(int, char**) {
         }                                                                                               \
         CoTaskMemFree(path);                                                                            \
     }
-        addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP)
-        addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME)
-        addKnownFolderAsPlace(FOLDERID_Downloads, "Downloads", ICON_IGFD_DOWNLOADS)
-        addKnownFolderAsPlace(FOLDERID_Pictures, "Pictures", ICON_IGFD_PICTURE)
-        addKnownFolderAsPlace(FOLDERID_Music, "Music", ICON_IGFD_MUSIC)
-        addKnownFolderAsPlace(FOLDERID_Videos, "Videos", ICON_IGFD_FILM)
-
+        addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP);
+        addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME);
+        places_ptr->AddPlaceSeparator(3.0f);  // add a separator
+        addKnownFolderAsPlace(FOLDERID_Downloads, "Downloads", ICON_IGFD_DOWNLOADS);
+        addKnownFolderAsPlace(FOLDERID_Pictures, "Pictures", ICON_IGFD_PICTURE);
+        addKnownFolderAsPlace(FOLDERID_Music, "Music", ICON_IGFD_MUSIC);
+        addKnownFolderAsPlace(FOLDERID_Videos, "Videos", ICON_IGFD_FILM);
 #undef addKnownFolderAsPlace
 #else
 #endif
