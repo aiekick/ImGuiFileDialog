@@ -332,7 +332,13 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 #endif  // placesButtonHelpString
 #ifndef placesBookmarksGroupName
 #define placesBookmarksGroupName "Bookmarks"
-#endif  // placesBookmarksName
+#endif  // placesBookmarksGroupName
+#ifndef PLACES_BOOKMARK_DEFAULT_OPEPEND
+#define PLACES_BOOKMARK_DEFAULT_OPEPEND true
+#endif  // PLACES_BOOKMARK_DEFAULT_OPEPEND
+#ifndef PLACES_DEVICES_DEFAULT_OPEPEND
+#define PLACES_DEVICES_DEFAULT_OPEPEND true
+#endif  // PLACES_DEVICES_DEFAULT_OPEPEND
 #ifndef placesBookmarksDisplayOrder
 #define placesBookmarksDisplayOrder 0
 #endif  // placesBookmarksDisplayOrder
@@ -2999,10 +3005,10 @@ IGFD::PlacesFeature::PlacesFeature() {
 #ifdef USE_PLACES_FEATURE
 void IGFD::PlacesFeature::m_InitPlaces(FileDialogInternal& vFileDialogInternal) {
 #ifdef USE_PLACES_BOOKMARKS
-    AddPlacesGroup(placesBookmarksGroupName, placesBookmarksDisplayOrder, true);
+    AddPlacesGroup(placesBookmarksGroupName, placesBookmarksDisplayOrder, true, PLACES_BOOKMARK_DEFAULT_OPEPEND);
 #endif  // USE_PLACES_BOOKMARK
 #ifdef USE_PLACES_DEVICES
-    AddPlacesGroup(placesDevicesGroupName, placesDevicesDisplayOrder, false);
+    AddPlacesGroup(placesDevicesGroupName, placesDevicesDisplayOrder, false, PLACES_DEVICES_DEFAULT_OPEPEND);
     auto devices_ptr = GetPlacesGroupPtr(placesDevicesGroupName);
     if (devices_ptr != nullptr && vFileDialogInternal.fileManager.GetFileSystemInstance() != nullptr) {
         const auto& devices = vFileDialogInternal.fileManager.GetFileSystemInstance()->GetDevicesList();
