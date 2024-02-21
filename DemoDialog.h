@@ -29,7 +29,7 @@ public:
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 public:
-    void init();
+    void init(const float& vFontSize);
     void display(const int32_t& vDisplayWidth, const int32_t& vDisplayHeight);
     void manageGPU();
     void unit();

@@ -116,7 +116,7 @@ int main(int, char**) {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     DemoDialog demoDialog;
-    demoDialog.init();   
+    demoDialog.init(15.0f);   
 
     // Main loop
     int32_t display_w = 0;

@@ -147,7 +147,7 @@ void Init(struct android_app* app)
     g_IniFilename = std::string(app->activity->internalDataPath) + "/imgui.ini";
     io.IniFilename = g_IniFilename.c_str();
 	
-    g_DemoDialog.init();   
+    g_DemoDialog.init(50.0f);   
 
     // Setup Platform/Renderer backends
     ImGui_ImplAndroid_Init(g_App->window);
