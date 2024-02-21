@@ -1702,7 +1702,11 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract) {
 
 IGFD::FileManager::FileManager() {
     fsRoot           = IGFD::Utils::GetPathSeparator();
-    m_FileSystemName = typeid(FILE_SYSTEM_OVERRIDE).name();
+#define STR(x)              #x
+#define STR_AFTER_EXPAND(x) STR(x)
+    m_FileSystemName = STR_AFTER_EXPAND(FILE_SYSTEM_OVERRIDE);
+#undef STR_AFTER_EXPAND
+#undef STR
     // std::make_unique is not available un cpp11
     m_FileSystemPtr = std::unique_ptr<FILE_SYSTEM_OVERRIDE>(new FILE_SYSTEM_OVERRIDE());
     // m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
@@ -3544,7 +3548,9 @@ void IGFD::KeyExplorerFeature::SetFlashingAttenuationInSeconds(float vAttenValue
 #pragma region FileDialog
 
 IGFD::FileDialog::FileDialog() : PlacesFeature(), KeyExplorerFeature(), ThumbnailFeature() {
+#ifdef USE_PLACES_FEATURE
     m_InitPlaces(m_FileDialogInternal);
+#endif
 }
 IGFD::FileDialog::~FileDialog() = default;
 
