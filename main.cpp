@@ -702,7 +702,7 @@ int main(int, char**) {
                 }
                 if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters")) {
                     const char* filters =
-                        "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
+                        "All files {.*},Frames Format 1 (.001,.NNN){(([.][0-9]{3}))},Frames Format 2 (nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
                     IGFD::FileDialogConfig config;
                     config.path              = ".";
                     config.countSelectionMax = 1;

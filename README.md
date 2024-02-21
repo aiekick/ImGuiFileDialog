@@ -12,6 +12,10 @@ ImGuiFileDialog is a file selection dialog built for (and using only) [Dear ImGu
 My primary goal was to have a custom pane with widgets according to file extension. This was not possible using other
 solutions.
 
+## Possible Dialog Customization
+
+![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/demoApp/doc/demo_dialog.png)
+
 ## ImGui Supported Version
 
 ImGuiFileDialog follow the master and docking branch of ImGui. Currently ImGui 1.90.4
