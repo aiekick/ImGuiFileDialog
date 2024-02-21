@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="ImGuiFileDialog_App"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:hasCode="true">
+
+        <activity
+            android:name="imguifiledialog.demo.android.MainActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true">
+            <meta-data android:name="android.app.lib_name"
+                android:value="ImGuiFileDialog_App" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
