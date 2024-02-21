@@ -13,7 +13,7 @@ option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDial
 option(USE_BOOST_DEMO_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-
+	set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
 endif()
 
 if (UNIX)

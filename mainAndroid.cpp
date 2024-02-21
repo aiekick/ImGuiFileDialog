@@ -195,6 +195,9 @@ void Init(struct android_app* app)
 
 void MainLoopStep()
 {
+    if (!g_Initialized)
+        return;
+
     ImGuiIO& io = ImGui::GetIO();
     if (g_EglDisplay == EGL_NO_DISPLAY)
         return;
