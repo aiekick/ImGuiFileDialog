@@ -793,7 +793,7 @@ bool IGFD::Utils::ImSplitter(bool split_vertically, float thickness, float* size
     ImRect bb;
     bb.Min = window->DC.CursorPos + (split_vertically ? ImVec2(*size1, 0.0f) : ImVec2(0.0f, *size1));
     bb.Max = bb.Min + CalcItemSize(split_vertically ? ImVec2(thickness, splitter_long_axis_size) : ImVec2(splitter_long_axis_size, thickness), 0.0f, 0.0f);
-    return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f);
+    return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 1.0f, 0.0, ImGui::GetColorU32(ImGuiCol_FrameBg));
 }
 
 // Convert a wide Unicode string to an UTF8 string
@@ -3786,7 +3786,6 @@ void IGFD::FileDialog::m_DrawContent() {
 #ifdef USE_PLACES_FEATURE
     if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode)) {
         if (m_PlacesPaneShown) {
-            // size.x -= m_PlaceWidth;
             float otherWidth = size.x - m_PlacesPaneWidth;
             ImGui::PushID("##splitterplaces");
             IGFD::Utils::ImSplitter(true, 4.0f, &m_PlacesPaneWidth, &otherWidth, 10.0f, 10.0f + m_FileDialogInternal.getDialogConfig().sidePaneWidth, size.y);
@@ -4090,8 +4089,7 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
 #endif  // USE_CUSTOM_SORTING_ICON
         ;
     auto listViewID = ImGui::GetID("##FileDialog_fileTable");
-    if (ImGui::BeginTableEx("##FileDialog_fileTable", listViewID, 4, flags, vSize, 0.0f))  //-V112
-    {
+    if (ImGui::BeginTableEx("##FileDialog_fileTable", listViewID, 4, flags, vSize, 0.0f)) { 
         ImGui::TableSetupScrollFreeze(0, 1);  // Make header always visible
         ImGui::TableSetupColumn(fdi.headerFileName.c_str(), ImGuiTableColumnFlags_WidthStretch | (defaultSortOrderFilename ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending), -1, 0);
         ImGui::TableSetupColumn(fdi.headerFileType.c_str(),

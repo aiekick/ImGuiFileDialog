@@ -125,28 +125,27 @@ included in the Lib_Only branch for your convenience.
     - 0 => Infinite
     - 1 => One file (default)
     - n => n files
-- Compatible with MacOs, Linux, Windows
-    - Windows version can list drives
+- Compatible with MacOs, Linux, Windows, Emscripten, Android
 - Supports modal or standard dialog types
 - Select files or directories
 - Filter groups and custom filter names
 - can ignore filter Case for file searching
 - Keyboard navigation (arrows, backspace, enter)
 - Exploring by entering characters (case insensitive)
-- Directory place
+- Custom places (bookmarks, system devices, whatever you want)
 - Directory manual entry (right click on any path element)
 - Optional 'Confirm to Overwrite" dialog if file exists
 - Thumbnails Display (agnostic way for compatibility with any backend, sucessfully tested with OpenGl and Vulkan)
 - The dialog can be embedded in another user frame than the standard or modal dialog
 - Can tune validation buttons (placements, widths, inversion)
 - Can quick select a parrallel directory of a path, in the path composer (when you clikc on a / you have a popup)
-- regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a
-filter)
+- regex support for filters, collection of filters and filestyle (the regex is recognized when between (( and )) in a filter)
 - multi layer extentions like : .a.b.c .json.cpp .vcxproj.filters etc..
-- advanced behavior regarding asterisk based filter. like : .* .*.* .vcx.* .*.filters .vcs*.filt.* etc.. (internally
-regex is used)
-- result modes GetFilePathName, GetFileName and GetSelection (overwrite file ext, keep file, add ext if no user ext
-exist)
+- advanced behavior regarding asterisk based filter. like : .* .*.* .vcx.* .*.filters .vcs*.filt.* etc.. (internally regex is used)
+- result modes GetFilePathName, GetFileName and GetSelection (overwrite file ext, keep file, add ext if no user ext exist)
+- you can use your own FileSystem Api
+    - by default Api Dirent and std::filesystem are defined
+    - you can override GetDrieveList for specify by ex on android other fs, like local and SDCards
 
 ################################################################
 ## Filter format
@@ -1079,8 +1078,10 @@ the DemoApp branch with the "quick access" paths of win10
 You must add a group first, then add a place to it :
 
 ```cpp
-// you must add a group first, specifu display order, and say if the user can add or remove palce like (bookmarks)
-ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, display_order, can_be_user_edited);
+// you must add a group first, specifu display order, and say :
+// if the user can add or remove palce like (bookmarks)
+// if the group is opened by default
+ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, display_order, can_be_user_edited, opened_by_default);
 // then you must get the group
 auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr(group_name);
 if (places_ptr != nullptr) {
@@ -1088,6 +1089,8 @@ if (places_ptr != nullptr) {
     // you msut specify the place name, the palce path, say if the palce can be serialized, and sepcify the style
     // for the moment the style support only the icon, can be extended if user needed in futur
     places_ptr->AddPlace(place_name, place_path, can_be_saved, style);
+    // you can also add a separator
+    places_ptr->AddPlaceSeparator(separator_thickness);
 }
 ```
 
@@ -1100,8 +1103,6 @@ You can also serialize/deserialize groups and places (for example to load/save f
 Load => ImGuiFileDialog::Instance()->DeserializePlaces(placesString);
 Save => std::string placesString = ImGuiFileDialog::Instance()->SerializePlaces();
 ```
-
-(please see DemoApp branch for details)
 
 ################################################################
 ## How to Integrate ImGuiFileDialog in your project
