@@ -354,6 +354,9 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 #ifndef editPlaceButtonString
 #define editPlaceButtonString "E"
 #endif  // editPlaceButtonString
+#ifndef PLACES_PANE_DEFAULT_SHOWN
+#define PLACES_PANE_DEFAULT_SHOWN false
+#endif  // PLACES_PANE_DEFAULT_SHOWN
 #ifndef IMGUI_TOGGLE_BUTTON
 inline bool inToggleButton(const char* vLabel, bool* vToggled) {
     bool pressed = false;
@@ -2985,6 +2988,7 @@ void IGFD::ThumbnailFeature::ManageGPUThumbnails() {
 IGFD::PlacesFeature::PlacesFeature() {
 #ifdef USE_PLACES_FEATURE
     m_PlacesPaneWidth = defaultPlacePaneWith;
+    m_PlacesPaneShown = PLACES_PANE_DEFAULT_SHOWN;
 #endif  // USE_PLACES_FEATURE
 }
 
@@ -3017,7 +3021,7 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
     for (const auto& group : m_OrderedGroups) {
         auto group_ptr = group.second.lock();
         if (group_ptr != nullptr) {
-            if (ImGui::CollapsingHeader(group_ptr->name.c_str())) {
+            if (ImGui::CollapsingHeader(group_ptr->name.c_str(), group_ptr->collapsingHeaderFlag)) {
                 ImGui::BeginChild(group_ptr->name.c_str(), ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
                 if (group_ptr->canBeEdited) {
                     ImGui::PushID(group_ptr.get());
@@ -3143,13 +3147,17 @@ void IGFD::PlacesFeature::DeserializePlaces(const std::string& vPlaces) {
     }
 }
 
-bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited) {
+bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited, const bool& vOpenedByDefault) {
     if (vGroupName.empty()) {
         return false;
     }
     auto group_ptr          = std::make_shared<GroupStruct>();
     group_ptr->displayOrder = vDisplayOrder;
     group_ptr->name         = vGroupName;
+    group_ptr->defaultOpened = vOpenedByDefault;
+    if (group_ptr->defaultOpened) {
+        group_ptr->collapsingHeaderFlag = ImGuiTreeNodeFlags_DefaultOpen;
+    }
     group_ptr->canBeSaved = group_ptr->canBeEdited = vCanBeEdited; // can be user edited mean can be saved
     m_Groups[vGroupName]     = group_ptr;
     m_OrderedGroups[group_ptr->displayOrder] = group_ptr; // an exisitng display order will be overwrote for code simplicity

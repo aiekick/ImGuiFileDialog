@@ -2052,22 +2052,24 @@ private:
     };
 
     struct GroupStruct {
-        bool canBeSaved     = false;                       // defined by code, can be used for prevent serialization / deserialization
-        size_t displayOrder = 0U;                         // the display order will be usedf first, then alphanumeric
-        std::string name;                                 // the group name, will be displayed
-        std::vector<PlaceStruct> places;                  // the places (name + path)
-        bool canBeEdited = false;                         // will show +/- button for add/remove place in the group
-        char editBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = ""; // temp buffer for name edition
+        bool canBeSaved                              = false;  // defined by code, can be used for prevent serialization / deserialization
+        size_t displayOrder                          = 0U;     // the display order will be usedf first, then alphanumeric
+        bool defaultOpened                           = false;  // the group is opened by default
+        bool canBeEdited                             = false;  // will show +/- button for add/remove place in the group
+        char editBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";     // temp buffer for name edition
         int32_t selectedPlaceForEdition              = -1;
-        ImGuiListClipper clipper; // the list clipper of the grou
-        bool AddPlace(                                    // add a place by code
-            const std::string& vPlaceName,                // place name
-            const std::string& vPlacePath,                // place path
-            const bool& vCanBeSaved,                      // prevent serialization
-            const FileStyle& vStyle = {});                     // style
+        ImGuiTreeNodeFlags collapsingHeaderFlag      = ImGuiTreeNodeFlags_None;
+        ImGuiListClipper clipper;           // the list clipper of the grou
+        std::string name;                   // the group name, will be displayed
+        std::vector<PlaceStruct> places;    // the places (name + path)
+        bool AddPlace(                      // add a place by code
+            const std::string& vPlaceName,  // place name
+            const std::string& vPlacePath,  // place path
+            const bool& vCanBeSaved,        // prevent serialization
+            const FileStyle& vStyle = {});  // style
         void AddPlaceSeparator(const float& vThickness = 1.0f);
-        bool RemovePlace(                                 // remove a place by code, return true if succeed
-            const std::string& vPlaceName);               // place name to remove
+        bool RemovePlace(                    // remove a place by code, return true if succeed
+            const std::string& vPlaceName);  // place name to remove
     };
 
 private:
@@ -2085,13 +2087,14 @@ protected:
 
 public:
     std::string SerializePlaces(                                    // serialize place : return place buffer to save in a file
-        const bool& vForceSerialisationForAll = true);              // for avoid serialization of places with flag canBeSaved to false
+        const bool& vForceSerialisationForAll = true);              // for avoid serialization of places with flag 'canBeSaved to false'
     void DeserializePlaces(                                         // deserialize place : load place buffer to load in the dialog (saved from
         const std::string& vPlaces);                                // previous use with SerializePlaces()) place buffer to load
     bool AddPlacesGroup(                                            // add a group
         const std::string& vGroupName,                              // the group name
         const size_t& vDisplayOrder,                                // the display roder of the group
-        const bool& vCanBeEdited);                                  // let the user add/remove place in the group
+        const bool& vCanBeEdited     = false,                       // let the user add/remove place in the group
+        const bool& vOpenedByDefault = true);                      // hte group is opened by default
     bool RemovePlacesGroup(const std::string& vGroupName);          // remove the group
     GroupStruct* GetPlacesGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
 #endif  // USE_PLACES_FEATURE
