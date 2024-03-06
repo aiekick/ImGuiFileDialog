@@ -405,7 +405,7 @@ private:
 public:
     IGFDException(const std::string& vMessage) : m_Message(vMessage) {
     }
-    const char* what() {
+    const char* what() const override {
         return m_Message.c_str();
     }
 };
