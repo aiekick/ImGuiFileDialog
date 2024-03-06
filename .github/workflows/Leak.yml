@@ -1,7 +1,7 @@
-name: Leak
+name: Leak Sanitizer
 
 on:
-  workflow_dispatch:
+  push:
     branches:
     - DemoApp
     paths-ignore:
