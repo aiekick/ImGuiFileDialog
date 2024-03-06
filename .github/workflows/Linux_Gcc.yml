@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Linux_Gcc:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]

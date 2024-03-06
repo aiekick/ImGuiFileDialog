@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Win_Clang:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]

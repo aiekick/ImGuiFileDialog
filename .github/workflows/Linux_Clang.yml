@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Linux_Clang:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]

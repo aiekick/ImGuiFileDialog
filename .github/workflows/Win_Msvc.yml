@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Win_Msvc:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]

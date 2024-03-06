@@ -1,4 +1,4 @@
-name: Win Gcc
+name: Osx Gcc
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Osx_Gcc:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]

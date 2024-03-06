@@ -11,7 +11,7 @@ on:
     - 'samples/**'
 
 jobs:
-  App:
+  Leak_Sanitizer:
     strategy:
       matrix:
         fs: [DIRENT, STD, BOOST]
