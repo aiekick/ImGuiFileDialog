@@ -1,9 +1,13 @@
-[![Win](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win.yml/badge.svg?branch=DemoApp)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win.yml)
-[![Linux](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux.yml/badge.svg?branch=DemoApp)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux.yml)
-[![Osx](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx.yml/badge.svg?branch=DemoApp)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx.yml)
-[![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.4-blue.svg)](https://github.com/ocornut/imgui)
-
 # ImGuiFileDialog
+
+## Build Matrix
+
+|  | Win | Linux | MacOs |
+|  :---: |  :---: |  :---: |  :---: |
+| Msvc | [![Win Msvc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Msvc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Msvc.yml)  |  |   |
+| Gcc |  | [![Linux Gcc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Gcc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Gcc.yml) | [![Osx Gcc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Gcc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Gcc.yml) |
+| Clang | [![Win Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Clang.yml) | [![Linux Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml)  | [![Osx Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml)  |
+| Leak Sanitizer | | [![Leak Sanitizer](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Leak.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Leak.yml) | |
 
 ## Purpose
 
@@ -18,7 +22,9 @@ solutions.
 
 ## ImGui Supported Version
 
-ImGuiFileDialog follow the master and docking branch of ImGui. Currently ImGui 1.90.4
+> [!NOTE]
+> ImGuiFileDialog follow the master and docking branch of ImGui.
+> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.4-blue.svg)](https://github.com/ocornut/imgui)
 
 ## Structure
 
