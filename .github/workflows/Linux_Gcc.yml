@@ -1,7 +1,7 @@
-name: Leak
+name: Linux Gcc
 
 on:
-  workflow_dispatch:
+  push:
     branches:
     - DemoApp
     paths-ignore:
@@ -27,11 +27,10 @@ jobs:
     - name: configure
       run: >
         mkdir build && cd build && cmake .. 
-        -DCMAKE_C_COMPILER=clang
-        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_CXX_COMPILER=g++
         -DCMAKE_BUILD_TYPE=Release 
         -DUSE_TEST=ON 
-        -DUSE_LEAK_SANITIZER=ON
         -DUSE_${{ matrix.fs }}_FILESYSTEM=ON
     - name: build
       run: cmake --build build --config Release
@@ -40,5 +39,5 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ImGuiFileDialog_App_Unix_${{ matrix.fs }}_FS
+        name: ImGuiFileDialog_App_Linux_${{ matrix.fs }}_FS
         path: build/ImGuiFileDialog_App_Unix

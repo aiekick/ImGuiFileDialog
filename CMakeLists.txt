@@ -9,8 +9,9 @@ project(${PROJECT} CXX)
 option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" ON)
 option(USE_TEST "Enable tests" ON)
 
+option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" ON)
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
-option(USE_BOOST_DEMO_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
+option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
@@ -22,7 +23,7 @@ endif()
 
 include(cmake/3rdparty.cmake)
 
-if (USE_BOOST_DEMO_FILESYSTEM)
+if (USE_BOOST_FILESYSTEM)
 	add_definitions(-DCUSTOM_FILESYSTEM_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp")
 endif()
 
@@ -55,7 +56,7 @@ file(GLOB CUSTOM_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/CustomImGuiFileDialogConfig.h
 	${CMAKE_CURRENT_SOURCE_DIR}/CustomImWidgetsConfig.h)
 
-if (USE_BOOST_DEMO_FILESYSTEM)
+if (USE_BOOST_FILESYSTEM)
 	file(GLOB BOOST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp)
 	source_group(src\\Boost FILES ${BOOST_SOURCES})
 elseif (USE_STD_FILESYSTEM)
@@ -189,7 +190,7 @@ else()
 	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
 	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 11)
 	set_target_properties(imgui PROPERTIES CXX_STANDARD 11)
-	if (USE_BOOST_DEMO_FILESYSTEM)
+	if (USE_BOOST_FILESYSTEM)
 		message("USE C++11 and BOOST as demo custom filesystem")
 	else()
 		message("USE C++11 and DIRENT")
