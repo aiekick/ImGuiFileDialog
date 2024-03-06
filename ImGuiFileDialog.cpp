@@ -396,22 +396,6 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 
 #pragma region INTERNAL
 
-#pragma region EXCEPTION
-
-class IGFDException : public std::exception {
-private:
-    std::string m_Message;
-
-public:
-    IGFDException(const std::string& vMessage) : m_Message(vMessage) {
-    }
-    const char* what() const override {
-        return m_Message.c_str();
-    }
-};
-
-#pragma endregion
-
 #pragma region FILE SYSTEM INTERFACE
 
 #ifndef CUSTOM_FILESYSTEM_INCLUDE
@@ -572,11 +556,11 @@ public:
                         }
                     }
                 } catch (const std::exception& ex) {
-                    printf("%s", ex.what());
+                    std::cout << "IGFD : " << ex.what() << std::endl;
                 }
             }
         } catch (const std::exception& ex) {
-            printf("%s", ex.what());
+            std::cout << "IGFD : " << ex.what() << std::endl;
         }
         return res;
     }
@@ -1085,8 +1069,8 @@ void IGFD::FilterInfos::addCollectionFilter(const std::string& vFilter, const bo
             auto rx = std::regex(vFilter);
             filters.try_add(vFilter);
             filters_regex.emplace_back(rx);
-        } catch (std::exception&) {
-            assert(0);  // YOUR REGEX FILTER IS INVALID
+        } catch (std::exception& e) {
+            std::cout << "IGFD : The regex \"" << vFilter << "\" parsing was failed with msg : " << e.what() << std::endl;
         }
     }
 }
