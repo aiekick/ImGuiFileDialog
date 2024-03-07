@@ -24,7 +24,6 @@ jobs:
       run : git submodule update --init --recursive 
     - name: Add clang path to $PATH env
       shell: bash
-      if: runner.os == 'Windows'
       run: echo "PATH=$PATH:C:\msys64\mingw64\bin" >> $GITHUB_ENV
     - name: configure
       run: >
