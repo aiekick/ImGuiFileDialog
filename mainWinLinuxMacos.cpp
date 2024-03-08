@@ -18,6 +18,7 @@
 #include <fstream>
 #include <clocale>
 #include <string>
+#include <iostream>
 
 // About Desktop OpenGL function loaders:
 //  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
@@ -136,7 +137,12 @@ int main(int, char**) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        demoDialog.display(display_w, display_h);
+        try {
+            demoDialog.display(display_w, display_h);
+        } catch (std::exception& ex) {
+            std::cout << "exception catched with message : " << ex.what() << std::endl;
+            assert(0);
+        }
 
         // Cpu Zone : prepare
         ImGui::Render();
