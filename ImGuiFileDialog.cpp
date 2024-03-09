@@ -420,25 +420,39 @@ public:
 
 #ifndef CUSTOM_FILESYSTEM_INCLUDE
 #ifdef USE_STD_FILESYSTEM
+
+static std::filesystem::path stringToPath(const std::string& str)
+{
+#ifdef _IGFD_WIN_
+    return std::filesystem::path(IGFD::Utils::UTF8Decode(str));
+#else
+    return std::filesystem::path(str);
+#endif
+}
+
+static std::string pathToString(const std::filesystem::path& path)
+{
+#ifdef _IGFD_WIN_
+    return IGFD::Utils::UTF8Encode(path.wstring());
+#else
+    return path.string();
+#endif
+}
+
 class FileSystemStd : public IGFD::IFileSystem {
 public:
     bool IsDirectoryCanBeOpened(const std::string& vName) override {
         bool bExists = false;
         if (!vName.empty()) {
             namespace fs = std::filesystem;
-#ifdef _IGFD_WIN_
-            std::wstring wname = IGFD::Utils::UTF8Decode(vName.c_str());
-            fs::path pathName  = fs::path(wname);
-#else   // _IGFD_WIN_
-            fs::path pathName = fs::path(vName);
-#endif  // _IGFD_WIN_
+            auto pathName = stringToPath(vName);
             try {
                 // interesting, in the case of a protected dir or for any reason the dir cant be opened
                 // this func will work but will say nothing more . not like the dirent version
                 bExists = fs::is_directory(pathName);
                 // test if can be opened, this function can thrown an exception if there is an issue with this dir
                 // here, the dir_iter is need else not exception is thrown..
-                const auto dir_iter = std::filesystem::directory_iterator(pathName);
+                const auto dir_iter = fs::directory_iterator(pathName);
                 (void)dir_iter;  // for avoid unused warnings
             } catch (const std::exception& /*ex*/) {
                 // fail so this dir cant be opened
@@ -450,45 +464,28 @@ public:
     bool IsDirectoryExist(const std::string& vName) override {
         if (!vName.empty()) {
             namespace fs = std::filesystem;
-#ifdef _IGFD_WIN_
-            std::wstring wname = IGFD::Utils::UTF8Decode(vName.c_str());
-            fs::path pathName  = fs::path(wname);
-#else   // _IGFD_WIN_
-            fs::path pathName = fs::path(vName);
-#endif  // _IGFD_WIN_
-            return fs::is_directory(pathName);
+            return fs::is_directory(stringToPath(vName));
         }
         return false;  // this is not a directory!
     }
     bool IsFileExist(const std::string& vName) override {
         namespace fs = std::filesystem;
-        return fs::is_regular_file(vName);
+        return fs::is_regular_file(stringToPath(vName));
     }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {
-        bool res = false;
-        if (!vName.empty()) {
-            if (!IsDirectoryExist(vName)) {
-#ifdef _IGFD_WIN_
-                namespace fs       = std::filesystem;
-                std::wstring wname = IGFD::Utils::UTF8Decode(vName.c_str());
-                fs::path pathName  = fs::path(wname);
-                res                = fs::create_directory(pathName);
-#elif defined(__EMSCRIPTEN__)  // _IGFD_WIN_
-                std::string str = std::string("FS.mkdir('") + vName + "');";
-                emscripten_run_script(str.c_str());
-                res = true;
-#elif defined(_IGFD_UNIX_)
-                char buffer[PATH_MAX] = {};
-                snprintf(buffer, PATH_MAX, "mkdir -p \"%s\"", vName.c_str());
-                const int dir_err = std::system(buffer);
-                if (dir_err != -1) {
-                    res = true;
-                }
+        if (vName.empty()) return false;
+        if (IsDirectoryExist(vName)) return false; // TODO is this really an error?  Should this be checked at all? (creating an existing directory is not an error)
+
+#if defined(__EMSCRIPTEN__)
+        std::string str = std::string("FS.mkdir('") + vName + "');";
+        emscripten_run_script(str.c_str());
+        bool res = true;
+#else
+        namespace fs = std::filesystem;
+        bool res = fs::create_directories(stringToPath(vName));
 #endif  // _IGFD_WIN_
-                if (!res) {
-                    std::cout << "Error creating directory " << vName << std::endl;
-                }
-            }
+        if (!res) {
+            std::cout << "Error creating directory " << vName << std::endl;
         }
         return res;
     }
@@ -526,14 +523,14 @@ public:
         namespace fs = std::filesystem;
         IGFD::Utils::PathStruct res;
         if (vPathFileName.empty()) return res;
-        auto fsPath = fs::path(vPathFileName);
+        auto fsPath = stringToPath(vPathFileName);
         if (fs::is_directory(fsPath)) {
             res.name = "";
-            res.path = fsPath.string();
+            res.path = pathToString(fsPath);
             res.isOk = true;
         } else if (fs::is_regular_file(fsPath)) {
-            res.name = fsPath.filename().string();
-            res.path = fsPath.parent_path().string();
+            res.name = pathToString(fsPath.filename());
+            res.path = pathToString(fsPath.parent_path());
             res.isOk = true;
         }
         return res;
@@ -542,9 +539,10 @@ public:
     std::vector<IGFD::FileInfos> ScanDirectory(const std::string& vPath) override {
         std::vector<IGFD::FileInfos> res;
         try {
-            const std::filesystem::path fspath(vPath);
-            const auto dir_iter   = std::filesystem::directory_iterator(fspath);
-            IGFD::FileType fstype = IGFD::FileType(IGFD::FileType::ContentType::Directory, std::filesystem::is_symlink(std::filesystem::status(fspath)));
+            namespace fs = std::filesystem;
+            auto fspath = stringToPath(vPath);
+            const auto dir_iter   = fs::directory_iterator(fspath);
+            IGFD::FileType fstype = IGFD::FileType(IGFD::FileType::ContentType::Directory, fs::is_symlink(fs::status(fspath)));
             {
                 IGFD::FileInfos file_two_dot;
                 file_two_dot.filePath    = vPath;
@@ -566,7 +564,7 @@ public:
                         fileType.SetContent(IGFD::FileType::ContentType::File);
                     }
                     if (fileType.isValid()) {
-                        auto fileNameExt = file.path().filename().string();
+                        auto fileNameExt = pathToString(file.path().filename());
                         {
                             IGFD::FileInfos _file;
                             _file.filePath    = vPath;
@@ -586,7 +584,7 @@ public:
     }
     bool IsDirectory(const std::string& vFilePathName) override {
         namespace fs = std::filesystem;
-        return fs::is_directory(vFilePathName);
+        return fs::is_directory(stringToPath(vFilePathName));
     }
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemStd
