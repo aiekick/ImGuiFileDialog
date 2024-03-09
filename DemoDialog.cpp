@@ -322,16 +322,14 @@ void DemoDialog::init(const float& vFontSize) {
 
     // Fonts
     {
-        static const ImWchar icons_ranges_0[] = {0, ICON_MAX_RM, 0};
         ImFontConfig icons_config_0;
         icons_config_0.GlyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
-        // ImGui::GetIO().Fonts->AddFontDefault(&icons_config_0);
+        //ImGui::GetIO().Fonts->AddFontDefault(&icons_config_0);
     }
     {
-        static const ImWchar icons_ranges_1[] = {0, ICON_MAX_RM, 0};
         ImFontConfig icons_config_1;
         icons_config_1.GlyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
-        // ImGui::GetIO().Fonts->AddFontFromFileTTF("HanyiSentyPagodaRegular.ttf", vFontSize, &icons_config_1);
+        //ImGui::GetIO().Fonts->AddFontFromFileTTF("NotoSansSCRegular.ttf", vFontSize, &icons_config_1);
     }
     {  // Boboto Font
         ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, vFontSize);
