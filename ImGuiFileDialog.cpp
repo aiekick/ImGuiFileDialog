@@ -400,7 +400,7 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 
 class IGFDException : public std::exception {
 private:
-    char const* m_msg;
+    char const* m_msg{};
 
 public:
     IGFDException() : std::exception() {}
@@ -409,7 +409,7 @@ public:
           m_msg(vMsg) {
     }
     virtual ~IGFDException() = default;
-    char const* what() const override {
+    char const* what() const noexcept override {
         return m_msg;
     }
 };
