@@ -38,4 +38,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ImGuiFileDialog_App_Win32_${{ matrix.fs }}_FS
-        path: build\Release\ImGuiFileDialog_App_Win32.exe
+        path: bin\ImGuiFileDialog_App_Win32.exe

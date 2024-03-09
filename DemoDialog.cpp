@@ -10,6 +10,7 @@
 #include "ImGuiFileDialog.h"
 #include "CustomFont.cpp"
 #include "Roboto_Medium.cpp"
+//#include "HanyISentyPagodaRegular.cpp"
 #include <cstdio>
 #include <sstream>
 #include <fstream>
@@ -319,12 +320,29 @@ void DemoDialog::init(const float& vFontSize) {
     });
 #endif  // USE_THUMBNAILS
 
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, vFontSize);
-    static const ImWchar icons_ranges[] = {ICON_MIN_IGFD, ICON_MAX_IGFD, 0};
-    ImFontConfig icons_config;
-    icons_config.MergeMode  = true;
-    icons_config.PixelSnapH = true;
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_IGFD, vFontSize, &icons_config, icons_ranges);
+    // Fonts
+    {
+        static const ImWchar icons_ranges_0[] = {0, ICON_MAX_RM, 0};
+        ImFontConfig icons_config_0;
+        icons_config_0.GlyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
+        // ImGui::GetIO().Fonts->AddFontDefault(&icons_config_0);
+    }
+    {
+        static const ImWchar icons_ranges_1[] = {0, ICON_MAX_RM, 0};
+        ImFontConfig icons_config_1;
+        icons_config_1.GlyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
+        // ImGui::GetIO().Fonts->AddFontFromFileTTF("HanyiSentyPagodaRegular.ttf", vFontSize, &icons_config_1);
+    }
+    {  // Boboto Font
+        ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_RM, vFontSize);
+    }
+    {  // glyphs
+        static const ImWchar icons_ranges_3[] = {ICON_MIN_IGFD, ICON_MAX_IGFD, 0};
+        ImFontConfig icons_config_3;
+        icons_config_3.MergeMode  = true;
+        icons_config_3.PixelSnapH = true;
+        ImGui::GetIO().Fonts->AddFontFromMemoryCompressedBase85TTF(FONT_ICON_BUFFER_NAME_IGFD, vFontSize, &icons_config_3, icons_ranges_3);
+    }
 
     // Our state
 

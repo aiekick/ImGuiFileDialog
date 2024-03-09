@@ -13,6 +13,22 @@ option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" ON)
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
+## some defines for debug mode (before 3rdparty.cmake)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
+## some defines for debug mode (before 3rdparty.cmake)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
+set(FINAL_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}/debug")
+
+set(CMAKE_INSTALL_PREFIX .)
+set(CMAKE_INSTALL_BINDIR .)
+
+if(NOT CMAKE_DEBUG_POSTFIX)
+  set(CMAKE_DEBUG_POSTFIX _debug)
+endif()
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 	set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
 endif()
@@ -154,6 +170,11 @@ add_executable(${PROJECT}
 	${IMGUIIMPL_SOURCES})
 endif()
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+install(TARGETS ${PROJECT} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 if(UNIX)
     target_compile_options(${PROJECT} PUBLIC -Wno-unknown-pragmas)
@@ -235,3 +256,7 @@ if (USE_TEST)
 	enable_testing()
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif()
+
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}")
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
+set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")

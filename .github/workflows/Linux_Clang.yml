@@ -40,4 +40,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ImGuiFileDialog_App_Linux_${{ matrix.fs }}_FS
-        path: build/ImGuiFileDialog_App_Unix
+        path: bin/ImGuiFileDialog_App_Unix
