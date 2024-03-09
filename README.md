@@ -4,9 +4,9 @@
 
 |  | Win | Linux | MacOs |
 |  :---: |  :---: |  :---: |  :---: |
-| Msvc |  |  |   |
+| Msvc | [![Win Msvc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Msvc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Msvc.yml)  |  |   |
 | Gcc |  | [![Linux Gcc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Gcc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Gcc.yml) | [![Osx Gcc](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Gcc.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Gcc.yml) |
-| Clang | [![Win Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Win_Clang.yml) | [![Linux Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml)  | [![Osx Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml)  |
+| Clang |  | [![Linux Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Linux_Clang.yml)  | [![Osx Clang](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Osx_Clang.yml)  |
 | Leak Sanitizer | | [![Leak Sanitizer](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Leak.yml/badge.svg)](https://github.com/aiekick/ImGuiFileDialog/actions/workflows/Leak.yml) | |
 
 ## Purpose
