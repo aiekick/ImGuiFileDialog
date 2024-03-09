@@ -400,15 +400,17 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 
 class IGFDException : public std::exception {
 private:
-    std::string m_msg;
+    char const* m_msg;
 
 public:
-    explicit IGFDException(const std::string& vMsg) : 
+    IGFDException() : std::exception() {}
+    explicit IGFDException(char const* const vMsg) : 
         std::exception(), // std::exception(msg) is not availaiable on linux it seems... but on windos yes
           m_msg(vMsg) {
     }
-    const char* what() const override {
-        return m_msg.c_str();
+    virtual ~IGFDException() = default;
+    char const* what() const override {
+        return m_msg;
     }
 };
 
@@ -1089,7 +1091,7 @@ void IGFD::FilterInfos::addCollectionFilter(const std::string& vFilter, const bo
             filters_regex.emplace_back(rx);
         } catch (std::exception& e) {
 			const std::string msg = "IGFD : The regex \"" + vFilter + "\" parsing was failed with msg : " + e.what();
-            throw IGFDException(msg);
+            throw IGFDException(msg.c_str());
         }
     }
 }
