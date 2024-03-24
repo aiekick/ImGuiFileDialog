@@ -1910,7 +1910,7 @@ struct IGFD_API FileDialogConfig {
     std::string path;                                        // path
     std::string fileName;                                    // defaut file name
     std::string filePathName;                                // if not empty, the filename and the path will be obtained from filePathName
-    int32_t countSelectionMax  = 1;                          // count selection max
+    int32_t countSelectionMax  = 1;                          // count selection max, 0 for infinite
     UserDatas userDatas        = nullptr;                    // user datas (can be retrieved in pane)
     ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_None;  // ImGuiFileDialogFlags
     PaneFun sidePane;                                        // side pane callback
