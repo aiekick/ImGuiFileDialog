@@ -2288,20 +2288,20 @@ protected:
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef IMGUIFILEDIALOG_NO_EXPORT
-#define API
+#define IGFD_API
 #else  // IMGUIFILEDIALOG_NO_EXPORT
-#define API __declspec(dllexport)
+#define IGFD_API __declspec(dllexport)
 #endif  // IMGUIFILEDIALOG_NO_EXPORT
 #else   // defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
-#define API __attribute__((__visibility__("default")))
+#define IGFD_API __attribute__((__visibility__("default")))
 #else  // __GNUC__
-#define API
+#define IGFD_API
 #endif  // __GNUC__
 #endif  // defined _WIN32 || defined __CYGWIN__
 
 #ifdef __cplusplus
-#define IGFD_C_API extern "C" API
+#define IGFD_C_API extern "C" IGFD_API
 typedef IGFD::UserDatas IGFDUserDatas;
 typedef IGFD::PaneFun IGFDPaneFun;
 typedef IGFD::FileDialog ImGuiFileDialog;
