@@ -2324,7 +2324,7 @@ struct IGFD_FileDialog_Config {
     float sidePaneWidth;  // side pane width};
     ImGuiFileDialogFlags flags;    // ImGuiFileDialogFlags
 };
-IGFD_C_API IGFD_FileDialog_Config IGFD_FileDialog_Config_Get();  // return an initialized IGFD_FileDialog_Config
+IGFD_C_API struct IGFD_FileDialog_Config IGFD_FileDialog_Config_Get();  // return an initialized IGFD_FileDialog_Config
 
 struct IGFD_Selection_Pair {
     char* fileName;
@@ -2356,7 +2356,7 @@ IGFD_C_API void IGFD_OpenDialog(            // open a standard dialog
     const char* vKey,                       // key dialog
     const char* vTitle,                     // title
     const char* vFilters,                   // filters/filter collections. set it to null for directory mode
-    const IGFD_FileDialog_Config vConfig);  // config
+    const struct IGFD_FileDialog_Config vConfig);  // config
 
 IGFD_C_API bool IGFD_DisplayDialog(  // Display the dialog
     ImGuiFileDialog* vContextPtr,    // ImGuiFileDialog context
