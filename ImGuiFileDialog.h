@@ -1690,6 +1690,9 @@ public:
 
 class IGFD_API FileInfos {
 public:
+    static std::shared_ptr<FileInfos> create();
+
+public:
     // extention of the file, the array is the levels of ext, by ex : .a.b.c, will be save in {.a.b.c, .b.c, .c}
     // 10 level max are sufficient i guess. the others levels will be checked if countExtDot > 1
     std::array<std::string, EXT_MAX_LEVEL> fileExtLevels;
