@@ -408,7 +408,6 @@ public:
         std::exception(), // std::exception(msg) is not availaiable on linux it seems... but on windos yes
           m_msg(vMsg) {
     }
-    virtual ~IGFDException() = default;
     char const* what() const noexcept override {
         return m_msg;
     }
@@ -474,7 +473,7 @@ public:
     }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {
         if (vName.empty()) return false;
-        if (IsDirectoryExist(vName)) return false; // TODO is this really an error?  Should this be checked at all? (creating an existing directory is not an error)
+        if (IsDirectoryExist(vName)) return true;
 
 #if defined(__EMSCRIPTEN__)
         std::string str = std::string("FS.mkdir('") + vName + "');";
@@ -482,7 +481,7 @@ public:
         bool res = true;
 #else
         namespace fs = std::filesystem;
-        bool res = fs::create_directories(stringToPath(vName));
+        bool res = fs::create_directory(stringToPath(vName));
 #endif  // _IGFD_WIN_
         if (!res) {
             std::cout << "Error creating directory " << vName << std::endl;
@@ -508,7 +507,7 @@ public:
                 path_name.first = a;
                 path_name.second.clear();
                 std::wstring wpath = IGFD::Utils::UTF8Decode(a);
-                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, NULL, NULL, NULL, NULL, 0)) {
+                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, nullptr, nullptr, nullptr, nullptr, 0)) {
                     path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
                 }
                 res.push_back(path_name);
@@ -680,7 +679,7 @@ public:
                 path_name.first = a;
                 path_name.second.clear();
                 std::wstring wpath = IGFD::Utils::UTF8Decode(a);
-                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, NULL, NULL, NULL, NULL, 0)) {
+                if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, nullptr, nullptr, nullptr, nullptr, 0)) {
                     path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
                 }
                 res.push_back(path_name);
@@ -811,10 +810,10 @@ std::string IGFD::Utils::UTF8Encode(const std::wstring& wstr) {
     std::string res;
 #ifdef _IGFD_WIN_
     if (!wstr.empty()) {
-        int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), nullptr, 0, nullptr, nullptr);
         if (size_needed) {
             res = std::string(size_needed, 0);
-            WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &res[0], size_needed, NULL, NULL);
+            WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &res[0], size_needed, nullptr, nullptr);
         }
     }
 #else
@@ -829,7 +828,7 @@ std::wstring IGFD::Utils::UTF8Decode(const std::string& str) {
     std::wstring res;
 #ifdef _IGFD_WIN_
     if (!str.empty()) {
-        int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+        int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), nullptr, 0);
         if (size_needed) {
             res = std::wstring(size_needed, 0);
             MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &res[0], size_needed);
@@ -2879,11 +2878,14 @@ void IGFD::ThumbnailFeature::m_VariadicProgressBar(float fraction, const ImVec2&
 
 void IGFD::ThumbnailFeature::m_DrawThumbnailGenerationProgress() {
     if (m_ThumbnailGenerationThread.use_count() && m_ThumbnailGenerationThread->joinable()) {
+        m_ThumbnailFileDatasToGetMutex.lock();
         if (!m_ThumbnailFileDatasToGet.empty()) {
             const auto p = (float)((double)m_CountFiles / (double)m_ThumbnailFileDatasToGet.size());                     // read => no thread concurency issues
             m_VariadicProgressBar(p, ImVec2(50, 0), "%u/%u", m_CountFiles, (uint32_t)m_ThumbnailFileDatasToGet.size());  // read => no thread concurency issues
             ImGui::SameLine();
         }
+        m_ThumbnailFileDatasToGetMutex.unlock();
+        m_ThumbnailFileDatasToGetCv.notify_all();
     }
 }
 
@@ -2897,8 +2899,8 @@ void IGFD::ThumbnailFeature::m_AddThumbnailToLoad(const std::shared_ptr<FileInfo
                 m_ThumbnailFileDatasToGet.push_back(vFileInfos);
                 vFileInfos->thumbnailInfo.isLoadingOrLoaded = true;
                 m_ThumbnailFileDatasToGetMutex.unlock();
-                m_ThumbnailFileDatasToGetCv.notify_all();
             }
+            m_ThumbnailFileDatasToGetCv.notify_all();
         }
     }
 }
@@ -3428,7 +3430,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
 
     // Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
     ImGuiID id        = window->GetID(label);
-    ImVec2 label_size = CalcTextSize(label, NULL, true);
+    ImVec2 label_size = CalcTextSize(label, nullptr, true);
     ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
     ImVec2 pos = window->DC.CursorPos;
     pos.y += window->DC.CurrLineTextBaseOffset;
@@ -3468,7 +3470,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     }
 
     const bool disabled_item = (flags & ImGuiSelectableFlags_Disabled) != 0;
-    const bool item_add      = ItemAdd(bb, id, NULL, disabled_item ? ImGuiItemFlags_Disabled : ImGuiItemFlags_None);
+    const bool item_add      = ItemAdd(bb, id, nullptr, disabled_item ? ImGuiItemFlags_Disabled : ImGuiItemFlags_None);
     if (span_all_columns) {
         window->ClipRect.Min.x = backup_clip_rect_min_x;
         window->ClipRect.Max.x = backup_clip_rect_max_x;
@@ -3558,7 +3560,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
             PopColumnsBackground();
     }
 
-    RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
+    RenderTextClipped(text_min, text_max, label, nullptr, &label_size, style.SelectableTextAlign, &bb);
 
     // Automatically close popups
     if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.LastItemData.InFlags & ImGuiItemFlags_SelectableDontClosePopup)) CloseCurrentPopup();
