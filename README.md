@@ -26,6 +26,12 @@ solutions.
 > ImGuiFileDialog follow the master and docking branch of ImGui.
 > Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.4-blue.svg)](https://github.com/ocornut/imgui)
 
+### Documentation :
+
+> [!NOTE]
+> for a complete explanation and howto about ImGuiFileDialog Api, 
+> you can check the [**Documentation**](https://github.com/aiekick/ImGuiFileDialog/blob/master/Documentation.md)
+
 ## Structure
 
 * The library is in [Master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
@@ -127,11 +133,6 @@ void drawGui() {
 ```
 
 ![alt text](https://github.com/aiekick/ImGuiFileDialog/blob/DemoApp/doc/dlg_simple.gif)
-
-### Documentation :
-
-for a complete explantion and howto about ImGuiFileDialog Api, 
-you can check the Documentation [HERE](https://github.com/aiekick/ImGuiFileDialog/blob/master/Documentation.md)
 
 ### How to build the sample app
 
