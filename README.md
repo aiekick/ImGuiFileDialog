@@ -24,7 +24,7 @@ solutions.
 
 > [!NOTE]
 > ImGuiFileDialog follow the master and docking branch of ImGui.
-> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.4-blue.svg)](https://github.com/ocornut/imgui)
+> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.5-blue.svg)](https://github.com/ocornut/imgui)
 
 ### Documentation :
 
