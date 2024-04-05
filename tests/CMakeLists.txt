@@ -113,7 +113,7 @@ SetTest(Test_IGFD_FilterManager_FilterInfos_transformAsteriskBasedFilterToRegex_
 SetTest(Test_IGFD_FilterManager_IsCoveredByFilters_0)
 SetTest(Test_IGFD_FilterManager_IsCoveredByFilters_1)
 
-## Test_IGFD_FileManager -- Filtering ASterisk
+## Test_IGFD_FileManager -- Filtering Asterisk
 SetTest(Test_IGFD_FileManager_Filtering_asterisk_0)
 SetTest(Test_IGFD_FileManager_Filtering_asterisk_1)
 SetTest(Test_IGFD_FileManager_Filtering_asterisk_2)
@@ -129,6 +129,9 @@ SetTest(Test_IGFD_FileManager_Filtering_sensitive_case_0)
 SetTest(Test_IGFD_FileManager_Filtering_sensitive_case_1)
 SetTest(Test_IGFD_FileManager_Filtering_insensitive_case_0)
 SetTest(Test_IGFD_FileManager_Filtering_insensitive_case_1)
+
+## Test_IGFD_FileManager -- FileInfos SearchForExts
+SetTest(Test_IGFD_FileManager_FileInfos_SearchForExts_0)
 
 ## Test_IGFD_FileStyle
 ##SetTest(Test_IGFD_FileStyle_ByExtention_0)

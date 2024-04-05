@@ -208,6 +208,24 @@ bool Test_IGFD_FileManager_Filtering_insensitive_case_1() {
 
 #pragma endregion
 
+#pragma region FileInfos SearchForExts
+
+bool Test_IGFD_FileManager_FileInfos_SearchForExts_0() {
+    auto infos_ptr = IGFD::FileInfos::create();
+    infos_ptr->fileType.SetContent(IGFD::FileType::ContentType::File);
+    const std::string& filters = ".png,.gif,.jpg";
+    infos_ptr->fileNameExt = "toto_0.png";
+    if (!infos_ptr->FinalizeFileTypeParsing(1)) return false;
+    if (!infos_ptr->SearchForExts(filters, false)) return false;
+    infos_ptr->fileNameExt = "toto_0.0.png";
+    if (!infos_ptr->FinalizeFileTypeParsing(1)) return false;
+    if (!infos_ptr->SearchForExts(filters, false)) return false;
+
+    return true;
+}
+
+#pragma endregion
+
 #pragma region Entry Point
 
 #define IfTestExist(v) \
@@ -225,7 +243,8 @@ bool Test_FileManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FileManager_Filtering_sensitive_case_1);
     IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_0);
     IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_1);
-
+    IfTestExist(Test_IGFD_FileManager_FileInfos_SearchForExts_0);
+    
     assert(0);
 
     return false;
