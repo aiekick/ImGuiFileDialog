@@ -88,12 +88,16 @@ instance_b.method_of_your_choice();
 ```cpp
 void drawGui() { 
   // open Dialog Simple
-  if (ImGui::Button("Open File Dialog")) {
-    IGFD::FileDialogConfig config;config.path = ".";
-    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);
-  }
+  if (ImGui::Begin("##OpenDialogCommand")) {
+	  if (ImGui::Button("Open File Dialog")) {
+		IGFD::FileDialogConfig config;config.path = ".";
+		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config);
+	  }
+  )
+  ImGui::End();
+  
   // display
-  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) { // => will show a dialog
     if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
       std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
       std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
@@ -180,20 +184,23 @@ inline void InfosPane(cosnt char *vFilter, IGFDUserDatas vUserDatas, bool *vCant
 
 void drawGui()
 {
-  // open Dialog with Pane
-  if (ImGui::Button("Open File Dialog with a custom pane")) {
-	IGFD::FileDialogConfig config;
-	config.path = ".";
-	config.countSelectionMax = 1;
-	config.sidePane = std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-	config.sidePaneWidth = 350.0f;
-	config.useDatas = UserDatas("InfosPane");
-	config.flags = ImGuiFileDialogFlags_Modal;
-    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config); 
+  if (ImGui::Begin("##OpenDialogCommand")) {
+	  // open Dialog with Pane
+	  if (ImGui::Button("Open File Dialog with a custom pane")) {
+		IGFD::FileDialogConfig config;
+		config.path = ".";
+		config.countSelectionMax = 1;
+		config.sidePane = std::bind(&InfosPane, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		config.sidePaneWidth = 350.0f;
+		config.useDatas = UserDatas("InfosPane");
+		config.flags = ImGuiFileDialogFlags_Modal;
+		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config); 
+	  }
   }
+  ImGui::End();
 
   // display and action if ok
-  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) 
+  if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) // => will show a dialog
   {
     if (ImGuiFileDialog::Instance()->IsOk())
     {
