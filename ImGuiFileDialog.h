@@ -1349,6 +1349,19 @@ struct IGFD_Thumbnail_Info {
 
 #pragma endregion
 
+#pragma region IGFD API
+
+// Define attributes of all API symbols declarations (e.g. for DLL under Windows)
+// Using ImGuiFileDialog via a shared library is not recommended, because we don't guarantee
+// backward nor forward ABI compatibility and also function call overhead. If you
+// do use ImGuiFileDialog as a DLL, be sure to call SetImGuiContext (see Miscellanous section).
+
+#ifndef IGFD_API
+#define IGFD_API
+#endif  // IGFD_API
+
+#pragma endregion
+
 #ifdef __cplusplus
 
 #pragma region Includes
@@ -1379,19 +1392,6 @@ struct IGFD_Thumbnail_Info {
 #include <fstream>
 #include <functional>
 #include <unordered_map>
-
-#pragma endregion
-
-#pragma region IGFD API
-
-// Define attributes of all API symbols declarations (e.g. for DLL under Windows)
-// Using ImGuiFileDialog via a shared library is not recommended, because we don't guarantee
-// backward nor forward ABI compatibility and also function call overhead. If you
-// do use ImGuiFileDialog as a DLL, be sure to call SetImGuiContext (see Miscellanous section).
-
-#ifndef IGFD_API
-#define IGFD_API
-#endif  // IGFD_API
 
 #pragma endregion
 
@@ -2288,20 +2288,6 @@ protected:
 #pragma region IGFD_C_API
 
 #include <stdint.h>
-
-#if defined _WIN32 || defined __CYGWIN__
-#ifdef IMGUIFILEDIALOG_NO_EXPORT
-#define IGFD_API
-#else  // IMGUIFILEDIALOG_NO_EXPORT
-#define IGFD_API __declspec(dllexport)
-#endif  // IMGUIFILEDIALOG_NO_EXPORT
-#else   // defined _WIN32 || defined __CYGWIN__
-#ifdef __GNUC__
-#define IGFD_API __attribute__((__visibility__("default")))
-#else  // __GNUC__
-#define IGFD_API
-#endif  // __GNUC__
-#endif  // defined _WIN32 || defined __CYGWIN__
 
 #ifdef __cplusplus
 #define IGFD_C_API extern "C" IGFD_API
