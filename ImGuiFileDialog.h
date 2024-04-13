@@ -1247,21 +1247,22 @@ enum IGFD_FileStyleFlags_         // by evaluation / priority order
 #pragma region FLAGS : ImGuiFileDialogFlags
 
 typedef int ImGuiFileDialogFlags;  // -> enum ImGuiFileDialogFlags_
-enum ImGuiFileDialogFlags_ {
-    ImGuiFileDialogFlags_None = 0,                                 // define none default flag
-    ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),              // show confirm to overwrite dialog
-    ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),           // dont show hidden file (file starting with a .)
-    ImGuiFileDialogFlags_DisableCreateDirectoryButton = (1 << 2),  // disable the create directory button
-    ImGuiFileDialogFlags_HideColumnType = (1 << 3),                // hide column file type
-    ImGuiFileDialogFlags_HideColumnSize = (1 << 4),                // hide column file size
-    ImGuiFileDialogFlags_HideColumnDate = (1 << 5),                // hide column file date
-    ImGuiFileDialogFlags_NoDialog = (1 << 6),                      // let the dialog embedded in your own imgui begin / end scope
-    ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),         // don't let user type in filename field for file open style dialogs
-    ImGuiFileDialogFlags_CaseInsensitiveExtention = (1 << 8),      // the file extentions treatments will not take into account the case
-    ImGuiFileDialogFlags_Modal = (1 << 9),                         // modal
-    ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 10),         // disable the thumbnail mode
-    ImGuiFileDialogFlags_DisablePlaceMode = (1 << 11),          // disable the place mode
-    ImGuiFileDialogFlags_DisableQuickPathSelection = (1 << 12),    // disable the quick path selection
+enum ImGuiFileDialogFlags_ : int32_t {                              // 32 flags
+    ImGuiFileDialogFlags_None                         = 0,          // define none default flag
+    ImGuiFileDialogFlags_ConfirmOverwrite             = (1 << 0),   // show confirm to overwrite dialog
+    ImGuiFileDialogFlags_DontShowHiddenFiles          = (1 << 1),   // dont show hidden file (file starting with a .)
+    ImGuiFileDialogFlags_DisableCreateDirectoryButton = (1 << 2),   // disable the create directory button
+    ImGuiFileDialogFlags_HideColumnType               = (1 << 3),   // hide column file type
+    ImGuiFileDialogFlags_HideColumnSize               = (1 << 4),   // hide column file size
+    ImGuiFileDialogFlags_HideColumnDate               = (1 << 5),   // hide column file date
+    ImGuiFileDialogFlags_NoDialog                     = (1 << 6),   // let the dialog embedded in your own imgui begin / end scope
+    ImGuiFileDialogFlags_ReadOnlyFileNameField        = (1 << 7),   // don't let user type in filename field for file open style dialogs
+    ImGuiFileDialogFlags_CaseInsensitiveExtention     = (1 << 8),   // the file extentions treatments will not take into account the case
+    ImGuiFileDialogFlags_Modal                        = (1 << 9),   // modal
+    ImGuiFileDialogFlags_DisableThumbnailMode         = (1 << 10),  // disable the thumbnail mode
+    ImGuiFileDialogFlags_DisablePlaceMode             = (1 << 11),  // disable the place mode
+    ImGuiFileDialogFlags_DisableQuickPathSelection    = (1 << 12),  // disable the quick path selection
+    ImGuiFileDialogFlags_ShowDevicesButton            = (1 << 13),  // show the devices selection button
 
     // default behavior when no flags is defined. seems to be the more common cases
     ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite |  //
@@ -1790,8 +1791,8 @@ private:
 
 public:
     bool inputPathActivated = false;                             // show input for path edition
-    bool drivesClicked = false;                                  // event when a drive button is clicked
-    bool puPathClicked = false;                                  // event when a path button was clicked
+    bool devicesClicked = false;                                  // event when a drive button is clicked
+    bool pathClicked = false;                                  // event when a path button was clicked
     char inputPathBuffer[MAX_PATH_BUFFER_SIZE] = "";             // input path buffer for imgui widget input text (displayed in palce of composer)
     char variadicBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";       // called by m_SelectableItem
     char fileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";       // file name buffer in footer for imgui widget input text
@@ -1809,6 +1810,7 @@ public:
         defaultSortOrderFilename, defaultSortOrderType, defaultSortOrderSize, defaultSortOrderDate};
 #endif
     SortingFieldEnum sortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
+    bool showDevices = false;                                           // devices are shown (only on os windows)
 
     std::string dLGpath;               // base path set by user when OpenDialog was called
     std::string dLGDefaultFileName;    // base default file path name set by user when OpenDialog was called
@@ -1869,9 +1871,8 @@ public:
     void ClearAll();
     void ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal);
     void SortFields(const FileDialogInternal& vFileDialogInternal);        // will sort a column
-    void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);   // set the path of the dialog, will launch the
-                                                                           // scandir for populate the file listview
-    bool GetDrives();                                                      // list drives on windows platform
+    void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);   // set the path of the dialog, will launch the scandir for populate the file listview
+    bool GetDevices();                                                      // list devices
     bool CreateDir(const std::string& vPath);                              // create a directory on the file system
     std::string ComposeNewPath(std::vector<std::string>::iterator vIter);  // compose a path from the compose path widget
     bool SetPathOnParentDirectoryIfAny();                                  // compose paht on parent directory
