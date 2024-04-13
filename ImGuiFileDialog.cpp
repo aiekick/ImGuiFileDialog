@@ -190,6 +190,9 @@ SOFTWARE.
 #ifndef resetButtonString
 #define resetButtonString "R"
 #endif  // resetButtonString
+#ifndef devicesButtonString
+#define devicesButtonString "Devices"
+#endif  // devicesButtonString
 #ifndef editPathButtonString
 #define editPathButtonString "E"
 #endif  // editPathButtonString
@@ -214,6 +217,9 @@ SOFTWARE.
 #ifndef buttonResetSearchString
 #define buttonResetSearchString "Reset search"
 #endif  // buttonResetSearchString
+#ifndef buttonDriveString
+#define buttonDriveString "Devices"
+#endif  // buttonDriveString
 #ifndef buttonEditPathString
 #define buttonEditPathString "Edit path\nYou can also right click on path buttons"
 #endif  // buttonEditPathString
@@ -492,10 +498,10 @@ public:
     std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
         std::vector<IGFD::PathDisplayedName> res;
 #ifdef _IGFD_WIN_
-        const DWORD mydrives = 2048;
+        const DWORD mydevices = 2048;
         char lpBuffer[2048];
 #define mini(a, b) (((a) < (b)) ? (a) : (b))
-        const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+        const DWORD countChars = mini(GetLogicalDriveStringsA(mydevices, lpBuffer), 2047);
 #undef mini
         if (countChars > 0U && countChars < 2049U) {
             std::string var = std::string(lpBuffer, (size_t)countChars);
@@ -664,10 +670,10 @@ public:
     std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
         std::vector<IGFD::PathDisplayedName> res;
 #ifdef _IGFD_WIN_
-        const DWORD mydrives = 2048;
+        const DWORD mydevices = 2048;
         char lpBuffer[2048];
 #define mini(a, b) (((a) < (b)) ? (a) : (b))
-        const DWORD countChars = mini(GetLogicalDriveStringsA(mydrives, lpBuffer), 2047);
+        const DWORD countChars = mini(GetLogicalDriveStringsA(mydevices, lpBuffer), 2047);
 #undef mini
         if (countChars > 0U && countChars < 2049U) {
             std::string var = std::string(lpBuffer, (size_t)countChars);
@@ -1736,6 +1742,7 @@ IGFD::FileManager::FileManager() {
 }
 
 void IGFD::FileManager::OpenCurrentPath(const FileDialogInternal& vFileDialogInternal) {
+    showDevices = false;
     ClearComposer();
     ClearFileLists();
     if (dLGDirectoryMode) {  // directory mode
@@ -2046,13 +2053,13 @@ void IGFD::FileManager::m_OpenPathPopup(const FileDialogInternal& vFileDialogInt
     ImGui::OpenPopup("IGFD_Path_Popup");
 }
 
-bool IGFD::FileManager::GetDrives() {
-    auto drives = m_FileSystemPtr->GetDevicesList();
-    if (!drives.empty()) {
+bool IGFD::FileManager::GetDevices() {
+    auto devices = m_FileSystemPtr->GetDevicesList();
+    if (!devices.empty()) {
         m_CurrentPath.clear();
         m_CurrentPathDecomposition.clear();
         ClearFileLists();
-        for (auto& drive : drives) {
+        for (auto& drive : devices) {
             auto info_ptr                   = FileInfos::create();
             info_ptr->fileNameExt       = drive.first;
             info_ptr->fileNameExt_optimized = Utils::LowerCaseString(drive.first);
@@ -2348,15 +2355,24 @@ bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos
     } else {
         std::string newPath;
 
+        if (showDevices) {
+            newPath = vInfos->fileNameExt + IGFD::Utils::GetPathSeparator();
+        } else {
 #ifdef __linux__
             if (fsRoot == m_CurrentPath)
                 newPath = m_CurrentPath + vInfos->fileNameExt;
             else
 #endif  // __linux__
                 newPath = m_CurrentPath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
+        }
 
         if (m_FileSystemPtr->IsDirectoryCanBeOpened(newPath)) {
-            m_CurrentPath = newPath;  //-V820
+            if (showDevices) {
+                m_CurrentPath = vInfos->fileNameExt;
+                fsRoot        = m_CurrentPath;
+            } else {
+                m_CurrentPath = newPath;  //-V820
+            }
             pathClick = true;
         }
     }
@@ -2488,16 +2504,18 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
         SetCurrentPath(".");
         OpenCurrentPath(vFileDialogInternal);
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonResetPathString);
-
-#ifdef _IGFD_WIN_
-    /*ImGui::SameLine();
-
-    if (IMGUI_BUTTON(drivesButtonString)) {
-        drivesClicked = true;
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(buttonResetPathString);
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonDriveString);*/
-#endif  // _IGFD_WIN_
+    if (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_ShowDevicesButton) {
+        ImGui::SameLine();
+        if (IMGUI_BUTTON(devicesButtonString)) {
+            devicesClicked = true;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(buttonDriveString);
+        }
+    }
 
     ImGui::SameLine();
 
@@ -2567,7 +2585,7 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
                 ImGui::PopID();
                 if (click) {
                     m_CurrentPath = ComposeNewPath(itPathDecomp);
-                    puPathClicked = true;
+                    pathClicked = true;
                     break;
                 } else if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {  // activate input for path
                     m_SetCurrentPath(itPathDecomp);
@@ -2650,8 +2668,8 @@ std::map<std::string, std::string> IGFD::FileManager::GetResultingSelection(File
 void IGFD::FileDialogInternal::NewFrame() {
     canWeContinue             = true;   // reset flag for possibily validate the dialog
     isOk                      = false;  // reset dialog result
-    fileManager.drivesClicked = false;
-    fileManager.puPathClicked = false;
+    fileManager.devicesClicked = false;
+    fileManager.pathClicked = false;
 
     needToExitDialog = false;
 
@@ -2674,8 +2692,14 @@ void IGFD::FileDialogInternal::NewFrame() {
 
 void IGFD::FileDialogInternal::EndFrame() {
     // directory change
-    if (fileManager.puPathClicked) {
+    if (fileManager.pathClicked) {
         fileManager.OpenCurrentPath(*this);
+    }
+
+    if (fileManager.devicesClicked) {
+        if (fileManager.GetDevices()) {
+            fileManager.ApplyFilteringOnFileList(*this);
+        }
     }
 
     if (fileManager.inputPathActivated) {
@@ -2948,7 +2972,7 @@ void IGFD::ThumbnailFeature::m_DrawDisplayModeToolBar() {
 
 void IGFD::ThumbnailFeature::m_ClearThumbnails(FileDialogInternal& vFileDialogInternal) {
     // directory wil be changed so the file list will be erased
-    if (vFileDialogInternal.fileManager.puPathClicked) {
+    if (vFileDialogInternal.fileManager.pathClicked) {
         size_t count = vFileDialogInternal.fileManager.GetFullFileListSize();
         for (size_t idx = 0U; idx < count; idx++) {
             auto file = vFileDialogInternal.fileManager.GetFullFileAt(idx);
@@ -3420,6 +3444,15 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
                                 m_LocateFileByInputChar_lastFileIdx = 0;
                             }
                         }
+#ifdef _IGFD_WIN_
+                        else {
+                            if (fdi.GetComposerSize() == 1U) {
+                                if (fdi.GetDevices()) {
+                                    fdi.ApplyFilteringOnFileList(vFileDialogInternal);
+                                }
+                            }
+                        }
+#endif  // _IGFD_WIN_
                     }
                 }
             }
@@ -3714,7 +3747,7 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
                 fdFilter.SetDefaultFilterIfNotDefined();
 
                 // init list of files
-                if (fdFile.IsFileListEmpty()) {
+                if (fdFile.IsFileListEmpty() && !fdFile.showDevices) {
                     if (fdFile.dLGpath != ".")                                                      // Removes extension seperator in filename if we don't check
                         IGFD::Utils::ReplaceString(fdFile.dLGDefaultFileName, fdFile.dLGpath, "");  // local path
 
@@ -3895,7 +3928,7 @@ void IGFD::FileDialog::m_DisplayPathPopup(ImVec2 vSize) {
                         {
                             if (ImGui::Selectable(infos_ptr->fileNameExt.c_str(), &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth)) {
                                 fdi.SetCurrentPath(fdi.ComposeNewPath(fdi.GetCurrentPopupComposedPath()));
-                                fdi.puPathClicked = fdi.SelectDirectory(infos_ptr);
+                                fdi.pathClicked = fdi.SelectDirectory(infos_ptr);
                                 ImGui::CloseCurrentPopup();
                             }
                         }
@@ -4038,18 +4071,18 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
                 // little fix for get back the mouse behavior in nav system
                 if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
                 {
-                    fdi.puPathClicked = fdi.SelectDirectory(vInfos);
+                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
                 } else if (fdi.dLGDirectoryMode)  // directory chooser
                 {
                     fdi.SelectFileName(m_FileDialogInternal, vInfos);
                 } else {
-                    fdi.puPathClicked = fdi.SelectDirectory(vInfos);
+                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
                 }
             } else  // no nav system => classic behavior
             {
                 if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
                 {
-                    fdi.puPathClicked = fdi.SelectDirectory(vInfos);
+                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
                 } else if (fdi.dLGDirectoryMode)  // directory chooser
                 {
                     fdi.SelectFileName(m_FileDialogInternal, vInfos);
