@@ -75,7 +75,7 @@
 // locales string
 #define createDirButtonString ICON_IGFD_ADD
 #define resetButtonString ICON_IGFD_RESET
-#define drivesButtonString ICON_IGFD_DRIVES
+#define devicesButtonString ICON_IGFD_DRIVES
 #define editPathButtonString ICON_IGFD_EDIT
 #define searchString ICON_IGFD_SEARCH
 #define dirEntryString ICON_IGFD_FOLDER

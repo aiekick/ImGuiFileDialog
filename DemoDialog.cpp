@@ -46,7 +46,7 @@ static std::string userDatas;
 static std::vector<std::pair<std::string, std::string> > selection = {};
 
 static bool UseWindowContraints   = true;
-static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default;
+static ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_ShowDevicesButton;
 static IGFD_ResultMode resultMode = IGFD_ResultMode_AddIfNoFileExt;
 
 // an override for have read only checkbox
@@ -567,6 +567,9 @@ void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHe
                 ImGui::SameLine();
                 ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable quick path selection", "Disable the quick path selection", &flags, ImGuiFileDialogFlags_DisableQuickPathSelection);
 
+                ImGui::SameLine();
+                ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Show Devices button", "Show the devices button", &flags, ImGuiFileDialogFlags_ShowDevicesButton);
+                
                 ImGui::Separator();
                 ImGui::Text("Result Modes : for GetFilePathName and GetSelection");
 
