@@ -2516,94 +2516,6 @@ static const STBIR__SIMDI_CONST(STBIR_topscale,      0x02000000);
 #define STBIR_MEMCPY stbir_simd_memcpy
 #endif
 
-// override normal use of memcpy with much simpler copy (faster and smaller with our sized copies)
-static void stbir_simd_memcpy( void * dest, void const * src, size_t bytes )
-{
-  char STBIR_SIMD_STREAMOUT_PTR (*) d = (char*) dest;
-  char STBIR_SIMD_STREAMOUT_PTR( * ) d_end = ((char*) dest) + bytes;
-  ptrdiff_t ofs_to_src = (char*)src - (char*)dest;
-
-  // check overlaps
-  STBIR_ASSERT( ( ( d >= ( (char*)src) + bytes ) ) || ( ( d + bytes ) <= (char*)src ) );
-
-  if ( bytes < (16*stbir__simdfX_float_count) )
-  {
-    if ( bytes < 16 )
-    {
-      if ( bytes )
-      {
-        do
-        {
-          STBIR_SIMD_NO_UNROLL(d);
-          d[ 0 ] = d[ ofs_to_src ];
-          ++d;
-        } while ( d < d_end );
-      }
-    }
-    else
-    {
-      stbir__simdf x;
-      // do one unaligned to get us aligned for the stream out below
-      stbir__simdf_load( x, ( d + ofs_to_src ) );
-      stbir__simdf_store( d, x );
-      d = (char*)( ( ( (ptrdiff_t)d ) + 16 ) & ~15 );
-
-      for(;;)
-      {
-        STBIR_SIMD_NO_UNROLL(d);
-
-        if ( d > ( d_end - 16 ) )
-        {
-          if ( d == d_end )
-            return;
-          d = d_end - 16;
-        }
-
-        stbir__simdf_load( x, ( d + ofs_to_src ) );
-        stbir__simdf_store( d, x );
-        d += 16;
-      }
-    }
-  }
-  else
-  {
-    stbir__simdfX x0,x1,x2,x3;
-
-    // do one unaligned to get us aligned for the stream out below
-    stbir__simdfX_load( x0, ( d + ofs_to_src ) +  0*stbir__simdfX_float_count );
-    stbir__simdfX_load( x1, ( d + ofs_to_src ) +  4*stbir__simdfX_float_count );
-    stbir__simdfX_load( x2, ( d + ofs_to_src ) +  8*stbir__simdfX_float_count );
-    stbir__simdfX_load( x3, ( d + ofs_to_src ) + 12*stbir__simdfX_float_count );
-    stbir__simdfX_store( d +  0*stbir__simdfX_float_count, x0 );
-    stbir__simdfX_store( d +  4*stbir__simdfX_float_count, x1 );
-    stbir__simdfX_store( d +  8*stbir__simdfX_float_count, x2 );
-    stbir__simdfX_store( d + 12*stbir__simdfX_float_count, x3 );
-    d = (char*)( ( ( (ptrdiff_t)d ) + (16*stbir__simdfX_float_count) ) & ~((16*stbir__simdfX_float_count)-1) );
-
-    for(;;)
-    {
-      STBIR_SIMD_NO_UNROLL(d);
-
-      if ( d > ( d_end - (16*stbir__simdfX_float_count) ) )
-      {
-        if ( d == d_end )
-          return;
-        d = d_end - (16*stbir__simdfX_float_count);
-      }
-
-      stbir__simdfX_load( x0, ( d + ofs_to_src ) +  0*stbir__simdfX_float_count );
-      stbir__simdfX_load( x1, ( d + ofs_to_src ) +  4*stbir__simdfX_float_count );
-      stbir__simdfX_load( x2, ( d + ofs_to_src ) +  8*stbir__simdfX_float_count );
-      stbir__simdfX_load( x3, ( d + ofs_to_src ) + 12*stbir__simdfX_float_count );
-      stbir__simdfX_store( d +  0*stbir__simdfX_float_count, x0 );
-      stbir__simdfX_store( d +  4*stbir__simdfX_float_count, x1 );
-      stbir__simdfX_store( d +  8*stbir__simdfX_float_count, x2 );
-      stbir__simdfX_store( d + 12*stbir__simdfX_float_count, x3 );
-      d += (16*stbir__simdfX_float_count);
-    }
-  }
-}
-
 // memcpy that is specically intentionally overlapping (src is smaller then dest, so can be
 //   a normal forward copy, bytes is divisible by 4 and bytes is greater than or equal to
 //   the diff between dest and src)
@@ -2878,13 +2790,6 @@ static float stbir__filter_mitchell(float x, float s, void * user_data)
     return (32.0f + x*(-60.0f + x*(36.0f - 7.0f*x)))/18.0f;
 
   return (0.0f);
-}
-
-static float stbir__support_zero(float s, void * user_data)
-{
-  STBIR__UNUSED(s);
-  STBIR__UNUSED(user_data);
-  return 0;
 }
 
 static float stbir__support_zeropoint5(float s, void * user_data)
