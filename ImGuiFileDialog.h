@@ -1244,6 +1244,8 @@ enum IGFD_FileStyleFlags_         // by evaluation / priority order
 
 #pragma endregion
 
+#include <cstdint>
+
 #pragma region FLAGS : ImGuiFileDialogFlags
 
 typedef int ImGuiFileDialogFlags;  // -> enum ImGuiFileDialogFlags_
