@@ -133,6 +133,6 @@
 
 // a group for system devices (returned by IFileSystem), but you can also add yours
 #define USE_PLACES_DEVICES
-// #define PLACES_DEVICES_DEFAULT_OPEPEND true
+#define PLACES_DEVICES_DEFAULT_OPEPEND true
 #define placesDevicesGroupName ICON_IGFD_DRIVES " Devices"
 #define placesDevicesDisplayOrder 10  // to the end

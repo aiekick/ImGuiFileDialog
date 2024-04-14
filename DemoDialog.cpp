@@ -501,7 +501,8 @@ void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHe
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
     ImGui::Begin("ImGuiFileDialog Demo");  // Create a window called "Hello, world!" and append into it.
     {
-        ImGui::Text("ImGuiFileDialog Demo : %s", IMGUIFILEDIALOG_VERSION);
+        ImGui::Text("ImGuiFileDialog Demo : %s", IGFD_VERSION);
+        ImGui::Text("Imgui Supported Version : %s", IGFD_IMGUI_SUPPORTED_VERSION);
         ImGui::Text("FileSystem Interface : %s", fileManager.GetFileSystemName().c_str());
 
         ImGui::Separator();
