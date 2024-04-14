@@ -1247,7 +1247,7 @@ enum IGFD_FileStyleFlags_         // by evaluation / priority order
 #pragma region FLAGS : ImGuiFileDialogFlags
 
 typedef int ImGuiFileDialogFlags;  // -> enum ImGuiFileDialogFlags_
-enum ImGuiFileDialogFlags_ : int32_t {                              // 32 flags
+enum ImGuiFileDialogFlags_ {
     ImGuiFileDialogFlags_None                         = 0,          // define none default flag
     ImGuiFileDialogFlags_ConfirmOverwrite             = (1 << 0),   // show confirm to overwrite dialog
     ImGuiFileDialogFlags_DontShowHiddenFiles          = (1 << 1),   // dont show hidden file (file starting with a .)
