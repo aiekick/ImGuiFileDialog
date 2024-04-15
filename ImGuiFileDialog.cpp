@@ -268,36 +268,18 @@ SOFTWARE.
 // see strftime functionin <ctime> for customize
 #define DateTimeFormat "%Y/%m/%d %H:%M"
 #endif  // DateTimeFormat
-
-///////////////////////////////
-// THUMBNAILS
-///////////////////////////////
-
-#ifdef USE_THUMBNAILS
-#ifndef tableHeaderFileThumbnailsString
-#define tableHeaderFileThumbnailsString "Thumbnails"
-#endif  // tableHeaderFileThumbnailsString
 #ifndef DisplayMode_FilesList_ButtonString
 #define DisplayMode_FilesList_ButtonString "FL"
 #endif  // DisplayMode_FilesList_ButtonString
 #ifndef DisplayMode_FilesList_ButtonHelp
-#define DisplayMode_FilesList_ButtonHelp "File List"
+#define DisplayMode_FilesList_ButtonHelp "Files List"
 #endif  // DisplayMode_FilesList_ButtonHelp
-#ifndef DisplayMode_ThumbailsList_ButtonString
-#define DisplayMode_ThumbailsList_ButtonString "TL"
-#endif  // DisplayMode_ThumbailsList_ButtonString
-#ifndef DisplayMode_ThumbailsList_ButtonHelp
-#define DisplayMode_ThumbailsList_ButtonHelp "Thumbnails List"
-#endif  // DisplayMode_ThumbailsList_ButtonHelp
-#ifndef DisplayMode_ThumbailsGrid_ButtonString
-#define DisplayMode_ThumbailsGrid_ButtonString "TG"
-#endif  // DisplayMode_ThumbailsGrid_ButtonString
-#ifndef DisplayMode_ThumbailsGrid_ButtonHelp
-#define DisplayMode_ThumbailsGrid_ButtonHelp "Thumbnails Grid"
-#endif  // DisplayMode_ThumbailsGrid_ButtonHelp
-#ifndef DisplayMode_ThumbailsList_ImageHeight
-#define DisplayMode_ThumbailsList_ImageHeight 32.0f
-#endif  // DisplayMode_ThumbailsList_ImageHeight
+#ifndef DisplayMode_FilesGrid_ButtonString
+#define DisplayMode_FilesGrid_ButtonString "FG"
+#endif  // DisplayMode_FilesGrid_ButtonString
+#ifndef DisplayMode_FilesGrid_ButtonHelp
+#define DisplayMode_FilesGrid_ButtonHelp "Files Grid"
+#endif  // DisplayMode_FilesGrid_ButtonHelp
 #ifndef IMGUI_RADIO_BUTTON
 inline bool inRadioButton(const char* vLabel, bool vToggled) {
     bool pressed = false;
@@ -317,6 +299,23 @@ inline bool inRadioButton(const char* vLabel, bool vToggled) {
 }
 #define IMGUI_RADIO_BUTTON inRadioButton
 #endif  // IMGUI_RADIO_BUTTON
+///////////////////////////////
+// THUMBNAILS
+///////////////////////////////
+
+#ifdef USE_THUMBNAILS
+#ifndef tableHeaderFileThumbnailsString
+#define tableHeaderFileThumbnailsString "Thumbnails"
+#endif  // tableHeaderFileThumbnailsString
+#ifndef DisplayMode_ThumbailsList_ButtonString
+#define DisplayMode_ThumbailsList_ButtonString "TL"
+#endif  // DisplayMode_ThumbailsList_ButtonString
+#ifndef DisplayMode_ThumbailsList_ButtonHelp
+#define DisplayMode_ThumbailsList_ButtonHelp "Thumbnails List"
+#endif  // DisplayMode_ThumbailsList_ButtonHelp
+#ifndef DisplayMode_ThumbailsList_ImageHeight
+#define DisplayMode_ThumbailsList_ImageHeight 32.0f
+#endif  // DisplayMode_ThumbailsList_ImageHeight
 #endif  // USE_THUMBNAILS
 
 ///////////////////////////////
@@ -2722,12 +2721,7 @@ IGFD::FileDialogConfig& IGFD::FileDialogInternal::getDialogConfigRef() {
     return m_DialogConfig;
 }
 
-IGFD::ThumbnailFeature::ThumbnailFeature() {
-#ifdef USE_THUMBNAILS
-    m_DisplayMode = DisplayModeEnum::FILE_LIST;
-#endif
-}
-
+IGFD::ThumbnailFeature::ThumbnailFeature()  = default;
 IGFD::ThumbnailFeature::~ThumbnailFeature() = default;
 
 void IGFD::ThumbnailFeature::m_NewThumbnailFrame(FileDialogInternal& /*vFileDialogInternal*/) {
@@ -2896,23 +2890,6 @@ void IGFD::ThumbnailFeature::m_AddThumbnailToDestroy(const IGFD_Thumbnail_Info& 
     m_ThumbnailToDestroyMutex.lock();
     m_ThumbnailToDestroy.push_back(vIGFD_Thumbnail_Info);
     m_ThumbnailToDestroyMutex.unlock();
-}
-
-void IGFD::ThumbnailFeature::m_DrawDisplayModeToolBar() {
-    if (IMGUI_RADIO_BUTTON(DisplayMode_FilesList_ButtonString, m_DisplayMode == DisplayModeEnum::FILE_LIST)) m_DisplayMode = DisplayModeEnum::FILE_LIST;
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(DisplayMode_FilesList_ButtonHelp);
-    ImGui::SameLine();
-    if (IMGUI_RADIO_BUTTON(DisplayMode_ThumbailsList_ButtonString, m_DisplayMode == DisplayModeEnum::THUMBNAILS_LIST)) m_DisplayMode = DisplayModeEnum::THUMBNAILS_LIST;
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(DisplayMode_ThumbailsList_ButtonHelp);
-    ImGui::SameLine();
-    /* todo
-    if (IMGUI_RADIO_BUTTON(DisplayMode_ThumbailsGrid_ButtonString,
-        m_DisplayMode == DisplayModeEnum::THUMBNAILS_GRID))
-        m_DisplayMode = DisplayModeEnum::THUMBNAILS_GRID;
-    if (ImGui::IsItemHovered())	ImGui::SetTooltip(DisplayMode_ThumbailsGrid_ButtonHelp);
-    ImGui::SameLine();
-    */
-    m_DrawThumbnailGenerationProgress();
 }
 
 void IGFD::ThumbnailFeature::m_ClearThumbnails(FileDialogInternal& vFileDialogInternal) {
@@ -3739,6 +3716,33 @@ void IGFD::FileDialog::m_QuitFrame() {
     m_QuitThumbnailFrame(m_FileDialogInternal);
 }
 
+void IGFD::FileDialog::m_DrawDisplayModeToolBar(DisplayModeEnum& vDisplayMode) {
+    if (IMGUI_RADIO_BUTTON(DisplayMode_FilesList_ButtonString, vDisplayMode == DisplayModeEnum::FILES_LIST)) {
+        vDisplayMode = DisplayModeEnum::FILES_LIST;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(DisplayMode_FilesList_ButtonHelp);
+    }
+    ImGui::SameLine();
+    if (IMGUI_RADIO_BUTTON(DisplayMode_FilesGrid_ButtonString, vDisplayMode == DisplayModeEnum::FILES_GRID)) {
+        vDisplayMode = DisplayModeEnum::FILES_GRID;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(DisplayMode_FilesGrid_ButtonHelp);
+    }
+#ifdef USE_THUMBNAILS
+    ImGui::SameLine();
+    if (IMGUI_RADIO_BUTTON(DisplayMode_ThumbailsList_ButtonString, vDisplayMode == DisplayModeEnum::THUMBNAILS_LIST)) {
+        vDisplayMode = DisplayModeEnum::THUMBNAILS_LIST;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(DisplayMode_ThumbailsList_ButtonHelp);
+    }
+    ImGui::SameLine();
+    m_DrawThumbnailGenerationProgress();
+#endif  // USE_THUMBNAILS
+}
+
 void IGFD::FileDialog::m_DrawHeader() {
 #ifdef USE_PLACES_FEATURE
     if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode)) {
@@ -3760,15 +3764,16 @@ void IGFD::FileDialog::m_DrawHeader() {
     }
     m_FileDialogInternal.fileManager.DrawPathComposer(m_FileDialogInternal);
 
+    m_DrawDisplayModeToolBar(m_DisplayMode);
+
 #ifdef USE_THUMBNAILS
     if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableThumbnailMode)) {
-        m_DrawDisplayModeToolBar();
         ImGui::SameLine();
         ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
     }
 #endif  // USE_THUMBNAILS
 
+    ImGui::SameLine();
     m_FileDialogInternal.searchManager.DrawSearchBar(m_FileDialogInternal);
 }
 
@@ -3797,19 +3802,20 @@ void IGFD::FileDialog::m_DrawContent() {
         ImGui::PopID();
     }
 
+    switch (m_DisplayMode) {
+        case DisplayModeEnum::FILES_LIST: m_DrawFileListView(size); break;
+        case DisplayModeEnum::FILES_GRID: m_DrawFileGridView(size); break;
 #ifdef USE_THUMBNAILS
-    if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableThumbnailMode) {
-        m_DrawFileListView(size);
-    } else {
-        switch (m_DisplayMode) {
-            case DisplayModeEnum::FILE_LIST: m_DrawFileListView(size); break;
-            case DisplayModeEnum::THUMBNAILS_LIST: m_DrawThumbnailsListView(size); break;
-            case DisplayModeEnum::THUMBNAILS_GRID: m_DrawThumbnailsGridView(size);
-        }
-    }
-#else   // USE_THUMBNAILS
-    m_DrawFileListView(size);
+        case DisplayModeEnum::THUMBNAILS_LIST: {
+            if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableThumbnailMode) {
+                m_DrawFileListView(size);
+            } else {
+                m_DrawThumbnailsListView(size);
+            }
+        } break;
 #endif  // USE_THUMBNAILS
+        default: break;
+    }
 
     if (m_FileDialogInternal.getDialogConfig().sidePane) {
         m_DrawSidePane(size.y);
@@ -3933,7 +3939,6 @@ bool IGFD::FileDialog::m_DrawValidationButtons() {
 
 bool IGFD::FileDialog::m_DrawFooter() {
     auto& fdFile = m_FileDialogInternal.fileManager;
-
     float posY = ImGui::GetCursorPos().y;  // height of last bar calc
     ImGui::AlignTextToFramePadding();
     if (!fdFile.dLGDirectoryMode)
@@ -3969,17 +3974,15 @@ bool IGFD::FileDialog::m_DrawFooter() {
 }
 
 void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...) {
-    if (!vInfos.use_count()) return;
-
+    if (!vInfos.use_count()) {
+        return;
+    }
     auto& fdi = m_FileDialogInternal.fileManager;
-
     static ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth;
-
     va_list args;
     va_start(args, vFmt);
     vsnprintf(fdi.variadicBuffer, MAX_FILE_DIALOG_NAME_BUFFER, vFmt, args);
     va_end(args);
-
     float h = 0.0f;
 #ifdef USE_THUMBNAILS
     if (m_DisplayMode == DisplayModeEnum::THUMBNAILS_LIST && !(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableThumbnailMode)) {
@@ -3992,40 +3995,10 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
     if (flashed) m_EndFlashItem();
 #else   // USE_EXPLORATION_BY_KEYS
     (void)vidx;  // remove a warnings ofr unused var
-
     bool res = ImGui::Selectable(fdi.variadicBuffer, vSelected, selectableFlags, ImVec2(-1.0f, h));
 #endif  // USE_EXPLORATION_BY_KEYS
     if (res) {
-        if (vInfos->fileType.isDir()) {
-            // nav system, selectable cause open directory or select directory
-            if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) {
-                // little fix for get back the mouse behavior in nav system
-                if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
-                {
-                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
-                } else if (fdi.dLGDirectoryMode)  // directory chooser
-                {
-                    fdi.SelectFileName(m_FileDialogInternal, vInfos);
-                } else {
-                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
-                }
-            } else  // no nav system => classic behavior
-            {
-                if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
-                {
-                    fdi.pathClicked = fdi.SelectDirectory(vInfos);
-                } else if (fdi.dLGDirectoryMode)  // directory chooser
-                {
-                    fdi.SelectFileName(m_FileDialogInternal, vInfos);
-                }
-            }
-        } else {
-            fdi.SelectFileName(m_FileDialogInternal, vInfos);
-
-            if (ImGui::IsMouseDoubleClicked(0)) {
-                m_FileDialogInternal.isOk = true;
-            }
-        }
+        m_SelectFileOrDir(vInfos);
     }
 }
 
@@ -4037,6 +4010,103 @@ void IGFD::FileDialog::m_DisplayFileInfosTooltip(const int32_t& /*vRowIdx*/, con
             }
         }
     }
+}
+
+void IGFD::FileDialog::m_SelectFileOrDir(std::shared_ptr<FileInfos> vFileInfos) {
+    if (vFileInfos != nullptr) {
+        auto& fdi = m_FileDialogInternal.fileManager;
+        if (vFileInfos->fileType.isDir()) {
+            // nav system, selectable cause open directory or select directory
+            if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) {
+                // little fix for get back the mouse behavior in nav system
+                if (ImGui::IsMouseDoubleClicked(0)) {  // 0 -> left mouse button double click
+                    fdi.pathClicked = fdi.SelectDirectory(vFileInfos);
+                } else if (fdi.dLGDirectoryMode) {  // directory chooser
+                    fdi.SelectFileName(m_FileDialogInternal, vFileInfos);
+                } else {
+                    fdi.pathClicked = fdi.SelectDirectory(vFileInfos);
+                }
+            } else {                                   // no nav system => classic behavior
+                if (ImGui::IsMouseDoubleClicked(0)) {  // 0 -> left mouse button double click
+                    fdi.pathClicked = fdi.SelectDirectory(vFileInfos);
+                } else if (fdi.dLGDirectoryMode) {  // directory chooser
+                    fdi.SelectFileName(m_FileDialogInternal, vFileInfos);
+                }
+            }
+        } else {
+            fdi.SelectFileName(m_FileDialogInternal, vFileInfos);
+            if (ImGui::IsMouseDoubleClicked(0)) {
+                m_FileDialogInternal.isOk = true;
+            }
+        }
+    }
+}
+
+int32_t IGFD::FileDialog::m_CalcGridCountAndSize(const int32_t& vGridCountX, const float& vGridWidth, const bool vGridByWidth, ImVec2& vOutCellSize, ImVec2& vOutGridSize) {
+    const float aw     = ImGui::GetContentRegionAvail().x;
+    int32_t thumbCount = vGridCountX;
+    float thumbWidth   = vGridWidth;
+    if (vGridByWidth) {  // GridSize first, then GridCount is applied
+        thumbCount = (int)(aw / ImMax(thumbWidth, 1.0f));
+    }
+    thumbWidth = aw / (float)ImMax(thumbCount, 1);
+    if (thumbCount > 0) {
+        vOutCellSize  = ImVec2(thumbWidth, thumbWidth);
+        vOutGridSize = vOutCellSize - ImGui::GetStyle().ItemSpacing - ImGui::GetStyle().FramePadding * 2.0f;
+    }
+    return thumbCount;
+}
+
+bool IGFD::FileDialog::m_DrawGridButton(std::shared_ptr<FileInfos> vFileInfos, const bool& vSelected, const ImVec2& vGridSize, const int32_t& vFramePadding, const float& vRectThickNess, const ImVec4& vRectColor) {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems) {
+        return false;
+    }
+    bool pressed = false;
+    if (vFileInfos != nullptr) {
+        std::string _str;
+        ImFont* _font           = nullptr;
+        bool _showColor = false;
+        ImGuiContext& g         = *GImGui;
+        const ImGuiStyle& style = g.Style;
+        const ImGuiID id        = window->GetID("#DrawGridButton");
+        const ImVec2 padding    = (vFramePadding >= 0) ? ImVec2((float)vFramePadding, (float)vFramePadding) : style.FramePadding;
+        ImRect bb(window->DC.CursorPos, window->DC.CursorPos + vGridSize + padding * 2);
+        ImGui::ItemSize(bb);
+        if (!ImGui::ItemAdd(bb, id)) {
+            return false;
+        }
+        ImGui::PushID(vFileInfos.get());
+        bool hovered, held;
+        pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+        ImGui::RenderNavHighlight(bb, id);
+        const float rounding  = ImClamp((float)ImMin(padding.x, padding.y), 0.0f, style.FrameRounding);
+        const ImU32 colButton = ImGui::GetColorU32((vSelected || (held && hovered)) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
+        ImGui::RenderFrame(bb.Min, bb.Max, colButton, true, rounding);
+        if (vRectThickNess > 0.0f) {
+            window->DrawList->AddRect(bb.Min, bb.Max, ImGui::GetColorU32(vRectColor), 0.0, ImDrawFlags_RoundCornersAll, vRectThickNess);
+        }
+        ImGui::PushClipRect(bb.Min, bb.Max, true);
+        m_BeginFileColorIconStyle(vFileInfos, _showColor, _str, &_font);
+        bb.Min += style.FramePadding;
+        bb.Max -= style.FramePadding;
+#ifdef USE_THUMBNAILS
+        const auto& th = infos_ptr->thumbnailInfo;
+        if (!th.isLoadingOrLoaded) {
+            m_AddThumbnailToLoad(infos_ptr);
+        }
+        if (th.isReadyToDisplay && th.textureID) {
+            window->DrawList->AddImage(vTextureID, bb.Min, bb.Max, ImVec2(0, 0), ImVec2(1, 1), ImGui::GetColorU32(ImGuiCol_Text));
+        }
+#else
+        window->DrawList->AddText(bb.Min, ImGui::GetColorU32(ImGuiCol_Text), _str.c_str());
+#endif
+        m_EndFileColorIconStyle(_showColor, _font);
+        ImGui::PopClipRect();
+        ImGui::PopID();
+
+    }
+    return pressed;
 }
 
 void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr, ImFont** vOutFont) {
@@ -4240,6 +4310,54 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
     ImGui::PopID();
 }
 
+void IGFD::FileDialog::m_DrawFileGridView(ImVec2 vSize) {
+    if (ImGui::BeginChild("##thumbnailsGridsFiles", vSize)) {
+        auto& fdi = m_FileDialogInternal.fileManager;
+        ImGui::PushID(this);
+        if (!fdi.IsFilteredListEmpty()) {
+            ImVec2 cell_size, gridBlockSize;
+            uint32_t thumbCountX = m_CalcGridCountAndSize(                     //
+                m_FileDialogInternal.getDialogConfigRef().gridBlockCountX,     //
+                m_FileDialogInternal.getDialogConfigRef().gridBlockWidth,      //
+                m_FileDialogInternal.getDialogConfigRef().gridByWidthPolicie,  //
+                cell_size, gridBlockSize);
+            if (thumbCountX) {
+                uint32_t displayIdx    = 0;
+                const auto countThumbs = (uint32_t)fdi.GetFilteredListSize();
+                int32_t rowCount       = (int32_t)ImCeil((double)countThumbs / (double)thumbCountX);
+                m_FileListClipper.Begin(rowCount, cell_size.y);
+                while (m_FileListClipper.Step()) {
+                    for (int jdx = m_FileListClipper.DisplayStart; jdx < m_FileListClipper.DisplayEnd; ++jdx) {
+                        if (jdx < 0) {
+                            continue;
+                        }
+                        for (uint32_t idx = 0; idx < thumbCountX; ++idx) {
+                            uint32_t thumbIdx = idx + jdx * thumbCountX;
+                            if (thumbIdx < countThumbs) {
+                                if ((displayIdx % thumbCountX) != 0) {
+                                    ImGui::SameLine();
+                                }
+                                auto infos_ptr = fdi.GetFilteredFileAt((size_t)thumbIdx);
+                                if (!infos_ptr.use_count()) {
+                                    continue;
+                                }
+                                bool selected = fdi.IsFileNameSelected(infos_ptr->fileNameExt);  // found
+                                if (m_DrawGridButton(infos_ptr, selected, gridBlockSize)) {
+                                    m_SelectFileOrDir(infos_ptr);
+                                }
+                                m_DisplayFileInfosTooltip(thumbIdx, 0, infos_ptr);
+                                ++displayIdx;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ImGui::PopID();
+    }
+    ImGui::EndChild();
+}
+
 #ifdef USE_THUMBNAILS
 void IGFD::FileDialog::m_DrawThumbnailsListView(ImVec2 vSize) {
     auto& fdi = m_FileDialogInternal.fileManager;
@@ -4438,22 +4556,11 @@ void IGFD::FileDialog::m_DrawThumbnailsListView(ImVec2 vSize) {
 
     ImGui::PopID();
 }
-
-void IGFD::FileDialog::m_DrawThumbnailsGridView(ImVec2 vSize) {
-    if (ImGui::BeginChild("##thumbnailsGridsFiles", vSize)) {
-        // todo
-    }
-
-    ImGui::EndChild();
-}
-
 #endif
 
 void IGFD::FileDialog::m_DrawSidePane(float vHeight) {
     ImGui::SameLine();
-
     ImGui::BeginChild("##FileTypes", ImVec2(0, vHeight));
-
     m_FileDialogInternal.getDialogConfig().sidePane(
         m_FileDialogInternal.filterManager.GetSelectedFilter().getFirstFilter().c_str(), 
         m_FileDialogInternal.getDialogConfigRef().userDatas, 

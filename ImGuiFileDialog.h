@@ -687,6 +687,9 @@ struct IGFD_API FileDialogConfig {
     PaneFun sidePane;                                        // side pane callback
     float sidePaneWidth = 250.0f;                            // side pane width
     UserFileAttributesFun userFileAttributes;                // user file Attibutes callback
+    int32_t gridBlockCountX = 5;                             // grid view mode, block count per rows
+    float gridBlockWidth    = 100.0f;                        // grid view mode, blocks width
+    bool gridByWidthPolicie = false;                         // grid view mode, blocks placement by count or by width, true => BlockWidth first, then BlockCount is applied
 };
 
 class IGFD_API FileDialogInternal {
@@ -731,6 +734,14 @@ public:
     FileDialogConfig& getDialogConfigRef();
 };
 
+enum class DisplayModeEnum {
+    FILES_LIST = 0,  //
+    FILES_GRID,      //
+#ifdef USE_THUMBNAILS
+    THUMBNAILS_LIST
+#endif  // USE_THUMBNAILS
+};
+
 class IGFD_API ThumbnailFeature {
 protected:
     ThumbnailFeature();
@@ -744,9 +755,6 @@ protected:
 public:
     typedef std::function<void(IGFD_Thumbnail_Info*)> CreateThumbnailFun;   // texture 2d creation function binding
     typedef std::function<void(IGFD_Thumbnail_Info*)> DestroyThumbnailFun;  // texture 2d destroy function binding
-
-protected:
-    enum class DisplayModeEnum { FILE_LIST = 0, THUMBNAILS_LIST, THUMBNAILS_GRID };
 
 private:
     uint32_t m_CountFiles = 0U;
@@ -763,9 +771,6 @@ private:
     CreateThumbnailFun m_CreateThumbnailFun = nullptr;
     DestroyThumbnailFun m_DestroyThumbnailFun = nullptr;
 
-protected:
-    DisplayModeEnum m_DisplayMode = DisplayModeEnum::FILE_LIST;
-
 private:
     void m_VariadicProgressBar(float fraction, const ImVec2& size_arg, const char* fmt, ...);
 
@@ -778,7 +783,6 @@ protected:
     void m_AddThumbnailToLoad(const std::shared_ptr<FileInfos>& vFileInfos);  // add texture to load in the thread
     void m_AddThumbnailToCreate(const std::shared_ptr<FileInfos>& vFileInfos);
     void m_AddThumbnailToDestroy(const IGFD_Thumbnail_Info& vIGFD_Thumbnail_Info);
-    void m_DrawDisplayModeToolBar();  // draw display mode toolbar (file list, thumbnails list, small thumbnails grid, big thumbnails grid)
     void m_ClearThumbnails(FileDialogInternal& vFileDialogInternal);
 
 public:
@@ -895,7 +899,8 @@ protected:
     FileDialogInternal m_FileDialogInternal;
     ImGuiListClipper m_FileListClipper;
     ImGuiListClipper m_PathListClipper;
-    float prOkCancelButtonWidth = 0.0f;
+    float prOkCancelButtonWidth   = 0.0f;
+    DisplayModeEnum m_DisplayMode = DisplayModeEnum::FILES_LIST;
 
 public:
     // Singleton for easier accces form anywhere but only one dialog at a time
@@ -981,18 +986,17 @@ protected:
     void m_EndFrame();   // end frame just at end of display
     void m_QuitFrame();  // quit frame when qui quit the dialog
 
-    // others
-    bool m_Confirm_Or_OpenOverWriteFileDialog_IfNeeded(
-        bool vLastAction, ImGuiWindowFlags vFlags);  // treatment of the result, start the confirm to overwrite dialog
-                                                     // if needed (if defined with flag)
-
+    // treatment of the result, start the confirm to overwrite dialog 
+    // if needed (if defined with flag)
+    bool m_Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastAction, ImGuiWindowFlags vFlags);
+                                                    
     // dialog parts
-    virtual void m_DrawHeader();   // draw header part of the dialog (place btn, dir creation, path composer, search
-                                   // bar)
+    virtual void m_DrawHeader();   // draw header part of the dialog (place btn, dir creation, path composer, search bar)
     virtual void m_DrawContent();  // draw content part of the dialog (place pane, file list, side pane)
     virtual bool m_DrawFooter();   // draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
     // widgets components
+    virtual void m_DrawDisplayModeToolBar(DisplayModeEnum& vDisplayMode);
     virtual void m_DisplayPathPopup(ImVec2 vSize);  // draw path popup when click on a \ or /
     virtual bool m_DrawValidationButtons();         // draw validations btns, ok, cancel buttons
     virtual bool m_DrawOkButton();                  // draw ok button
@@ -1004,10 +1008,10 @@ protected:
         const char* vFmt,
         ...);                                       // draw a custom selectable behavior item
     virtual void m_DrawFileListView(ImVec2 vSize);  // draw file list view (default mode)
+    virtual void m_DrawFileGridView(ImVec2 vSize);  // draw file grid view
 
 #ifdef USE_THUMBNAILS
     virtual void m_DrawThumbnailsListView(ImVec2 vSize);  // draw file list view with small thumbnails on the same line
-    virtual void m_DrawThumbnailsGridView(ImVec2 vSize);  // draw a grid of small thumbnails
 #endif
 
     // to be called only by these function and theirs overrides
@@ -1021,6 +1025,16 @@ protected:
     void m_EndFileColorIconStyle(const bool& vShowColor, ImFont* vFont);  // end style apply of filter
 
     void m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos);
+
+private:
+    void m_SelectFileOrDir(std::shared_ptr<FileInfos> vFileInfos);
+    int32_t m_CalcGridCountAndSize(const int32_t& vThumbCountX, const float& vThumbWidth, const bool vGridByWidth, ImVec2& vOutCellSize, ImVec2& vOutThumbSize);
+    bool m_DrawGridButton(std::shared_ptr<FileInfos> vFileInfos,  //
+                          const bool& vSelected,                  //
+                          const ImVec2& vThumbSize,               //
+                          const int32_t& vFramePadding = -1,      //
+                          const float& vRectThickNess  = 0.0f,    //
+                          const ImVec4& vRectColor     = ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 };
 
 }  // namespace IGFD
