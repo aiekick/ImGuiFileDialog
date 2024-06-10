@@ -270,6 +270,14 @@ SOFTWARE.
 #endif  // DateTimeFormat
 
 ///////////////////////////////
+//// SHORTCUTS => ctrl + KEY 
+///////////////////////////////
+
+#ifndef SelectAllFilesKey
+#define SelectAllFilesKey ImGuiKey_A
+#endif  // SelectAllFilesKey
+
+///////////////////////////////
 // THUMBNAILS
 ///////////////////////////////
 
@@ -1321,7 +1329,7 @@ void IGFD::FilterManager::SetFileStyle(const IGFD_FileStyleFlags& vFlags, const 
 
 // will be called internally
 // will not been exposed to IGFD API
-bool IGFD::FilterManager::m_FillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const {
+bool IGFD::FilterManager::FillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const {
     // todo : better system to found regarding what style to priorize regarding other
     // maybe with a lambda fucntion for let the user use his style
     // according to his use case
@@ -1919,7 +1927,7 @@ void IGFD::FileManager::m_AddFile(const FileDialogInternal& vFileDialogInternal,
         }
     }
 
-    vFileDialogInternal.filterManager.m_FillFileStyle(infos_ptr);
+    vFileDialogInternal.filterManager.FillFileStyle(infos_ptr);
 
     m_CompleteFileInfos(infos_ptr);
 
@@ -1948,7 +1956,7 @@ void IGFD::FileManager::m_AddPath(const FileDialogInternal& vFileDialogInternal,
         }
     }
 
-    vFileDialogInternal.filterManager.m_FillFileStyle(infos_ptr);
+    vFileDialogInternal.filterManager.FillFileStyle(infos_ptr);
 
     m_CompleteFileInfos(infos_ptr);
 
@@ -2180,7 +2188,10 @@ void IGFD::FileManager::m_RemoveFileNameInSelection(const std::string& vFileName
     }
 }
 
-void IGFD::FileManager::m_m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName) {
+void IGFD::FileManager::m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName) {
+    if (vFileName == "." || vFileName == "..") {
+        return;
+    }
     m_SelectedFileNames.emplace(vFileName);
 
     if (m_SelectedFileNames.size() == 1) {
@@ -2189,7 +2200,9 @@ void IGFD::FileManager::m_m_AddFileNameInSelection(const std::string& vFileName,
         snprintf(fileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%zu files Selected", m_SelectedFileNames.size());
     }
 
-    if (vSetLastSelectionFileName) m_LastSelectedFileName = vFileName;
+    if (vSetLastSelectionFileName) {
+        m_LastSelectedFileName = vFileName;
+    }
 }
 
 void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
@@ -2337,24 +2350,38 @@ bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos
     return pathClick;
 }
 
+void IGFD::FileManager::SelectAllFileNames() {
+    m_SelectedFileNames.clear();
+    for (const auto& infos_ptr : m_FilteredFileList) {
+        if (infos_ptr != nullptr) {
+            m_AddFileNameInSelection(infos_ptr->fileNameExt, true);
+        }
+    }
+}
+
 void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos) {
-    if (!vInfos.use_count()) return;
+    if (!vInfos.use_count()) {
+        return;
+    }
+    m_AddFileNameInSelection(vInfos->fileNameExt, true);
+}
+
+void IGFD::FileManager::SelectOrDeselectFileName(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos) {
+    if (!vInfos.use_count()) {
+        return;
+    }
 
     if (ImGui::IsKeyDown(ImGuiMod_Ctrl)) {
-        if (dLGcountSelectionMax == 0)  // infinite selection
-        {
-            if (m_SelectedFileNames.find(vInfos->fileNameExt) == m_SelectedFileNames.end())  // not found +> add
-            {
-                m_m_AddFileNameInSelection(vInfos->fileNameExt, true);
+        if (dLGcountSelectionMax == 0) {                                                       // infinite selection
+            if (m_SelectedFileNames.find(vInfos->fileNameExt) == m_SelectedFileNames.end()) {  // not found +> add
+                m_AddFileNameInSelection(vInfos->fileNameExt, true);
             } else {  // found +> remove
                 m_RemoveFileNameInSelection(vInfos->fileNameExt);
             }
-        } else  // selection limited by size
-        {
+        } else {  // selection limited by size
             if (m_SelectedFileNames.size() < dLGcountSelectionMax) {
-                if (m_SelectedFileNames.find(vInfos->fileNameExt) == m_SelectedFileNames.end())  // not found +> add
-                {
-                    m_m_AddFileNameInSelection(vInfos->fileNameExt, true);
+                if (m_SelectedFileNames.find(vInfos->fileNameExt) == m_SelectedFileNames.end()) {  // not found +> add
+                    m_AddFileNameInSelection(vInfos->fileNameExt, true);
                 } else {  // found +> remove
                     m_RemoveFileNameInSelection(vInfos->fileNameExt);
                 }
@@ -2364,45 +2391,46 @@ void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileDialogInte
         if (dLGcountSelectionMax != 1) {
             m_SelectedFileNames.clear();
             // we will iterate filelist and get the last selection after the start selection
-            bool startMultiSelection     = false;
+            bool startMultiSelection = false;
             std::string fileNameToSelect = vInfos->fileNameExt;
             std::string savedLastSelectedFileName;  // for invert selection mode
             for (const auto& file : m_FileList) {
-                if (!file.use_count()) continue;
-
+                if (!file.use_count()) {
+                    continue;
+                }
                 bool canTake = true;
-                if (!file->SearchForTag(vFileDialogInternal.searchManager.searchTag)) canTake = false;
-                if (canTake)  // if not filtered, we will take files who are filtered by the dialog
-                {
+                if (!file->SearchForTag(vFileDialogInternal.searchManager.searchTag))
+                    canTake = false;
+                if (canTake) {  // if not filtered, we will take files who are filtered by the dialog
                     if (file->fileNameExt == m_LastSelectedFileName) {
                         startMultiSelection = true;
-                        m_m_AddFileNameInSelection(m_LastSelectedFileName, false);
+                        m_AddFileNameInSelection(m_LastSelectedFileName, false);
                     } else if (startMultiSelection) {
-                        if (dLGcountSelectionMax == 0)  // infinite selection
-                        {
-                            m_m_AddFileNameInSelection(file->fileNameExt, false);
+                        if (dLGcountSelectionMax == 0) {  // infinite selection
+                            m_AddFileNameInSelection(file->fileNameExt, false);
                         } else {  // selection limited by size
                             if (m_SelectedFileNames.size() < dLGcountSelectionMax) {
-                                m_m_AddFileNameInSelection(file->fileNameExt, false);
+                                m_AddFileNameInSelection(file->fileNameExt, false);
                             } else {
                                 startMultiSelection = false;
-                                if (!savedLastSelectedFileName.empty()) m_LastSelectedFileName = savedLastSelectedFileName;
+                                if (!savedLastSelectedFileName.empty())
+                                    m_LastSelectedFileName = savedLastSelectedFileName;
                                 break;
                             }
                         }
                     }
 
                     if (file->fileNameExt == fileNameToSelect) {
-                        if (!startMultiSelection)  // we are before the last Selected FileName, so we must inverse
-                        {
+                        if (!startMultiSelection) {  // we are before the last Selected FileName, so we must inverse
                             savedLastSelectedFileName = m_LastSelectedFileName;
-                            m_LastSelectedFileName    = fileNameToSelect;
-                            fileNameToSelect          = savedLastSelectedFileName;
-                            startMultiSelection       = true;
-                            m_m_AddFileNameInSelection(m_LastSelectedFileName, false);
+                            m_LastSelectedFileName = fileNameToSelect;
+                            fileNameToSelect = savedLastSelectedFileName;
+                            startMultiSelection = true;
+                            m_AddFileNameInSelection(m_LastSelectedFileName, false);
                         } else {
                             startMultiSelection = false;
-                            if (!savedLastSelectedFileName.empty()) m_LastSelectedFileName = savedLastSelectedFileName;
+                            if (!savedLastSelectedFileName.empty())
+                                m_LastSelectedFileName = savedLastSelectedFileName;
                             break;
                         }
                     }
@@ -2412,7 +2440,7 @@ void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileDialogInte
     } else {
         m_SelectedFileNames.clear();
         IGFD::Utils::ResetBuffer(fileNameBuffer);
-        m_m_AddFileNameInSelection(vInfos->fileNameExt, true);
+        m_AddFileNameInSelection(vInfos->fileNameExt, true);
     }
 }
 
@@ -2666,6 +2694,12 @@ void IGFD::FileDialogInternal::EndFrame() {
         }
         if (ImGui::IsKeyReleased(ImGuiKey_Escape)) {
             fileManager.inputPathActivated = false;
+        }
+    }
+
+    if (ImGui::IsKeyDown(ImGuiMod_Ctrl)) {
+        if (ImGui::IsKeyDown(SelectAllFilesKey)) {
+            fileManager.SelectAllFileNames();
         }
     }
 }
@@ -3971,7 +4005,8 @@ bool IGFD::FileDialog::m_DrawFooter() {
 }
 
 void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...) {
-    if (!vInfos.use_count()) return;
+    if (!vInfos.use_count())
+        return;
 
     auto& fdi = m_FileDialogInternal.fileManager;
 
@@ -3990,8 +4025,9 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
 #endif  // USE_THUMBNAILS
 #ifdef USE_EXPLORATION_BY_KEYS
     bool flashed = m_BeginFlashItem((size_t)vidx);
-    bool res     = m_FlashableSelectable(fdi.variadicBuffer, vSelected, selectableFlags, flashed, ImVec2(-1.0f, h));
-    if (flashed) m_EndFlashItem();
+    bool res = m_FlashableSelectable(fdi.variadicBuffer, vSelected, selectableFlags, flashed, ImVec2(-1.0f, h));
+    if (flashed)
+        m_EndFlashItem();
 #else   // USE_EXPLORATION_BY_KEYS
     (void)vidx;  // remove a warnings ofr unused var
 
@@ -4002,28 +4038,22 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
             // nav system, selectable cause open directory or select directory
             if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) {
                 // little fix for get back the mouse behavior in nav system
-                if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
-                {
+                if (ImGui::IsMouseDoubleClicked(0)) {  // 0 -> left mouse button double click
                     fdi.pathClicked = fdi.SelectDirectory(vInfos);
-                } else if (fdi.dLGDirectoryMode)  // directory chooser
-                {
-                    fdi.SelectFileName(m_FileDialogInternal, vInfos);
+                } else if (fdi.dLGDirectoryMode) {  // directory chooser
+                    fdi.SelectOrDeselectFileName(m_FileDialogInternal, vInfos);
                 } else {
                     fdi.pathClicked = fdi.SelectDirectory(vInfos);
                 }
-            } else  // no nav system => classic behavior
-            {
-                if (ImGui::IsMouseDoubleClicked(0))  // 0 -> left mouse button double click
-                {
+            } else {                                   // no nav system => classic behavior
+                if (ImGui::IsMouseDoubleClicked(0)) {  // 0 -> left mouse button double click
                     fdi.pathClicked = fdi.SelectDirectory(vInfos);
-                } else if (fdi.dLGDirectoryMode)  // directory chooser
-                {
-                    fdi.SelectFileName(m_FileDialogInternal, vInfos);
+                } else if (fdi.dLGDirectoryMode) {  // directory chooser
+                    fdi.SelectOrDeselectFileName(m_FileDialogInternal, vInfos);
                 }
             }
         } else {
-            fdi.SelectFileName(m_FileDialogInternal, vInfos);
-
+            fdi.SelectOrDeselectFileName(m_FileDialogInternal, vInfos);
             if (ImGui::IsMouseDoubleClicked(0)) {
                 m_FileDialogInternal.isOk = true;
             }
