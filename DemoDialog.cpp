@@ -563,14 +563,17 @@ void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHe
                 ImGui::SameLine();
                 ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Hide Column Date", "Hide Column file Date by default", &flags, ImGuiFileDialogFlags_HideColumnDate);
 
-                ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Case Insensitive Extentions", "will not take into account the case of file extentions", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtention);
+                ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Case Insensitive Extentions Filtering", "will not take into account the case of file extentions for filtering", &flags, ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering);
 
                 ImGui::SameLine();
                 ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Disable quick path selection", "Disable the quick path selection", &flags, ImGuiFileDialogFlags_DisableQuickPathSelection);
-
+                
                 ImGui::SameLine();
                 ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Show Devices button", "Show the devices button", &flags, ImGuiFileDialogFlags_ShowDevicesButton);
                 
+                ImGui::SameLine();
+                ImGui::RadioButtonLabeled_BitWize<ImGuiFileDialogFlags>(0.0f, "Natural Sorting", "Enable the natural sorting", &flags, ImGuiFileDialogFlags_NaturalSorting);
+
                 ImGui::Separator();
                 ImGui::Text("Result Modes : for GetFilePathName and GetSelection");
 

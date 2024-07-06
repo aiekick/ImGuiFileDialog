@@ -225,7 +225,7 @@ bool Test_IGFD_FileManager_Filtering_sensitive_case_1() {
 // issue #140
 bool Test_IGFD_FileManager_Filtering_insensitive_case_0() {
     FileManagerTestHelper mgr;
-    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering);
     mgr.addFilter(".cpp");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
 
@@ -238,7 +238,7 @@ bool Test_IGFD_FileManager_Filtering_insensitive_case_0() {
 // issue #140
 bool Test_IGFD_FileManager_Filtering_insensitive_case_1() {
     FileManagerTestHelper mgr;
-    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering);
     mgr.addFilter(".CPP");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
 

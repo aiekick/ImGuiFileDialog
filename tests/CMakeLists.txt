@@ -166,3 +166,14 @@ SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3)
+
+## Test_IGFD_Utils -- Natural Sorting related
+SetTest(Test_IGFD_Utils_IsAValidCharForADigit_0)
+
+SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_0)
+SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_1)
+
+SetTest(Test_IGFD_Utils_NaturalCompare_0)
+SetTest(Test_IGFD_Utils_NaturalCompare_1)
+SetTest(Test_IGFD_Utils_NaturalCompare_2)
+SetTest(Test_IGFD_Utils_NaturalCompare_3)

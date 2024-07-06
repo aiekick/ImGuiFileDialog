@@ -168,6 +168,294 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
     return true;
 }
 
+////////////////////////////////////////////////////////////////////////////
+//// Natural Sorting related ///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_IsAValidCharForADigit_0() {
+    // valids
+    if (!IGFD::Utils::M_IsAValidCharForADigit('-')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('+')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('.')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('e')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('0')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('1')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('2')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('3')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('4')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('5')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('6')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('7')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('8')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('9')) return false;
+    // some of invalids
+    if (IGFD::Utils::M_IsAValidCharForADigit('A')) return false;
+    if (IGFD::Utils::M_IsAValidCharForADigit('z')) return false;
+    if (IGFD::Utils::M_IsAValidCharForADigit('r')) return false;
+    if (IGFD::Utils::M_IsAValidCharForADigit('f')) return false;
+    if (IGFD::Utils::M_IsAValidCharForADigit('g')) return false;
+    if (IGFD::Utils::M_IsAValidCharForADigit('$')) return false;
+    return true;
+}
+
+// invalids numbers
+bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
+    float n  = 0.0f;
+    size_t p = 0;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("++2.5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("--2.5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("..2.5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("+-+2.5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("-+2.5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("bleed", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("bled", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("e1e", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("+", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("-", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("e", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos(".", p = 0, n)) return false;
+    return true;
+}
+
+// valids cases, verify number and new pos
+bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
+    float n  = 0.0f;
+    size_t p = 0;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc-2.8abc", p = 3, n)) return false;
+    if (n != -2.8f) return false;
+    if (p != 7U) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc+8.9abc", p = 3, n)) return false;
+    if (n != 8.9f) return false;
+    if (p != 7U) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc10.6546abc", p = 3, n)) return false;
+    if (n != 10.6546f) return false;
+    if (p != 10U) return false;
+    return true;
+}
+
+// natural sort : INSENSITIVE CASE, ASCENDING
+bool Test_IGFD_Utils_NaturalCompare_0() {
+    static constexpr size_t s_count_items           = 16U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "abc1e5",       //
+            "abc0.5abc",    //
+            "abc-1.9",      //
+            "tot4",         //
+            "abc+2.5",      //
+            "TOT30",        //
+            "TOT40",        //
+            "tot1.5",       //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "TOT2",         //
+            "tot22",        //
+            "abc1e-5",      //
+            "abs1.5z2.5",   //
+            "abs1.5z-2.2",  //
+            "tot3",         //
+        };
+
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+              });
+
+    std::array<std::string, s_count_items> good_sort =  //
+        {
+            "abc-1.9",      //
+            "abc1e-5",      //
+            "abc0.5abc",    //
+            "abc+2.5",      //
+            "abc1e5",       //
+            "abs1.5z-2.2",  //
+            "abs1.5z2.5",   //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "tot1.5",       //
+            "TOT2",         //
+            "tot3",         //
+            "tot4",         //
+            "tot22",        //
+            "TOT30",        //
+            "TOT40",        //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
+
+// natural sort : INSENSITIVE CASE, DESCENDING
+bool Test_IGFD_Utils_NaturalCompare_1() {
+    static constexpr size_t s_count_items           = 16U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "abc1e5",       //
+            "abc0.5abc",    //
+            "abc-1.9",      //
+            "tot4",         //
+            "abc+2.5",      //
+            "TOT30",        //
+            "TOT40",        //
+            "tot1.5",       //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "TOT2",         //
+            "tot22",        //
+            "abc1e-5",      //
+            "abs1.5z2.5",   //
+            "abs1.5z-2.2",  //
+            "tot3",         //
+        };
+
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, true, true);
+              });
+
+    std::array<std::string, s_count_items> good_sort =  //
+        {
+            "TOT40",  //
+            "TOT30",  //
+            "tot22",  //
+            "tot4",   //
+            "tot3",   //
+            "TOT2",   //
+            "tot1.5",  //
+            "tot1.",   //
+            "abs1.5z2.6",  //
+            "abs1.5z2.5",  //
+            "abs1.5z-2.2",  //
+            "abc1e5",       //
+            "abc+2.5",      //
+            "abc0.5abc",    //
+            "abc1e-5",      //
+            "abc-1.9",      //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
+
+// natural sort : SENSITIVE CASE, ASCENDING
+bool Test_IGFD_Utils_NaturalCompare_2() {
+    static constexpr size_t s_count_items           = 16U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "abc1e5",       //
+            "abc0.5abc",    //
+            "abc-1.9",      //
+            "tot4",         //
+            "abc+2.5",      //
+            "TOT30",        //
+            "TOT40",        //
+            "tot1.5",       //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "TOT2",         //
+            "tot22",        //
+            "abc1e-5",      //
+            "abs1.5z2.5",   //
+            "abs1.5z-2.2",  //
+            "tot3",         //
+        };
+
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, false, false);
+              });
+
+    std::array<std::string, s_count_items> good_sort =  //
+        {
+            "TOT2",         //
+            "TOT30",        //
+            "TOT40",        //
+            "abc-1.9",      //
+            "abc1e-5",      //
+            "abc0.5abc",    //
+            "abc+2.5",      //
+            "abc1e5",       //
+            "abs1.5z-2.2",  //
+            "abs1.5z2.5",   //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "tot1.5",       //
+            "tot3",         //
+            "tot4",         //
+            "tot22",        //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
+
+// natural sort : SENSITIVE CASE, DESCENDING
+bool Test_IGFD_Utils_NaturalCompare_3() {
+    static constexpr size_t s_count_items           = 16U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "abc1e5",       //
+            "abc0.5abc",    //
+            "abc-1.9",      //
+            "tot4",         //
+            "abc+2.5",      //
+            "TOT30",        //
+            "TOT40",        //
+            "tot1.5",       //
+            "abs1.5z2.6",   //
+            "tot1.",        //
+            "TOT2",         //
+            "tot22",        //
+            "abc1e-5",      //
+            "abs1.5z2.5",   //
+            "abs1.5z-2.2",  //
+            "tot3",         //
+        };
+
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, false, true);
+              });
+
+    std::array<std::string, s_count_items> good_sort =  //
+        {
+            "tot22",        //
+            "tot4",         //
+            "tot3",         //
+            "tot1.5",       //
+            "tot1.",        //
+            "abs1.5z2.6",   //
+            "abs1.5z2.5",   //
+            "abs1.5z-2.2",  //
+            "abc1e5",       //
+            "abc+2.5",      //
+            "abc0.5abc",    //
+            "abc1e-5",      //
+            "abc-1.9",      //
+            "TOT40",        //
+            "TOT30",        //
+            "TOT2",         //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
 
 ////////////////////////////////////////////////////////////////////////////
 //// ENTRY POINT ///////////////////////////////////////////////////////////
@@ -195,6 +483,14 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1);
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2);
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3);
+
+    IfTestExist(Test_IGFD_Utils_IsAValidCharForADigit_0);
+    else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_0);
+    else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_1);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_0);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_1);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_2);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_3);
 
     assert(0);
 

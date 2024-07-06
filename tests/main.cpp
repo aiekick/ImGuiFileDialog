@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
     }
 
-    return Test_ImGuiFileDialog("Test_IGFD_FileManager_GetResultingFilePathName_issue_184") ? 0 : 1;
+    return Test_ImGuiFileDialog("Test_IGFD_Utils_NaturalCompare_2") ? 0 : 1;
     
     return 0;
 }
