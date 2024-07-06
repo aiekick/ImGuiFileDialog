@@ -83,21 +83,22 @@ enum IGFD_FileStyleFlags_         // by evaluation / priority order
 
 typedef int ImGuiFileDialogFlags;  // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_ {
-    ImGuiFileDialogFlags_None                         = 0,          // define none default flag
-    ImGuiFileDialogFlags_ConfirmOverwrite             = (1 << 0),   // show confirm to overwrite dialog
-    ImGuiFileDialogFlags_DontShowHiddenFiles          = (1 << 1),   // dont show hidden file (file starting with a .)
-    ImGuiFileDialogFlags_DisableCreateDirectoryButton = (1 << 2),   // disable the create directory button
-    ImGuiFileDialogFlags_HideColumnType               = (1 << 3),   // hide column file type
-    ImGuiFileDialogFlags_HideColumnSize               = (1 << 4),   // hide column file size
-    ImGuiFileDialogFlags_HideColumnDate               = (1 << 5),   // hide column file date
-    ImGuiFileDialogFlags_NoDialog                     = (1 << 6),   // let the dialog embedded in your own imgui begin / end scope
-    ImGuiFileDialogFlags_ReadOnlyFileNameField        = (1 << 7),   // don't let user type in filename field for file open style dialogs
-    ImGuiFileDialogFlags_CaseInsensitiveExtention     = (1 << 8),   // the file extentions treatments will not take into account the case
-    ImGuiFileDialogFlags_Modal                        = (1 << 9),   // modal
-    ImGuiFileDialogFlags_DisableThumbnailMode         = (1 << 10),  // disable the thumbnail mode
-    ImGuiFileDialogFlags_DisablePlaceMode             = (1 << 11),  // disable the place mode
-    ImGuiFileDialogFlags_DisableQuickPathSelection    = (1 << 12),  // disable the quick path selection
-    ImGuiFileDialogFlags_ShowDevicesButton            = (1 << 13),  // show the devices selection button
+    ImGuiFileDialogFlags_None                              = 0,          // define none default flag
+    ImGuiFileDialogFlags_ConfirmOverwrite                  = (1 << 0),   // show confirm to overwrite dialog
+    ImGuiFileDialogFlags_DontShowHiddenFiles               = (1 << 1),   // dont show hidden file (file starting with a .)
+    ImGuiFileDialogFlags_DisableCreateDirectoryButton      = (1 << 2),   // disable the create directory button
+    ImGuiFileDialogFlags_HideColumnType                    = (1 << 3),   // hide column file type
+    ImGuiFileDialogFlags_HideColumnSize                    = (1 << 4),   // hide column file size
+    ImGuiFileDialogFlags_HideColumnDate                    = (1 << 5),   // hide column file date
+    ImGuiFileDialogFlags_NoDialog                          = (1 << 6),   // let the dialog embedded in your own imgui begin / end scope
+    ImGuiFileDialogFlags_ReadOnlyFileNameField             = (1 << 7),   // don't let user type in filename field for file open style dialogs
+    ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering = (1 << 8),   // the file extentions filtering will not take into account the case
+    ImGuiFileDialogFlags_Modal                             = (1 << 9),   // modal
+    ImGuiFileDialogFlags_DisableThumbnailMode              = (1 << 10),  // disable the thumbnail mode
+    ImGuiFileDialogFlags_DisablePlaceMode                  = (1 << 11),  // disable the place mode
+    ImGuiFileDialogFlags_DisableQuickPathSelection         = (1 << 12),  // disable the quick path selection
+    ImGuiFileDialogFlags_ShowDevicesButton                 = (1 << 13),  // show the devices selection button
+    ImGuiFileDialogFlags_NaturalSorting                    = (1 << 14),  // enable the antural sorting for filenames and extentions, slower than standard sorting
 
     // default behavior when no flags is defined. seems to be the more common cases
     ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite |  //
@@ -320,8 +321,7 @@ public:
     };
 
 public:
-    static bool ImSplitter(
-        bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
+    static bool ImSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
     static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr, const size_t& vMaxRecursion = 10U);
     static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
     static void ResetBuffer(char* vBuffer);
@@ -333,9 +333,18 @@ public:
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
-    static std::string GetPathSeparator(); // return the slash for any OS ( \\ win, / unix)
-    static std::string RoundNumber(double vvalue, int n);  // custom rounding number
-    static std::string FormatFileSize(size_t vByteSize);   // format file size field
+    static std::string GetPathSeparator();                                     // return the slash for any OS ( \\ win, / unix)
+    static std::string RoundNumber(double vvalue, int n);                      // custom rounding number
+    static std::string FormatFileSize(size_t vByteSize);                       // format file size field
+    static bool NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending);  // natural sorting
+
+#ifdef NEED_TO_BE_PUBLIC_FOR_TESTS
+public:
+#else
+private:
+#endif
+    static bool M_IsAValidCharForADigit(const char& c);
+    static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, float& vOutNum);
 };
 
 class IGFD_API FileStyle {
@@ -614,6 +623,9 @@ private:
     void m_ApplyFilteringOnFileList(const FileDialogInternal& vFileDialogInternal,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);
+    static bool M_SortStrings(const FileDialogInternal& vFileDialogInternal,             //
+                       const bool vInsensitiveCase, const bool vDescendingOrder,  //
+                       const std::string& vA, const std::string& vB);
     void m_SortFields(const FileDialogInternal& vFileDialogInternal,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosList,
         std::vector<std::shared_ptr<FileInfos>>& vFileInfosFilteredList);  // will sort a column
