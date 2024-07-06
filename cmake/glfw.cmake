@@ -8,6 +8,12 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/glfw)
 
 set_target_properties(glfw PROPERTIES FOLDER 3rdparty) # Override standard 'GLFW3' subfolder
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    #target_compile_options(glfw PRIVATE "-Wno-everything") 
+else()
+    target_compile_options(glfw PRIVATE "-Wno-everything") 
+endif()
+
 set(GLFW_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdparty/glfw/include)
 set(GLFW_DEFINITIONS -DGLFW_INCLUDE_NONE)
 set(GLFW_LIBRARIES ${GLFW_LIBRARIES} glfw)

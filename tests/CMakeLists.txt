@@ -133,6 +133,10 @@ SetTest(Test_IGFD_FileManager_Filtering_insensitive_case_1)
 ## Test_IGFD_FileManager -- FileInfos SearchForExts
 SetTest(Test_IGFD_FileManager_FileInfos_SearchForExts_0)
 
+## Test_IGFD_FileManager -- GetResultingFilePathName
+SetTest(Test_IGFD_FileManager_GetResultingFilePathName_issue_144)
+SetTest(Test_IGFD_FileManager_GetResultingFilePathName_issue_184)
+
 ## Test_IGFD_FileStyle
 ##SetTest(Test_IGFD_FileStyle_ByExtention_0)
 ##SetTest(Test_IGFD_FileStyle_ByExtention_1)

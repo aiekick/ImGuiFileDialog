@@ -2,7 +2,18 @@
 
 #include <cassert>
 
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include <ImGuiFileDialog/ImGuiFileDialog.h>
+
+#include <imgui_internal.h>
+
+// specific
+#ifdef WIN32
+#include <direct.h>  // _chdir
+#define GetCurrentDir _getcwd
+#elif defined(UNIX)
+#include <unistd.h>  // chdir
+#define GetCurrentDir getcwd
+#endif
 
 #pragma region Helper
 
@@ -10,9 +21,10 @@ class FileManagerTestHelper {
 private:
     IGFD::FileDialogInternal fd;
     std::set<std::string> arr;
+    std::unique_ptr<IGFD::IFileSystem> m_FileSystemPtr = nullptr;
 
 private:
-    void compute_name_array() {
+    void m_compute_name_array() {
         for (const auto& file_ptr : fd.fileManager.m_FileList) {
             if (file_ptr) {
                 arr.emplace(file_ptr->fileNameExt);
@@ -36,9 +48,21 @@ public:
         }
     };
 
+    void createDirectoryOnDisk(const std::string& vDirectory) {
+        fd.fileManager.m_FileSystemPtr->CreateDirectoryIfNotExist(vDirectory);
+    }
+    
+    void createFileOnDisk(const std::string& vFile) {
+        std::ofstream fileWriter(vFile, std::ios::out);
+        if (!fileWriter.bad()) {
+            fileWriter << "for testing";
+            fileWriter.close();
+        }
+    }
+    
     bool isFileExist(const std::string& vFile) {
         if (arr.empty()) {
-            compute_name_array();
+            m_compute_name_array();
         }
         return (arr.find(vFile) != arr.end());
     }
@@ -53,6 +77,24 @@ public:
 
     IGFD::FileDialogInternal& getFileDialogInternal() {
         return fd;
+    }
+
+    void setInput(const std::string& vInput) {
+        if (!vInput.empty()) {
+            ImFormatString(fd.fileManager.fileNameBuffer, MAX_FILE_DIALOG_NAME_BUFFER, "%s", vInput.c_str());
+        } else {
+            fd.fileManager.fileNameBuffer[0] = '\0';
+        }        
+    }
+
+    void setCurrentPath(const std::string& vPath) {
+        fd.fileManager.m_CurrentPath = vPath;
+    }
+
+    std::string getCurrentDir() {
+        char buffer[1024 + 1] = "\0";
+        GetCurrentDir(buffer, 1024);
+        return std::string(buffer);
     }
 };  
 
@@ -226,6 +268,42 @@ bool Test_IGFD_FileManager_FileInfos_SearchForExts_0() {
 
 #pragma endregion
 
+#pragma region GetResultingFilePathName
+
+// ensure #144
+bool Test_IGFD_FileManager_GetResultingFilePathName_issue_144() {
+    FileManagerTestHelper mgr;
+    auto& fd = mgr.getFileDialogInternal();
+    mgr.setInput("toto.cpp");
+    if (fd.fileManager.GetResultingFileName(fd, IGFD_ResultMode_AddIfNoFileExt) != "toto.cpp") return false;
+    mgr.createDirectoryOnDisk("TITI");
+    const std::string& existing_path_file = "TITI" + IGFD::Utils::GetPathSeparator() + "toto.cpp ";
+    mgr.createFileOnDisk(existing_path_file);
+    mgr.setInput(existing_path_file);
+    if (fd.fileManager.GetResultingFilePathName(fd, IGFD_ResultMode_AddIfNoFileExt) != existing_path_file) return false;
+    return true;
+}
+
+// ensure #184
+bool Test_IGFD_FileManager_GetResultingFilePathName_issue_184() {
+    FileManagerTestHelper mgr;
+    auto& fd = mgr.getFileDialogInternal();
+    mgr.setInput("toto.cpp");
+    if (fd.fileManager.GetResultingFileName(fd, IGFD_ResultMode_AddIfNoFileExt) != "toto.cpp") return false;
+    mgr.createFileOnDisk("toto.cpp");  // we create a local file toto.cpp
+    mgr.createDirectoryOnDisk("TITI");
+    const std::string& exisitng_path      = mgr.getCurrentDir() + IGFD::Utils::GetPathSeparator() + "TITI";
+    const std::string& existing_path_file = exisitng_path + IGFD::Utils::GetPathSeparator() + "toto.cpp";
+    mgr.createFileOnDisk(existing_path_file);  // we crate also a local file toto.cpp in the dir TITI
+    mgr.setInput("toto.cpp");                  // we select the file toto.cpp
+    mgr.setCurrentPath(exisitng_path);         // in the dir TITI
+    // but we must ensure than the returned file path is TITI/toto.cpp and not the toto.cpp from the current dir
+    if (fd.fileManager.GetResultingFilePathName(fd, IGFD_ResultMode_AddIfNoFileExt) != existing_path_file) return false;
+    return true;
+}
+
+#pragma endregion
+
 #pragma region Entry Point
 
 #define IfTestExist(v) \
@@ -244,6 +322,8 @@ bool Test_FileManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_0);
     IfTestExist(Test_IGFD_FileManager_Filtering_insensitive_case_1);
     IfTestExist(Test_IGFD_FileManager_FileInfos_SearchForExts_0);
+    IfTestExist(Test_IGFD_FileManager_GetResultingFilePathName_issue_144);
+    IfTestExist(Test_IGFD_FileManager_GetResultingFilePathName_issue_184);
     
     assert(0);
 

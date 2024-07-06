@@ -43,20 +43,23 @@ if (USE_BOOST_FILESYSTEM)
 	add_definitions(-DCUSTOM_FILESYSTEM_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp")
 endif()
 
-if(MSVC)
+set(ORIGINAL_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_definitions(-DMSVC)
 	if (USE_STD_FILESYSTEM)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 	else()
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
 	endif()
-else ()
+else()
+	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
 	if (USE_STD_FILESYSTEM)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	endif()
-endif ()
+endif()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
@@ -90,30 +93,32 @@ file(GLOB RES_WIDGETS
 file(GLOB RES_DEMO_DIALOG
 		${CMAKE_CURRENT_SOURCE_DIR}/DemoDialog.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/DemoDialog.h)
+
+file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*.*)
 		
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
-file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainAndroid.cpp)
-file(GLOB IMGUIIMPL_SOURCES 
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.h
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h
-	${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+	file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainAndroid.cpp)
+	file(GLOB IMGUIIMPL_SOURCES 
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.h
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h
+		${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 else()
-file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainWinLinuxMacos.cpp)
-file(GLOB IMGUIIMPL_SOURCES 
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
+	file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainWinLinuxMacos.cpp)
+	file(GLOB IMGUIIMPL_SOURCES 
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
 endif()
 
-source_group(main FILES ${MAIN_SOURCES})
-source_group(src\\DemoDialog FILES ${RES_DEMO_DIALOG})
-source_group(src\\Custom FILES ${CUSTOM_SOURCES})
-source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
+source_group(cmake FILES ${CMAKE_SOURCES})
 source_group(src\\Res FILES ${RES_SOURCES})
 source_group(src\\Widgets FILES ${RES_WIDGETS})
+source_group(src\\Custom FILES ${CUSTOM_SOURCES})
+source_group(src\\DemoDialog FILES ${RES_DEMO_DIALOG})
+source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
 if (APPLE)
 	##set(ICON icon.icns)
@@ -149,25 +154,20 @@ target_link_libraries(ImGuiFileDialog PRIVATE
 	${BOOST_FILESYSTEM_LIBRARIES}
 )
 
+set(SOURCES 
+	${RES_SOURCES}
+	${RES_WIDGETS}
+	${MAIN_SOURCES}
+	${BOOST_SOURCES}
+	${CMAKE_SOURCES}
+	${CUSTOM_SOURCES}
+	${RES_DEMO_DIALOG}
+	${IMGUIIMPL_SOURCES})
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
-add_library(${PROJECT} SHARED
-	${RES_SOURCES}
-	${RES_WIDGETS}
-	${MAIN_SOURCES}
-	${BOOST_SOURCES}
-	${CUSTOM_SOURCES}
-	${RES_DEMO_DIALOG}
-	${IMGUIIMPL_SOURCES})
+	add_library(${PROJECT} SHARED ${SOURCES})
 else()
-add_executable(${PROJECT}
-	MACOSX_BUNDLE
-	${RES_SOURCES}
-	${RES_WIDGETS}
-	${MAIN_SOURCES}
-	${BOOST_SOURCES}
-	${CUSTOM_SOURCES}
-	${RES_DEMO_DIALOG}
-	${IMGUIIMPL_SOURCES})
+	add_executable(${PROJECT} MACOSX_BUNDLE ${SOURCES})
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

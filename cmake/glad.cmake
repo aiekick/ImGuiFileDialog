@@ -8,6 +8,11 @@ include_directories(${GLAD_INCLUDE_DIR})
 
 set_target_properties(glad PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(glad PROPERTIES FOLDER 3rdparty)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    #target_compile_options(glad PRIVATE "-Wno-everything") 
+else()
+    target_compile_options(glad PRIVATE "-Wno-everything") 
+endif()
 
 set(GLAD_LIBRARIES glad)
 
