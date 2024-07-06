@@ -10,7 +10,7 @@
 #ifdef WIN32
 #include <direct.h>  // _chdir
 #define GetCurrentDir _getcwd
-#elif defined(UNIX)
+#else
 #include <unistd.h>  // chdir
 #define GetCurrentDir getcwd
 #endif
