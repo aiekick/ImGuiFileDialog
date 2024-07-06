@@ -2582,10 +2582,12 @@ std::string IGFD::FileManager::GetResultingFileName(FileDialogInternal& vFileDia
 std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag) {
     if (!dLGDirectoryMode) {  // if not directory mode
         auto result          = GetResultingPath();
-        const auto& filename = GetResultingFileName(vFileDialogInternal, vFlag);
-        if (!filename.empty()) {
-            if (m_FileSystemPtr != nullptr && m_FileSystemPtr->IsFileExist(filename)) {
-                result = filename; // #144, exist file, so absolute, so return it (maybe set by user in inputText)
+        const auto& file_path_name = GetResultingFileName(vFileDialogInternal, vFlag);
+        if (!file_path_name.empty()) {
+            if (m_FileSystemPtr != nullptr && 
+                file_path_name.find(IGFD::Utils::GetPathSeparator()) != std::string::npos &&  // check if a path
+                m_FileSystemPtr->IsFileExist(file_path_name)) { // do that only if filename is a path, not only a file name 
+                result = file_path_name; // #144, exist file, so absolute, so return it (maybe set by user in inputText)
             } else { // #144, else concate path with current filename
 #ifdef _IGFD_UNIX_
                 if (fsRoot != result)
@@ -2593,13 +2595,13 @@ std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFil
                 {
                     result += IGFD::Utils::GetPathSeparator();
                 }
-                result += filename;
+                result += file_path_name;
             }
         }
 
-        return result;
+        return result;  // file mode
     }
-    return "";  // file mode
+    return "";  // directory mode
 }
 
 std::map<std::string, std::string> IGFD::FileManager::GetResultingSelection(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag) {

@@ -124,7 +124,7 @@ enum IGFD_ResultMode_ {
     //     toto.a.h => toto.a.h
     //     toto. => toto.g.z
     //     toto => toto.g.z
-    IGFD_ResultMode_AddIfNoFileExt = 0,
+    IGFD_ResultMode_AddIfNoFileExt = 0, // default
 
     // IGFD_ResultMode_OverwriteFileExt
     // Overwrite the file extention by the current filter :
