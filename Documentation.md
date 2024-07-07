@@ -42,6 +42,8 @@ solutions.
 - you can use your own FileSystem Api
     - by default Api Dirent and std::filesystem are defined
 	- you can override GetDrieveList for specify by ex on android other fs, like local and SDCards
+- can select all displayed files with "ctrl+a" as in any OS 
+- Natural sorting for filenames and extension on deamnde
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
@@ -1036,6 +1038,14 @@ vFileInfosPtr->tooltipColumn  = 1; // column of file size
 
 </blockquote></details>
 
+<details open><summary><h2>Natural sorting</h2></summary><blockquote>
+
+The natural sorting will sort filenames/directories ans their extension
+Since slower than the base sroting, its optionnal and can be anebled with the flag ImGuiFileDialogFlags_NaturalSorting
+
+The supported number format is the same as [strtod](https://cplusplus.com/reference/cstdlib/strtod/) function 
+
+</blockquote></details>
 <details open><summary><h2>C Api :</h2></summary><blockquote>
 
 this api was sucessfully tested with CImGui

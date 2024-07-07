@@ -990,9 +990,7 @@ std::string IGFD::Utils::FormatFileSize(size_t vByteSize) {
         static double lo = 1024.0;
         static double ko = 1024.0 * 1024.0;
         static double mo = 1024.0 * 1024.0 * 1024.0;
-
-        auto v = (double)vByteSize;
-
+        const auto v = static_cast<double>(vByteSize);
         if (v < lo)
             return RoundNumber(v, 0) + " " + fileSizeBytes;  // octet
         else if (v < ko)
@@ -1006,15 +1004,17 @@ std::string IGFD::Utils::FormatFileSize(size_t vByteSize) {
     return "0 " fileSizeBytes;
 }
 
+// https://cplusplus.com/reference/cstdlib/strtod/
 bool IGFD::Utils::M_IsAValidCharForADigit(const char& c) {
-    return c == '-' ||       // -2.5
-           c == '+' ||       // +2.5
-           c == '.' ||       // .5
-           c == 'e' ||       // 1e5
-           std::isdigit(c);  // 0 1 2 3 4 5 6 7 8 9
+    return c == '.' ||              // .5
+           c == '-' || c == '+' ||  // -2.5 or +2.5
+           c == 'e' || c == 'E' ||  // 1e5 or 1E5
+           c == 'x' || c == 'X' ||  // 0x14 or 0X14
+           c == 'p' || c == 'P' ||  // 6.2p2 or 3.2P-5
+           std::isdigit(c);         // 0-9
 }
 
-bool IGFD::Utils::M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, float& vOutNum) {
+bool IGFD::Utils::M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum) {
     char buf[64 + 1];
     size_t buf_p     = 0;
     bool is_last_ext = false;
@@ -1045,7 +1045,7 @@ bool IGFD::Utils::M_ExtractNumFromStringAtPos(const std::string& str, size_t& po
 // Fonction de comparaison naturelle entre deux chaînes
 bool IGFD::Utils::NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending) {
     std::size_t ia = 0, ib = 0;
-    float nA, nB;
+    double nA, nB;
     const auto& as = vA.size();
     const auto& bs = vB.size();
     while (ia < as && ib < bs) {

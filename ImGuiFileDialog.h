@@ -344,7 +344,7 @@ public:
 private:
 #endif
     static bool M_IsAValidCharForADigit(const char& c);
-    static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, float& vOutNum);
+    static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum);
 };
 
 class IGFD_API FileStyle {
