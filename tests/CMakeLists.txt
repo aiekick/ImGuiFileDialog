@@ -172,6 +172,7 @@ SetTest(Test_IGFD_Utils_IsAValidCharForADigit_0)
 
 SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_0)
 SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_1)
+SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_2)
 
 SetTest(Test_IGFD_Utils_NaturalCompare_0)
 SetTest(Test_IGFD_Utils_NaturalCompare_1)

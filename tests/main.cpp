@@ -7,7 +7,7 @@
 #define GetCurrentDir _getcwd
 #define SetCurrentDir _chdir
 #define ROOT_SLASH "\\"
-#elif defined(UNIX) 
+#else
 #include<unistd.h> // chdir
 #define GetCurrentDir getcwd
 #define SetCurrentDir chdir
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
     }
 
-    return Test_ImGuiFileDialog("Test_IGFD_Utils_NaturalCompare_2") ? 0 : 1;
+    return Test_ImGuiFileDialog("Test_IGFD_Utils_ExtractNumFromStringAtPos_2") ? 0 : 1;
     
     return 0;
 }

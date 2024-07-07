@@ -1,8 +1,9 @@
 #include "Test_FileStyle.h"
 
 #include <cassert>
+#include <cmath>
 
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include <ImGuiFileDialog/ImGuiFileDialog.h>
 
 ////////////////////////////////////////////////////////////////////////////
 //// ReplaceString /////////////////////////////////////////////////////////
@@ -178,6 +179,11 @@ bool Test_IGFD_Utils_IsAValidCharForADigit_0() {
     if (!IGFD::Utils::M_IsAValidCharForADigit('+')) return false;
     if (!IGFD::Utils::M_IsAValidCharForADigit('.')) return false;
     if (!IGFD::Utils::M_IsAValidCharForADigit('e')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('E')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('x')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('X')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('p')) return false;
+    if (!IGFD::Utils::M_IsAValidCharForADigit('P')) return false;
     if (!IGFD::Utils::M_IsAValidCharForADigit('0')) return false;
     if (!IGFD::Utils::M_IsAValidCharForADigit('1')) return false;
     if (!IGFD::Utils::M_IsAValidCharForADigit('2')) return false;
@@ -200,7 +206,7 @@ bool Test_IGFD_Utils_IsAValidCharForADigit_0() {
 
 // invalids numbers
 bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
-    float n  = 0.0f;
+    double n = 0.0;
     size_t p = 0;
     if (IGFD::Utils::M_ExtractNumFromStringAtPos("++2.5", p = 0, n)) return false;
     if (IGFD::Utils::M_ExtractNumFromStringAtPos("--2.5", p = 0, n)) return false;
@@ -214,22 +220,48 @@ bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
     if (IGFD::Utils::M_ExtractNumFromStringAtPos("-", p = 0, n)) return false;
     if (IGFD::Utils::M_ExtractNumFromStringAtPos("e", p = 0, n)) return false;
     if (IGFD::Utils::M_ExtractNumFromStringAtPos(".", p = 0, n)) return false;
+
+    // supported by strtod but will slow down more andwhy sorting by that
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("INF", p = 0, n)) return false; 
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("NAN", p = 0, n)) return false;
+    return true;
+}
+
+// valid numbers
+bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
+    double n = 0.0;
+    size_t p = 0;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos(".2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1e-5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1E32.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0x14", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0X14", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("2p2.5", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("2.5P-2.9", p = 0, n)) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("4588E4588", p = 0, n)) return false;
     return true;
 }
 
 // valids cases, verify number and new pos
-bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
-    float n  = 0.0f;
+bool Test_IGFD_Utils_ExtractNumFromStringAtPos_2() {
+    double n = 0.0;
     size_t p = 0;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc-2.8abc", p = 3, n)) return false;
-    if (n != -2.8f) return false;
+    if (n != -2.8) return false;
     if (p != 7U) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc+8.9abc", p = 3, n)) return false;
-    if (n != 8.9f) return false;
+    if (n != 8.9) return false;
     if (p != 7U) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc10.6546abc", p = 3, n)) return false;
-    if (n != 10.6546f) return false;
+    if (n != 10.6546) return false;
     if (p != 10U) return false;
+    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("4588E4588", p = 3, n)) return false;
+    if (!std::isinf(n)) return false;
+    if (p != 9U) return false;
     return true;
 }
 
@@ -487,6 +519,7 @@ bool Test_Utils(const std::string& vTest) {
     IfTestExist(Test_IGFD_Utils_IsAValidCharForADigit_0);
     else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_0);
     else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_1);
+    else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_2);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_0);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_1);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_2);
