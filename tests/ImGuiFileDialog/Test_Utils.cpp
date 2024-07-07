@@ -489,6 +489,40 @@ bool Test_IGFD_Utils_NaturalCompare_3() {
     return true;
 };
 
+// natural sort : a crash occured is std::sort where a is filedialog_1 and b is filedialog
+bool Test_IGFD_Utils_NaturalCompare_4() {
+    static constexpr size_t s_count_items           = 16U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "filed",         //
+            "file",          //
+            "filedialog_1",  //
+            "filedialog",    //
+            "filedialog_2",  //
+        };
+
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+              });
+
+    std::array<std::string, s_count_items> good_sort =  //
+        {
+            "file",          //
+            "filed",         //
+            "filedialog",    //
+            "filedialog_1",  //
+            "filedialog_2",  //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
+
 ////////////////////////////////////////////////////////////////////////////
 //// ENTRY POINT ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -524,6 +558,7 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_1);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_2);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_3);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_4);
 
     assert(0);
 
