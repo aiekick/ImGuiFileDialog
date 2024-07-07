@@ -1004,39 +1004,58 @@ std::string IGFD::Utils::FormatFileSize(size_t vByteSize) {
     return "0 " fileSizeBytes;
 }
 
-// https://cplusplus.com/reference/cstdlib/strtod/
-bool IGFD::Utils::M_IsAValidCharForADigit(const char& c) {
-    return c == '.' ||              // .5
-           c == '-' || c == '+' ||  // -2.5 or +2.5
-           c == 'e' || c == 'E' ||  // 1e5 or 1E5
+// https://cplusplus.com/reference/cstdlib/strtod
+bool IGFD::Utils::M_IsAValidCharExt(const char& c) {
+    return c == '.' ||            // .5
+           c == '-' || c == '+';  // -2.5 or +2.5;
+}
+
+// https://cplusplus.com/reference/cstdlib/strtod
+bool IGFD::Utils::M_IsAValidCharSuffix(const char& c) {
+    return c == 'e' || c == 'E' ||  // 1e5 or 1E5
            c == 'x' || c == 'X' ||  // 0x14 or 0X14
-           c == 'p' || c == 'P' ||  // 6.2p2 or 3.2P-5
-           std::isdigit(c);         // 0-9
+           c == 'p' || c == 'P';    // 6.2p2 or 3.2P-5
 }
 
 bool IGFD::Utils::M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum) {
-    char buf[64 + 1];
-    size_t buf_p     = 0;
-    bool is_last_ext = false;
-    const auto& ss   = str.size();
-    while (ss > 1 && pos < ss) {
-        const char& c = str.at(pos);
-        if (buf_p < 32 && M_IsAValidCharForADigit(c)) {
-            buf[buf_p++] = c;
-        } else {
-            break;
-        }
-        ++pos;
-    }
-    if (buf_p != 0) {
-        buf[buf_p] = '\0';
-        try {
-            char* endPtr;
-            vOutNum = strtod(buf, &endPtr);
-            if (endPtr != buf) {
-                return true;
+    if (!str.empty() && pos < str.size()) {
+        const char fc = str.at(pos);  // first char
+        // if the first char is not possible for a number we quit
+        if (std::isdigit(fc) || M_IsAValidCharExt(fc)) {
+            static constexpr size_t COUNT_CHAR = 64;
+            char buf[COUNT_CHAR + 1];
+            size_t buf_p        = 0;
+            bool is_last_digit  = false;
+            bool is_last_suffix = false;
+            const auto& ss      = str.size();
+            while (ss > 1 && pos < ss && buf_p < COUNT_CHAR) {
+                const char& c = str.at(pos);
+                // a suffix must be after a number
+                if (is_last_digit && M_IsAValidCharSuffix(c)) {
+                    is_last_suffix = true;
+                    buf[buf_p++]   = c;
+                } else if (std::isdigit(c)) {
+                    is_last_suffix = false;
+                    is_last_digit  = true;
+                    buf[buf_p++]   = c;
+                } else if (M_IsAValidCharExt(c)) {
+                    is_last_digit = false;
+                    buf[buf_p++]  = c;
+                } else {
+                    break;
+                }
+                ++pos;
             }
-        } catch (...) {
+            // if the last char is a suffix so its not a number
+            if (buf_p != 0 && !is_last_suffix) {
+                buf[buf_p] = '\0';
+                char* endPtr;
+                vOutNum = strtod(buf, &endPtr);
+                // the edge cases for numbers will be next filtered by strtod
+                if (endPtr != buf) {
+                    return true;
+                }
+            }
         }
     }
     return false;
@@ -1049,16 +1068,14 @@ bool IGFD::Utils::NaturalCompare(const std::string& vA, const std::string& vB, b
     const auto& as = vA.size();
     const auto& bs = vB.size();
     while (ia < as && ib < bs) {
-        const auto& ca = vInsensitiveCase ? std::tolower(vA[ia]) : vA[ia];
-        const auto& cb = vInsensitiveCase ? std::tolower(vB[ib]) : vB[ib];
-        if (M_IsAValidCharForADigit(ca) &&  //
-            M_IsAValidCharForADigit(cb)) {
-            const auto rA = M_ExtractNumFromStringAtPos(vA, ia, nA);
-            const auto rB = M_ExtractNumFromStringAtPos(vB, ib, nB);
-            if (rA && rB) {
-                if (nA != nB) {
-                    return vDescending ? nA > nB : nA < nB;
-                }
+        const char& ca = vInsensitiveCase ? std::tolower(vA[ia]) : vA[ia];
+        const char& cb = vInsensitiveCase ? std::tolower(vB[ib]) : vB[ib];
+        // we cannot start a number extraction from suffixs
+        const auto rA = M_ExtractNumFromStringAtPos(vA, ia, nA);
+        const auto rB = M_ExtractNumFromStringAtPos(vB, ib, nB);
+        if (rA && rB) {
+            if (nA != nB) {
+                return vDescending ? nA > nB : nA < nB;
             }
         } else {
             if (ca != cb) {

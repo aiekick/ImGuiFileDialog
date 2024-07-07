@@ -343,7 +343,8 @@ public:
 #else
 private:
 #endif
-    static bool M_IsAValidCharForADigit(const char& c);
+    static bool M_IsAValidCharExt(const char& c);
+    static bool M_IsAValidCharSuffix(const char& c);
     static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum);
 };
 
