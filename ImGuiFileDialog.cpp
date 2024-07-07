@@ -1042,19 +1042,20 @@ bool IGFD::Utils::M_ExtractNumFromStringAtPos(const std::string& str, size_t& po
     return false;
 }
 
-// Fonction de comparaison naturelle entre deux chaînes
+// Fonction de comparaison naturelle entre deux chaï¿½nes
 bool IGFD::Utils::NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending) {
     std::size_t ia = 0, ib = 0;
     double nA, nB;
     const auto& as = vA.size();
     const auto& bs = vB.size();
     while (ia < as && ib < bs) {
-        const char& ca = vInsensitiveCase ? std::tolower(vA[ia]) : vA[ia];
-        const char& cb = vInsensitiveCase ? std::tolower(vB[ib]) : vB[ib];
+        const auto& ca = vInsensitiveCase ? std::tolower(vA[ia]) : vA[ia];
+        const auto& cb = vInsensitiveCase ? std::tolower(vB[ib]) : vB[ib];
         if (M_IsAValidCharForADigit(ca) &&  //
             M_IsAValidCharForADigit(cb)) {
-            if (M_ExtractNumFromStringAtPos(vA, ia, nA) &&  //
-                M_ExtractNumFromStringAtPos(vB, ib, nB)) {
+            const auto rA = M_ExtractNumFromStringAtPos(vA, ia, nA);
+            const auto rB = M_ExtractNumFromStringAtPos(vB, ib, nB);
+            if (rA && rB) {
                 if (nA != nB) {
                     return vDescending ? nA > nB : nA < nB;
                 }
@@ -1814,52 +1815,22 @@ void IGFD::FileManager::m_SortFields(const FileDialogInternal& vFileDialogIntern
 #ifdef USE_CUSTOM_SORTING_ICON
             headerFileName = tableHeaderAscendingIcon + headerFileName;
 #endif  // USE_CUSTOM_SORTING_ICON
-            std::sort(vFileInfosList.begin(), vFileInfosList.end(), [&vFileDialogInternal](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
-                if (!a.use_count() || !b.use_count()) return false;
-                // tofix : this code fail in c:\\Users with the link "All users". got a invalid comparator
-                /*
-                // use code from
-                https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
-                // strict ordering for file/directory types beginning in '.'
-                // common on _IGFD_WIN_ platforms
-                if (a->fileNameExt[0] == '.' && b->fileNameExt[0] != '.')
-                    return false;
-                if (a->fileNameExt[0] != '.' && b->fileNameExt[0] == '.')
-                    return true;
-                if (a->fileNameExt[0] == '.' && b->fileNameExt[0] == '.')
-                {
-                    return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) < 0); // sort in insensitive
-                case
-                }
-                */
-                if (a->fileType != b->fileType) return (a->fileType < b->fileType);    // directories first
-                return M_SortStrings(vFileDialogInternal, true, false, a->fileNameExt, b->fileNameExt);  // sort in insensitive case
-            });
+            std::sort(vFileInfosList.begin(), vFileInfosList.end(), //
+                      [&vFileDialogInternal](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
+                          if (!a.use_count() || !b.use_count()) return false;
+                          if (a->fileType != b->fileType) return (a->fileType < b->fileType);                      // directories first
+                          return M_SortStrings(vFileDialogInternal, true, false, a->fileNameExt, b->fileNameExt);  // sort in insensitive case
+                      });
         } else {
 #ifdef USE_CUSTOM_SORTING_ICON
             headerFileName = tableHeaderDescendingIcon + headerFileName;
-#endif  // USE_CUSTOM_SORTING_ICON
-            std::sort(vFileInfosList.begin(), vFileInfosList.end(), [&vFileDialogInternal](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
-                if (!a.use_count() || !b.use_count()) return false;
-                // tofix : this code fail in c:\\Users with the link "All users". got a invalid comparator
-                /*
-                // use code from
-                https://github.com/jackm97/ImGuiFileDialog/commit/bf40515f5a1de3043e60562dc1a494ee7ecd3571
-                // strict ordering for file/directory types beginning in '.'
-                // common on _IGFD_WIN_ platforms
-                if (a->fileNameExt[0] == '.' && b->fileNameExt[0] != '.')
-                    return false;
-                if (a->fileNameExt[0] != '.' && b->fileNameExt[0] == '.')
-                    return true;
-                if (a->fileNameExt[0] == '.' && b->fileNameExt[0] == '.')
-                {
-                    return (stricmp(a->fileNameExt.c_str(), b->fileNameExt.c_str()) > 0); // sort in insensitive
-                case
-                }
-                */
-                if (a->fileType != b->fileType) return (a->fileType > b->fileType);    // directories last
-                return M_SortStrings(vFileDialogInternal, true, true, a->fileNameExt, b->fileNameExt);  // sort in insensitive case
-            });
+#endif // USE_CUSTOM_SORTING_ICON
+            std::sort(vFileInfosList.begin(), vFileInfosList.end(),  //
+                      [&vFileDialogInternal](const std::shared_ptr<FileInfos>& a, const std::shared_ptr<FileInfos>& b) -> bool {
+                          if (!a.use_count() || !b.use_count()) return false;
+                          if (a->fileType != b->fileType) return (a->fileType > b->fileType);                     // directories last
+                          return M_SortStrings(vFileDialogInternal, true, true, a->fileNameExt, b->fileNameExt);  // sort in insensitive case
+                      });
         }
     } else if (sortingField == SortingFieldEnum::FIELD_TYPE) {
         if (sortingDirection[1]) {
