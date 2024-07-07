@@ -173,37 +173,6 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
 //// Natural Sorting related ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-bool Test_IGFD_Utils_IsAValidCharForADigit_0() {
-    // valids
-    if (!IGFD::Utils::M_IsAValidCharForADigit('-')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('+')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('.')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('e')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('E')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('x')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('X')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('p')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('P')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('0')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('1')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('2')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('3')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('4')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('5')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('6')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('7')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('8')) return false;
-    if (!IGFD::Utils::M_IsAValidCharForADigit('9')) return false;
-    // some of invalids
-    if (IGFD::Utils::M_IsAValidCharForADigit('A')) return false;
-    if (IGFD::Utils::M_IsAValidCharForADigit('z')) return false;
-    if (IGFD::Utils::M_IsAValidCharForADigit('r')) return false;
-    if (IGFD::Utils::M_IsAValidCharForADigit('f')) return false;
-    if (IGFD::Utils::M_IsAValidCharForADigit('g')) return false;
-    if (IGFD::Utils::M_IsAValidCharForADigit('$')) return false;
-    return true;
-}
-
 // invalids numbers
 bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
     double n = 0.0;
@@ -237,6 +206,13 @@ bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1e-5", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1e", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1e-", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1p", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1p-", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0x", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0xABCDEF", p = 0, n)) return false;
+    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0xabcdef", p = 0, n)) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1E32.5", p = 0, n)) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0x14", p = 0, n)) return false;
     if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0X14", p = 0, n)) return false;
@@ -491,7 +467,7 @@ bool Test_IGFD_Utils_NaturalCompare_3() {
 
 // natural sort : a crash occured is std::sort where a is filedialog_1 and b is filedialog
 bool Test_IGFD_Utils_NaturalCompare_4() {
-    static constexpr size_t s_count_items           = 16U;
+    static constexpr size_t s_count_items           = 5U;
     std::array<std::string, s_count_items> bad_sort =  //
         {
             "filed",         //
@@ -517,6 +493,56 @@ bool Test_IGFD_Utils_NaturalCompare_4() {
 
     for (size_t idx = 0; idx < s_count_items; ++idx) {
         if (good_sort.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+    return true;
+};
+
+// natural sort : not good sort in descending but ok ins ascending
+bool Test_IGFD_Utils_NaturalCompare_5() {
+    static constexpr size_t s_count_items           = 3U;
+    std::array<std::string, s_count_items> bad_sort =  //
+        {
+            "test2.txt",   //
+            "test1.txt",   //
+            "test11.txt",  //
+        };
+
+    // ASCENDING
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+              });
+
+    std::array<std::string, s_count_items> good_sort_asc =  //
+        {
+            "test1.txt",   //
+            "test2.txt",   //
+            "test11.txt",  //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort_asc.at(idx) != bad_sort.at(idx)) {
+            return false;
+        }
+    }
+
+    // DESCENDING
+    std::sort(bad_sort.begin(), bad_sort.end(),                         //
+              [](const std::string& a, const std::string& b) -> bool {  //
+                  return IGFD::Utils::NaturalCompare(a, b, true, true);
+              });
+
+    std::array<std::string, s_count_items> good_sort_desc =  //
+        {
+            "test11.txt",  //
+            "test2.txt",   //
+            "test1.txt",   //
+        };
+
+    for (size_t idx = 0; idx < s_count_items; ++idx) {
+        if (good_sort_desc.at(idx) != bad_sort.at(idx)) {
             return false;
         }
     }
@@ -550,8 +576,7 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2);
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3);
 
-    IfTestExist(Test_IGFD_Utils_IsAValidCharForADigit_0);
-    else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_0);
+    IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_0);
     else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_1);
     else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_2);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_0);
@@ -559,6 +584,7 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_2);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_3);
     else IfTestExist(Test_IGFD_Utils_NaturalCompare_4);
+    else IfTestExist(Test_IGFD_Utils_NaturalCompare_5);
 
     assert(0);
 
