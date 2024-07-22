@@ -3499,6 +3499,7 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
     }
 }
 
+
 bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool selected, ImGuiSelectableFlags flags, bool vFlashing, const ImVec2& size_arg) {
     using namespace ImGui;
 
@@ -3510,7 +3511,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
 
     // Submit label or explicit size to ItemSize(), whereas ItemAdd() will submit a larger/spanning rectangle.
     ImGuiID id        = window->GetID(label);
-    ImVec2 label_size = CalcTextSize(label, nullptr, true);
+    ImVec2 label_size = CalcTextSize(label, NULL, true);
     ImVec2 size(size_arg.x != 0.0f ? size_arg.x : label_size.x, size_arg.y != 0.0f ? size_arg.y : label_size.y);
     ImVec2 pos = window->DC.CursorPos;
     pos.y += window->DC.CurrLineTextBaseOffset;
@@ -3528,6 +3529,7 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     const ImVec2 text_max(min_x + size.x, pos.y + size.y);
 
     // Selectables are meant to be tightly packed together with no click-gap, so we extend their box to cover spacing between selectable.
+    // FIXME: Not part of layout so not included in clipper calculation, but ItemSize currenty doesn't allow offsetting CursorPos.
     ImRect bb(min_x, pos.y, text_max.x, text_max.y);
     if ((flags & ImGuiSelectableFlags_NoPadWithHalfSpacing) == 0) {
         const float spacing_x = span_all_columns ? 0.0f : style.ItemSpacing.x;
@@ -3550,13 +3552,17 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     }
 
     const bool disabled_item = (flags & ImGuiSelectableFlags_Disabled) != 0;
-    const bool item_add      = ItemAdd(bb, id, nullptr, disabled_item ? ImGuiItemFlags_Disabled : ImGuiItemFlags_None);
+    const bool is_visible    = ItemAdd(bb, id, NULL, disabled_item ? (ImGuiItemFlags)ImGuiItemFlags_Disabled : ImGuiItemFlags_None);
+
     if (span_all_columns) {
         window->ClipRect.Min.x = backup_clip_rect_min_x;
         window->ClipRect.Max.x = backup_clip_rect_max_x;
     }
 
-    if (!item_add) return false;
+    const bool is_multi_select = (g.LastItemData.InFlags & ImGuiItemFlags_IsMultiSelect) != 0;
+    if (!is_visible)
+        if (!is_multi_select || !g.BoxSelectState.UnclipMode || !g.BoxSelectState.UnclipRect.Overlaps(bb))  // Extra layer of "no logic clip" for box-select support (would be more overhead to add to ItemAdd)
+            return false;
 
     const bool disabled_global = (g.CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
     if (disabled_item && !disabled_global)  // Only testing this as an optimization
@@ -3594,19 +3600,35 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
         button_flags |= ImGuiButtonFlags_AllowOverlap;
     }
 
+    // Multi-selection support (header)
     const bool was_selected = selected;
+    if (is_multi_select) {
+        // Handle multi-select + alter button flags for it
+        MultiSelectItemHeader(id, &selected, &button_flags);
+    }
+
     bool hovered, held;
     bool pressed = ButtonBehavior(bb, id, &hovered, &held, button_flags);
 
-    // Auto-select when moved into
-    // - This will be more fully fleshed in the range-select branch
-    // - This is not exposed as it won't nicely work with some user side handling of shift/control
-    // - We cannot do 'if (g.NavJustMovedToId != id) { selected = false; pressed = was_selected; }' for two reasons
-    //   - (1) it would require focus scope to be set, need exposing PushFocusScope() or equivalent (e.g. BeginSelection() calling PushFocusScope())
-    //   - (2) usage will fail with clipped items
-    //   The multi-select API aim to fix those issues, e.g. may be replaced with a BeginSelection() API.
-    if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == g.CurrentFocusScopeId)
-        if (g.NavJustMovedToId == id) selected = pressed = true;
+    // Multi-selection support (footer)
+    if (is_multi_select) {
+        MultiSelectItemFooter(id, &selected, &pressed);
+    } else {
+        // Auto-select when moved into
+        // - This will be more fully fleshed in the range-select branch
+        // - This is not exposed as it won't nicely work with some user side handling of shift/control
+        // - We cannot do 'if (g.NavJustMovedToId != id) { selected = false; pressed = was_selected; }' for two reasons
+        //   - (1) it would require focus scope to be set, need exposing PushFocusScope() or equivalent (e.g. BeginSelection() calling PushFocusScope())
+        //   - (2) usage will fail with clipped items
+        //   The multi-select API aim to fix those issues, e.g. may be replaced with a BeginSelection() API.
+        if ((flags & ImGuiSelectableFlags_SelectOnNav) && g.NavJustMovedToId != 0 && g.NavJustMovedToFocusScopeId == g.CurrentFocusScopeId)
+            if (g.NavJustMovedToId == id) selected = pressed = true;
+    }
+
+    //////////////////////////////////////////////////////////////////
+    // this function copy ImGui::Selectable just for this line....
+    hovered |= vFlashing;
+    //////////////////////////////////////////////////////////////////
 
     // Update NavId when clicking or when Hovering (this doesn't happen on most widgets), so navigation can be resumed with gamepad/keyboard
     if (pressed || (hovered && (flags & ImGuiSelectableFlags_SetNavIdOnHover))) {
@@ -3617,21 +3639,25 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
     }
     if (pressed) MarkItemEdited(id);
 
-    // In this branch, Selectable() cannot toggle the selection so this will never trigger.
-    if (selected != was_selected)  //-V547
-        g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
-
-    //////////////////////////////////////////////////////////////////
-    // this function copy ImGui::Selectable just for this line....
-    hovered |= vFlashing;
-    //////////////////////////////////////////////////////////////////
+    if (selected != was_selected) g.LastItemData.StatusFlags |= ImGuiItemStatusFlags_ToggledSelection;
 
     // Render
-    if (hovered || selected) {
-        const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
-        RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+    if (is_visible) {
+        if (hovered || selected) {
+            // FIXME-MULTISELECT: Styling: Color for 'selected' elements? ImGuiCol_HeaderSelected
+            ImU32 col;
+            if (selected && !hovered)
+                col = GetColorU32(ImLerp(GetStyleColorVec4(ImGuiCol_Header), GetStyleColorVec4(ImGuiCol_HeaderHovered), 0.5f));
+            else
+                col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
+            RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
+        }
+        if (g.NavId == id) {
+            ImGuiNavHighlightFlags nav_highlight_flags = ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding;
+            if (is_multi_select) nav_highlight_flags |= ImGuiNavHighlightFlags_AlwaysDraw;  // Always show the nav rectangle
+            RenderNavHighlight(bb, id, nav_highlight_flags);
+        }
     }
-    if (g.NavId == id) RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding);
 
     if (span_all_columns) {
         if (g.CurrentTable)
@@ -3640,13 +3666,16 @@ bool IGFD::KeyExplorerFeature::m_FlashableSelectable(const char* label, bool sel
             PopColumnsBackground();
     }
 
-    RenderTextClipped(text_min, text_max, label, nullptr, &label_size, style.SelectableTextAlign, &bb);
+    if (is_visible) RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
 
     // Automatically close popups
-    if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.LastItemData.InFlags & ImGuiItemFlags_SelectableDontClosePopup)) CloseCurrentPopup();
+    if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_NoAutoClosePopups) && (g.LastItemData.InFlags & ImGuiItemFlags_AutoClosePopups)) CloseCurrentPopup();
 
     if (disabled_item && !disabled_global) EndDisabled();
 
+    // Selectable() always returns a pressed state!
+    // Users of BeginMultiSelect()/EndMultiSelect() scope: you may call ImGui::IsItemToggledSelection() to retrieve
+    // selection toggle, only useful if you need that state updated (e.g. for rendering purpose) before reaching EndMultiSelect().
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
     return pressed;  //-V1020
 }
