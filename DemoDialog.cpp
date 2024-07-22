@@ -805,8 +805,8 @@ void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHe
                            ImGuiFileDialogFlags_DisableCreateDirectoryButton |  // no directory creation button
                            ImGuiFileDialogFlags_ReadOnlyFileNameField;          // file name filed is read only
             fileDialogEmbedded3.OpenDialog("embedded", "Select File", ".*", config);
-            // to note, when embedded only, the vMinSize do nothing, only the vMaxSize can size the dialog frame
-            if (fileDialogEmbedded3.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0, 0), ImVec2(0, 350))) {
+            // to note, when embedded only, the vMinSize is the size of the frame, vMaxSize do nothing
+            if (fileDialogEmbedded3.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0, 350))) {
                 if (fileDialogEmbedded3.IsOk()) {
                     filePathName = fileDialogEmbedded3.GetFilePathName(resultMode);
                     filePath     = fileDialogEmbedded3.GetCurrentPath();
