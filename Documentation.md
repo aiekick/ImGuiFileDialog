@@ -712,8 +712,8 @@ config.flags = ImGuiFileDialogFlags_NoDialog |
 	ImGuiFileDialogFlags_ReadOnlyFileNameField);
 fileDialog.OpenDialog("embedded", "Select File", ".*", config);
 // then display, here 
-// to note, when embedded the ImVec2(0,0) (MinSize) do nothing, only the ImVec2(0,350) (MaxSize) can size the dialog frame 
-fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,0), ImVec2(0,350)))
+// to note, when embedded the ImVec2(0,350) (MinSize) is the frame size, (MaxSize) do nothing
+fileDialog.Display("embedded", ImGuiWindowFlags_NoCollapse, ImVec2(0,350)))
 ```
 the result :
 

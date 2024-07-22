@@ -3741,20 +3741,19 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
         auto& fdFile   = m_FileDialogInternal.fileManager;
         auto& fdFilter = m_FileDialogInternal.filterManager;
 
-        static ImGuiWindowFlags flags;  // todo: not a good solution for multi instance, to fix
-
         // to be sure than only one dialog is displayed per frame
         ImGuiContext& g = *GImGui;
-        if (g.FrameCount == m_FileDialogInternal.lastImGuiFrameCount)  // one instance was displayed this frame before
-                                                                       // for this key +> quit
-            return res;
+        if (g.FrameCount == m_FileDialogInternal.lastImGuiFrameCount) {  // one instance was displayed this frame before
+            return res;                                                  // for this key +> quit
+        }
         m_FileDialogInternal.lastImGuiFrameCount = g.FrameCount;  // mark this instance as used this frame
 
+        m_CurrentDisplayedFlags = ImGuiWindowFlags_None;
         std::string name = m_FileDialogInternal.dLGtitle + "##" + m_FileDialogInternal.dLGkey;
         if (m_FileDialogInternal.name != name) {
             fdFile.ClearComposer();
             fdFile.ClearFileLists();
-            flags = vFlags;
+            m_CurrentDisplayedFlags = vFlags;
         }
 
         m_NewFrame();
@@ -3768,20 +3767,19 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
         }
 #endif  // IMGUI_HAS_VIEWPORT
 
-        bool beg = false;
-        if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_NoDialog)  // disable our own dialog system (standard or modal)
-        {
+        bool beg         = false;
+        ImVec2 frameSize = ImVec2(0, 0);
+        if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_NoDialog) {  // disable our own dialog system (standard or modal)
+            frameSize = vMinSize;
             beg = true;
         } else {
             ImGui::SetNextWindowSizeConstraints(vMinSize, vMaxSize);
-
-            if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_Modal && !m_FileDialogInternal.okResultToConfirm)  // disable modal because the confirm dialog for overwrite is
-                                                                                                                        // a new modal
-            {
+            if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_Modal &&  // disable modal because the confirm dialog for overwrite is
+                !m_FileDialogInternal.okResultToConfirm) {                                    // a new modal
                 ImGui::OpenPopup(name.c_str());
-                beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr, flags | ImGuiWindowFlags_NoScrollbar);
+                beg = ImGui::BeginPopupModal(name.c_str(), (bool*)nullptr, m_CurrentDisplayedFlags | ImGuiWindowFlags_NoScrollbar);
             } else {
-                beg = ImGui::Begin(name.c_str(), (bool*)nullptr, flags | ImGuiWindowFlags_NoScrollbar);
+                beg = ImGui::Begin(name.c_str(), (bool*)nullptr, m_CurrentDisplayedFlags | ImGuiWindowFlags_NoScrollbar);
             }
         }
         if (beg) {
@@ -3799,13 +3797,11 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
 #endif  // IMGUI_HAS_VIEWPORT
 
             ImGuiID _frameId = ImGui::GetID(name.c_str());
-            ImVec2 frameSize = ImVec2(0, 0);
-            if (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_NoDialog) frameSize = vMaxSize;
-            if (ImGui::BeginChild(_frameId, frameSize, false, flags | ImGuiWindowFlags_NoScrollbar)) {
+            if (ImGui::BeginChild(_frameId, frameSize, false, m_CurrentDisplayedFlags | ImGuiWindowFlags_NoScrollbar)) {
                 m_FileDialogInternal.name = name;  //-V820
-
-                if (fdFile.dLGpath.empty()) fdFile.dLGpath = ".";  // defaut path is '.'
-
+                if (fdFile.dLGpath.empty()) {
+                    fdFile.dLGpath = ".";  // defaut path is '.'
+                }
                 fdFilter.SetDefaultFilterIfNotDefined();
 
                 // init list of files
@@ -4121,10 +4117,11 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
 #ifdef USE_EXPLORATION_BY_KEYS
     bool flashed = m_BeginFlashItem((size_t)vidx);
     bool res = m_FlashableSelectable(fdi.variadicBuffer, vSelected, selectableFlags, flashed, ImVec2(-1.0f, h));
-    if (flashed)
+    if (flashed) {
         m_EndFlashItem();
+    }
 #else   // USE_EXPLORATION_BY_KEYS
-    (void)vidx;  // remove a warnings ofr unused var
+    (void)vidx;  // remove a warnings for unused var
 
     bool res = ImGui::Selectable(fdi.variadicBuffer, vSelected, selectableFlags, ImVec2(-1.0f, h));
 #endif  // USE_EXPLORATION_BY_KEYS
