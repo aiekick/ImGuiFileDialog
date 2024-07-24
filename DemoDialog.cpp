@@ -494,7 +494,7 @@ void DemoDialog::init(const float& vFontSize) {
 #endif  // USE_PLACES_FEATURE
 }
 
-void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHeight) {
+void DemoDialog::display(const ImVec4& vDisplayRect) {
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
     if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -873,7 +873,7 @@ void DemoDialog::display(const int32_t& vDisplayWidth, const int32_t& vDisplayHe
         ImVec2 maxSize = ImVec2(FLT_MAX, FLT_MAX);
 
         if (UseWindowContraints) {
-            maxSize = ImVec2((float)vDisplayWidth, (float)vDisplayHeight) * 0.7f;
+            maxSize = ImVec2(vDisplayRect.z, vDisplayRect.w) * 0.7f;
             minSize = maxSize * 0.25f;
         }
 

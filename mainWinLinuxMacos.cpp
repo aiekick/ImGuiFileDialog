@@ -108,9 +108,10 @@ int main(int, char**) {
     (void)io;
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
-    io.FontAllowUserScaling = true;  // zoom wiht ctrl + mouse wheel
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
+    io.ConfigViewportsNoDecoration = false;              // no decoration, for avoid a resuize bug
+    io.FontAllowUserScaling        = true;               // zoom wiht ctrl + mouse wheel
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -118,6 +119,8 @@ int main(int, char**) {
 
     DemoDialog demoDialog;
     demoDialog.init(15.0f);   
+
+   ImVec4 viewportRect;
 
     // Main loop
     int32_t display_w = 0;
@@ -137,8 +140,25 @@ int main(int, char**) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+#ifdef IMGUI_HAS_VIEWPORT
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            const auto viewport = ImGui::GetMainViewport();
+            if (viewport) {
+                const auto pos  = viewport->WorkPos;
+                const auto size = viewport->WorkSize;
+                viewportRect.x  = pos.x;
+                viewportRect.y  = pos.y;
+                viewportRect.z  = size.x;
+                viewportRect.w  = size.y;
+            }
+        } else {
+            viewportRect.x = 0;
+            viewportRect.y = 0;
+        }
+#endif
+
         try {
-            demoDialog.display(display_w, display_h);
+            demoDialog.display(viewportRect);
         } catch (std::exception& ex) {
             std::cout << "exception catched with message : " << ex.what() << std::endl;
             assert(0);

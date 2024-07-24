@@ -30,7 +30,7 @@ public:
 
 public:
     void init(const float& vFontSize);
-    void display(const int32_t& vDisplayWidth, const int32_t& vDisplayHeight);
+    void display(const ImVec4& vDisplayRect);
     void manageGPU();
     void unit();
 };
