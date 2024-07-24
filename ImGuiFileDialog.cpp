@@ -3786,13 +3786,13 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
 #ifdef IMGUI_HAS_VIEWPORT
             // if decoration is enabled we disable the resizing feature of imgui for avoid crash with SDL2 and GLFW3
             if (ImGui::GetIO().ConfigViewportsNoDecoration) {
-                flags = vFlags;
+                m_CurrentDisplayedFlags = vFlags;
             } else {
                 auto win = ImGui::GetCurrentWindowRead();
                 if (win->Viewport->Idx != 0)
-                    flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+                    m_CurrentDisplayedFlags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
                 else
-                    flags = vFlags;
+                    m_CurrentDisplayedFlags = vFlags;
             }
 #endif  // IMGUI_HAS_VIEWPORT
 
