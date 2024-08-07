@@ -2425,7 +2425,7 @@ void IGFD::FileManager::SelectAllFileNames() {
     }
 }
 
-void IGFD::FileManager::SelectFileName(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos) {
+void IGFD::FileManager::SelectFileName(const FileDialogInternal& /*vFileDialogInternal*/, const std::shared_ptr<FileInfos>& vInfos) {
     if (!vInfos.use_count()) {
         return;
     }
