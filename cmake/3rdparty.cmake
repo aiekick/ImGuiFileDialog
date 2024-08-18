@@ -1,3 +1,5 @@
+include(FetchContent)
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 
 else()
@@ -20,6 +22,6 @@ endif()
 include(cmake/imgui.cmake)
 include(cmake/imwidgets.cmake)
 
-if(USE_BOOST_DEMO_FILESYSTEM)
+if(USE_BOOST_FILESYSTEM)
 	include(cmake/boost.cmake)
 endif()

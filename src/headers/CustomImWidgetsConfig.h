@@ -5,7 +5,7 @@
 // ############# https://github.com/aiekick/ImGuiPack ###################
 // ######################################################################
 
-#include <CustomFont.h>
+#include <src/res/CustomFont.h>
 
 #define BUTTON_LABEL_RESET ICON_IGFD_RESET
 #define BUTTON_LABEL_PLUS ICON_IGFD_ADD

@@ -9,7 +9,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include <DemoDialog.h>
+#include <src/gui/DemoDialog.h>
 
 #include "3rdparty/imgui/backends/imgui_impl_opengl3.h"
 #include "3rdparty/imgui/backends/imgui_impl_glfw.h"

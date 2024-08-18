@@ -63,17 +63,13 @@ endif()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
-add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/CustomImGuiFileDialogConfig.h")
-add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/CustomImWidgetsConfig.h")
+add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
+add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImWidgetsConfig.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if (USE_NEW_IMGUI_KEY_SYSTEM)
 	add_definitions(-DIMGUI_DISABLE_OBSOLETE_KEYIO)
 endif()
-
-file(GLOB CUSTOM_SOURCES 
-	${CMAKE_CURRENT_SOURCE_DIR}/CustomImGuiFileDialogConfig.h
-	${CMAKE_CURRENT_SOURCE_DIR}/CustomImWidgetsConfig.h)
 
 if (USE_BOOST_FILESYSTEM)
 	file(GLOB BOOST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp)
@@ -82,17 +78,8 @@ elseif (USE_STD_FILESYSTEM)
 	add_definitions(-DUSE_STD_FILESYSTEM)
 endif()
 
-file(GLOB RES_SOURCES 
-		${CMAKE_CURRENT_SOURCE_DIR}/CustomFont.cpp 
-		${CMAKE_CURRENT_SOURCE_DIR}/CustomFont.h
-		${CMAKE_CURRENT_SOURCE_DIR}/Roboto_Medium.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/Roboto_Medium.h)
-file(GLOB RES_WIDGETS 
-		${CMAKE_CURRENT_SOURCE_DIR}/ImWidgets.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/ImWidgets.h)
-file(GLOB RES_DEMO_DIALOG
-		${CMAKE_CURRENT_SOURCE_DIR}/DemoDialog.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/DemoDialog.h)
+file(GLOB_RECURSE PROJECT_SRC_FILES ${CMAKE_SOURCE_DIR}/src/*.*)
+source_group(TREE ${CMAKE_SOURCE_DIR}/src PREFIX src FILES ${PROJECT_SRC_FILES})
 
 file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*.*)
 		
@@ -114,10 +101,6 @@ else()
 endif()
 
 source_group(cmake FILES ${CMAKE_SOURCES})
-source_group(src\\Res FILES ${RES_SOURCES})
-source_group(src\\Widgets FILES ${RES_WIDGETS})
-source_group(src\\Custom FILES ${CUSTOM_SOURCES})
-source_group(src\\DemoDialog FILES ${RES_DEMO_DIALOG})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
 if (APPLE)
@@ -160,8 +143,7 @@ set(SOURCES
 	${MAIN_SOURCES}
 	${BOOST_SOURCES}
 	${CMAKE_SOURCES}
-	${CUSTOM_SOURCES}
-	${RES_DEMO_DIALOG}
+	${PROJECT_SRC_FILES}
 	${IMGUIIMPL_SOURCES})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 

@@ -2,14 +2,14 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 
-#include <DemoDialog.h>
+#include <src/gui/DemoDialog.h>
 
 #include "imgui.h"
 #include "imgui_internal.h"
 
 #include "ImGuiFileDialog.h"
-#include "CustomFont.cpp"
-#include "Roboto_Medium.cpp"
+#include <src/res/CustomFont.cpp>
+#include <src/res/Roboto_Medium.cpp>
 //#include "HanyISentyPagodaRegular.cpp"
 #include <cstdio>
 #include <sstream>
