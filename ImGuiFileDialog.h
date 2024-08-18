@@ -184,7 +184,8 @@ struct IGFD_Thumbnail_Info {
 };
 #endif  // USE_THUMBNAILS
 
-#include <cstdint>
+// stdint is used for cpp and c apî (cstdint is only for cpp)
+#include <stdint.h>
 
 #ifdef __cplusplus
 
