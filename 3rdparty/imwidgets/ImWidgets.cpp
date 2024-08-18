@@ -313,7 +313,7 @@ bool RadioButtonLabeled(float vWidth, const char* label, bool active, bool disab
     float w                 = vWidth;
     const ImGuiID id        = window->GetID(label);
     const ImVec2 label_size = CalcTextSize(label, nullptr, true);
-    if (w < 0.0f) w = GetContentRegionMaxAbs().x - window->DC.CursorPos.x;
+    if (w < 0.0f) w = GetContentRegionAvail().x;
     if (IS_FLOAT_EQUAL(w, 0.0f)) w = label_size.x + style.FramePadding.x * 2.0f;
     const ImRect total_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
 
@@ -379,8 +379,8 @@ bool RadioButtonLabeled(ImVec2 vSize, const char* label, bool active, bool disab
     float h                 = vSize.y;
     const ImGuiID id        = window->GetID(label);
     const ImVec2 label_size = CalcTextSize(label, nullptr, true);
-    if (w < 0.0f) w = GetContentRegionMaxAbs().x - window->DC.CursorPos.x;
-    if (h < 0.0f) w = GetContentRegionMaxAbs().y - window->DC.CursorPos.y;
+    if (w < 0.0f) w = GetContentRegionAvail().x;
+    if (h < 0.0f) w = GetContentRegionAvail().y;
     if (IS_FLOAT_EQUAL(w, 0.0f)) w = label_size.x + style.FramePadding.x * 2.0f;
     if (IS_FLOAT_EQUAL(h, 0.0f)) h = label_size.y + style.FramePadding.y * 2.0f;
     const ImRect total_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, h));
