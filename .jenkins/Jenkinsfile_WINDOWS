@@ -5,7 +5,7 @@ withCredentials([string(credentialsId: 'PIPELINES_REPO', variable: 'checkout_url
             [
                 $class: 'GitSCMSource',
                 remote: checkout_url,
-                credentialsId: 'GITHUB_ACCESS_TOKEN'
+                credentialsId: 'GITEA_ACCESS_TOKEN'
             ]
         )
     )
