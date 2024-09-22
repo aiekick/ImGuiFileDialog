@@ -11,4 +11,4 @@ withCredentials([string(credentialsId: 'PIPELINES_REPO', variable: 'checkout_url
     )
 }
 
-pipeline_github_igfd()
+pipeline_github_igfd("LINUX")
