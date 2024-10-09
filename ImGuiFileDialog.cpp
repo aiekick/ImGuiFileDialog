@@ -3336,10 +3336,10 @@ bool IGFD::KeyExplorerFeature::m_LocateItem_Loop(FileDialogInternal& vFileDialog
                         {
                             if (fdi.dLGDirectoryMode)  // directory chooser
                             {
-                                fdi.SelectFileName(vFileDialogInternal, infos_ptr);
+                                fdi.SelectFileName(infos_ptr);
                             }
                         } else {
-                            fdi.SelectFileName(vFileDialogInternal, infos_ptr);
+                            fdi.SelectFileName(infos_ptr);
                         }
 
                         found = true;
@@ -3462,10 +3462,10 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
                             }
                         } else  // directory chooser
                         {
-                            fdi.SelectFileName(vFileDialogInternal, infos_ptr);
+                            fdi.SelectFileName(infos_ptr);
                         }
                     } else {
-                        fdi.SelectFileName(vFileDialogInternal, infos_ptr);
+                        fdi.SelectFileName(infos_ptr);
 
                         if (enterInDirectory) {
                             vFileDialogInternal.isOk = true;
