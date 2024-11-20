@@ -58,7 +58,13 @@ SOFTWARE.
 #define IGFD_DEBUG_BREAK
 #endif
 
-#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
+#if defined(__WIN32__) || \
+    defined(WIN32) || \
+    defined(_WIN32) || \
+    defined(__WIN64__) || \
+    defined(WIN64) || \
+    defined(_WIN64) || \
+    defined(_MSC_VER)
 #define _IGFD_WIN_
 #define stat _stati64
 #define stricmp _stricmp
@@ -66,14 +72,20 @@ SOFTWARE.
 // this option need c++17
 #ifdef USE_STD_FILESYSTEM
 #include <windows.h>
-#else
+#else                       // USE_STD_FILESYSTEM
 #include "dirent/dirent.h"  // directly open the dirent file attached to this lib
 #endif                      // USE_STD_FILESYSTEM
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif  // PATH_MAX
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
+#elif defined(__linux__) || \
+    defined(__FreeBSD__) || \
+    defined(__DragonFly__) || \
+    defined(__NetBSD__) || \
+    defined(__OpenBSD__) || \
+    defined(__APPLE__) ||\
+    defined(__EMSCRIPTEN__)
 #define _IGFD_UNIX_
 #define stricmp strcasecmp
 #include <sys/types.h>
@@ -84,8 +96,12 @@ SOFTWARE.
 #define PATH_SEP '/'
 #endif  // _IGFD_UNIX_
 
-#include "imgui.h"
-#include "imgui_internal.h"
+
+#ifdef IMGUI_INTERNAL_INCLUDE
+#include IMGUI_INTERNAL_INCLUDE
+#else  // IMGUI_INTERNAL_INCLUDE
+#include <imgui_internal.h>
+#endif  // IMGUI_INTERNAL_INCLUDE
 
 // legacy compatibility 1.89
 #ifndef IM_TRUNC
