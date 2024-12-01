@@ -329,8 +329,8 @@ public:
     static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
     static std::string UTF8Encode(const std::wstring& wstr);
     static std::wstring UTF8Decode(const std::string& str);
-    static std::vector<std::string> SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool& vPushEmpty);
-    static std::vector<std::string> SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty);
+    static std::vector<std::string> SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool vPushEmpty);
+    static std::vector<std::string> SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool vPushEmpty);
     static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
     static size_t GetCharCountInString(const std::string& vString, const char& vChar);
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
@@ -397,8 +397,8 @@ public:
     bool regexExist(const std::string& vFilter) const;                                   // is regex filter exist
     bool exist(const FileInfos& vFileInfos, bool vIsCaseInsensitive) const;              // is filter exist
     void setCollectionTitle(const std::string& vTitle);                                  // set the collection title
-    void addFilter(const std::string& vFilter, const bool& vIsRegex);                    // add a filter
-    void addCollectionFilter(const std::string& vFilter, const bool& vIsRegex);          // add a filter in collection
+    void addFilter(const std::string& vFilter, const bool vIsRegex);                    // add a filter
+    void addCollectionFilter(const std::string& vFilter, const bool vIsRegex);          // add a filter in collection
     static std::string transformAsteriskBasedFilterToRegex(const std::string& vFilter);  // will transform a filter who contain * to a regex
 };
 
@@ -455,10 +455,10 @@ private:
 
 public:
     FileType();
-    FileType(const ContentType& vContentType, const bool& vIsSymlink);
+    FileType(const ContentType& vContentType, const bool vIsSymlink);
 
     void SetContent(const ContentType& vContentType);
-    void SetSymLink(const bool& vIsSymlink);
+    void SetSymLink(const bool vIsSymlink);
 
     bool isValid() const;
     bool isDir() const;
@@ -504,9 +504,9 @@ public:
 
 public:
     bool SearchForTag(const std::string& vTag) const;  // will search a tag in fileNameExt and fileNameExt_optimized
-    bool SearchForExt(const std::string& vExt, const bool& vIsCaseInsensitive,
+    bool SearchForExt(const std::string& vExt, const bool vIsCaseInsensitive,
                       const size_t& vMaxLevel = EXT_MAX_LEVEL) const;  // will check the fileExtLevels levels for vExt, until vMaxLevel
-    bool SearchForExts(const std::string& vComaSepExts, const bool& vIsCaseInsensitive,
+    bool SearchForExts(const std::string& vComaSepExts, const bool vIsCaseInsensitive,
                        const size_t& vMaxLevel = EXT_MAX_LEVEL) const;  // will check the fileExtLevels levels for vExts (ext are coma separated), until vMaxLevel
     bool FinalizeFileTypeParsing(const size_t& vMaxDotToExtract);       // finalize the parsing the file (only a file or link to file. no dir)
 };
@@ -818,7 +818,7 @@ private:
         bool AddPlace(                      // add a place by code
             const std::string& vPlaceName,  // place name
             const std::string& vPlacePath,  // place path
-            const bool& vCanBeSaved,        // prevent serialization
+            const bool vCanBeSaved,        // prevent serialization
             const FileStyle& vStyle = {});  // style
         void AddPlaceSeparator(const float& vThickness = 1.0f);
         bool RemovePlace(                    // remove a place by code, return true if succeed
@@ -840,14 +840,14 @@ protected:
 
 public:
     std::string SerializePlaces(                                    // serialize place : return place buffer to save in a file
-        const bool& vForceSerialisationForAll = true);              // for avoid serialization of places with flag 'canBeSaved to false'
+        const bool vForceSerialisationForAll = true);              // for avoid serialization of places with flag 'canBeSaved to false'
     void DeserializePlaces(                                         // deserialize place : load place buffer to load in the dialog (saved from
         const std::string& vPlaces);                                // previous use with SerializePlaces()) place buffer to load
     bool AddPlacesGroup(                                            // add a group
         const std::string& vGroupName,                              // the group name
         const size_t& vDisplayOrder,                                // the display roder of the group
-        const bool& vCanBeEdited     = false,                       // let the user add/remove place in the group
-        const bool& vOpenedByDefault = true);                       // hte group is opened by default
+        const bool vCanBeEdited     = false,                       // let the user add/remove place in the group
+        const bool vOpenedByDefault = true);                       // hte group is opened by default
     bool RemovePlacesGroup(const std::string& vGroupName);          // remove the group
     GroupStruct* GetPlacesGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
 #endif                                                              // USE_PLACES_FEATURE
@@ -1008,7 +1008,7 @@ protected:
     // - m_DrawThumbnailsGridView
     void m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr,
                                    ImFont** vOutFont);                    // begin style apply of filter with color an icon if any
-    void m_EndFileColorIconStyle(const bool& vShowColor, ImFont* vFont);  // end style apply of filter
+    void m_EndFileColorIconStyle(const bool vShowColor, ImFont* vFont);  // end style apply of filter
 
     void m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos);
 };

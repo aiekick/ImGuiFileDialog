@@ -876,7 +876,7 @@ bool IGFD::Utils::ReplaceString(std::string& str, const ::std::string& oldStr, c
     return false;
 }
 
-std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool& vPushEmpty) {
+std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool vPushEmpty) {
     std::vector<std::string> arr;
     if (!vText.empty()) {
         size_t start = 0;
@@ -897,7 +897,7 @@ std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vTe
     return arr;
 }
 
-std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool& vPushEmpty) {
+std::vector<std::string> IGFD::Utils::SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool vPushEmpty) {
     std::vector<std::string> arr;
     if (!vText.empty()) {
         size_t start = 0;
@@ -1145,12 +1145,12 @@ void IGFD::FilterInfos::setCollectionTitle(const std::string& vTitle) {
     title = vTitle;
 }
 
-void IGFD::FilterInfos::addFilter(const std::string& vFilter, const bool& vIsRegex) {
+void IGFD::FilterInfos::addFilter(const std::string& vFilter, const bool vIsRegex) {
     setCollectionTitle(vFilter);
     addCollectionFilter(vFilter, vIsRegex);
 }
 
-void IGFD::FilterInfos::addCollectionFilter(const std::string& vFilter, const bool& vIsRegex) {
+void IGFD::FilterInfos::addCollectionFilter(const std::string& vFilter, const bool vIsRegex) {
     if (!vIsRegex) {
         auto _count_dots = Utils::GetCharCountInString(vFilter, '.');
         if (_count_dots > IGFD::FilterInfos::count_dots) {
@@ -1669,12 +1669,12 @@ void IGFD::FilterManager::SetDefaultFilterIfNotDefined() {
 }
 
 IGFD::FileType::FileType() = default;
-IGFD::FileType::FileType(const ContentType& vContentType, const bool& vIsSymlink) : m_Content(vContentType), m_Symlink(vIsSymlink) {
+IGFD::FileType::FileType(const ContentType& vContentType, const bool vIsSymlink) : m_Content(vContentType), m_Symlink(vIsSymlink) {
 }
 void IGFD::FileType::SetContent(const ContentType& vContentType) {
     m_Content = vContentType;
 }
-void IGFD::FileType::SetSymLink(const bool& vIsSymlink) {
+void IGFD::FileType::SetSymLink(const bool vIsSymlink) {
     m_Symlink = vIsSymlink;
 }
 bool IGFD::FileType::isValid() const {
@@ -1721,7 +1721,7 @@ bool IGFD::FileInfos::SearchForTag(const std::string& vTag) const {
     return true;
 }
 
-bool IGFD::FileInfos::SearchForExt(const std::string& vExt, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
+bool IGFD::FileInfos::SearchForExt(const std::string& vExt, const bool vIsCaseInsensitive, const size_t& vMaxLevel) const {
     if (!vExt.empty()) {
         const auto& ext_to_check = vIsCaseInsensitive ? Utils::LowerCaseString(vExt) : vExt;
         const auto& ext_levels   = vIsCaseInsensitive ? fileExtLevels_optimized : fileExtLevels;
@@ -1738,7 +1738,7 @@ bool IGFD::FileInfos::SearchForExt(const std::string& vExt, const bool& vIsCaseI
     return false;
 }
 
-bool IGFD::FileInfos::SearchForExts(const std::string& vComaSepExts, const bool& vIsCaseInsensitive, const size_t& vMaxLevel) const {
+bool IGFD::FileInfos::SearchForExts(const std::string& vComaSepExts, const bool vIsCaseInsensitive, const size_t& vMaxLevel) const {
     if (!vComaSepExts.empty()) {
         const auto& arr = Utils::SplitStringToVector(vComaSepExts, ',', false);
         for (const auto& a : arr) {
@@ -3214,7 +3214,7 @@ bool IGFD::PlacesFeature::m_DrawPlacesPane(FileDialogInternal& vFileDialogIntern
     return res;
 }
 
-std::string IGFD::PlacesFeature::SerializePlaces(const bool& /*vForceSerialisationForAll*/) {
+std::string IGFD::PlacesFeature::SerializePlaces(const bool /*vForceSerialisationForAll*/) {
     std::string res;
     size_t idx = 0;
     for (const auto& group : m_Groups) {
@@ -3251,7 +3251,7 @@ void IGFD::PlacesFeature::DeserializePlaces(const std::string& vPlaces) {
     }
 }
 
-bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool& vCanBeEdited, const bool& vOpenedByDefault) {
+bool IGFD::PlacesFeature::AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool vCanBeEdited, const bool vOpenedByDefault) {
     if (vGroupName.empty()) {
         return false;
     }
@@ -3285,7 +3285,7 @@ IGFD::PlacesFeature::GroupStruct* IGFD::PlacesFeature::GetPlacesGroupPtr(const s
     return nullptr;
 }
 
-bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, const std::string& vPlacePath, const bool& vCanBeSaved, const FileStyle& vStyle) {
+bool IGFD::PlacesFeature::GroupStruct::AddPlace(const std::string& vPlaceName, const std::string& vPlacePath, const bool vCanBeSaved, const FileStyle& vStyle) {
     if (vPlaceName.empty() || vPlacePath.empty()) {
         return false;
     }
@@ -4198,7 +4198,7 @@ void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFil
     if (*vOutFont) ImGui::PushFont(*vOutFont);
 }
 
-void IGFD::FileDialog::m_EndFileColorIconStyle(const bool& vShowColor, ImFont* vFont) {
+void IGFD::FileDialog::m_EndFileColorIconStyle(const bool vShowColor, ImFont* vFont) {
     if (vFont) ImGui::PopFont();
     if (vShowColor) ImGui::PopStyleColor();
 }
