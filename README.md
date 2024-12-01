@@ -64,8 +64,10 @@ compiler where to find the source code declared in `ImGuiFileDialog.h` which you
 You must also, of course, have added [Dear ImGui](https://github.com/ocornut/imgui) to your project for this to work at
 all.
 
-[dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) is required to use ImGuiFileDialog under Windows. It is
-included in the Lib_Only branch for your convenience.
+ImguiFileDialog is agnostic about the filesystem api you can use.
+It provide a IFileSystem you can override for your needs
+
+by default you can use dirent or std::fielsystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
 
 Android Requirements : Api 21 mini
 
