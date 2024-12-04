@@ -65,9 +65,9 @@ You must also, of course, have added [Dear ImGui](https://github.com/ocornut/img
 all.
 
 ImguiFileDialog is agnostic about the filesystem api you can use.
-It provide a IFileSystem you can override for your needs
+It provides a IFileSystem you can override for your needs.
 
-by default you can use dirent or std::fielsystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
+By default you can use dirent or std::filesystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
 
 Android Requirements : Api 21 mini
 
@@ -138,18 +138,18 @@ void drawGui() {
 
 ### How to build the sample app
 
-The sample app is [here in master branch]((https://github.com/aiekick/ImGuiFileDialog/tree/master)
+The sample app is [here in master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
 
-You need to use cMake. For the 3 Os (Win, Linux, MacOs), the cMake usage is exactly the same,
+You need to use CMake. For the 3 Os (Win, Linux, MacOs), the CMake usage is exactly the same,
 
     Choose a build directory. (called here my_build_directory for instance) and
     Choose a Build Mode : "Release" / "MinSizeRel" / "RelWithDebInfo" / "Debug" (called here BuildMode for instance)
-    Run cMake in console : (the first for generate cmake build files, the second for build the binary)
+    Run CMake in console : (the first for generate cmake build files, the second for build the binary)
 
 cmake -B my_build_directory -DCMAKE_BUILD_TYPE=BuildMode
 cmake --build my_build_directory --config BuildMode
 
-Some cMake version need Build mode define via the directive CMAKE_BUILD_TYPE or via --Config when we launch the build. This is why i put the boths possibilities
+Some CMake version need Build mode define via the directive CMAKE_BUILD_TYPE or via --Config when we launch the build. This is why i put the boths possibilities
 
 By the way you need before, to make sure, you have needed dependencies.
 
@@ -172,13 +172,13 @@ you need many lib : opengl and cocoa framework
 
 </blockquote></details>
 
-## Thats all folks :-)
+## That's all folks :-)
 
 You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
-- this trick was used for have custom icon font instead of labels for buttons or messages titles
+- this trick was used to have custom icon font instead of labels for buttons or messages titles
 - you can also use your custom imgui button, the button call stamp must be same by the way :)
 
 The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
-ImGuiFontStudio is using also ImGuiFileDialog.$
+ImGuiFontStudio is also using ImGuiFileDialog.$
 
 ![Alt](https://repobeats.axiom.co/api/embed/22a6eef207d0bce7c03519d94f55100973b451ca.svg "Repobeats analytics image")
