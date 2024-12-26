@@ -564,7 +564,11 @@ private:
     std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
 
 public:
+#ifdef SHOW_PATH_AS_TEXT
+    bool inputPathActivated                               = true;  // show input for path edition
+#else
     bool inputPathActivated                               = false;  // show input for path edition
+#endif // SHOW_PATH_AS_TEXT
     bool devicesClicked                                   = false;  // event when a drive button is clicked
     bool pathClicked                                      = false;  // event when a path button was clicked
     char inputPathBuffer[MAX_PATH_BUFFER_SIZE]            = "";     // input path buffer for imgui widget input text (displayed in palce of composer)
