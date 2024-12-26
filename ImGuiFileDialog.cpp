@@ -1083,8 +1083,14 @@ bool IGFD::Utils::NaturalCompare(const std::string& vA, const std::string& vB, b
     const auto& as = vA.size();
     const auto& bs = vB.size();
     while (ia < as && ib < bs) {
-        const char& ca = vInsensitiveCase ? std::tolower(vA[ia]) : vA[ia];
-        const char& cb = vInsensitiveCase ? std::tolower(vB[ib]) : vB[ib];
+        // OdehM 09ODEC2024: Make sure we don't get EOL from std::tolower()
+        int vA_lower = std::tolower(vA[ia]);
+        int vB_lower = std::tolower(vB[ib]);
+        if (vA_lower == -1) vA_lower = 46;      // If EOL, change to period '.'
+        if (vB_lower == -1) vB_lower = 46;
+         
+        const char& ca = vInsensitiveCase ? static_cast<char>(vA_lower) : vA[ia];
+        const char& cb = vInsensitiveCase ? static_cast<char>(vB_lower) : vB[ib];
         // we cannot start a number extraction from suffixs
         const auto rA = M_ExtractNumFromStringAtPos(vA, ia, nA);
         const auto rB = M_ExtractNumFromStringAtPos(vB, ib, nB);
@@ -2523,6 +2529,10 @@ void IGFD::FileManager::SelectOrDeselectFileName(const FileDialogInternal& vFile
 }
 
 void IGFD::FileManager::DrawDirectoryCreation(const FileDialogInternal& vFileDialogInternal) {
+
+#ifdef NO_CREATE_DIR_BUTTON
+    return;
+#else
     if (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableCreateDirectoryButton) return;
 
     if (IMGUI_BUTTON(createDirButtonString)) {
@@ -2560,9 +2570,12 @@ void IGFD::FileManager::DrawDirectoryCreation(const FileDialogInternal& vFileDia
     }
 
     ImGui::SameLine();
+#endif  // NO_CREATE_DIR_BUTTON
 }
 
 void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogInternal) {
+
+#ifndef NO_RESET_PATH_BUTTON
     if (IMGUI_BUTTON(resetButtonString)) {
         SetCurrentPath(".");
         OpenCurrentPath(vFileDialogInternal);
@@ -2581,7 +2594,9 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
     }
 
     ImGui::SameLine();
+#endif  //NO_RESET_PATH_BUTTON
 
+#ifndef NO_EDIT_PATH_BUTTON
     if (IMGUI_BUTTON(editPathButtonString)) {
         inputPathActivated = !inputPathActivated;
         if (inputPathActivated) {
@@ -2595,8 +2610,17 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
     if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonEditPathString);
 
     ImGui::SameLine();
+#endif  //NO_EDIT_PATH_BUTTON
 
+// Remove seperator if both buttons are disabled. Otherwise it will look weird.
+#if !defined(NO_RESET_PATH_BUTTON) && !defined(NO_EDIT_PATH_BUTTON)
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+#endif  // NO_RESET_PATH_BUTTON && NO_EDIT_PATH_BUTTON
+
+#ifdef WRITE_WORD_PATH
+    ImGui::Text( WRITE_WORD_PATH_STRING );
+    ImGui::SameLine();
+#endif  // WRITE_WORD_PATH
 
     // show current path
     if (!m_CurrentPathDecomposition.empty()) {
@@ -2615,6 +2639,8 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
 #else
                     ImGui::SameLine();
 #endif  // USE_CUSTOM_PATH_SPACING
+
+#ifndef NO_PATH_SEPERATOR_BUTTON
                     if (!(vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisableQuickPathSelection)) {
 #if defined(_IGFD_WIN_)
                         const char* sep = "\\";
@@ -2641,8 +2667,12 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
                             }
                         }
                     }
+#endif  // NO_PATH_SEPERATOR_BUTTON
                 }
 
+#ifdef SHOW_PATH_AS_TEXT
+                m_SetCurrentPath(itPathDecomp);
+#else
                 ImGui::PushID(_id++);
                 bool click = IMGUI_PATH_BUTTON((*itPathDecomp).c_str());
                 ImGui::PopID();
@@ -2654,6 +2684,7 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
                     m_SetCurrentPath(itPathDecomp);
                     break;
                 }
+#endif  // SHOW_PATH_AS_TEXT
             }
         }
     }
@@ -4018,11 +4049,24 @@ void IGFD::FileDialog::m_DisplayPathPopup(ImVec2 vSize) {
 
 bool IGFD::FileDialog::m_DrawOkButton() {
     auto& fdFile = m_FileDialogInternal.fileManager;
+
+#ifdef ALWAYS_SHOW_OK_BUTTON
+    if (m_FileDialogInternal.canWeContinue) {
+
+        // Disable button if no item is selected
+        if (!strlen(fdFile.fileNameBuffer)) ImGui::BeginDisabled();
+        if (IMGUI_BUTTON(okButtonString "##validationdialog", ImVec2(okButtonWidth, 0.0f)) || m_FileDialogInternal.isOk) {
+            m_FileDialogInternal.isOk = true;
+            return true;
+        }
+        if (!strlen(fdFile.fileNameBuffer)) ImGui::EndDisabled();
+#else
     if (m_FileDialogInternal.canWeContinue && strlen(fdFile.fileNameBuffer)) {
         if (IMGUI_BUTTON(okButtonString "##validationdialog", ImVec2(okButtonWidth, 0.0f)) || m_FileDialogInternal.isOk) {
             m_FileDialogInternal.isOk = true;
             return true;
         }
+#endif  // ALWAYS_SHOW_OK_BUTTON
 
 #if !invertOkAndCancelButtons
         ImGui::SameLine();

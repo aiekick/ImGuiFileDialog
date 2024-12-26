@@ -64,10 +64,8 @@ compiler where to find the source code declared in `ImGuiFileDialog.h` which you
 You must also, of course, have added [Dear ImGui](https://github.com/ocornut/imgui) to your project for this to work at
 all.
 
-ImguiFileDialog is agnostic about the filesystem api you can use.
-It provides a IFileSystem you can override for your needs.
-
-By default you can use dirent or std::filesystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
+[dirent v1.23](https://github.com/tronkko/dirent/tree/v1.23) is required to use ImGuiFileDialog under Windows. It is
+included in the Lib_Only branch for your convenience.
 
 Android Requirements : Api 21 mini
 
@@ -172,13 +170,13 @@ you need many lib : opengl and cocoa framework
 
 </blockquote></details>
 
-## That's all folks :-)
+## Thats all folks :-)
 
 You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
-- this trick was used to have custom icon font instead of labels for buttons or messages titles
+- this trick was used for have custom icon font instead of labels for buttons or messages titles
 - you can also use your custom imgui button, the button call stamp must be same by the way :)
 
 The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
-ImGuiFontStudio is also using ImGuiFileDialog.$
+ImGuiFontStudio is using also ImGuiFileDialog.$
 
 ![Alt](https://repobeats.axiom.co/api/embed/22a6eef207d0bce7c03519d94f55100973b451ca.svg "Repobeats analytics image")
