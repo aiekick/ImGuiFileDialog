@@ -173,7 +173,7 @@ you need many lib : opengl and cocoa framework
 ## Thats all folks :-)
 
 You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
-- this trick was used for have custom icon font instead of labels for buttons or messages titles
+- this trick was used to have custom icon font instead of labels for buttons or messages titles
 - you can also use your custom imgui button, the button call stamp must be same by the way :)
 
 The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
