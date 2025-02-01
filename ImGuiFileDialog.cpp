@@ -4105,7 +4105,22 @@ bool IGFD::FileDialog::m_DrawFooter() {
     return res;
 }
 
-void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...) {
+bool IGFD::FileDialog::m_Selectable(int vRowIdx, const char* vLabel, bool vSelected, ImGuiSelectableFlags vFlags, const ImVec2& vSizeArg) {
+    bool res = false;
+#ifdef USE_EXPLORATION_BY_KEYS
+    bool flashed = m_BeginFlashItem((size_t)vRowIdx);
+    res = m_FlashableSelectable(vLabel, vSelected, vFlags, flashed, vSizeArg);
+    if (flashed) {
+        m_EndFlashItem();
+    }
+#else   // USE_EXPLORATION_BY_KEYS
+    (void)vRowIdx;  // remove a warnings for unused var
+    res = ImGui::Selectable(vLabel, vSelected, vFlags, vSizeArg);
+#endif  // USE_EXPLORATION_BY_KEYS
+    return res;
+}
+
+void IGFD::FileDialog::m_SelectableItem(int vRowIdx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...) {
     if (!vInfos.use_count()) return;
 
     auto& fdi = m_FileDialogInternal.fileManager;
@@ -4123,18 +4138,7 @@ void IGFD::FileDialog::m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vIn
         h = DisplayMode_ThumbailsList_ImageHeight;
     }
 #endif  // USE_THUMBNAILS
-#ifdef USE_EXPLORATION_BY_KEYS
-    bool flashed = m_BeginFlashItem((size_t)vidx);
-    bool res     = m_FlashableSelectable(fdi.variadicBuffer, vSelected, selectableFlags, flashed, ImVec2(-1.0f, h));
-    if (flashed) {
-        m_EndFlashItem();
-    }
-#else   // USE_EXPLORATION_BY_KEYS
-    (void)vidx;  // remove a warnings for unused var
-
-    bool res = ImGui::Selectable(fdi.variadicBuffer, vSelected, selectableFlags, ImVec2(-1.0f, h));
-#endif  // USE_EXPLORATION_BY_KEYS
-    if (res) {
+    if (m_Selectable(vRowIdx, fdi.variadicBuffer, vSelected, selectableFlags, ImVec2(-1.0f, h))) {
         if (vInfos->fileType.isDir()) {
             // nav system, selectable cause open directory or select directory
             if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) {
@@ -4201,6 +4205,10 @@ void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFil
 void IGFD::FileDialog::m_EndFileColorIconStyle(const bool vShowColor, ImFont* vFont) {
     if (vFont) ImGui::PopFont();
     if (vShowColor) ImGui::PopStyleColor();
+}
+
+void IGFD::FileDialog::m_drawColumnText(int /*vColIdx*/, const char* vLabel, bool /*vSelected*/, bool /*vHovered*/) {
+    ImGui::Text("%s", vLabel);
 }
 
 void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
@@ -4310,6 +4318,7 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
             bool _showColor = false;
 
             int column_id = 0;
+            bool _rowHovered = false;
             m_FileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing());
             while (m_FileListClipper.Step()) {
                 for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++) {
@@ -4325,30 +4334,31 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
                     ImGui::TableNextRow();
 
                     column_id = 0;
+                    _rowHovered = false;
                     if (ImGui::TableNextColumn()) {  // file name
                         if (!infos_ptr->deviceInfos.empty()) {
                             _str += " " + infos_ptr->deviceInfos;
                         }
                         m_SelectableItem(i, infos_ptr, selected, _str.c_str());
+                        _rowHovered = ImGui::IsItemHovered();
                         m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
                     }
                     if (ImGui::TableNextColumn()) {  // file type
-                        ImGui::Text("%s", infos_ptr->fileExtLevels[0].c_str());
+                        m_drawColumnText(column_id, infos_ptr->fileExtLevels[0].c_str(), selected, _rowHovered);
                         m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
                     }
                     if (ImGui::TableNextColumn()) {  // file size
                         if (!infos_ptr->fileType.isDir()) {
-                            ImGui::Text("%s ", infos_ptr->formatedFileSize.c_str());
+                            m_drawColumnText(column_id, infos_ptr->formatedFileSize.c_str(), selected, _rowHovered);
                         } else {
                             ImGui::TextUnformatted("");
                         }
                         m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
                     }
                     if (ImGui::TableNextColumn()) {  // file date + time
-                        ImGui::Text("%s", infos_ptr->fileModifDate.c_str());
+                        m_drawColumnText(column_id, infos_ptr->fileModifDate.c_str(), selected, _rowHovered);
                         m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
                     }
-
                     m_EndFileColorIconStyle(_showColor, _font);
                 }
             }

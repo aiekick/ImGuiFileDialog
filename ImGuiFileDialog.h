@@ -313,6 +313,7 @@ class IGFD_API FileInfos;
 class IGFD_API FileDialogInternal;
 
 class IGFD_API Utils {
+    friend class TestUtils;
 public:
     struct PathStruct {
         std::string path;
@@ -339,11 +340,7 @@ public:
     static std::string FormatFileSize(size_t vByteSize);                                                                // format file size field
     static bool NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending);  // natural sorting
 
-#ifdef NEED_TO_BE_PUBLIC_FOR_TESTS
-public:
-#else
 private:
-#endif
     static bool M_IsAValidCharExt(const char& c);
     static bool M_IsAValidCharSuffix(const char& c);
     static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum);
@@ -403,11 +400,8 @@ public:
 };
 
 class IGFD_API FilterManager {
-#ifdef NEED_TO_BE_PUBLIC_FOR_TESTS
-public:
-#else
+    friend class TestFilterManager;
 private:
-#endif
     std::vector<FilterInfos> m_ParsedFilters;
     std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, std::shared_ptr<FileStyle> > > m_FilesStyle;  // file infos for file
                                                                                                                           // extention only
@@ -535,6 +529,7 @@ public:
 };
 
 class IGFD_API FileManager {
+    friend class TestFileManager;
 public:                            // types
     enum class SortingFieldEnum {  // sorting for filetering of the file lsit
         FIELD_NONE = 0,            // no sorting reference, result indetermined haha..
@@ -545,11 +540,7 @@ public:                            // types
         FIELD_THUMBNAILS,          // sorted by thumbnails (comparaison by width then by height)
     };
 
-#ifdef NEED_TO_BE_PUBLIC_FOR_TESTS
-public:
-#else
 private:
-#endif
     std::string m_CurrentPath;                                    // current path (to be decomposed in m_CurrentPathDecomposition
     std::vector<std::string> m_CurrentPathDecomposition;          // part words
     std::vector<std::shared_ptr<FileInfos> > m_FileList;          // base container
@@ -593,11 +584,7 @@ public:
 
     std::string fsRoot;
 
-#ifdef NEED_TO_BE_PUBLIC_FOR_TESTS
-public:
-#else
 private:
-#endif
     static void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);                    // set time and date infos of a file (detail view mode)
     void m_RemoveFileNameInSelection(const std::string& vFileName);                               // selection : remove a file name
     void m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
@@ -993,8 +980,9 @@ protected:
     virtual bool m_DrawOkButton();                  // draw ok button
     virtual bool m_DrawCancelButton();              // draw cancel button
     virtual void m_DrawSidePane(float vHeight);     // draw side pane
-    virtual void m_SelectableItem(int vidx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt,
-                                  ...);             // draw a custom selectable behavior item
+    virtual bool m_Selectable(int vRowIdx, const char* vLabel, bool vSelected, ImGuiSelectableFlags vFlags, const ImVec2& vSizeArg);
+    virtual void m_SelectableItem(int vRowIdx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...);  // draw a custom selectable behavior item
+    virtual void m_drawColumnText(int vColIdx, const char* vLabel, bool vSelected, bool vHovered);
     virtual void m_DrawFileListView(ImVec2 vSize);  // draw file list view (default mode)
 
 #ifdef USE_THUMBNAILS
