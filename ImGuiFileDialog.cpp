@@ -3758,7 +3758,7 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
         }
         m_FileDialogInternal.lastImGuiFrameCount = g.FrameCount;  // mark this instance as used this frame
 
-        m_CurrentDisplayedFlags = ImGuiWindowFlags_None;
+        m_CurrentDisplayedFlags = vFlags;
         std::string name        = m_FileDialogInternal.dLGtitle + "##" + m_FileDialogInternal.dLGkey;
         if (m_FileDialogInternal.name != name) {
             fdFile.ClearComposer();
