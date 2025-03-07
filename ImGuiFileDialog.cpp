@@ -3763,7 +3763,6 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
         if (m_FileDialogInternal.name != name) {
             fdFile.ClearComposer();
             fdFile.ClearFileLists();
-            m_CurrentDisplayedFlags = vFlags;
         }
 
         m_NewFrame();
