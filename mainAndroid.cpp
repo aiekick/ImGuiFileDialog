@@ -16,7 +16,7 @@
 #include <GLES3/gl3.h>
 #include <string>
 
-#include <DemoDialog.h>
+#include <src/gui/DemoDialog.h>
 
 // Data
 static EGLDisplay           g_EglDisplay = EGL_NO_DISPLAY;
@@ -27,6 +27,7 @@ static bool                 g_Initialized = false;
 static char                 g_LogTag[] = "ImGuiExample";
 static std::string          g_IniFilename = "";
 static DemoDialog           g_DemoDialog;
+static ImVec4               g_viewportRect = {};
 
 // Forward declarations of helper functions
 static void Init(struct android_app* app);
@@ -223,7 +224,17 @@ void MainLoopStep()
     ImGui_ImplAndroid_NewFrame();
     ImGui::NewFrame();
 
-    g_DemoDialog.display((int)io.DisplaySize.x, (int)io.DisplaySize.y);
+	g_viewportRect.x = 0.0f;
+	g_viewportRect.y = 0.0f;
+	g_viewportRect.z = io.DisplaySize.x;
+	g_viewportRect.w = io.DisplaySize.y;
+	
+    try {
+		g_DemoDialog.display(g_viewportRect);
+	} catch (std::exception& ex) {
+		printf("exception catched with message : %s\n", ex.what());
+		assert(0);
+	}
 	
     // Rendering
     ImGui::Render();

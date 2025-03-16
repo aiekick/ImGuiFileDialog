@@ -119,7 +119,7 @@ int main(int, char**) {
     DemoDialog demoDialog;
     demoDialog.init(15.0f);   
 
-   ImVec4 viewportRect;
+    ImVec4 viewportRect;
 
     // Main loop
     int32_t display_w = 0;
