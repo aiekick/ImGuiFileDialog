@@ -16,9 +16,6 @@ option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boos
 ## some defines for debug mode (before 3rdparty.cmake)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
-## some defines for debug mode (before 3rdparty.cmake)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
-
 set(FINAL_BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_PDB_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}/debug")
 
@@ -82,6 +79,7 @@ file(GLOB_RECURSE PROJECT_SRC_FILES ${CMAKE_SOURCE_DIR}/src/*.*)
 source_group(TREE ${CMAKE_SOURCE_DIR}/src PREFIX src FILES ${PROJECT_SRC_FILES})
 
 file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*.*)
+source_group(cmake FILES ${CMAKE_SOURCES})
 		
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
 	file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainAndroid.cpp)
@@ -100,7 +98,7 @@ else()
 		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
 endif()
 
-source_group(cmake FILES ${CMAKE_SOURCES})
+source_group(src FILES ${MAIN_SOURCES})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
 if (APPLE)

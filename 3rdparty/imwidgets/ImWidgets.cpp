@@ -351,7 +351,7 @@ bool RadioButtonLabeled(float vWidth, const char* label, bool active, bool disab
 }
 
 bool RadioButtonLabeled(float vWidth, const char* label, const char* help, bool active, bool disabled, ImFont* vLabelFont) {
-    if (vLabelFont) PushFont(vLabelFont);
+    if (vLabelFont) PushFont(vLabelFont, 0.0f);
     const bool change = RadioButtonLabeled(vWidth, label, active, disabled);
     if (vLabelFont) PopFont();
     if (help)
@@ -360,7 +360,7 @@ bool RadioButtonLabeled(float vWidth, const char* label, const char* help, bool 
 }
 
 bool RadioButtonLabeled(float vWidth, const char* label, const char* help, bool* active, bool disabled, ImFont* vLabelFont) {
-    if (vLabelFont) PushFont(vLabelFont);
+    if (vLabelFont) PushFont(vLabelFont, 0.0f);
     const bool change = RadioButtonLabeled(vWidth, label, *active, disabled);
     if (vLabelFont) PopFont();
     if (change) *active = !*active;
@@ -419,7 +419,7 @@ bool RadioButtonLabeled(ImVec2 vSize, const char* label, bool active, bool disab
 }
 
 bool RadioButtonLabeled(ImVec2 vSize, const char* label, const char* help, bool active, bool disabled, ImFont* vLabelFont) {
-    if (vLabelFont) PushFont(vLabelFont);
+    if (vLabelFont) PushFont(vLabelFont, 0.0f);
     const bool change = RadioButtonLabeled(vSize, label, active, disabled);
     if (vLabelFont) PopFont();
     if (help)
@@ -428,7 +428,7 @@ bool RadioButtonLabeled(ImVec2 vSize, const char* label, const char* help, bool 
 }
 
 bool RadioButtonLabeled(ImVec2 vSize, const char* label, const char* help, bool* active, bool disabled, ImFont* vLabelFont) {
-    if (vLabelFont) PushFont(vLabelFont);
+    if (vLabelFont) PushFont(vLabelFont, 0.0f);
     const bool change = RadioButtonLabeled(vSize, label, *active, disabled);
     if (vLabelFont) PopFont();
     if (change) *active = !*active;
@@ -457,7 +457,7 @@ bool ContrastedButton_For_Dialogs(const char* label, const ImVec2& size_arg) {
 bool ContrastedButton(const char* label, const char* help, ImFont* imfont, float vWidth, const ImVec2& size_arg, ImGuiButtonFlags flags) {
     const bool pushed = PushStyleColorWithContrast(ImGuiCol_Button, ImGuiCol_Text, CustomStyle::puContrastedTextColor, CustomStyle::puContrastRatio);
 
-    if (imfont) PushFont(imfont);
+    if (imfont) PushFont(imfont, 0.0f);
 
     PushID(++CustomStyle::pushId);
 
@@ -482,7 +482,7 @@ bool ToggleContrastedButton(const char* vLabelTrue, const char* vLabelFalse, boo
 
     const auto pushed = PushStyleColorWithContrast(ImGuiCol_Button, ImGuiCol_Text, CustomStyle::puContrastedTextColor, CustomStyle::puContrastRatio);
 
-    if (vImfont) PushFont(vImfont);
+    if (vImfont) PushFont(vImfont, 0.0f);
 
     PushID(++CustomStyle::pushId);
 
@@ -517,7 +517,7 @@ bool BeginContrastedCombo(const char* label, const char* preview_value, ImGuiCom
     ImGuiContext& g     = *GImGui;
     ImGuiWindow* window = GetCurrentWindow();
 
-    ImGuiNextWindowDataFlags backup_next_window_data_flags = g.NextWindowData.Flags;
+    ImGuiNextWindowDataFlags backup_next_window_data_flags = g.NextWindowData.ChildFlags;
     g.NextWindowData.ClearFlags();  // We behave like Begin() and need to consume those values
     if (window->SkipItems) return false;
 
@@ -548,7 +548,6 @@ bool BeginContrastedCombo(const char* label, const char* preview_value, ImGuiCom
     // Render shape
     const ImU32 frame_col = GetColorU32(hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
     const float value_x2  = ImMax(bb.Min.x, bb.Max.x - arrow_size);
-    RenderNavHighlight(bb, id);
     if (!(flags & ImGuiComboFlags_NoPreview)) window->DrawList->AddRectFilled(bb.Min, ImVec2(value_x2, bb.Max.y), frame_col, style.FrameRounding, (flags & ImGuiComboFlags_NoArrowButton) ? ImDrawFlags_RoundCornersAll : ImDrawFlags_RoundCornersLeft);
     if (!(flags & ImGuiComboFlags_NoArrowButton)) {
         const bool pushed = PushStyleColorWithContrast(ImGuiCol_Button, ImGuiCol_Text, CustomStyle::puContrastedTextColor, CustomStyle::puContrastRatio);
@@ -576,7 +575,7 @@ bool BeginContrastedCombo(const char* label, const char* preview_value, ImGuiCom
 
     if (!popup_open) return false;
 
-    g.NextWindowData.Flags = backup_next_window_data_flags;
+    g.NextWindowData.ChildFlags = backup_next_window_data_flags;
     return BeginComboPopup(popup_id, bb, flags);
 }
 
@@ -590,7 +589,7 @@ bool ContrastedCombo(float vWidth, const char* label, int* current_item, bool (*
     if (*current_item >= 0 && *current_item < items_count) items_getter(data, *current_item, &preview_value);
 
     // The old Combo() API exposed "popup_max_height_in_items". The new more general BeginCombo() API doesn't have/need it, but we emulate it here.
-    if (popup_max_height_in_items != -1 && !(g.NextWindowData.Flags & ImGuiNextWindowDataFlags_HasSizeConstraint)) SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, inCalcMaxPopupHeightFromItemCount(popup_max_height_in_items)));
+    if (popup_max_height_in_items != -1 && !(g.NextWindowData.ChildFlags & ImGuiNextWindowDataFlags_HasSizeConstraint)) SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, inCalcMaxPopupHeightFromItemCount(popup_max_height_in_items)));
 
     if (!BeginContrastedCombo(label, preview_value, ImGuiComboFlags_None)) return false;
 
