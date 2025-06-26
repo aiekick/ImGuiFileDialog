@@ -66,7 +66,6 @@ all.
 
 ImguiFileDialog is agnostic about the filesystem api you can use.
 It provides a IFileSystem you can override for your needs.
-
 By default you can use dirent or std::filesystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
 
 Android Requirements : Api 21 mini

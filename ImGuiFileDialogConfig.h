@@ -202,3 +202,38 @@
 // #define PLACES_DEVICES_DEFAULT_OPEPEND true
 // #define placesDevicesGroupName "Devices"
 // #define placesDevicesDisplayOrder 10  // to the end
+
+
+//////////////////////////////////////
+////  SHOW/HIDE BUTTONS & TEXT  //////
+////  ADDED: OdehM, 09DEC2024   //////
+//////////////////////////////////////
+
+// Disable the edit path button
+#define NO_EDIT_PATH_BUTTON
+
+// Disable the reset path button
+#define NO_RESET_PATH_BUTTON
+
+// Disable create directory button
+// While config.flag = ImGuiFileDialogFlags_DisableCreateDirectoryButton exists
+// I want to be able to nuke the create directory button on a global level
+#define NO_CREATE_DIR_BUTTON
+
+// Remove the path seperator button from path bar (Makes things tidy and neater)
+#define NO_PATH_SEPERATOR_BUTTON
+
+// Show path as a text field
+#define SHOW_PATH_AS_TEXT
+
+
+// Write the string defined by WRITE_WORD_PATH_STRING next to the path bar
+// Makes things look a bit more informative and formal
+#define WRITE_WORD_PATH
+#ifdef	WRITE_WORD_PATH
+constexpr auto WRITE_WORD_PATH_STRING = "Current Directory :";
+#endif	// WRITE_WORD_PATH
+
+// If enabled, OK button is always visible (disabled unless item is selected)
+#define ALWAYS_SHOW_OK_BUTTON
+
