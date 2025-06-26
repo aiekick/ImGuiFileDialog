@@ -17,11 +17,13 @@
 
 #pragma region Helper
 
-class FileManagerTestHelper {
+namespace IGFD {
+
+class TestFileManager {
 private:
-    IGFD::FileDialogInternal fd;
+    FileDialogInternal fd;
     std::set<std::string> arr;
-    std::unique_ptr<IGFD::IFileSystem> m_FileSystemPtr = nullptr;
+    std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
 
 private:
     void m_compute_name_array() {
@@ -39,7 +41,7 @@ public:
     }
 
     void addFile(const std::string& vFile) {
-        fd.fileManager.m_AddFile(fd, ".", vFile, IGFD::FileType(IGFD::FileType::ContentType::File, false));
+        fd.fileManager.m_AddFile(fd, ".", vFile, FileType(FileType::ContentType::File, false));
     };
 
     void addFiles(const std::vector<std::string>& vFiles) {
@@ -71,11 +73,11 @@ public:
         fd.getDialogConfigRef().flags = vFlags;
     }
     
-    IGFD::FilterInfos getSelectedFilter() const {
+    FilterInfos getSelectedFilter() const {
         return fd.filterManager.GetSelectedFilter();
     }
 
-    IGFD::FileDialogInternal& getFileDialogInternal() {
+    FileDialogInternal& getFileDialogInternal() {
         return fd;
     }
 
@@ -96,14 +98,15 @@ public:
         GetCurrentDir(buffer, 1024);
         return std::string(buffer);
     }
-};  
+};
+}  // namespace IGFD
 
 #pragma endregion
 
 #pragma region Filtering for .* patterns
 
 bool Test_IGFD_FileManager_Filtering_asterisk_0() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".*");
     mgr.addFiles({"toto.a", "toto.b","titi.c"});
 
@@ -115,7 +118,7 @@ bool Test_IGFD_FileManager_Filtering_asterisk_0() {
 }
 
 bool Test_IGFD_FileManager_Filtering_asterisk_1() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".*.*");
     mgr.addFiles({"toto.a.b", "toto.b.c", "titi.c"});
 
@@ -127,7 +130,7 @@ bool Test_IGFD_FileManager_Filtering_asterisk_1() {
 }
 
 bool Test_IGFD_FileManager_Filtering_asterisk_2() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".a.*");
     mgr.addFiles({"toto.a.b", "toto.b.c", "titi.a.c"});
 
@@ -139,7 +142,7 @@ bool Test_IGFD_FileManager_Filtering_asterisk_2() {
 }
 
 bool Test_IGFD_FileManager_Filtering_asterisk_3() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".*.b");
     mgr.addFiles({"toto.a.b", "toto.c.b", "titi.a.bb"});
 
@@ -155,7 +158,7 @@ bool Test_IGFD_FileManager_Filtering_asterisk_3() {
 #pragma region Filtering Divers
 
 bool Test_IGFD_FileManager_Filtering_divers_0() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".a.b");
     mgr.addFiles({"toto.a.b", "toto.b.c", "titi.a.c"});
 
@@ -167,7 +170,7 @@ bool Test_IGFD_FileManager_Filtering_divers_0() {
 }
 
 bool Test_IGFD_FileManager_Filtering_divers_1() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter("{.filters, .a.b}");
     mgr.addFiles({"toto.a.filters", "titi.a.b", "toto.c.a.b", "tata.t.o", "toto.filters"});
 
@@ -181,7 +184,7 @@ bool Test_IGFD_FileManager_Filtering_divers_1() {
 }
 
 bool Test_IGFD_FileManager_Filtering_divers_2() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter("Shader files{.glsl,.comp,.vert,.frag}");
     mgr.addFiles({"toto.comp", "titi.vert", "toto.frag", "tata.glsl"});
 
@@ -200,7 +203,7 @@ bool Test_IGFD_FileManager_Filtering_divers_2() {
 
 // issue #140
 bool Test_IGFD_FileManager_Filtering_sensitive_case_0() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".cpp");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
 
@@ -212,7 +215,7 @@ bool Test_IGFD_FileManager_Filtering_sensitive_case_0() {
 
 // issue #140
 bool Test_IGFD_FileManager_Filtering_sensitive_case_1() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.addFilter(".CPP");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
 
@@ -224,7 +227,7 @@ bool Test_IGFD_FileManager_Filtering_sensitive_case_1() {
 
 // issue #140
 bool Test_IGFD_FileManager_Filtering_insensitive_case_0() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering);
     mgr.addFilter(".cpp");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
@@ -237,7 +240,7 @@ bool Test_IGFD_FileManager_Filtering_insensitive_case_0() {
 
 // issue #140
 bool Test_IGFD_FileManager_Filtering_insensitive_case_1() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     mgr.useFlags(ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering);
     mgr.addFilter(".CPP");
     mgr.addFiles({"toto.cpp", "titi.CPP"});
@@ -272,7 +275,7 @@ bool Test_IGFD_FileManager_FileInfos_SearchForExts_0() {
 
 // ensure #144
 bool Test_IGFD_FileManager_GetResultingFilePathName_issue_144() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     auto& fd = mgr.getFileDialogInternal();
     mgr.setInput("toto.cpp");
     if (fd.fileManager.GetResultingFileName(fd, IGFD_ResultMode_AddIfNoFileExt) != "toto.cpp") return false;
@@ -286,7 +289,7 @@ bool Test_IGFD_FileManager_GetResultingFilePathName_issue_144() {
 
 // ensure #184
 bool Test_IGFD_FileManager_GetResultingFilePathName_issue_184() {
-    FileManagerTestHelper mgr;
+    IGFD::TestFileManager mgr;
     auto& fd = mgr.getFileDialogInternal();
     mgr.setInput("toto.cpp");
     if (fd.fileManager.GetResultingFileName(fd, IGFD_ResultMode_AddIfNoFileExt) != "toto.cpp") return false;

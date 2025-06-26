@@ -173,26 +173,35 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
 //// Natural Sorting related ///////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-// invalids numbers
+namespace IGFD {
+class TestUtils {
+public:
+    static bool ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum) {
+        return Utils::M_ExtractNumFromStringAtPos(str, pos, vOutNum);
+    }
+};
+}  // namespace IGFD
+
+    // invalids numbers
 bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
     double n = 0.0;
     size_t p = 0;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("++2.5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("--2.5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("..2.5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("+-+2.5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("-+2.5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("bleed", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("bled", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("e1e", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("+", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("-", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("e", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos(".", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("++2.5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("--2.5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("..2.5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("+-+2.5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("-+2.5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("bleed", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("bled", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("e1e", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("+", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("-", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("e", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos(".", p = 0, n)) return false;
 
     // supported by strtod but will slow down more andwhy sorting by that
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("INF", p = 0, n)) return false; 
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("NAN", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("INF", p = 0, n)) return false; 
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("NAN", p = 0, n)) return false;
     return true;
 }
 
@@ -200,25 +209,25 @@ bool Test_IGFD_Utils_ExtractNumFromStringAtPos_0() {
 bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
     double n = 0.0;
     size_t p = 0;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos(".2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1e-5", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1e", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1e-", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1p", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("1p-", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0x", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0xABCDEF", p = 0, n)) return false;
-    if (IGFD::Utils::M_ExtractNumFromStringAtPos("0xabcdef", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("1E32.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0x14", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("0X14", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("2p2.5", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("2.5P-2.9", p = 0, n)) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("4588E4588", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos(".2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("-2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("+2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("1e-5", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("1e", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("1e-", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("1p", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("1p-", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("0x", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("0xABCDEF", p = 0, n)) return false;
+    if (IGFD::TestUtils::ExtractNumFromStringAtPos("0xabcdef", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("1E32.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("0x14", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("0X14", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("2p2.5", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("2.5P-2.9", p = 0, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("4588E4588", p = 0, n)) return false;
     return true;
 }
 
@@ -226,16 +235,16 @@ bool Test_IGFD_Utils_ExtractNumFromStringAtPos_1() {
 bool Test_IGFD_Utils_ExtractNumFromStringAtPos_2() {
     double n = 0.0;
     size_t p = 0;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc-2.8abc", p = 3, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("abc-2.8abc", p = 3, n)) return false;
     if (n != -2.8) return false;
     if (p != 7U) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc+8.9abc", p = 3, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("abc+8.9abc", p = 3, n)) return false;
     if (n != 8.9) return false;
     if (p != 7U) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("abc10.6546abc", p = 3, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("abc10.6546abc", p = 3, n)) return false;
     if (n != 10.6546) return false;
     if (p != 10U) return false;
-    if (!IGFD::Utils::M_ExtractNumFromStringAtPos("4588E4588", p = 3, n)) return false;
+    if (!IGFD::TestUtils::ExtractNumFromStringAtPos("4588E4588", p = 3, n)) return false;
     if (!std::isinf(n)) return false;
     if (p != 9U) return false;
     return true;
