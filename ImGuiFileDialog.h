@@ -22,7 +22,7 @@ https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av
 
 MIT License
 
-Copyright (c) 2018-2024 Stephane Cuillerdier (aka aiekick)
+Copyright (c) 2018-2025 Stephane Cuillerdier (aka aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ SOFTWARE.
 #pragma once
 
 #define IGFD_VERSION "v0.6.8"
-#define IGFD_IMGUI_SUPPORTED_VERSION "1.90.5 WIP"
+#define IGFD_IMGUI_SUPPORTED_VERSION "1.92.0 WIP"
 
 // Config file
 #ifndef CUSTOM_IMGUIFILEDIALOG_CONFIG

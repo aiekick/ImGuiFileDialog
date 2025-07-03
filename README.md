@@ -24,7 +24,7 @@ solutions.
 
 > [!NOTE]
 > ImGuiFileDialog follow the master and docking branch of ImGui.
-> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.90.5-blue.svg)](https://github.com/ocornut/imgui)
+> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.92.0-blue.svg)](https://github.com/ocornut/imgui)
 
 ### Documentation :
 
@@ -67,7 +67,7 @@ all.
 ImguiFileDialog is agnostic about the filesystem api you can use.
 It provides a IFileSystem you can override for your needs.
 
-By default you can use dirent or std::filesystem. you have also a demo of uisng boos filesystem api in the DemoApp branch
+By default you can use dirent or std::filesystem. you have also a demo of using boost filesystem api in the DemoApp branch
 
 Android Requirements : Api 21 mini
 
