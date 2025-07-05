@@ -4197,13 +4197,25 @@ void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFil
 
     vOutStr += " " + vFileInfos->fileNameExt;
 
-    if (vOutShowColor) ImGui::PushStyleColor(ImGuiCol_Text, vFileInfos->fileStyle->color);
-    if (*vOutFont) ImGui::PushFont(*vOutFont, 0.0f);
+    if (vOutShowColor) {
+        ImGui::PushStyleColor(ImGuiCol_Text, vFileInfos->fileStyle->color);
+    }
+    if (*vOutFont) {
+#ifdef IMGUI_VERSION_NUM < 19201
+        ImGui::PushFont(*vOutFont);
+#else
+        ImGui::PushFont(*vOutFont, 0.0f);
+#endif
+    }
 }
 
 void IGFD::FileDialog::m_EndFileColorIconStyle(const bool vShowColor, ImFont* vFont) {
-    if (vFont) ImGui::PopFont();
-    if (vShowColor) ImGui::PopStyleColor();
+    if (vFont) {
+        ImGui::PopFont();
+    }
+    if (vShowColor) {
+        ImGui::PopStyleColor();
+    }
 }
 
 void IGFD::FileDialog::m_drawColumnText(int /*vColIdx*/, const char* vLabel, bool /*vSelected*/, bool /*vHovered*/) {
