@@ -8,8 +8,8 @@ enable_language(C CXX)
 option(USE_TESTS "Enable tests" ON)
 option(USE_VISUAL_TESTS "Enable visual tests" ON)
 
-option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" OFF)
-option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" ON)
+option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" ON)
+option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
 ## some defines for debug mode (before 3rdparty.cmake)
@@ -222,8 +222,6 @@ target_link_libraries(${PROJECT} PRIVATE
 	${IMWIDGETS_LIBRARIES}
 	ImGuiFileDialog)
 endif()
-
-set_target_properties(ImGuiFileDialog PROPERTIES FOLDER Lib)
 
 target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}

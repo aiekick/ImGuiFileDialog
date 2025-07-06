@@ -2,9 +2,11 @@
 
 #include <cassert>
 
-#include <ImGuiFileDialog/ImGuiFileDialog.h>
+#include <ImGuiFileDialog/ImGuiFileDialog.cpp>
 
 #include <imgui_internal.h>
+
+#include <filesystem>
 
 // specific
 #ifdef WIN32
@@ -23,9 +25,10 @@ class TestFileManager {
 private:
     FileDialogInternal fd;
     std::set<std::string> arr;
-    std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
+    std::unique_ptr<IFileSystem> m_FileSystemPtr = std::make_unique<FileSystemDirent>();
 
 private:
+
     void m_compute_name_array() {
         for (const auto& file_ptr : fd.fileManager.m_FileList) {
             if (file_ptr) {
