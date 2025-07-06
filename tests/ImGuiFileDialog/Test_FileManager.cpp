@@ -25,7 +25,7 @@ class TestFileManager {
 private:
     FileDialogInternal fd;
     std::set<std::string> arr;
-    std::unique_ptr<IFileSystem> m_FileSystemPtr = std::make_unique<FileSystemDirent>();
+    std::unique_ptr<IFileSystem> m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
 
 private:
 
