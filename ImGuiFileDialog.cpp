@@ -4201,7 +4201,7 @@ void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFil
         ImGui::PushStyleColor(ImGuiCol_Text, vFileInfos->fileStyle->color);
     }
     if (*vOutFont) {
-#ifdef IMGUI_VERSION_NUM < 19201
+#if IMGUI_VERSION_NUM < 19201
         ImGui::PushFont(*vOutFont);
 #else
         ImGui::PushFont(*vOutFont, 0.0f);
