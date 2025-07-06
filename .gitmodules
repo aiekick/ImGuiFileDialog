@@ -14,3 +14,7 @@
 	path = ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
 	branch = master
+[submodule "3rdparty/imgui_test_engine"]
+	path = 	3rdparty/imgui_test_engine
+	url = https://github.com/ocornut/imgui_test_engine.git
+	branch = main

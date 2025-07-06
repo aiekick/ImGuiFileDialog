@@ -1,16 +1,15 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 cmake_policy(SET CMP0079 NEW) # for line 67
 
-set(PROJECT ImGuiFileDialog_App)
-
-enable_language(C CXX)
+set(PROJECT ImGuiFileDialog_DemoApp)
 project(${PROJECT} CXX)
+enable_language(C CXX)
 
-option(USE_NEW_IMGUI_KEY_SYSTEM "Define the symbol IMGUI_DISABLE_OBSOLETE_KEYIO" ON)
-option(USE_TEST "Enable tests" ON)
+option(USE_TESTS "Enable tests" ON)
+option(USE_VISUAL_TESTS "Enable visual tests" ON)
 
-option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" ON)
-option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
+option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" OFF)
+option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" ON)
 option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
 ## some defines for debug mode (before 3rdparty.cmake)
@@ -60,13 +59,8 @@ endif()
 
 add_definitions(${GLFW_DEFINITIONS})
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
-add_definitions(-DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
 add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImWidgetsConfig.h")
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-
-if (USE_NEW_IMGUI_KEY_SYSTEM)
-	add_definitions(-DIMGUI_DISABLE_OBSOLETE_KEYIO)
-endif()
 
 if (USE_BOOST_FILESYSTEM)
 	file(GLOB BOOST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp)
@@ -118,7 +112,7 @@ include_directories(
 	${BOOST_FILESYSTEM_INCLUDE_DIRS}
 )
 
-if (USE_TEST)
+if (USE_TESTS)
 	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
 endif()
 
@@ -149,6 +143,9 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 else()
 	add_executable(${PROJECT} MACOSX_BUNDLE ${SOURCES})
 endif()
+
+target_compile_definitions(ImGuiFileDialog PRIVATE -DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
+target_compile_definitions(${PROJECT} PRIVATE -DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -232,7 +229,7 @@ target_include_directories(ImGuiFileDialog PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if (USE_TEST)
+if (USE_TESTS)
 	enable_testing()
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif()
@@ -240,3 +237,11 @@ endif()
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}")
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
+
+if (USE_VISUAL_TESTS)
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+		# need to test it on android
+	else()
+		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/visualTests)
+	endif()
+endif()

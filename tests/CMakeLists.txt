@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 
 set(PROJECT ImGuiFileDialog_Test)
 enable_language(CXX)
@@ -15,10 +15,10 @@ add_executable(${PROJECT}
 )
 
 target_link_libraries(${PROJECT} PRIVATE
-		ImGuiFileDialog
+	ImGuiFileDialog
 )
 
-set_target_properties(${PROJECT} PROPERTIES FOLDER Tests)
+set_target_properties(${PROJECT} PROPERTIES FOLDER Tests/UnitTesting)
 
 #############################################################
 #############################################################
