@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include <ImGuiFileDialog/ImGuiFileDialog.cpp>
+#include <ImGuiFileDialog/ImGuiFileDialog.cpp> // for let IGFD::FileManager find the FS on destroy
 
 #include <imgui_internal.h>
 
@@ -25,10 +25,8 @@ class TestFileManager {
 private:
     FileDialogInternal fd;
     std::set<std::string> arr;
-    std::unique_ptr<IFileSystem> m_FileSystemPtr = std::make_unique<FILE_SYSTEM_OVERRIDE>();
 
 private:
-
     void m_compute_name_array() {
         for (const auto& file_ptr : fd.fileManager.m_FileList) {
             if (file_ptr) {
