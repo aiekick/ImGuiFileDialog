@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 set(PROJECT ImGuiFileDialog_VisualTests)
 project(${PROJECT} CXX)
 enable_language(C CXX)
+set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE SRC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.*)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${SRC_SOURCES})
@@ -63,6 +64,8 @@ target_compile_definitions(${PROJECT} PRIVATE
 	IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL
 	CUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/customIgfdConfig.h"
 )
+
+set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 17)
 
 set_target_properties(${PROJECT} PROPERTIES FOLDER Tests/ImGuiTestEngine)
 
