@@ -882,6 +882,7 @@ protected:
     ImGuiWindowFlags m_CurrentDisplayedFlags;
 
 public:
+#ifndef NEW_SINGLETON
     // Singleton for easier accces form anywhere but only one dialog at a time
     // vCopy or vForce can be used for share a memory pointer in a new memory space like a dll module
     static FileDialog* Instance(FileDialog* vCopy = nullptr, bool vForce = false) {
@@ -895,6 +896,28 @@ public:
         }
         return &_instance;
     }
+#else   // NEW_SINGLETON
+    static std::unique_ptr<FileDialog>& initSingleton(FileDialog* vCopy = nullptr, bool vForce = false) {
+        static auto mp_instance = std::unique_ptr<FileDialog>(new FileDialog());
+        static std::unique_ptr<FileDialog> mp_instance_copy;
+        if (vCopy != nullptr || vForce) {
+            if (vCopy != nullptr) {
+                mp_instance_copy = std::unique_ptr<FileDialog>(vCopy);
+            } else {
+                mp_instance_copy.release();  // frees the internal borrowed pointer without deletion
+            }
+        }
+        if (mp_instance_copy != nullptr) {
+            return mp_instance_copy;
+        }
+        return mp_instance;
+    }
+    static FileDialog& ref() { return *initSingleton().get(); }
+    static void unitSingleton() {
+        initSingleton(nullptr, true); // frees the borrowed pointer in case
+        initSingleton().reset(); // else the reset with destroy the borrowed pointer
+    }
+#endif  // NEW_SINGLETON
 
 public:
     FileDialog();           // ImGuiFileDialog Constructor. can be used for have many dialog at same time (not possible with singleton)
