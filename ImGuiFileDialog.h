@@ -83,27 +83,28 @@ enum IGFD_FileStyleFlags_         // by evaluation / priority order
 
 typedef int ImGuiFileDialogFlags;  // -> enum ImGuiFileDialogFlags_
 enum ImGuiFileDialogFlags_ {
-    ImGuiFileDialogFlags_None                              = 0,          // define none default flag
-    ImGuiFileDialogFlags_ConfirmOverwrite                  = (1 << 0),   // show confirm to overwrite dialog
-    ImGuiFileDialogFlags_DontShowHiddenFiles               = (1 << 1),   // dont show hidden file (file starting with a .)
-    ImGuiFileDialogFlags_DisableCreateDirectoryButton      = (1 << 2),   // disable the create directory button
-    ImGuiFileDialogFlags_HideColumnType                    = (1 << 3),   // hide column file type
-    ImGuiFileDialogFlags_HideColumnSize                    = (1 << 4),   // hide column file size
-    ImGuiFileDialogFlags_HideColumnDate                    = (1 << 5),   // hide column file date
-    ImGuiFileDialogFlags_NoDialog                          = (1 << 6),   // let the dialog embedded in your own imgui begin / end scope
-    ImGuiFileDialogFlags_ReadOnlyFileNameField             = (1 << 7),   // don't let user type in filename field for file open style dialogs
-    ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering = (1 << 8),   // the file extentions filtering will not take into account the case
-    ImGuiFileDialogFlags_Modal                             = (1 << 9),   // modal
-    ImGuiFileDialogFlags_DisableThumbnailMode              = (1 << 10),  // disable the thumbnail mode
-    ImGuiFileDialogFlags_DisablePlaceMode                  = (1 << 11),  // disable the place mode
-    ImGuiFileDialogFlags_DisableQuickPathSelection         = (1 << 12),  // disable the quick path selection
-    ImGuiFileDialogFlags_ShowDevicesButton                 = (1 << 13),  // show the devices selection button
-    ImGuiFileDialogFlags_NaturalSorting                    = (1 << 14),  // enable the antural sorting for filenames and extentions, slower than standard sorting
+    ImGuiFileDialogFlags_None = 0,                                      // define none default flag
+    ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),                   // show confirm to overwrite dialog
+    ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),                // dont show hidden file (file starting with a .)
+    ImGuiFileDialogFlags_DisableCreateDirectoryButton = (1 << 2),       // disable the create directory button
+    ImGuiFileDialogFlags_HideColumnType = (1 << 3),                     // hide column file type
+    ImGuiFileDialogFlags_HideColumnSize = (1 << 4),                     // hide column file size
+    ImGuiFileDialogFlags_HideColumnDate = (1 << 5),                     // hide column file date
+    ImGuiFileDialogFlags_NoDialog = (1 << 6),                           // let the dialog embedded in your own imgui begin / end scope
+    ImGuiFileDialogFlags_ReadOnlyFileNameField = (1 << 7),              // don't let user type in filename field for file open style dialogs
+    ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering = (1 << 8),  // the file extentions filtering will not take into account the case
+    ImGuiFileDialogFlags_Modal = (1 << 9),                              // modal
+    ImGuiFileDialogFlags_DisableThumbnailMode = (1 << 10),              // disable the thumbnail mode
+    ImGuiFileDialogFlags_DisablePlaceMode = (1 << 11),                  // disable the place mode
+    ImGuiFileDialogFlags_DisableQuickPathSelection = (1 << 12),         // disable the quick path selection
+    ImGuiFileDialogFlags_ShowDevicesButton = (1 << 13),                 // show the devices selection button
+    ImGuiFileDialogFlags_NaturalSorting = (1 << 14),                    // enable the antural sorting for filenames and extentions, slower than standard sorting
+    ImGuiFileDialogFlags_OptionalFileName = (1 << 15),                  // the input filename is optional, so the dialog can be validated even if the filebname input is empty
 
     // default behavior when no flags is defined. seems to be the more common cases
     ImGuiFileDialogFlags_Default = ImGuiFileDialogFlags_ConfirmOverwrite |  //
-                                   ImGuiFileDialogFlags_Modal |             //
-                                   ImGuiFileDialogFlags_HideColumnType
+        ImGuiFileDialogFlags_Modal |                                        //
+        ImGuiFileDialogFlags_HideColumnType
 };
 
 // flags used for GetFilePathName(flag) or GetSelection(flag)
