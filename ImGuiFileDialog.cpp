@@ -1975,11 +1975,13 @@ bool IGFD::FileManager::m_CompleteFileInfosWithUserFileAttirbutes(const FileDial
 void IGFD::FileManager::ClearFileLists() {
     m_FilteredFileList.clear();
     m_FileList.clear();
+    m_SelectedFileNames.clear();
 }
 
 void IGFD::FileManager::ClearPathLists() {
     m_FilteredPathList.clear();
     m_PathList.clear();
+    m_SelectedFileNames.clear();
 }
 
 void IGFD::FileManager::m_AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType) {
@@ -2711,16 +2713,23 @@ std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFil
 
 std::map<std::string, std::string> IGFD::FileManager::GetResultingSelection(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag) {
     std::map<std::string, std::string> res;
-    for (const auto& selectedFileName : m_SelectedFileNames) {
-        auto result = GetResultingPath();
+    const auto& result_path = GetResultingPath();
+    if (!m_SelectedFileNames.empty()) {
+        for (const auto& selectedFileName : m_SelectedFileNames) {
+            auto result = result_path;
 #ifdef _IGFD_UNIX_
-        if (fsRoot != result)
+            if (fsRoot != result)
 #endif  // _IGFD_UNIX_
-        {
-            result += IGFD::Utils::GetPathSeparator();
+            {
+                result += IGFD::Utils::GetPathSeparator();
+            }
+            result += vFileDialogInternal.filterManager.ReplaceExtentionWithCurrentFilterIfNeeded(selectedFileName, vFlag);
+            res[selectedFileName] = result;
         }
-        result += vFileDialogInternal.filterManager.ReplaceExtentionWithCurrentFilterIfNeeded(selectedFileName, vFlag);
-        res[selectedFileName] = result;
+    } else {                                                     // opened directory with no selection
+        if (vFileDialogInternal.fileManager.dLGDirectoryMode) {  // directory mode
+            res["."] = result_path;
+        }
     }
     return res;
 }
