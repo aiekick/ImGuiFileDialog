@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         return Test_ImGuiFileDialog(argv[1]) ? 0 : 1;
     }
 
-    return Test_ImGuiFileDialog("Test_IGFD_FileManager_Filtering_asterisk_0") ? 0 : 1;
+    return Test_ImGuiFileDialog("Test_IGFD_FilterManager_ParseFilters_Filters_Regex_1") ? 0 : 1;
     
     return 0;
 }

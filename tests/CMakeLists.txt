@@ -73,6 +73,8 @@ SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_0)
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_1)
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_2)
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_3)
+SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_4)
+SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_5)
 
 ## Test_IGFD_FilterManager -- Divers Filters
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_0)

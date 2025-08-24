@@ -406,15 +406,13 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Simple_Regex_5() {
     return true;
 }
 
-// last ) missing
+// last ) missing, so the last filters .h and .hpp are aprt of the regex.. so only one filter recognized
 bool Test_IGFD_FilterManager_ParseFilters_Filters_Simple_Regex_6() {
     IGFD::TestFilterManager mgr("(([.][0-9]{3})),.cpp,(([.][0-9]{3},.h,.hpp");
 
-    if (mgr.getFiltersRef().size() != 4U) return false;
+    if (mgr.getFiltersRef().size() != 2U) return false;
     if (mgr.getFiltersRef()[0].getFirstFilter() != "(([.][0-9]{3}))") return false;
     if (mgr.getFiltersRef()[1].getFirstFilter() != ".cpp") return false;
-    if (mgr.getFiltersRef()[2].getFirstFilter() != ".h") return false;
-    if (mgr.getFiltersRef()[3].getFirstFilter() != ".hpp") return false;
 
     return true;
 }
@@ -480,13 +478,14 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_0() {
     return true;
 }
 
-// invalid regex
+// valid regex
 bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_1() {
     IGFD::TestFilterManager mgr("frames files{((.001,.NNN)),.frames}");
 
     if (mgr.getFiltersRef().size() != 1U) return false;
     if (mgr.getFiltersRef()[0].title != "frames files") return false;
-    if (mgr.getFiltersRef()[0].filters.size() != 1U) return false;
+    if (mgr.getFiltersRef()[0].filters.size() != 2U) return false;
+    if (!mgr.getFiltersRef()[0].filters.exist("((.001,.NNN))")) return false;
     if (!mgr.getFiltersRef()[0].filters.exist(".frames")) return false;
 
     return true;
@@ -514,6 +513,30 @@ bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_3() {
     if (!mgr.getFiltersRef()[0].filters.exist("(([.][0-9]{3}))")) return false;
     if (!mgr.getFiltersRef()[0].filters.exist(".cpp")) return false;
     if (!mgr.getFiltersRef()[0].filters.exist(".hpp")) return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_4() {
+    IGFD::TestFilterManager mgr(R"(Dem files{((^[A-Za-z][0-9][0-9][A-Za-z][0-9]{3}(?:\.txt|\.hgt)?$))})");
+
+    if (mgr.getFiltersRef().size() != 1U) return false;
+    if (mgr.getFiltersRef()[0].title != "Dem files") return false;
+    if (mgr.getFiltersRef()[0].filters.size() != 1U) return false;
+    if (!mgr.getFiltersRef()[0].filters.exist(R"(((^[A-Za-z][0-9][0-9][A-Za-z][0-9]{3}(?:\.txt|\.hgt)?$)))")) return false;
+
+    return true;
+}
+
+// must be ok
+bool Test_IGFD_FilterManager_ParseFilters_Filters_Regex_5() {
+    IGFD::TestFilterManager mgr(R"(Dem files{((^[A-Za-z][0-9][0-9][A-Za-z][0-9]{2,3}(?:\.txt|\.hgt)?$))})");
+
+    if (mgr.getFiltersRef().size() != 1U) return false;
+    if (mgr.getFiltersRef()[0].title != "Dem files") return false;
+    if (mgr.getFiltersRef()[0].filters.size() != 1U) return false;
+    if (!mgr.getFiltersRef()[0].filters.exist(R"(((^[A-Za-z][0-9][0-9][A-Za-z][0-9]{2,3}(?:\.txt|\.hgt)?$)))")) return false;
 
     return true;
 }
@@ -1104,6 +1127,8 @@ bool Test_FilterManager(const std::string& vTest) {
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_1);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_2);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_3);
+    IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_4);
+    IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Regex_5);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_0);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_1);
     IfTestExist(Test_IGFD_FilterManager_ParseFilters_Filters_Divers_2);
