@@ -43,7 +43,7 @@ solutions.
     - by default Api Dirent and std::filesystem are defined
 	- you can override GetDrieveList for specify by ex on android other fs, like local and SDCards
 - can select all displayed files with "ctrl+a" as in any OS 
-- Natural sorting for filenames and extension on deamnde
+- natural sorting for filenames and extension on demand
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
@@ -59,7 +59,7 @@ A filter is recognized only if it respects theses rules :
    - the name can be composed of what you want except { and }
    - a filter can be a regex 
 4) the filters cannot integrate these chars '(' ')' '{' '}' ' ' except for a regex with respect to rule 1)
-5) the filters cannot integrate a ','
+5) the filters cannot integrate a ',' except for a regex with respect to rule 1)
 
 <details open><summary><h2>Singleton Pattern vs. Multiple Instances :</h2></summary><blockquote>
 

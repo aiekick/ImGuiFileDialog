@@ -106,6 +106,8 @@ Android Requirements : Api 21 mini
 - you can use your own FileSystem Api
     - by default Api Dirent and std::filesystem are defined
 	- you can override GetDrieveList for specify by ex on android other fs, like local and SDCards
+- can select all displayed files with "ctrl+a" as in any OS 
+- natural sorting for filenames and extension on demand
 
 ### WARNINGS :
 - the nav system keyboard behavior is not working as expected, so maybe full of bug for ImGuiFileDialog
