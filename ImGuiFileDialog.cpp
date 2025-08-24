@@ -1262,7 +1262,7 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
         std::string word;
         std::string filter_name;
 
-        char last_split_char = 0;
+        char last_char = 0;
         for (char c : dLGFilters) {
             if (c == '{') {
                 if (regex_started) {
@@ -1274,7 +1274,6 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                     filter_name.clear();
                     word.clear();
                 }
-                last_split_char = c;
             } else if (c == '}') {
                 if (regex_started) {
                     word += c;
@@ -1291,20 +1290,18 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                         started = false;
                     }
                 }
-                last_split_char = c;
             } else if (c == '(') {
                 word += c;
-                if (last_split_char == '(') {
+                if (last_char == '(') {
                     regex_started = true;
                 }
                 parenthesis_started = true;
                 if (!started) {
                     filter_name += c;
                 }
-                last_split_char = c;
             } else if (c == ')') {
                 word += c;
-                if (last_split_char == ')') {
+                if (last_char == ')') {
                     if (regex_started) {
                         if (started) {
                             m_ParsedFilters.back().addCollectionFilter(word, true);
@@ -1331,18 +1328,14 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                 if (!started) {
                     filter_name += c;
                 }
-                last_split_char = c;
             } else if (c == '.') {
                 word += c;
                 if (!started) {
                     filter_name += c;
                 }
-                last_split_char = c;
             } else if (c == ',') {
                 if (regex_started) {
-                    regex_started = false;
-                    word.clear();
-                    filter_name.clear();
+                    word += c;
                 } else {
                     if (started) {
                         if (word.size() > 1U && word[0] == '.') {
@@ -1370,6 +1363,7 @@ void IGFD::FilterManager::ParseFilters(const char* vFilters) {
                     filter_name += c;
                 }
             }
+            last_char = c;
         }
 
         if (started) {
