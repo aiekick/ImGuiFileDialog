@@ -58,6 +58,7 @@ if(IGFD_INSTALL)
     # Install export targets
     install(EXPORT ImGuiFileDialogTargets
        FILE ImGuiFileDialogConfig.cmake
+       NAMESPACE ImGuiFileDialog::
        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ImGuiFileDialog
     )
 endif()
