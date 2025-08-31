@@ -12,7 +12,7 @@ option(IGFD_INSTALL "Install ImGuiFileDialog library and headers" ${IGFD_INSTALL
 
 find_package(imgui QUIET) # fails quietly if not found (imgui is the target name for vcpkg and nixpkgs).
 
-add_library(ImGuiFileDialog STATIC
+add_library(ImGuiFileDialog
     ImGuiFileDialog.cpp
     ImGuiFileDialog.h
     ImGuiFileDialogConfig.h
