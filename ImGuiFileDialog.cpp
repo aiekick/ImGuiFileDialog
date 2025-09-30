@@ -2588,7 +2588,9 @@ void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogIn
             }
         }
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(buttonEditPathString);
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(buttonEditPathString);
+    }
 
     ImGui::SameLine();
 
@@ -3808,8 +3810,7 @@ bool IGFD::FileDialog::Display(const std::string& vKey, ImGuiWindowFlags vFlags,
             }
 #endif  // IMGUI_HAS_VIEWPORT
 
-            ImGuiID _frameId = ImGui::GetID(name.c_str());
-            if (ImGui::BeginChild(_frameId, frameSize, false, m_CurrentDisplayedFlags | ImGuiWindowFlags_NoScrollbar)) {
+            if (ImGui::BeginChild("childContent", frameSize, false, m_CurrentDisplayedFlags | ImGuiWindowFlags_NoScrollbar)) {
                 m_FileDialogInternal.name = name;  //-V820
                 if (fdFile.dLGpath.empty()) {
                     fdFile.dLGpath = ".";  // defaut path is '.'
@@ -3918,7 +3919,7 @@ void IGFD::FileDialog::m_DrawContent() {
     if (!(m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DisablePlaceMode)) {
         if (m_PlacesPaneShown) {
             float otherWidth = size.x - m_PlacesPaneWidth;
-            ImGui::PushID("##splitterplaces");
+            ImGui::PushID("splitterplaces");
             IGFD::Utils::ImSplitter(true, 4.0f, &m_PlacesPaneWidth, &otherWidth, 10.0f, 10.0f + m_FileDialogInternal.getDialogConfig().sidePaneWidth, size.y);
             ImGui::PopID();
             size.x -= otherWidth;
@@ -3931,7 +3932,7 @@ void IGFD::FileDialog::m_DrawContent() {
     size.x = ImGui::GetContentRegionAvail().x - m_FileDialogInternal.getDialogConfig().sidePaneWidth;
 
     if (m_FileDialogInternal.getDialogConfig().sidePane) {
-        ImGui::PushID("##splittersidepane");
+        ImGui::PushID("splittersidepane");
         IGFD::Utils::ImSplitter(true, 4.0f, &size.x, &m_FileDialogInternal.getDialogConfigRef().sidePaneWidth, 10.0f, 10.0f, size.y);
         ImGui::PopID();
     }
@@ -4236,8 +4237,8 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
                                    | ImGuiTableFlags_Sortable
 #endif  // USE_CUSTOM_SORTING_ICON
         ;
-    auto listViewID = ImGui::GetID("##FileDialog_fileTable");
-    if (ImGui::BeginTableEx("##FileDialog_fileTable", listViewID, 4, flags, vSize, 0.0f)) {
+    const auto listViewID = ImGui::GetID("FileTable");
+    if (ImGui::BeginTableEx("FileTable", listViewID, 4, flags, vSize, 0.0f)) {
         ImGui::TableSetupScrollFreeze(0, 1);  // Make header always visible
         ImGui::TableSetupColumn(fdi.headerFileName.c_str(), ImGuiTableColumnFlags_WidthStretch | (defaultSortOrderFilename ? ImGuiTableColumnFlags_PreferSortAscending : ImGuiTableColumnFlags_PreferSortDescending), -1, 0);
         ImGui::TableSetupColumn(fdi.headerFileType.c_str(),
