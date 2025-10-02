@@ -1000,23 +1000,23 @@ std::string IGFD::Utils::RoundNumber(double vvalue, int n) {
     return tmp.str();
 }
 
-std::string IGFD::Utils::FormatFileSize(size_t vByteSize) {
+std::pair<std::string, std::string> IGFD::Utils::FormatFileSize(size_t vByteSize) {
     if (vByteSize != 0) {
-        static double lo = 1024.0;
-        static double ko = 1024.0 * 1024.0;
-        static double mo = 1024.0 * 1024.0 * 1024.0;
-        const auto v     = static_cast<double>(vByteSize);
-        if (v < lo)
-            return RoundNumber(v, 0) + " " + fileSizeBytes;  // octet
-        else if (v < ko)
-            return RoundNumber(v / lo, 2) + " " + fileSizeKiloBytes;  // ko
-        else if (v < mo)
-            return RoundNumber(v / ko, 2) + " " + fileSizeMegaBytes;  // Mo
-        else
-            return RoundNumber(v / mo, 2) + " " + fileSizeGigaBytes;  // Go
+        static auto lo = 1024.0;
+        static auto ko = 1024.0 * 1024.0;
+        static auto mo = 1024.0 * 1024.0 * 1024.0;
+        const auto v   = static_cast<double>(vByteSize);
+        if (v < lo) {
+            return {RoundNumber(v, 0), fileSizeBytes};  // octet
+        } else if (v < ko) {
+            return {RoundNumber(v / lo, 2), fileSizeKiloBytes};  // ko
+        } else if (v < mo) {
+            return {RoundNumber(v / ko, 2), fileSizeMegaBytes};  // Mo
+        } else {
+            return {RoundNumber(v / mo, 2), fileSizeGigaBytes};  // Go
+        }
     }
-
-    return "0 " fileSizeBytes;
+    return {"0", fileSizeBytes};
 }
 
 // https://cplusplus.com/reference/cstdlib/strtod
@@ -1979,65 +1979,65 @@ void IGFD::FileManager::ClearPathLists() {
 }
 
 void IGFD::FileManager::m_AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType) {
-    auto infos_ptr = FileInfos::create();
+    auto pInfos = FileInfos::create();
 
-    infos_ptr->filePath              = vPath;
-    infos_ptr->fileNameExt           = vFileName;
-    infos_ptr->fileNameExt_optimized = Utils::LowerCaseString(infos_ptr->fileNameExt);
-    infos_ptr->fileType              = vFileType;
+    pInfos->filePath              = vPath;
+    pInfos->fileNameExt           = vFileName;
+    pInfos->fileNameExt_optimized = Utils::LowerCaseString(pInfos->fileNameExt);
+    pInfos->fileType              = vFileType;
 
-    if (infos_ptr->fileNameExt.empty() || (infos_ptr->fileNameExt == "." && !vFileDialogInternal.filterManager.dLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
+    if (pInfos->fileNameExt.empty() || (pInfos->fileNameExt == "." && !vFileDialogInternal.filterManager.dLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
         return;
     }
 
-    if (infos_ptr->fileNameExt != ".." && (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos_ptr->fileNameExt[0] == '.') {  // dont show hidden files
-        if (!vFileDialogInternal.filterManager.dLGFilters.empty() || (vFileDialogInternal.filterManager.dLGFilters.empty() && infos_ptr->fileNameExt != ".")) {            // except "." if in directory mode //-V728
+    if (pInfos->fileNameExt != ".." && (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && pInfos->fileNameExt[0] == '.') {  // dont show hidden files
+        if (!vFileDialogInternal.filterManager.dLGFilters.empty() || (vFileDialogInternal.filterManager.dLGFilters.empty() && pInfos->fileNameExt != ".")) {            // except "." if in directory mode //-V728
             return;
         }
     }
 
-    if (infos_ptr->FinalizeFileTypeParsing(vFileDialogInternal.filterManager.GetSelectedFilter().count_dots)) {
-        if (!vFileDialogInternal.filterManager.IsCoveredByFilters(*infos_ptr.get(),  //
+    if (pInfos->FinalizeFileTypeParsing(vFileDialogInternal.filterManager.GetSelectedFilter().count_dots)) {
+        if (!vFileDialogInternal.filterManager.IsCoveredByFilters(*pInfos.get(),  //
                                                                   (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering) != 0)) {
             return;
         }
     }
 
-    vFileDialogInternal.filterManager.FillFileStyle(infos_ptr);
+    vFileDialogInternal.filterManager.FillFileStyle(pInfos);
 
-    m_CompleteFileInfos(infos_ptr);
+    m_CompleteFileInfos(pInfos);
 
-    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, infos_ptr)) {
-        m_FileList.push_back(infos_ptr);
+    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, pInfos)) {
+        m_FileList.push_back(pInfos);
     }
 }
 
 void IGFD::FileManager::m_AddPath(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName, const FileType& vFileType) {
     if (!vFileType.isDir()) return;
 
-    auto infos_ptr = FileInfos::create();
+    auto pInfos = FileInfos::create();
 
-    infos_ptr->filePath              = vPath;
-    infos_ptr->fileNameExt           = vFileName;
-    infos_ptr->fileNameExt_optimized = Utils::LowerCaseString(infos_ptr->fileNameExt);
-    infos_ptr->fileType              = vFileType;
+    pInfos->filePath              = vPath;
+    pInfos->fileNameExt           = vFileName;
+    pInfos->fileNameExt_optimized = Utils::LowerCaseString(pInfos->fileNameExt);
+    pInfos->fileType              = vFileType;
 
-    if (infos_ptr->fileNameExt.empty() || (infos_ptr->fileNameExt == "." && !vFileDialogInternal.filterManager.dLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
+    if (pInfos->fileNameExt.empty() || (pInfos->fileNameExt == "." && !vFileDialogInternal.filterManager.dLGFilters.empty())) {  // filename empty or filename is the current dir '.' //-V807
         return;
     }
 
-    if (infos_ptr->fileNameExt != ".." && (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && infos_ptr->fileNameExt[0] == '.') {  // dont show hidden files
-        if (!vFileDialogInternal.filterManager.dLGFilters.empty() || (vFileDialogInternal.filterManager.dLGFilters.empty() && infos_ptr->fileNameExt != ".")) {            // except "." if in directory mode //-V728
+    if (pInfos->fileNameExt != ".." && (vFileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_DontShowHiddenFiles) && pInfos->fileNameExt[0] == '.') {  // dont show hidden files
+        if (!vFileDialogInternal.filterManager.dLGFilters.empty() || (vFileDialogInternal.filterManager.dLGFilters.empty() && pInfos->fileNameExt != ".")) {            // except "." if in directory mode //-V728
             return;
         }
     }
 
-    vFileDialogInternal.filterManager.FillFileStyle(infos_ptr);
+    vFileDialogInternal.filterManager.FillFileStyle(pInfos);
 
-    m_CompleteFileInfos(infos_ptr);
+    m_CompleteFileInfos(pInfos);
 
-    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, infos_ptr)) {
-        m_PathList.push_back(infos_ptr);
+    if (m_CompleteFileInfosWithUserFileAttirbutes(vFileDialogInternal, pInfos)) {
+        m_PathList.push_back(pInfos);
     }
 }
 
@@ -2429,9 +2429,9 @@ bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos
 
 void IGFD::FileManager::SelectAllFileNames() {
     m_SelectedFileNames.clear();
-    for (const auto& infos_ptr : m_FilteredFileList) {
-        if (infos_ptr != nullptr) {
-            m_AddFileNameInSelection(infos_ptr->fileNameExt, true);
+    for (const auto& pInfos : m_FilteredFileList) {
+        if (pInfos != nullptr) {
+            m_AddFileNameInSelection(pInfos->fileNameExt, true);
         }
     }
 }
@@ -3346,16 +3346,16 @@ bool IGFD::KeyExplorerFeature::m_LocateItem_Loop(FileDialogInternal& vFileDialog
                     m_LocateFileByInputChar_lastFileIdx = i;
                     m_StartFlashItem(m_LocateFileByInputChar_lastFileIdx);
 
-                    auto infos_ptr = fdi.GetFilteredFileAt(m_LocateFileByInputChar_lastFileIdx);
-                    if (infos_ptr.use_count()) {
-                        if (infos_ptr->fileType.isDir())  //-V522
+                    auto pInfos = fdi.GetFilteredFileAt(m_LocateFileByInputChar_lastFileIdx);
+                    if (pInfos.use_count()) {
+                        if (pInfos->fileType.isDir())  //-V522
                         {
                             if (fdi.dLGDirectoryMode)  // directory chooser
                             {
-                                fdi.SelectFileName(infos_ptr);
+                                fdi.SelectFileName(pInfos);
                             }
                         } else {
-                            fdi.SelectFileName(infos_ptr);
+                            fdi.SelectFileName(pInfos);
                         }
 
                         found = true;
@@ -3462,13 +3462,13 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
                 ImGui::SetScrollY(p);
                 m_StartFlashItem(m_LocateFileByInputChar_lastFileIdx);
 
-                auto infos_ptr = fdi.GetFilteredFileAt(m_LocateFileByInputChar_lastFileIdx);
-                if (infos_ptr.use_count()) {
-                    if (infos_ptr->fileType.isDir())  //-V522
+                auto pInfos = fdi.GetFilteredFileAt(m_LocateFileByInputChar_lastFileIdx);
+                if (pInfos.use_count()) {
+                    if (pInfos->fileType.isDir())  //-V522
                     {
                         if (!fdi.dLGDirectoryMode || enterInDirectory) {
                             if (enterInDirectory) {
-                                if (fdi.SelectDirectory(infos_ptr)) {
+                                if (fdi.SelectDirectory(pInfos)) {
                                     // changement de repertoire
                                     vFileDialogInternal.fileManager.OpenCurrentPath(vFileDialogInternal);
                                     if (m_LocateFileByInputChar_lastFileIdx > countFiles - 1U) {
@@ -3478,10 +3478,10 @@ void IGFD::KeyExplorerFeature::m_ExploreWithkeys(FileDialogInternal& vFileDialog
                             }
                         } else  // directory chooser
                         {
-                            fdi.SelectFileName(infos_ptr);
+                            fdi.SelectFileName(pInfos);
                         }
                     } else {
-                        fdi.SelectFileName(infos_ptr);
+                        fdi.SelectFileName(pInfos);
 
                         if (enterInDirectory) {
                             vFileDialogInternal.isOk = true;
@@ -3986,20 +3986,20 @@ void IGFD::FileDialog::m_DisplayPathPopup(ImVec2 vSize) {
                     for (int i = m_PathListClipper.DisplayStart; i < m_PathListClipper.DisplayEnd; i++) {
                         if (i < 0) continue;
 
-                        auto infos_ptr = fdi.GetFilteredPathAt((size_t)i);
-                        if (!infos_ptr.use_count()) continue;
+                        auto pInfos = fdi.GetFilteredPathAt((size_t)i);
+                        if (!pInfos.use_count()) continue;
 
-                        m_BeginFileColorIconStyle(infos_ptr, _showColor, _str, &_font);
+                        m_BeginFileColorIconStyle(pInfos, _showColor, _str, &_font);
 
-                        bool selected = fdi.IsFileNameSelected(infos_ptr->fileNameExt);  // found
+                        bool selected = fdi.IsFileNameSelected(pInfos->fileNameExt);  // found
 
                         ImGui::TableNextRow();
 
                         if (ImGui::TableNextColumn())  // file name
                         {
-                            if (ImGui::Selectable(infos_ptr->fileNameExt.c_str(), &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth)) {
+                            if (ImGui::Selectable(pInfos->fileNameExt.c_str(), &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SpanAvailWidth)) {
                                 fdi.SetCurrentPath(fdi.ComposeNewPath(fdi.GetCurrentPopupComposedPath()));
-                                fdi.pathClicked = fdi.SelectDirectory(infos_ptr);
+                                fdi.pathClicked = fdi.SelectDirectory(pInfos);
                                 ImGui::CloseCurrentPopup();
                             }
                         }
@@ -4170,8 +4170,10 @@ void IGFD::FileDialog::m_SelectableItem(int vRowIdx, std::shared_ptr<FileInfos> 
     }
 }
 
-void IGFD::FileDialog::m_DisplayFileInfosTooltip(const int32_t& /*vRowIdx*/, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos) {
-    if (ImGui::IsItemHovered()) {
+void IGFD::FileDialog::m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos) {
+    // IsItemHovered is not sufficient since file size have two calls to Text
+    if ((ImGui::TableGetHoveredColumn() == vColumnIdx) &&  // column hovered
+        (ImGui::TableGetHoveredRow() == (vRowIdx+1))) {        // row hovered
         if (vFileInfos != nullptr && vFileInfos->tooltipColumn == vColumnIdx) {
             if (!vFileInfos->tooltipMessage.empty()) {
                 ImGui::SetTooltip("%s", vFileInfos->tooltipMessage.c_str());
@@ -4223,8 +4225,18 @@ void IGFD::FileDialog::m_EndFileColorIconStyle(const bool vShowColor, ImFont* vF
     }
 }
 
-void IGFD::FileDialog::m_drawColumnText(int /*vColIdx*/, const char* vLabel, bool /*vSelected*/, bool /*vHovered*/) {
-    ImGui::Text("%s", vLabel);
+void IGFD::FileDialog::m_drawColumnText(int /*vColIdx*/, const char* vFmt, const char* vLabel, bool /*vSelected*/, bool /*vHovered*/) {
+    ImGui::Text(vFmt, vLabel);
+}
+
+void IGFD::FileDialog::m_rightAlignText(const char* text, const char* maxWidthText) {
+    const auto maxWidth    = ImGui::CalcTextSize(maxWidthText).x;
+    const auto actualWidth = ImGui::CalcTextSize(text).x;
+    const auto spacing     = maxWidth - actualWidth;
+    if (spacing > 0.0f) {
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + spacing);
+    }
+    ImGui::TextUnformatted(text);
 }
 
 void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
@@ -4338,42 +4350,51 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
             m_FileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing());
             while (m_FileListClipper.Step()) {
                 for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++) {
-                    if (i < 0) continue;
+                    if (i < 0) {
+                        continue;
+                    }
 
-                    auto infos_ptr = fdi.GetFilteredFileAt((size_t)i);
-                    if (!infos_ptr.use_count()) continue;
+                    auto pInfos = fdi.GetFilteredFileAt((size_t)i);
+                    if (pInfos == nullptr) {
+                        continue;
+                    }
 
-                    m_BeginFileColorIconStyle(infos_ptr, _showColor, _str, &_font);
+                    m_BeginFileColorIconStyle(pInfos, _showColor, _str, &_font);
 
-                    bool selected = fdi.IsFileNameSelected(infos_ptr->fileNameExt);  // found
+                    const bool selected = fdi.IsFileNameSelected(pInfos->fileNameExt);  // found
 
                     ImGui::TableNextRow();
 
                     column_id = 0;
                     _rowHovered = false;
                     if (ImGui::TableNextColumn()) {  // file name
-                        if (!infos_ptr->deviceInfos.empty()) {
-                            _str += " " + infos_ptr->deviceInfos;
+                        if (!pInfos->deviceInfos.empty()) {
+                            _str += " " + pInfos->deviceInfos;
                         }
-                        m_SelectableItem(i, infos_ptr, selected, _str.c_str());
+                        m_SelectableItem(i, pInfos, selected, _str.c_str());
                         _rowHovered = ImGui::IsItemHovered();
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file type
-                        m_drawColumnText(column_id, infos_ptr->fileExtLevels[0].c_str(), selected, _rowHovered);
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_drawColumnText(column_id, "%s", pInfos->fileExtLevels[0].c_str(), selected, _rowHovered);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file size
-                        if (!infos_ptr->fileType.isDir()) {
-                            m_drawColumnText(column_id, infos_ptr->formatedFileSize.c_str(), selected, _rowHovered);
+                        if (!pInfos->fileType.isDir()) {
+                            m_rightAlignText(pInfos->formatedFileSize.first.c_str(), "9999.99");
+                            ImGui::SameLine(0.0f, 0.0f);
+                            m_drawColumnText(column_id, " %s ", pInfos->formatedFileSize.second.c_str(), selected, _rowHovered);
                         } else {
                             ImGui::TextUnformatted("");
                         }
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file date + time
-                        m_drawColumnText(column_id, infos_ptr->fileModifDate.c_str(), selected, _rowHovered);
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_drawColumnText(column_id, "%s", pInfos->fileModifDate.c_str(), selected, _rowHovered);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
                     m_EndFileColorIconStyle(_showColor, _font);
                 }
@@ -4528,49 +4549,55 @@ void IGFD::FileDialog::m_DrawThumbnailsListView(ImVec2 vSize) {
                 for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++) {
                     if (i < 0) continue;
 
-                    auto infos_ptr = fdi.GetFilteredFileAt((size_t)i);
-                    if (!infos_ptr.use_count()) continue;
+                    auto pInfos = fdi.GetFilteredFileAt((size_t)i);
+                    if (!pInfos.use_count()) continue;
 
-                    m_BeginFileColorIconStyle(infos_ptr, _showColor, _str, &_font);
+                    m_BeginFileColorIconStyle(pInfos, _showColor, _str, &_font);
 
-                    bool selected = fdi.IsFileNameSelected(infos_ptr->fileNameExt);  // found
+                    bool selected = fdi.IsFileNameSelected(pInfos->fileNameExt);  // found
 
                     ImGui::TableNextRow();
 
                     column_id = 0;
                     if (ImGui::TableNextColumn()) {  // file name
-                        if (!infos_ptr->deviceInfos.empty()) {
-                            _str += " " + infos_ptr->deviceInfos;
+                        if (!pInfos->deviceInfos.empty()) {
+                            _str += " " + pInfos->deviceInfos;
                         }
-                        m_SelectableItem(i, infos_ptr, selected, _str.c_str());
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_SelectableItem(i, pInfos, selected, _str.c_str());
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file type
-                        ImGui::Text("%s", infos_ptr->fileExtLevels[0].c_str());
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        ImGui::Text("%s", pInfos->fileExtLevels[0].c_str());
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file size
-                        if (!infos_ptr->fileType.isDir()) {
-                            ImGui::Text("%s ", infos_ptr->formatedFileSize.c_str());
+                        if (!pInfos->fileType.isDir()) {
+                            m_rightAlignText(pInfos->formatedFileSize.first.c_str(), "9999.99");
+                            ImGui::SameLine(0.0f, 0.0f);
+                            ImGui::Text(" %s ", pInfos->formatedFileSize.second.c_str());
                         } else {
                             ImGui::TextUnformatted("");
                         }
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file date + time
-                        ImGui::Text("%s", infos_ptr->fileModifDate.c_str());
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        ImGui::Text("%s", pInfos->fileModifDate.c_str());
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
+                    column_id++;                     // some columns can be hidden, but the id must keep good
                     if (ImGui::TableNextColumn()) {  // file thumbnails
-                        auto th = &infos_ptr->thumbnailInfo;
+                        auto th = &pInfos->thumbnailInfo;
 
                         if (!th->isLoadingOrLoaded) {
-                            m_AddThumbnailToLoad(infos_ptr);
+                            m_AddThumbnailToLoad(pInfos);
                         }
                         if (th->isReadyToDisplay && th->textureID) {
                             ImGui::Image((ImTextureID)th->textureID, ImVec2((float)th->textureWidth, (float)th->textureHeight));
                         }
-                        m_DisplayFileInfosTooltip(i, column_id++, infos_ptr);
+                        m_DisplayFileInfosTooltip(i, column_id, pInfos);
                     }
 
                     m_EndFileColorIconStyle(_showColor, _font);

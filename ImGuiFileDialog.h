@@ -315,6 +315,7 @@ class IGFD_API FileDialogInternal;
 
 class IGFD_API Utils {
     friend class TestUtils;
+
 public:
     struct PathStruct {
         std::string path;
@@ -338,7 +339,7 @@ public:
     static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
     static std::string GetPathSeparator();                                                                              // return the slash for any OS ( \\ win, / unix)
     static std::string RoundNumber(double vvalue, int n);                                                               // custom rounding number
-    static std::string FormatFileSize(size_t vByteSize);                                                                // format file size field
+    static std::pair<std::string, std::string> FormatFileSize(size_t vByteSize);                                        // format file size field. return pair(number, unit)
     static bool NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending);  // natural sorting
 
 private:
@@ -490,7 +491,7 @@ public:
     std::string tooltipMessage;                                       // message to display on the tooltip, is not empty
     int32_t tooltipColumn = -1;                                       // the tooltip will appears only when the mouse is over the tooltipColumn if > -1
     size_t fileSize       = 0U;                                       // for sorting operations
-    std::string formatedFileSize;                                     // file size formated (10 o, 10 ko, 10 mo, 10 go)
+    std::pair<std::string, std::string> formatedFileSize;             // file size formated (10 o, 10 ko, 10 mo, 10 go)
     std::string fileModifDate;                                        // file user defined format of the date (data + time by default)
     std::shared_ptr<FileStyle> fileStyle = nullptr;                   // style of the file
 #ifdef USE_THUMBNAILS
@@ -993,8 +994,7 @@ protected:
                                                                                                     // if needed (if defined with flag)
 
     // dialog parts
-    virtual void m_DrawHeader();   // draw header part of the dialog (place btn, dir creation, path composer, search
-                                   // bar)
+    virtual void m_DrawHeader();   // draw header part of the dialog (place btn, dir creation, path composer, search bar)
     virtual void m_DrawContent();  // draw content part of the dialog (place pane, file list, side pane)
     virtual bool m_DrawFooter();   // draw footer part of the dialog (file field, fitler combobox, ok/cancel btn's)
 
@@ -1006,7 +1006,8 @@ protected:
     virtual void m_DrawSidePane(float vHeight);     // draw side pane
     virtual bool m_Selectable(int vRowIdx, const char* vLabel, bool vSelected, ImGuiSelectableFlags vFlags, const ImVec2& vSizeArg);
     virtual void m_SelectableItem(int vRowIdx, std::shared_ptr<FileInfos> vInfos, bool vSelected, const char* vFmt, ...);  // draw a custom selectable behavior item
-    virtual void m_drawColumnText(int vColIdx, const char* vLabel, bool vSelected, bool vHovered);
+    virtual void m_drawColumnText(int vColIdx, const char* vFmt, const char* vLabel, bool vSelected, bool vHovered);
+    virtual void m_rightAlignText(const char* text, const char* maxWidthText);  // align a text on right
     virtual void m_DrawFileListView(ImVec2 vSize);  // draw file list view (default mode)
 
 #ifdef USE_THUMBNAILS
