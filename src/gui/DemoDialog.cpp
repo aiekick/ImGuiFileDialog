@@ -721,12 +721,16 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                             struct stat statInfos   = {};
                             int result              = stat(bin_file_path_name.c_str(), &statInfos);
                             if (!result) {
-                                vFileInfosPtr->tooltipMessage = toStr("%s : %s\n%s : %s",                                               //
-                                                                      (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),             //
-                                                                      IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize).c_str(),     //
-                                                                      (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),              //
-                                                                      IGFD::Utils::FormatFileSize((size_t)statInfos.st_size).c_str());  //
-                                vFileInfosPtr->tooltipColumn  = 1;
+                                const auto fileSize           = IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize);
+                                const auto statInfosSize      = IGFD::Utils::FormatFileSize((size_t)statInfos.st_size);
+                                vFileInfosPtr->tooltipMessage = toStr("%s : %s %s\n%s : %s %s",                              //
+                                                                      (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),  //
+                                                                      fileSize.first.c_str(),                                //
+                                                                      fileSize.second.c_str(),                               //
+                                                                      (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),   //
+                                                                      statInfosSize.first.c_str(),                           //
+                                                                      statInfosSize.second.c_str());                         //
+                                vFileInfosPtr->tooltipColumn  = 2; // size column
                                 vFileInfosPtr->fileSize += (size_t)statInfos.st_size;
                             } else {
                                 // no bin, so escaped.
