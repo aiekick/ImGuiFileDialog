@@ -528,6 +528,8 @@ public:
     virtual bool IsDirectory(const std::string& vFilePathName) = 0;
     // return a device list (<path, device name>) on windows, but can be used on other platforms for give to the user a list of devices paths.
     virtual std::vector<IGFD::PathDisplayedName> GetDevicesList() = 0;
+    // return via argument the date and the size of a file (for solve issue regarding apis and widechars)
+    virtual void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) = 0;
 };
 
 class IGFD_API FileManager {
@@ -587,7 +589,7 @@ public:
     std::string fsRoot;
 
 private:
-    static void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);                    // set time and date infos of a file (detail view mode)
+    void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);                    // set time and date infos of a file (detail view mode)
     void m_RemoveFileNameInSelection(const std::string& vFileName);                               // selection : remove a file name
     void m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
     void m_AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName,

@@ -66,7 +66,7 @@ SOFTWARE.
     defined(_WIN64) || \
     defined(_MSC_VER)
 #define _IGFD_WIN_
-#define stat _stati64
+#define stat _wstat64
 #define stricmp _stricmp
 #include <cctype>
 // this option need c++17
@@ -601,6 +601,26 @@ public:
         namespace fs = std::filesystem;
         return fs::is_directory(stringToPath(vFilePathName));
     }
+    void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) override {
+        namespace fs = std::filesystem;
+        fs::path fpath(vFilePathName);
+        try {
+            // date
+            size_t len{};
+            const auto lastWriteTime = fs::last_write_time(fpath);
+            const auto cftime        = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + (lastWriteTime - fs::file_time_type::clock::now()));
+            static char timebuf[100];
+            std::strftime(timebuf, sizeof(timebuf), DateTimeFormat, std::localtime(&cftime));
+            voDate = timebuf;
+            // size
+            if (!vFileType.isDir()) {
+                voSize = fs::file_size(fpath);
+            }
+        } catch (const fs::filesystem_error& e) {
+            voSize = 0;
+            voDate.clear();
+        }
+    }
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemStd
 #else
@@ -799,6 +819,40 @@ public:
             return true;
         }
         return false;
+    }
+    void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) override {
+        struct stat statInfos = {};
+#ifdef _IGFD_WIN_
+        std::wstring wfpn = IGFD::Utils::UTF8Decode(vFilePathName);
+        struct _stat64 wstatInfos{};
+        const auto result = stat(wfpn.c_str(), &wstatInfos);
+        if (!result) {
+            statInfos.st_size  = wstatInfos.st_size;
+            statInfos.st_mtime = wstatInfos.st_mtime;
+        }
+#else
+        result = stat(vFilePathName.c_str(), &statInfos);
+#endif
+        static char timebuf[100];
+        if (!result) {
+            // date
+            size_t len = 0;
+#ifdef _MSC_VER
+            struct tm _tm;
+            errno_t err = localtime_s(&_tm, &statInfos.st_mtime);
+            if (!err) len = strftime(timebuf, 99, DateTimeFormat, &_tm);
+#else   // _MSC_VER
+            struct tm* _tm = localtime(&statInfos.st_mtime);
+            if (_tm) len = strftime(timebuf, 99, DateTimeFormat, _tm);
+#endif  // _MSC_VER
+            if (len) {
+                voDate = std::string(timebuf, len);
+            }
+            // size
+            if (!vFileType.isDir()) {
+                voSize = (size_t)statInfos.st_size;
+            }
+        }
     }
 };
 #define FILE_SYSTEM_OVERRIDE FileSystemDirent
@@ -2207,51 +2261,37 @@ void IGFD::FileManager::m_ApplyFilteringOnFileList(const FileDialogInternal& vFi
 void IGFD::FileManager::m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos) {
     if (!vInfos.use_count()) return;
 
-    if (vInfos->fileNameExt != "." && vInfos->fileNameExt != "..") {
-        // _stat struct :
-        // dev_t     st_dev;     /* ID of device containing file */
-        // ino_t     st_ino;     /* inode number */
-        // mode_t    st_mode;    /* protection */
-        // nlink_t   st_nlink;   /* number of hard links */
-        // uid_t     st_uid;     /* user ID of owner */
-        // gid_t     st_gid;     /* group ID of owner */
-        // dev_t     st_rdev;    /* device ID (if special file) */
-        // off_t     st_size;    /* total size, in bytes */
-        // blksize_t st_blksize; /* blocksize for file system I/O */
-        // blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
-        // time_t    st_atime;   /* time of last access - not sure out of ntfs */
-        // time_t    st_mtime;   /* time of last modification - not sure out of ntfs */
-        // time_t    st_ctime;   /* time of last status change - not sure out of ntfs */
+    if ((vInfos->fileNameExt == ".") ||   // current dir (special case, not really a dir or a file)
+        (vInfos->fileNameExt == "..")) {  // last dir (special case, not really a dir or a file)
+        return;
+    }
 
-        std::string fpn;
+    // _stat struct :
+    // dev_t     st_dev;     /* ID of device containing file */
+    // ino_t     st_ino;     /* inode number */
+    // mode_t    st_mode;    /* protection */
+    // nlink_t   st_nlink;   /* number of hard links */
+    // uid_t     st_uid;     /* user ID of owner */
+    // gid_t     st_gid;     /* group ID of owner */
+    // dev_t     st_rdev;    /* device ID (if special file) */
+    // off_t     st_size;    /* total size, in bytes */
+    // blksize_t st_blksize; /* blocksize for file system I/O */
+    // blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
+    // time_t    st_atime;   /* time of last access - not sure out of ntfs */
+    // time_t    st_mtime;   /* time of last modification - not sure out of ntfs */
+    // time_t    st_ctime;   /* time of last status change - not sure out of ntfs */
 
-        // FIXME: so the condition is always true?
-        if (vInfos->fileType.isFile() || vInfos->fileType.isLinkToUnknown() || vInfos->fileType.isDir()) {
-            fpn = vInfos->filePath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
-        }
+    std::string fpn;
 
-        struct stat statInfos = {};
-        char timebuf[100];
-        int result = stat(fpn.c_str(), &statInfos);
-        if (!result) {
-            if (!vInfos->fileType.isDir()) {
-                vInfos->fileSize         = (size_t)statInfos.st_size;
-                vInfos->formatedFileSize = IGFD::Utils::FormatFileSize(vInfos->fileSize);
-            }
+    // FIXME: so the condition is always true?
+    if (vInfos->fileType.isFile() || vInfos->fileType.isLinkToUnknown() || vInfos->fileType.isDir()) {
+        fpn = vInfos->filePath + IGFD::Utils::GetPathSeparator() + vInfos->fileNameExt;
+    }
 
-            size_t len = 0;
-#ifdef _MSC_VER
-            struct tm _tm;
-            errno_t err = localtime_s(&_tm, &statInfos.st_mtime);
-            if (!err) len = strftime(timebuf, 99, DateTimeFormat, &_tm);
-#else   // _MSC_VER
-            struct tm* _tm = localtime(&statInfos.st_mtime);
-            if (_tm) len = strftime(timebuf, 99, DateTimeFormat, _tm);
-#endif  // _MSC_VER
-            if (len) {
-                vInfos->fileModifDate = std::string(timebuf, len);
-            }
-        }
+    m_FileSystemPtr->GetFileDateAndSize(fpn, vInfos->fileType, vInfos->fileModifDate, vInfos->fileSize);
+
+    if (!vInfos->fileType.isDir()) {
+        vInfos->formatedFileSize = IGFD::Utils::FormatFileSize(vInfos->fileSize);
     }
 }
 
