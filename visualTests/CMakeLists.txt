@@ -41,7 +41,11 @@ add_executable(${PROJECT}
 	${IMGUI_TEST_ENGINE_APP_SOURCES}
 )
 
-target_link_libraries(${PROJECT}
+if (LINUX)
+	target_link_libraries(${PROJECT} PRIVATE X11)
+endif()
+
+target_link_libraries(${PROJECT} PRIVATE
 	${GLAD_LIBRARIES}
 	${GLFW_LIBRARIES}
 	${OPENGL_LIBRARIES}

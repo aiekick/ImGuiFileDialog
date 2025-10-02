@@ -144,6 +144,10 @@ else()
 	add_executable(${PROJECT} MACOSX_BUNDLE ${SOURCES})
 endif()
 
+if (LINUX)
+	target_link_libraries(${PROJECT} PRIVATE X11)
+endif()
+
 target_compile_definitions(ImGuiFileDialog PRIVATE -DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
 target_compile_definitions(${PROJECT} PRIVATE -DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
 

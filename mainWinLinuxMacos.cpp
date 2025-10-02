@@ -169,6 +169,7 @@ int main(int, char**) {
         // GPU Zone : Rendering
         glfwMakeContextCurrent(window);
         
+		// manage thumbnails
         demoDialog.manageGPU();
 
         glViewport(0, 0, display_w, display_h);
