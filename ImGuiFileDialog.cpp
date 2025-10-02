@@ -3726,9 +3726,6 @@ void IGFD::KeyExplorerFeature::SetFlashingAttenuationInSeconds(float vAttenValue
 #endif  // USE_EXPLORATION_BY_KEYS
 
 IGFD::FileDialog::FileDialog() : PlacesFeature(), KeyExplorerFeature(), ThumbnailFeature() {
-#ifdef USE_PLACES_FEATURE
-    m_InitPlaces(m_FileDialogInternal);
-#endif
 }
 IGFD::FileDialog::~FileDialog() = default;
 
@@ -3741,6 +3738,9 @@ void IGFD::FileDialog::OpenDialog(const std::string& vKey, const std::string& vT
     if (m_FileDialogInternal.showDialog)  // if already opened, quit
         return;
     m_FileDialogInternal.configureDialog(vKey, vTitle, vFilters, vConfig);
+#ifdef USE_PLACES_FEATURE
+    m_InitPlaces(m_FileDialogInternal);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4173,12 +4173,11 @@ void IGFD::FileDialog::m_SelectableItem(int vRowIdx, std::shared_ptr<FileInfos> 
 void IGFD::FileDialog::m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos) {
     // IsItemHovered is not sufficient since file size have two calls to Text
     if ((ImGui::TableGetHoveredColumn() == vColumnIdx) &&  // column hovered
-        (ImGui::TableGetHoveredRow() == (vRowIdx+1))) {        // row hovered
-        if (vFileInfos != nullptr && vFileInfos->tooltipColumn == vColumnIdx) {
-            if (!vFileInfos->tooltipMessage.empty()) {
-                ImGui::SetTooltip("%s", vFileInfos->tooltipMessage.c_str());
-            }
-        }
+        (ImGui::TableGetHoveredRow() == (vRowIdx + 1)) &&  // row hovered
+        (vFileInfos != nullptr) &&                         // fileinfo not null
+        (vFileInfos->tooltipColumn == vColumnIdx) &&       // good tooltip column
+        (!vFileInfos->tooltipMessage.empty())) {           // tooltip not empty
+        ImGui::SetTooltip("%s", vFileInfos->tooltipMessage.c_str());
     }
 }
 
@@ -4186,21 +4185,20 @@ void IGFD::FileDialog::m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFil
     vOutStr.clear();
     vOutShowColor = false;
 
-    if (vFileInfos->fileStyle.use_count())  //-V807 //-V522
-    {
+    if (vFileInfos->fileStyle != nullptr) {
         vOutShowColor = true;
-
-        *vOutFont = vFileInfos->fileStyle->font;
+        *vOutFont     = vFileInfos->fileStyle->font;
     }
 
-    if (vOutShowColor && !vFileInfos->fileStyle->icon.empty())
+    if (vOutShowColor && !vFileInfos->fileStyle->icon.empty()) {
         vOutStr = vFileInfos->fileStyle->icon;
-    else if (vFileInfos->fileType.isDir())
+    } else if (vFileInfos->fileType.isDir()) {
         vOutStr = dirEntryString;
-    else if (vFileInfos->fileType.isLinkToUnknown())
+    } else if (vFileInfos->fileType.isLinkToUnknown()) {
         vOutStr = linkEntryString;
-    else if (vFileInfos->fileType.isFile())
+    } else if (vFileInfos->fileType.isFile()) {
         vOutStr = fileEntryString;
+    }
 
     vOutStr += " " + vFileInfos->fileNameExt;
 
