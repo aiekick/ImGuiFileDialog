@@ -66,7 +66,7 @@ SOFTWARE.
     defined(_WIN64) || \
     defined(_MSC_VER)
 #define _IGFD_WIN_
-#define stat _wstat64
+#define stat _stat64
 #define stricmp _stricmp
 #include <cctype>
 // this option need c++17
@@ -608,7 +608,9 @@ public:
             // date
             size_t len{};
             const auto lastWriteTime = fs::last_write_time(fpath);
-            const auto cftime        = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + (lastWriteTime - fs::file_time_type::clock::now()));
+            const auto sctp          = std::chrono::time_point_cast<std::chrono::system_clock::duration>(  //
+                lastWriteTime - fs::file_time_type::clock::now() + std::chrono::system_clock::now());
+            const auto cftime        = std::chrono::system_clock::to_time_t(sctp);
             static char timebuf[100];
             std::strftime(timebuf, sizeof(timebuf), DateTimeFormat, std::localtime(&cftime));
             voDate = timebuf;
@@ -775,11 +777,12 @@ public:
                     case DT_UNKNOWN: {
                         struct stat sb = {};
 #ifdef _IGFD_WIN_
-                        auto filePath = vPath + ent->d_name;
+                        const auto wfpn = IGFD::Utils::UTF8Decode(vPath + ent->d_name);
+                        if (!_wstati64(wfpn.c_str(), &sb)) {
 #else
-                        auto filePath = vPath + IGFD::Utils::GetPathSeparator() + ent->d_name;
+                        const auto fpn = vPath + IGFD::Utils::GetPathSeparator() + ent->d_name;
+                        if (!stat(fpn.c_str(), &sb)) {
 #endif
-                        if (!stat(filePath.c_str(), &sb)) {
                             if (sb.st_mode & S_IFLNK) {
                                 fileType.SetSymLink(true);
                                 // by default if we can't figure out the target type.
@@ -821,15 +824,11 @@ public:
         return false;
     }
     void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) override {
-        struct stat statInfos = {};
+        struct stat statInfos{};
+        int32_t result{};
 #ifdef _IGFD_WIN_
         std::wstring wfpn = IGFD::Utils::UTF8Decode(vFilePathName);
-        struct _stat64 wstatInfos{};
-        const auto result = stat(wfpn.c_str(), &wstatInfos);
-        if (!result) {
-            statInfos.st_size  = wstatInfos.st_size;
-            statInfos.st_mtime = wstatInfos.st_mtime;
-        }
+        result            = _wstati64(wfpn.c_str(), &statInfos);
 #else
         result = stat(vFilePathName.c_str(), &statInfos);
 #endif
@@ -4061,8 +4060,8 @@ void IGFD::FileDialog::m_DisplayPathPopup(ImVec2 vSize) {
 
 bool IGFD::FileDialog::m_DrawOkButton() {
     auto& fdFile = m_FileDialogInternal.fileManager;
-    if (m_FileDialogInternal.canWeContinue && strlen(fdFile.fileNameBuffer) || //
-        m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_OptionalFileName) { // optional
+    if ((m_FileDialogInternal.canWeContinue && strlen(fdFile.fileNameBuffer)) || //
+        (m_FileDialogInternal.getDialogConfig().flags & ImGuiFileDialogFlags_OptionalFileName)) { // optional
         if (IMGUI_BUTTON(okButtonString "##validationdialog", ImVec2(okButtonWidth, 0.0f)) || m_FileDialogInternal.isOk) {
             m_FileDialogInternal.isOk = true;
             return true;
