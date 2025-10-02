@@ -729,8 +729,8 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                                                                       fileSize.second.c_str(),                               //
                                                                       (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),   //
                                                                       statInfosSize.first.c_str(),                           //
-                                                                      statInfosSize.second.c_str());                         //
-                                vFileInfosPtr->tooltipColumn  = 2; // size column
+                                                                      statInfosSize.second.c_str());
+                                vFileInfosPtr->tooltipColumn  = 2;  // size column
                                 vFileInfosPtr->fileSize += (size_t)statInfos.st_size;
                             } else {
                                 // no bin, so escaped.

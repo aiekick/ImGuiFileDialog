@@ -171,6 +171,26 @@ public:
     bool IsDirectory(const std::string& vFilePathName) override {
         return fs::is_directory(vFilePathName);
     }
+    void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) override {
+        namespace fs = boost::filesystem;
+		fs::path fpath(vFilePathName);
+		// date
+		size_t len{};
+		std::time_t cftime = fs::last_write_time(fpath);
+		static char timebuf[100];
+		if (std::strftime(timebuf, sizeof(timebuf), DateTimeFormat, std::localtime(&cftime))) {
+			voDate.assign(timebuf);
+		}
+		// size
+		if (!vFileType.isDir()) {
+			try {
+				voSize = static_cast<size_t>(fs::file_size(fpath));
+			}
+			catch (const fs::filesystem_error&) {
+				voSize = 0; // fallback en cas d'erreur
+			}
+		}
+    }
 };
 
 #define FILE_SYSTEM_OVERRIDE FileSystemBoost
