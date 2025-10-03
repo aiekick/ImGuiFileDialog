@@ -525,8 +525,8 @@ public:
                 std::wstring wpath = IGFD::Utils::UTF8Decode(a);
                 if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, nullptr, nullptr, nullptr, nullptr, 0)) {
                     path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
+                    res.push_back(path_name);
                 }
-                res.push_back(path_name);
             }
         }
 #endif  // _IGFD_WIN_
@@ -719,8 +719,8 @@ public:
                 std::wstring wpath = IGFD::Utils::UTF8Decode(a);
                 if (GetVolumeInformationW(wpath.c_str(), szVolumeName, 2048, nullptr, nullptr, nullptr, nullptr, 0)) {
                     path_name.second = IGFD::Utils::UTF8Encode(szVolumeName);
+                    res.push_back(path_name);
                 }
-                res.push_back(path_name);
             }
         }
 #endif  // _IGFD_WIN_
@@ -2148,19 +2148,19 @@ void IGFD::FileManager::m_OpenPathPopup(const FileDialogInternal& vFileDialogInt
 }
 
 bool IGFD::FileManager::GetDevices() {
-    auto devices = m_FileSystemPtr->GetDevicesList();
+    const auto devices = m_FileSystemPtr->GetDevicesList();
     if (!devices.empty()) {
         m_CurrentPath.clear();
         m_CurrentPathDecomposition.clear();
         ClearFileLists();
-        for (auto& drive : devices) {
-            auto info_ptr                   = FileInfos::create();
-            info_ptr->fileNameExt           = drive.first;
-            info_ptr->fileNameExt_optimized = Utils::LowerCaseString(drive.first);
-            info_ptr->deviceInfos           = drive.second;
-            info_ptr->fileType.SetContent(FileType::ContentType::Directory);
-            if (!info_ptr->fileNameExt.empty()) {
-                m_FileList.push_back(info_ptr);
+        for (const auto& drive : devices) {
+            auto pInfo                   = FileInfos::create();
+            pInfo->fileNameExt           = drive.first;
+            pInfo->fileNameExt_optimized = Utils::LowerCaseString(drive.first);
+            pInfo->deviceInfos           = drive.second;
+            pInfo->fileType.SetContent(FileType::ContentType::Directory);
+            if (!pInfo->fileNameExt.empty()) {
+                m_FileList.push_back(pInfo);
                 showDevices = true;
             }
         }
