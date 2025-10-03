@@ -2340,8 +2340,9 @@ void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
         std::wstring fpath(numchar, 0);
         GetFullPathNameW(wpath.c_str(), numchar, (wchar_t*)fpath.data(), nullptr);
         std::string real_path = IGFD::Utils::UTF8Encode(fpath);
-        while (real_path.back() == '\0')  // for fix issue we can have with std::string concatenation.. if there is a \0 at end
+        while (real_path.back() == '\0') {  // for fix issue we can have with std::string concatenation.. if there is a \0 at end
             real_path = real_path.substr(0, real_path.size() - 1U);
+        }
         if (!real_path.empty())
 #elif defined(_IGFD_UNIX_)  // _IGFD_UNIX_ is _IGFD_WIN_ or APPLE
         char real_path[PATH_MAX];
@@ -2350,7 +2351,7 @@ void IGFD::FileManager::SetCurrentDir(const std::string& vPath) {
 #endif                      // _IGFD_WIN_
         {
             m_CurrentPath = std::move(real_path);
-            if (m_CurrentPath[m_CurrentPath.size() - 1] == PATH_SEP) {
+            if (m_CurrentPath.size() > 1 && m_CurrentPath[m_CurrentPath.size() - 1] == PATH_SEP) {
                 m_CurrentPath = m_CurrentPath.substr(0, m_CurrentPath.size() - 1);
             }
             IGFD::Utils::SetBuffer(inputPathBuffer, MAX_PATH_BUFFER_SIZE, m_CurrentPath);
@@ -2415,7 +2416,9 @@ bool IGFD::FileManager::SetPathOnParentDirectoryIfAny() {
 }
 
 std::string IGFD::FileManager::GetCurrentPath() {
-    if (m_CurrentPath.empty()) m_CurrentPath = ".";
+    if (m_CurrentPath.empty()) {
+        m_CurrentPath = ".";
+    }
     return m_CurrentPath;
 }
 
