@@ -24,7 +24,7 @@ solutions.
 
 > [!NOTE]
 > ImGuiFileDialog follow the master and docking branch of ImGui.
-> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.92.0-blue.svg)](https://github.com/ocornut/imgui)
+> Currently : [![Wrapped Dear ImGui Version](https://img.shields.io/badge/Dear%20ImGui%20Version-1.92.3-blue.svg)](https://github.com/ocornut/imgui)
 
 ### Documentation :
 
@@ -161,12 +161,12 @@ You need to have the opengl library installed
 
 ### On Linux :
 
-You need many lib : (X11, xrandr, xinerama, xcursor, mesa)
+You need many lib : (X11, xrandr, xinerama, xcursor, mesa, wayland)
 
 If you are on debian you can run :
 
 sudo apt-get update 
-sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev
+sudo apt-get install libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev libwayland-dev
 
 ### On MacOs :
 
