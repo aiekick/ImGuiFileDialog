@@ -39,5 +39,14 @@ jobs:
     - name: upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ImGuiFileDialog_App_Linux_${{ matrix.fs }}_FS
-        path: bin/ImGuiFileDialog_App_Unix
+        name: ImGuiFileDialog_DemoApp_Osx_${{ matrix.fs }}_FS
+        path: bin/ImGuiFileDialog_DemoApp_*
+    - name: Upload to DRAFT release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly-draft
+        name: Nightly Draft
+        draft: true
+        prerelease: false
+        append_body: true
+        files: bin/ImGuiFileDialog_DemoApp_*

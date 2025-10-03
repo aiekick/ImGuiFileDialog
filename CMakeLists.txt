@@ -36,10 +36,11 @@ if (UNIX)
 endif()
 
 if(USE_CXX_STANDARD_20)
+	# we can keep the old const char* everywhere
 	if (MSVC)
-		add_compile_options(/Zc:char8_t-) # we can keep the old const char* everywhere
+		add_compile_options(/Zc:char8_t-)
 	else()
-		add_compile_options(-fno-char8_t) # we can keep the old const char* everywhere
+		add_compile_options(-fno-char8_t)
 	endif()
 endif()
 
@@ -50,6 +51,16 @@ if (USE_BOOST_FILESYSTEM)
 endif()
 
 set(ORIGINAL_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+set(FILESYSTEM_TYPE)
+if(USE_STD_FILESYSTEM)
+	set(FILESYSTEM_TYPE "STD")
+elseif(USE_BOOST_FILESYSTEM)
+	set(FILESYSTEM_TYPE "BOOST")
+else()
+	set(USE_DIRENT_FILESYSTEM ON CACHE BOOL "" FORCE)
+	set(FILESYSTEM_TYPE "DIRENT")
+endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_definitions(-DMSVC)
@@ -108,11 +119,6 @@ endif()
 source_group(src FILES ${MAIN_SOURCES})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
-if (APPLE)
-	##set(ICON icon.icns)
-	##set_source_files_properties(icon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-endif()
-
 include_directories(
 	${GLM_INCLUDE_DIR}
 	${PLOG_INCLUDE_DIR}
@@ -154,7 +160,7 @@ set(SOURCES
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
 	add_library(${PROJECT} SHARED ${SOURCES})
 else()
-	add_executable(${PROJECT} MACOSX_BUNDLE ${SOURCES})
+	add_executable(${PROJECT} ${SOURCES})
 endif()
 
 if (LINUX)
@@ -174,25 +180,7 @@ if(UNIX)
     target_compile_options(${PROJECT} PUBLIC -Wno-unknown-pragmas)
 endif()
 
-if (APPLE)
-	set_target_properties(${PROJECT}
-		PROPERTIES
-		OUTPUT_NAME "${PROJECT}_Macos"
-		MACOSX_BUNDLE_EXECUTABLE_NAME "${PROJECT}"
-		MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT}"
-		FOLDER "${PROJECT}"
-		##RESOURCE icon.icns
-		MACOSX_BUNDLE_SHORT_VERSION_STRING ""
-		MACOSX_BUNDLE_LONG_VERSION_STRING ""
-		##MACOSX_BUNDLE_ICON_FILE icon.icns
-		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/MacOSXBundleInfo.plist.in")
-elseif(WIN32)
-	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_Win32")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-
-elseif(UNIX)
-	set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_Unix")
-endif()
+set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${FILESYSTEM_TYPE}_FS")
 
 if (USE_STD_FILESYSTEM)
 	set(CMAKE_CXX_STANDARD 17)
