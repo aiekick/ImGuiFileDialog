@@ -7,18 +7,19 @@
  |_____||_| |_| |_| \_____| \__,_||_||_|     |_||_| \___||_____/ |_| \__,_||_| \___/  \__, |
                                                                                        __/ |
                                                                                       |___/
-                                      ___      __     ___
-                                     / _ \    / /    / _ \
-                             __   __| | | |  / /_   | (_) |
-                             \ \ / /| | | | | '_ \   > _ <
-                              \ V / | |_| |_| (_) |_| (_) |
-                               \_/   \___/(_)\___/(_)\___/
+                                      ___      __    ___
+                                     / _ \    / /   / _ \
+                             __   __| | | |  / /_  | (_) |
+                             \ \ / /| | | | | '_ \  \__, |
+                              \ V / | |_| |_| (_) |_  / /
+                               \_/   \___/(_)\___/(_)/_/
+
 
 GITHUB REPOT : https://github.com/aiekick/ImGuiFileDialog
 DOCUMENTATION : see the attached Documentation.md
 
 generated with "Text to ASCII Art Generator (TAAG)"
-https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.8
+https://patorjk.com/software/taag/#p=display&h=1&v=0&f=Big&t=ImGuiFileDialog%0Av0.6.9
 
 MIT License
 
@@ -45,7 +46,7 @@ SOFTWARE.
 
 #pragma once
 
-#define IGFD_VERSION "v0.6.8"
+#define IGFD_VERSION "v0.6.9 WIP"
 #define IGFD_IMGUI_SUPPORTED_VERSION "1.92.3"
 
 // Config file
