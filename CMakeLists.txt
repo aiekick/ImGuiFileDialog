@@ -12,6 +12,8 @@ option(USE_DIRENT_FILESYSTEM "Enable the default filesystem with dirent" ON)
 option(USE_STD_FILESYSTEM "Enable std::filesystem use for path and ImGuiFileDialog" OFF)
 option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boost" OFF)
 
+option(USE_CXX_STANDARD_20 "Enable cxx standard 20 for test forward-compatibilty" OFF)
+
 ## some defines for debug mode (before 3rdparty.cmake)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
@@ -33,6 +35,14 @@ if (UNIX)
 	option(USE_LEAK_SANITIZER "Enable the Leak Sanitizer" OFF)
 endif()
 
+if(USE_CXX_STANDARD_20)
+	if (MSVC)
+		add_compile_options(/Zc:char8_t-) # we can keep the old const char* everywhere
+	else()
+		add_compile_options(-fno-char8_t) # we can keep the old const char* everywhere
+	endif()
+endif()
+
 include(cmake/3rdparty.cmake)
 
 if (USE_BOOST_FILESYSTEM)
@@ -43,14 +53,17 @@ set(ORIGINAL_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_definitions(-DMSVC)
-	if (USE_STD_FILESYSTEM)
+	if(USE_CXX_STANDARD_20)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20")
+	elseif(USE_STD_FILESYSTEM)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 	else()
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
 	endif()
 else()
-	#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wdeprecated-declarations -Wunused-parameter")
-	if (USE_STD_FILESYSTEM)
+	if(USE_CXX_STANDARD_20)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std:c++20")
+	elseif(USE_STD_FILESYSTEM)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 	else()
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -198,6 +211,14 @@ else()
 		message("USE C++11 and DIRENT")
 	endif()
 endif()
+
+if(USE_CXX_STANDARD_20)
+	set(CMAKE_CXX_STANDARD 20)
+	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 20)
+	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 20)
+	set_target_properties(imgui PROPERTIES CXX_STANDARD 20)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

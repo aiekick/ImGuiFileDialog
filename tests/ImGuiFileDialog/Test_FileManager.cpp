@@ -5,9 +5,6 @@
 #include <ImGuiFileDialog/ImGuiFileDialog.cpp> // for let IGFD::FileManager find the FS on destroy
 
 #include <imgui_internal.h>
-
-#include <filesystem>
-
 // specific
 #ifdef WIN32
 #include <direct.h>  // _chdir
