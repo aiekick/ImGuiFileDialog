@@ -50,6 +50,11 @@ SOFTWARE.
 #include <emscripten.h>
 #endif  // __EMSCRIPTEN__
 
+// for print messages
+#ifndef IGFD_COUT
+#define IGFD_COUT std::cout 
+#endif // IGFD_COUT
+
 #ifdef _MSC_VER
 
 #define IGFD_DEBUG_BREAK \
@@ -477,32 +482,56 @@ public:
         return bExists;  // this is not a directory!
     }
     bool IsDirectoryExist(const std::string& vName) override {
+        bool bExists = false;
         if (!vName.empty()) {
             namespace fs = std::filesystem;
-            return fs::is_directory(stringToPath(vName));
+            try {
+                bExists = fs::is_directory(stringToPath(vName));
+            } catch (const std::exception& /*ex*/) {
+                bExists = false;
+            }
         }
-        return false;  // this is not a directory!
+        return bExists;
+    }
+    bool IsDirectory(const std::string& vFilePathName) override {
+        return IsDirectoryExist(vFilePathName);
     }
     bool IsFileExist(const std::string& vName) override {
-        namespace fs = std::filesystem;
-        return fs::is_regular_file(stringToPath(vName));
+        bool bExists = false;
+        if (!vName.empty()) {
+            namespace fs = std::filesystem;
+            try {
+                bExists = fs::is_regular_file(stringToPath(vName));
+            } catch (const std::exception& /*ex*/) {
+                bExists = false;
+            }
+        }
+        return bExists;
     }
     bool CreateDirectoryIfNotExist(const std::string& vName) override {
-        if (vName.empty()) return false;
-        if (IsDirectoryExist(vName)) return true;
-
+        if (vName.empty()) {
+            return false;
+        }
+        if (IsDirectoryExist(vName)) {
+            return true;
+        }
+        bool bExists = false;
 #if defined(__EMSCRIPTEN__)
         std::string str = std::string("FS.mkdir('") + vName + "');";
         emscripten_run_script(str.c_str());
-        bool res = true;
+        bExists = true;
 #else
         namespace fs = std::filesystem;
-        bool res     = fs::create_directory(stringToPath(vName));
-#endif  // _IGFD_WIN_
-        if (!res) {
-            std::cout << "Error creating directory " << vName << std::endl;
+        try {
+            bExists = fs::create_directory(stringToPath(vName));
+        } catch (const std::exception& /*ex*/) {
+            bExists = false;
         }
-        return res;
+#endif  // _IGFD_WIN_
+        if (!bExists) {
+            IGFD_COUT << "Error creating directory " << vName << std::endl;
+        }
+        return bExists;
     }
 
     std::vector<IGFD::PathDisplayedName> GetDevicesList() override {
@@ -537,16 +566,22 @@ public:
         // https://github.com/aiekick/ImGuiFileDialog/issues/54
         namespace fs = std::filesystem;
         IGFD::Utils::PathStruct res;
-        if (vPathFileName.empty()) return res;
+        if (vPathFileName.empty()) {
+            return res;
+        }
         auto fsPath = stringToPath(vPathFileName);
-        if (fs::is_directory(fsPath)) {
-            res.name = "";
-            res.path = pathToString(fsPath);
-            res.isOk = true;
-        } else if (fs::is_regular_file(fsPath)) {
-            res.name = pathToString(fsPath.filename());
-            res.path = pathToString(fsPath.parent_path());
-            res.isOk = true;
+        try {
+            if (fs::is_directory(fsPath)) {
+                res.name = "";
+                res.path = pathToString(fsPath);
+                res.isOk = true;
+            } else if (fs::is_regular_file(fsPath)) {
+                res.name = pathToString(fsPath.filename());
+                res.path = pathToString(fsPath.parent_path());
+                res.isOk = true;
+            }
+        } catch (const std::exception& ex) {
+            IGFD_COUT << "IGFD : " << ex.what() << std::endl;
         }
         return res;
     }
@@ -589,22 +624,18 @@ public:
                         }
                     }
                 } catch (const std::exception& ex) {
-                    std::cout << "IGFD : " << ex.what() << std::endl;
+                    IGFD_COUT << "IGFD : " << ex.what() << std::endl;
                 }
             }
         } catch (const std::exception& ex) {
-            std::cout << "IGFD : " << ex.what() << std::endl;
+            IGFD_COUT << "IGFD : " << ex.what() << std::endl;
         }
         return res;
     }
-    bool IsDirectory(const std::string& vFilePathName) override {
-        namespace fs = std::filesystem;
-        return fs::is_directory(stringToPath(vFilePathName));
-    }
     void GetFileDateAndSize(const std::string& vFilePathName, const IGFD::FileType& vFileType, std::string& voDate, size_t& voSize) override {
         namespace fs = std::filesystem;
-        fs::path fpath(vFilePathName);
         try {
+            fs::path fpath(vFilePathName);
             // date
             size_t len{};
             const auto lastWriteTime = fs::last_write_time(fpath);
@@ -618,9 +649,10 @@ public:
             if (!vFileType.isDir()) {
                 voSize = fs::file_size(fpath);
             }
-        } catch (const fs::filesystem_error& e) {
+        } catch (const fs::filesystem_error& ex) {
             voSize = 0;
             voDate.clear();
+            IGFD_COUT << "IGFD : " << ex.what() << std::endl;
         }
     }
 };
@@ -691,7 +723,7 @@ public:
                 }
 #endif  // _IGFD_WIN_
                 if (!res) {
-                    std::cout << "Error creating directory " << vName << std::endl;
+                    IGFD_COUT << "Error creating directory " << vName << std::endl;
                 }
             }
         }
