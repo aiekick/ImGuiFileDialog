@@ -4419,7 +4419,7 @@ void IGFD::FileDialog::m_DrawFileListView(ImVec2 vSize) {
 
             int column_id = 0;
             bool _rowHovered = false;
-            m_FileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing());
+            m_FileListClipper.Begin((int)fdi.GetFilteredListSize(), ImGui::GetTextLineHeightWithSpacing() + ImGui::GetStyle().CellPadding.y);
             while (m_FileListClipper.Step()) {
                 for (int i = m_FileListClipper.DisplayStart; i < m_FileListClipper.DisplayEnd; i++) {
                     if (i < 0) {
