@@ -419,6 +419,7 @@ inline bool inToggleButton(const char* vLabel, bool* vToggled) {
 #endif  // IMGUI_TOGGLE_BUTTON
 #endif  // USE_PLACES_FEATURE
 
+#ifndef DISABLE_EXCEPTION_HANDLING
 class IGFDException : public std::exception {
 private:
     char const* m_msg{};
@@ -434,6 +435,7 @@ public:
         return m_msg;
     }
 };
+#endif // DISABLE_EXCEPTION_HANDLING
 
 #ifndef CUSTOM_FILESYSTEM_INCLUDE
 #ifdef USE_STD_FILESYSTEM

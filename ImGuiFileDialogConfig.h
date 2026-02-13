@@ -16,6 +16,8 @@
 //// MISC ///////////////////////
 /////////////////////////////////
 
+// #define DISABLE_EXCEPTION_HANDLING
+
 // the spacing between button path's can be customized.
 // if disabled the spacing is defined by the imgui theme
 // define the space between path buttons
