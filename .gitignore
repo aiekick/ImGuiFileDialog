@@ -12,3 +12,6 @@
 /bin/*.xml
 /bin/output/
 /bin/output/
+/bin/*.wasm
+/bin/*.js
+/bin/*.conf

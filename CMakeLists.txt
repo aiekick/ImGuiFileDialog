@@ -14,6 +14,18 @@ option(USE_BOOST_FILESYSTEM "Enable the demo of custom filesystem here with boos
 
 option(USE_CXX_STANDARD_20 "Enable cxx standard 20 for test forward-compatibilty" OFF)
 
+if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(BUILD_WEBASSEMBLY TRUE)
+    set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
+    set(USE_DIRENT_FILESYSTEM OFF CACHE BOOL "" FORCE)
+    set(USE_BOOST_FILESYSTEM OFF CACHE BOOL "" FORCE)
+    add_compile_options(-g -fexceptions -fdebug-compilation-dir=${CMAKE_SOURCE_DIR})
+    message(STATUS "Build target: WebAssembly (Emscripten)")
+else()
+    set(BUILD_WEBASSEMBLY FALSE)
+    message(STATUS "Build target: Native")
+endif()
+
 ## some defines for debug mode (before 3rdparty.cmake)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 
@@ -24,147 +36,168 @@ set(CMAKE_INSTALL_PREFIX .)
 set(CMAKE_INSTALL_BINDIR .)
 
 if(NOT CMAKE_DEBUG_POSTFIX)
-  set(CMAKE_DEBUG_POSTFIX _debug)
+    set(CMAKE_DEBUG_POSTFIX _debug)
 endif()
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-	set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+    set(USE_STD_FILESYSTEM ON CACHE BOOL "" FORCE)
 endif()
 
-if (UNIX)
-	option(USE_LEAK_SANITIZER "Enable the Leak Sanitizer" OFF)
+if(UNIX)
+    option(USE_LEAK_SANITIZER "Enable the Leak Sanitizer" OFF)
 endif()
 
 if(USE_CXX_STANDARD_20)
-	# we can keep the old const char* everywhere
-	if (MSVC)
-		add_compile_options(/Zc:char8_t-)
-	else()
-		add_compile_options(-fno-char8_t)
-	endif()
+    # we can keep the old const char* everywhere
+    if(MSVC)
+        add_compile_options(/Zc:char8_t-)
+    else()
+        add_compile_options(-fno-char8_t)
+    endif()
 endif()
 
 include(cmake/3rdparty.cmake)
 
-if (USE_BOOST_FILESYSTEM)
-	add_definitions(-DCUSTOM_FILESYSTEM_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp")
+if(USE_BOOST_FILESYSTEM)
+    add_definitions(-DCUSTOM_FILESYSTEM_INCLUDE="${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp")
 endif()
 
 set(ORIGINAL_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 set(FILESYSTEM_TYPE)
 if(USE_STD_FILESYSTEM)
-	set(FILESYSTEM_TYPE "STD")
+    set(FILESYSTEM_TYPE "STD")
 elseif(USE_BOOST_FILESYSTEM)
-	set(FILESYSTEM_TYPE "BOOST")
+    set(FILESYSTEM_TYPE "BOOST")
 else()
-	set(USE_DIRENT_FILESYSTEM ON CACHE BOOL "" FORCE)
-	set(FILESYSTEM_TYPE "DIRENT")
+    set(USE_DIRENT_FILESYSTEM ON CACHE BOOL "" FORCE)
+    set(FILESYSTEM_TYPE "DIRENT")
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_definitions(-DMSVC)
-	if(USE_CXX_STANDARD_20)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20")
-	elseif(USE_STD_FILESYSTEM)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
-	endif()
+    if(USE_CXX_STANDARD_20)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20")
+    elseif(USE_STD_FILESYSTEM)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
+    endif()
 else()
-	if(USE_CXX_STANDARD_20)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std:c++20")
-	elseif(USE_STD_FILESYSTEM)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-	else()
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	endif()
+    if(USE_CXX_STANDARD_20)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std:c++20")
+    elseif(USE_STD_FILESYSTEM)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    endif()
+    if(NOT BUILD_WEBASSEMBLY)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+    endif()
+    if((CMAKE_BUILD_TYPE STREQUAL "Debug") OR
+        ($<CONFIG> STREQUAL "Debug"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    endif()
 endif()
 
-add_definitions(${GLFW_DEFINITIONS})
+if(BUILD_WEBASSEMBLY)
+    add_definitions(-DEMSCRIPTEN)
+    add_definitions(-DIMGUI_IMPL_OPENGL_ES3)
+    remove_definitions(-DWIN32)
+    remove_definitions(-DMSVC)
+    remove_definitions(-D_CRT_SECURE_NO_WARNINGS)
+else()
+    add_definitions(${GLFW_DEFINITIONS})
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 add_definitions(-DCUSTOM_IMWIDGETS_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImWidgetsConfig.h")
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-if (USE_BOOST_FILESYSTEM)
-	file(GLOB BOOST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp)
-	source_group(src\\Boost FILES ${BOOST_SOURCES})
-elseif (USE_STD_FILESYSTEM)
-	add_definitions(-DUSE_STD_FILESYSTEM)
+if(USE_BOOST_FILESYSTEM)
+    file(GLOB BOOST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemBoost.hpp)
+    source_group(src\\Boost FILES ${BOOST_SOURCES})
+elseif(USE_STD_FILESYSTEM)
+    add_definitions(-DUSE_STD_FILESYSTEM)
 endif()
 
 file(GLOB_RECURSE PROJECT_SRC_FILES ${CMAKE_SOURCE_DIR}/src/*.*)
 source_group(TREE ${CMAKE_SOURCE_DIR}/src PREFIX src FILES ${PROJECT_SRC_FILES})
 
-file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*.*)
-source_group(cmake FILES ${CMAKE_SOURCES})
-		
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
-	file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainAndroid.cpp)
-	file(GLOB IMGUIIMPL_SOURCES 
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.h
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h
-		${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+if(NOT BUILD_WEBASSEMBLY)
+    file(GLOB_RECURSE CMAKE_SOURCES ${CMAKE_SOURCE_DIR}/cmake/*.*)
+    source_group(cmake FILES ${CMAKE_SOURCES})
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+    file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainAndroid.cpp)
+    file(GLOB IMGUIIMPL_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_android.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h
+        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 else()
-	file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainWinLinuxMacos.cpp)
-	file(GLOB IMGUIIMPL_SOURCES 
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
+    file(GLOB MAIN_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/mainWinLinuxMacos.cpp)
+    file(GLOB IMGUIIMPL_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_glfw.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.h)
 endif()
 
 source_group(src FILES ${MAIN_SOURCES})
 source_group(src\\ImGuiImpl FILES ${IMGUIIMPL_SOURCES})
 
 include_directories(
-	${GLM_INCLUDE_DIR}
-	${PLOG_INCLUDE_DIR}
-	${GLFW_INCLUDE_DIR}
-	${GLAD_INCLUDE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${IMGUI_INCLUDE_DIR}
-	${IMWIDGETS_INCLUDE_DIR}
-	${OPENGL_INCLUDE_DIR}
-	${BOOST_FILESYSTEM_INCLUDE_DIRS}
+    ${GLM_INCLUDE_DIR}
+    ${PLOG_INCLUDE_DIR}
+    ${GLFW_INCLUDE_DIR}
+    ${GLAD_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${IMGUI_INCLUDE_DIR}
+    ${IMWIDGETS_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    ${BOOST_FILESYSTEM_INCLUDE_DIRS}
 )
 
-if (USE_TESTS)
-	add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
+if(USE_TESTS)
+    add_definitions(-DNEED_TO_BE_PUBLIC_FOR_TESTS)
 endif()
 
-if (USE_LEAK_SANITIZER)
-	add_compile_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
-	add_link_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
+if(USE_LEAK_SANITIZER)
+    add_compile_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
+    add_link_options(-fexceptions -pthread -ldl -lGL -Wall -g -fsanitize=undefined -fno-sanitize-recover -fsanitize=float-cast-overflow -fsanitize=leak -fsanitize=address -fsanitize-address-use-after-scope -fstack-protector -fstack-protector-all)
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog)
 
 target_link_libraries(ImGuiFileDialog PRIVATE
-	${IMGUI_LIBRARIES}
-	${IMWIDGETS_LIBRARIES}
-	${BOOST_FILESYSTEM_LIBRARIES}
+    ${IMGUI_LIBRARIES}
+    ${IMWIDGETS_LIBRARIES}
+    ${BOOST_FILESYSTEM_LIBRARIES}
 )
 
-set(SOURCES 
-	${RES_SOURCES}
-	${RES_WIDGETS}
-	${MAIN_SOURCES}
-	${BOOST_SOURCES}
-	${CMAKE_SOURCES}
-	${PROJECT_SRC_FILES}
-	${IMGUIIMPL_SOURCES})
+set(SOURCES
+    ${RES_SOURCES}
+    ${RES_WIDGETS}
+    ${MAIN_SOURCES}
+    ${BOOST_SOURCES}
+    ${CMAKE_SOURCES}
+    ${PROJECT_SRC_FILES}
+    ${IMGUIIMPL_SOURCES}
+)
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Android") 
-	add_library(${PROJECT} SHARED ${SOURCES})
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+    add_library(${PROJECT} SHARED ${SOURCES})
 else()
-	add_executable(${PROJECT} ${SOURCES})
+    add_executable(${PROJECT} ${SOURCES})
 endif()
 
-if (LINUX)
-	target_link_libraries(${PROJECT} PRIVATE X11)
+if(LINUX)
+    target_link_libraries(${PROJECT} PRIVATE X11)
 endif()
 
 target_compile_definitions(ImGuiFileDialog PRIVATE -DCUSTOM_IMGUIFILEDIALOG_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/src/headers/CustomImGuiFileDialogConfig.h")
@@ -180,31 +213,40 @@ if(UNIX)
     target_compile_options(${PROJECT} PUBLIC -Wno-unknown-pragmas)
 endif()
 
-set_target_properties(${PROJECT} PROPERTIES OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${FILESYSTEM_TYPE}_FS")
-
-if (USE_STD_FILESYSTEM)
-	set(CMAKE_CXX_STANDARD 17)
-	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 17)
-	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 17)
-	set_target_properties(imgui PROPERTIES CXX_STANDARD 17)
-	message("USE C++17 and std::filesystem")
+if(BUILD_WEBASSEMBLY)
+    set_target_properties(${PROJECT} PROPERTIES
+        OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${ARCH}"
+        SUFFIX ".html"
+    )
 else()
-	set(CMAKE_CXX_STANDARD 11)
-	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
-	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 11)
-	set_target_properties(imgui PROPERTIES CXX_STANDARD 11)
-	if (USE_BOOST_FILESYSTEM)
-		message("USE C++11 and BOOST as demo custom filesystem")
-	else()
-		message("USE C++11 and DIRENT")
-	endif()
+    set_target_properties(${PROJECT} PROPERTIES
+        OUTPUT_NAME "${PROJECT}_${CMAKE_SYSTEM_NAME}_${FILESYSTEM_TYPE}_FS"
+    )
+endif()
+
+if(USE_STD_FILESYSTEM)
+    set(CMAKE_CXX_STANDARD 17)
+    set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 17)
+    set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 17)
+    set_target_properties(imgui PROPERTIES CXX_STANDARD 17)
+    message("USE C++17 and std::filesystem")
+else()
+    set(CMAKE_CXX_STANDARD 11)
+    set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 11)
+    set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 11)
+    set_target_properties(imgui PROPERTIES CXX_STANDARD 11)
+    if(USE_BOOST_FILESYSTEM)
+        message("USE C++11 and BOOST as demo custom filesystem")
+    else()
+        message("USE C++11 and DIRENT")
+    endif()
 endif()
 
 if(USE_CXX_STANDARD_20)
-	set(CMAKE_CXX_STANDARD 20)
-	set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 20)
-	set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 20)
-	set_target_properties(imgui PROPERTIES CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD 20)
+    set_target_properties(${PROJECT} PROPERTIES CXX_STANDARD 20)
+    set_target_properties(ImGuiFileDialog PROPERTIES CXX_STANDARD 20)
+    set_target_properties(imgui PROPERTIES CXX_STANDARD 20)
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -213,46 +255,71 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}")
 install(TARGETS ${PROJECT} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-target_link_libraries(${PROJECT} PRIVATE
-	${IMGUI_LIBRARIES}
-	${IMWIDGETS_LIBRARIES}
-	${BOOST_FILESYSTEM_LIBRARIES}
-	ImGuiFileDialog
-	android
-	EGL
-	GLESv3
-	log)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../..
-  ${ANDROID_NDK}/sources/android/native_app_glue)
+if(BUILD_WEBASSEMBLY)
+    # Emscripten traite les chaînes commençant par -s comme des options de link
+    target_link_libraries(${PROJECT}
+        ${IMGUI_LIBRARIES}
+        ${IMWIDGETS_LIBRARIES}
+        ${BOOST_FILESYSTEM_LIBRARIES}
+        ImGuiFileDialog
+        "-s USE_GLFW=3"
+        "-s USE_WEBGL2=1"
+        "-s FULL_ES3=1"
+        "-s USE_GLFW=3"
+        "-s WASM=1"
+        "-s FORCE_FILESYSTEM=1"
+        "-s ALLOW_MEMORY_GROWTH=1"
+        "-s INITIAL_MEMORY=256MB"
+        "-s ASSERTIONS=1"
+        "-s SAFE_HEAP=1" "-s ERROR_ON_UNDEFINED_SYMBOLS=0"
+        "-fexceptions"
+        "-g"
+        "--bind"
+        "--source-map-base http://localhost:8000/"
+    )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+    target_link_libraries(${PROJECT} PRIVATE
+        ${IMGUI_LIBRARIES}
+        ${IMWIDGETS_LIBRARIES}
+        ${BOOST_FILESYSTEM_LIBRARIES}
+        ImGuiFileDialog
+        android
+        EGL
+        GLESv3
+        log
+    )
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..
+        ${ANDROID_NDK}/sources/android/native_app_glue
+    )
 else()
-target_link_libraries(${PROJECT} PRIVATE
-	${OPENGL_LIBRARIES}
-	${GLFW_LIBRARIES}
-	${GLAD_LIBRARIES}
-	${IMGUI_LIBRARIES}
-	${IMWIDGETS_LIBRARIES}
-	ImGuiFileDialog)
+    target_link_libraries(${PROJECT} PRIVATE
+        ${OPENGL_LIBRARIES}
+        ${GLFW_LIBRARIES}
+        ${GLAD_LIBRARIES}
+        ${IMGUI_LIBRARIES}
+        ${IMWIDGETS_LIBRARIES}
+        ImGuiFileDialog
+    )
 endif()
 
 target_include_directories(ImGuiFileDialog PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if (USE_TESTS)
-	enable_testing()
-	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+if(USE_TESTS)
+    enable_testing()
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif()
 
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${FINAL_BIN_DIR}")
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${FINAL_BIN_DIR}")
 set_target_properties(${PROJECT} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${FINAL_BIN_DIR}")
 
-if (USE_VISUAL_TESTS)
-	if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
-		# need to test it on android
-	else()
-		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/visualTests)
-	endif()
+if(USE_VISUAL_TESTS)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+        # need to test it on android
+    else()
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/visualTests)
+    endif()
 endif()

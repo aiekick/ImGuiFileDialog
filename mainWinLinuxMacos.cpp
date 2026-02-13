@@ -13,6 +13,7 @@
 
 #include "3rdparty/imgui/backends/imgui_impl_opengl3.h"
 #include "3rdparty/imgui/backends/imgui_impl_glfw.h"
+
 #include <cstdio>
 #include <sstream>
 #include <fstream>
@@ -20,10 +21,10 @@
 #include <string>
 #include <iostream>
 
-// About Desktop OpenGL function loaders:
-//  Modern desktop OpenGL doesn't have a standard portable header file to load OpenGL function pointers.
-//  Helper libraries are often used for this purpose! Here we are supporting a few common ones (gl3w, glew, glad).
-//  You may use another loader/header of your choice (glext, glLoadGen, etc.), or chose to manually implement your own.
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <GLES3/gl3.h>
+#else
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>  // Initialize with gl3wInit()
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
@@ -32,6 +33,7 @@
 #include <glad/glad.h>  // Initialize with gladLoadGL()
 #else
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
+#endif
 #endif
 
 // Include glfw3.h after our OpenGL definitions
@@ -46,6 +48,81 @@
 
 static void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
+
+GLFWwindow* pWindow{nullptr};
+DemoDialog demoDialog;
+ImVec4 viewportRect;
+
+static void sUpdate(void*) {
+    int display_w{};
+    int display_h{};
+    ImGuiIO& io = ImGui::GetIO();
+
+#ifndef __EMSCRIPTEN__
+    glfwPollEvents();
+#endif
+
+    glfwGetFramebufferSize(pWindow, &display_w, &display_h);
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+#ifdef IMGUI_HAS_VIEWPORT
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        const auto viewport = ImGui::GetMainViewport();
+        if (viewport) {
+            const auto pos  = viewport->WorkPos;
+            const auto size = viewport->WorkSize;
+            viewportRect.x  = pos.x;
+            viewportRect.y  = pos.y;
+            viewportRect.z  = size.x;
+            viewportRect.w  = size.y;
+        }
+    } else {
+        viewportRect.x = 0;
+        viewportRect.y = 0;
+    }
+#endif
+
+    try {
+        demoDialog.display(viewportRect);
+    } catch (std::exception& ex) {
+        std::cout << "exception catched with message : " << ex.what() << std::endl;
+        assert(0);
+    }
+
+    // Cpu Zone : prepare
+    ImGui::Render();
+
+    // GPU Zone : Rendering
+    glfwMakeContextCurrent(pWindow);
+
+    // manage thumbnails
+    demoDialog.manageGPU();
+
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(demoDialog.clear_color.x, demoDialog.clear_color.y, demoDialog.clear_color.z, demoDialog.clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+#ifndef __EMSCRIPTEN__
+#ifdef IMGUI_HAS_VIEWPORT
+    // Update and Render additional Platform Windows
+    // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+    //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        GLFWwindow* backup_current_context = glfwGetCurrentContext();
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        glfwMakeContextCurrent(backup_current_context);
+    }
+#endif
+#endif
+
+    glfwSwapBuffers(pWindow);
 }
 
 int main(int, char**) {
@@ -63,7 +140,10 @@ int main(int, char**) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return 1;
 
-        // Decide GL+GLSL versions
+#ifdef __EMSCRIPTEN__
+    // GL ES 3.0 + GLSL 130
+    const char* glsl_version = "#version 300 es";
+#else
 #ifdef __APPLE__
     // GL 3.2 + GLSL 150
     const char* glsl_version = "#version 150";
@@ -79,14 +159,16 @@ int main(int, char**) {
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
+#endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
-    if (window == nullptr) return 1;
-    glfwMakeContextCurrent(window);
+    pWindow = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    if (pWindow == nullptr) return 1;
+    glfwMakeContextCurrent(pWindow);
     glfwSwapInterval(1);  // Enable vsync
 
-    // Initialize OpenGL loader
+#ifndef __EMSCRIPTEN__
+// Initialize OpenGL loader
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
     bool err = gl3wInit() != 0;
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
@@ -100,96 +182,37 @@ int main(int, char**) {
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return 1;
     }
+#endif
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
+#ifndef __EMSCRIPTEN__
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport / Platform Windows
-    io.ConfigViewportsNoDecoration = false;              // no decoration, for avoid a resuize bug
-    io.FontAllowUserScaling        = true;               // zoom wiht ctrl + mouse wheel
+#endif
+    io.ConfigViewportsNoDecoration = false;  // no decoration, for avoid a resuize bug
+    io.FontAllowUserScaling        = true;   // zoom wiht ctrl + mouse wheel
 
     // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    DemoDialog demoDialog;
-    demoDialog.init(15.0f);   
+    demoDialog.init(15.0f);
 
     ImVec4 viewportRect;
 
-    // Main loop
-    int32_t display_w = 0;
-    int32_t display_h = 0;
-    while (!glfwWindowShouldClose(window)) {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        glfwPollEvents();
-
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-#ifdef IMGUI_HAS_VIEWPORT
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            const auto viewport = ImGui::GetMainViewport();
-            if (viewport) {
-                const auto pos  = viewport->WorkPos;
-                const auto size = viewport->WorkSize;
-                viewportRect.x  = pos.x;
-                viewportRect.y  = pos.y;
-                viewportRect.z  = size.x;
-                viewportRect.w  = size.y;
-            }
-        } else {
-            viewportRect.x = 0;
-            viewportRect.y = 0;
-        }
-#endif
-
-        try {
-            demoDialog.display(viewportRect);
-        } catch (std::exception& ex) {
-            std::cout << "exception catched with message : " << ex.what() << std::endl;
-            assert(0);
-        }
-
-        // Cpu Zone : prepare
-        ImGui::Render();
-
-        // GPU Zone : Rendering
-        glfwMakeContextCurrent(window);
-        
-		// manage thumbnails
-        demoDialog.manageGPU();
-
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(demoDialog.clear_color.x, demoDialog.clear_color.y, demoDialog.clear_color.z, demoDialog.clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-#ifdef IMGUI_HAS_VIEWPORT
-        // Update and Render additional Platform Windows
-        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-        //  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-#endif
-        glfwSwapBuffers(window);
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(sUpdate, nullptr, 0, true);
+#else
+    while (!glfwWindowShouldClose(pWindow)) {
+        sUpdate(nullptr);
     }
+#endif
 
     demoDialog.unit();
 
@@ -198,7 +221,7 @@ int main(int, char**) {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(pWindow);
     glfwTerminate();
 
     return 0;
