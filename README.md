@@ -174,6 +174,50 @@ you need many lib : opengl and cocoa framework
 
 </blockquote></details>
 
+### In Bazel
+
+`ImGuiFileDialog` supports [Bazel](https://bazel.build/) using Bzlmod (Bazel 7+).
+
+#### Integration
+
+Since the module is not yet available in the Bazel Central Registry (BCR), you must add it to your `MODULE.bazel` using either an `http_archive` or `new_local_repository`.
+
+In your `BUILD` file, add the dependency to your target:
+
+```python
+cc_binary(
+    name = "my_app",
+    srcs = ["main.cpp"],
+    deps = ["@imguifiledialog"],
+)
+```
+
+#### Customization
+
+Create a header file in your project named **`ImGuiFileDialogConfig.h`** and define your custom values.
+
+In your local `BUILD` file, wrap that header in a `cc_library`. You must use `include_prefix` or `includes` to ensure the library can find it as `"ImGuiFileDialogConfig.h"`.
+
+```python
+cc_library(
+    name = "imguifiledialog_config",
+    hdrs = ["ImGuiFileDialogConfig.h"],
+    include_prefix = ".", 
+)
+```
+
+You can apply this override via the command line:
+
+```bash
+bazel build //... --@imguifiledialog//:config=//path/to/my:imguifiledialog_config
+```
+
+Or make it permanent for your project by adding it to your `.bazelrc`:
+
+```bash
+build --@imguifiledialog//:config=//path/to/my:imguifiledialog_config
+```
+
 ## That's all folks :-)
 
 You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
