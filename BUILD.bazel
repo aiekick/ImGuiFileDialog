@@ -1,0 +1,32 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+label_flag(
+    name = "config",
+    build_setting_default = ":default_config",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "default_config",
+    hdrs = ["ImGuiFileDialogConfig.h"],
+    include_prefix = ".",
+)
+
+cc_library(
+    name = "imguifiledialog",
+    srcs = [
+        "ImGuiFileDialog.cpp",
+        "dirent/dirent.h",
+        "stb/stb_image.h",
+        "stb/stb_image_resize2.h",
+    ],
+    hdrs = [
+        "ImGuiFileDialog.h",
+    ],
+    include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":config",
+        "@imgui",
+    ],
+)

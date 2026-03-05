@@ -1,0 +1,7 @@
+module(
+    name = "imguifiledialog",
+    version = "0.6.8",
+)
+
+bazel_dep(name = "imgui", version = "1.92.6-docking")
+bazel_dep(name = "rules_cc", version = "0.2.17")
