@@ -136,7 +136,9 @@ SOFTWARE.
 ///////////////////////////////
 
 #ifndef GImGuiFileDialog
-IGFD::FileDialog* GImGuiFileDialog = nullptr;
+namespace IGFD {
+FileDialog* GImGuiFileDialog = nullptr;
+}
 #endif
 
 ///////////////////////////////
