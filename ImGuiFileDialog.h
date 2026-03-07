@@ -201,11 +201,13 @@ struct IGFD_Thumbnail_Info {
 #include <imgui.h>
 #endif  // IMGUI_INCLUDE
 
+#include "ImString.h"
+
 #include <set>
 #include <map>
 #include <list>
 #include <regex>
-#include <array>
+// #include <array>  // removed: replaced std::array with C-arrays
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -256,42 +258,49 @@ template <typename T>
 class SearchableVector {
 private:
     std::unordered_map<T, size_t> m_Dico;
-    std::vector<T> m_Array;
+    ImVector<T> m_Array;
 
 public:
     void clear() {
         m_Dico.clear();
-        m_Array.clear();
+        m_Array.clear_destruct();
     }
     bool empty() const {
         return m_Array.empty();
     }
     size_t size() const {
-        return m_Array.size();
+        return (size_t)m_Array.size();
     }
     T& operator[](const size_t& vIdx) {
-        return m_Array[vIdx];
+        return m_Array[(int)vIdx];
     }
-    T& at(const size_t& vIdx) {
-        return m_Array.at(vIdx);
+    const T& operator[](const size_t& vIdx) const {
+        return m_Array[(int)vIdx];
     }
-    typename std::vector<T>::iterator begin() {
+    T* begin() {
         return m_Array.begin();
     }
-    typename std::vector<T>::const_iterator begin() const {
+    const T* begin() const {
         return m_Array.begin();
     }
-    typename std::vector<T>::iterator end() {
+    T* end() {
         return m_Array.end();
     }
-    typename std::vector<T>::const_iterator end() const {
+    const T* end() const {
         return m_Array.end();
     }
 
     bool try_add(T vKey) {
         if (!exist(vKey)) {
-            m_Dico[vKey] = m_Array.size();
-            m_Array.push_back(vKey);
+            m_Dico[vKey] = (size_t)m_Array.size();
+            // Cannot use m_Array.push_back(vKey) because ImVector::push_back uses memcpy,
+            // creating a shallow copy. vKey's destructor would then free the shared buffer.
+            // Instead, use placement new with move to transfer ownership safely.
+            if (m_Array.Size == m_Array.Capacity) {
+                m_Array.reserve(m_Array.Capacity ? m_Array.Capacity * 2 : 8);
+            }
+            new (&m_Array.Data[m_Array.Size]) T(static_cast<T&&>(vKey));  // move into array
+            m_Array.Size++;
             return true;
         }
         return false;
@@ -300,13 +309,13 @@ public:
     bool try_set_existing(T vKey) {
         if (exist(vKey)) {
             auto row     = m_Dico.at(vKey);
-            m_Array[row] = vKey;
+            m_Array[(int)row] = vKey;
             return true;
         }
         return false;
     }
 
-    bool exist(const std::string& vKey) const {
+    bool exist(const T& vKey) const {
         return (m_Dico.find(vKey) != m_Dico.end());
     }
 };
@@ -319,34 +328,34 @@ class IGFD_API Utils {
 
 public:
     struct PathStruct {
-        std::string path;
-        std::string name;
-        std::string ext;
+        ImString path;
+        ImString name;
+        ImString ext;
         bool isOk = false;
     };
 
 public:
     static bool ImSplitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f);
-    static bool ReplaceString(std::string& str, const std::string& oldStr, const std::string& newStr, const size_t& vMaxRecursion = 10U);
-    static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
+    static bool ReplaceString(ImString& str, const char* oldStr, const char* newStr, const size_t& vMaxRecursion = 10U);
+    static void AppendToBuffer(char* vBuffer, size_t vBufferLen, const char* vStr);
     static void ResetBuffer(char* vBuffer);
-    static void SetBuffer(char* vBuffer, size_t vBufferLen, const std::string& vStr);
-    static std::string UTF8Encode(const std::wstring& wstr);
-    static std::wstring UTF8Decode(const std::string& str);
-    static std::vector<std::string> SplitStringToVector(const std::string& vText, const std::string& vDelimiterPattern, const bool vPushEmpty);
-    static std::vector<std::string> SplitStringToVector(const std::string& vText, const char& vDelimiter, const bool vPushEmpty);
-    static std::string LowerCaseString(const std::string& vString);  // turn all text in lower case for search facilitie
-    static size_t GetCharCountInString(const std::string& vString, const char& vChar);
-    static size_t GetLastCharPosWithMinCharCount(const std::string& vString, const char& vChar, const size_t& vMinCharCount);
-    static std::string GetPathSeparator();                                                                              // return the slash for any OS ( \\ win, / unix)
-    static std::string RoundNumber(double vvalue, int n);                                                               // custom rounding number
-    static std::pair<std::string, std::string> FormatFileSize(size_t vByteSize);                                        // format file size field. return pair(number, unit)
-    static bool NaturalCompare(const std::string& vA, const std::string& vB, bool vInsensitiveCase, bool vDescending);  // natural sorting
+    static void SetBuffer(char* vBuffer, size_t vBufferLen, const char* vStr);
+    static ImString UTF8Encode(const std::wstring& wstr);
+    static std::wstring UTF8Decode(const char* str, int strLen = -1);
+    static void SplitStringToVector(ImVector<ImString>& outArr, const char* vText, const char* vDelimiterPattern, const bool vPushEmpty);
+    static void SplitStringToVector(ImVector<ImString>& outArr, const char* vText, const char& vDelimiter, const bool vPushEmpty);
+    static ImString LowerCaseString(const char* vString);  // turn all text in lower case for search facilitie
+    static size_t GetCharCountInString(const char* vString, const char& vChar);
+    static size_t GetLastCharPosWithMinCharCount(const char* vString, const char& vChar, const size_t& vMinCharCount);
+    static const char* GetPathSeparator();                                                                          // return the slash for any OS ( \\ win, / unix)
+    static ImString RoundNumber(double vvalue, int n);                                                              // custom rounding number
+    static std::pair<ImString, ImString> FormatFileSize(size_t vByteSize);                                          // format file size field. return pair(number, unit)
+    static bool NaturalCompare(const char* vA, const char* vB, bool vInsensitiveCase, bool vDescending);            // natural sorting
 
 private:
     static bool M_IsAValidCharExt(const char& c);
     static bool M_IsAValidCharSuffix(const char& c);
-    static bool M_ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum);
+    static bool M_ExtractNumFromStringAtPos(const char* str, size_t strLen, size_t& pos, double& vOutNum);
 };
 
 class IGFD_API FileStyle {
@@ -355,19 +364,19 @@ public:
 
 public:
     ImVec4 color = ImVec4(0, 0, 0, 0);
-    std::string icon;
+    ImString icon;
     ImFont* font              = nullptr;
     IGFD_FileStyleFlags flags = 0;
 
 public:
     FileStyle();
     FileStyle(const FileStyle& vStyle);
-    FileStyle(const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
+    FileStyle(const ImVec4& vColor, const char* vIcon = "", ImFont* vFont = nullptr);
 };
 
 class IGFD_API SearchManager {
 public:
-    std::string searchTag;
+    ImString searchTag;
     char searchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";
     bool searchInputIsActive                       = false;
 
@@ -377,62 +386,56 @@ public:
 };
 
 class IGFD_API FilterInfos {
-private:
-    // just for return a default const std::string& in getFirstFilter.
-    // cannot be const, because FilterInfos must be affected to an another FilterInfos
-    // must stay empty all time
-    std::string empty_string;
-
 public:
-    std::string title;                                // displayed filter.can be different than rela filter
-    SearchableVector<std::string> filters;            // filters
-    SearchableVector<std::string> filters_optimized;  // optimized filters for case insensitive search
-    std::vector<std::regex> filters_regex;            // collection of regex filter type
+    ImString title;                                   // displayed filter.can be different than real filter
+    SearchableVector<ImString> filters;            // filters
+    SearchableVector<ImString> filters_optimized;  // optimized filters for case insensitive search
+    std::vector<std::regex> filters_regex;            // collection of regex filter type (std::regex is NOT memcpy-safe, must use std::vector)
     size_t count_dots = 0U;                           // the max count dot the max per filter of all filters
 
 public:
     void clear();                                                                        // clear the datas
     bool empty() const;                                                                  // is filter empty
-    const std::string& getFirstFilter() const;                                           // get the first filter
-    bool regexExist(const std::string& vFilter) const;                                   // is regex filter exist
+    ImString getFirstFilter() const;                                                     // get the first filter
+    bool regexExist(const char* vFilter) const;                                          // is regex filter exist
     bool exist(const FileInfos& vFileInfos, bool vIsCaseInsensitive) const;              // is filter exist
-    void setCollectionTitle(const std::string& vTitle);                                  // set the collection title
-    void addFilter(const std::string& vFilter, const bool vIsRegex);                    // add a filter
-    void addCollectionFilter(const std::string& vFilter, const bool vIsRegex);          // add a filter in collection
-    static std::string transformAsteriskBasedFilterToRegex(const std::string& vFilter);  // will transform a filter who contain * to a regex
+    void setCollectionTitle(const char* vTitle);                                          // set the collection title
+    void addFilter(const char* vFilter, const bool vIsRegex);                            // add a filter
+    void addCollectionFilter(const char* vFilter, const bool vIsRegex);                  // add a filter in collection
+    static ImString transformAsteriskBasedFilterToRegex(const char* vFilter);  // will transform a filter who contain * to a regex
 };
 
 class IGFD_API FilterManager {
     friend class TestFilterManager;
 private:
-    std::vector<FilterInfos> m_ParsedFilters;
+    std::vector<FilterInfos> m_ParsedFilters;  // FilterInfos contains std::unordered_map, NOT memcpy-safe, must use std::vector
     std::unordered_map<IGFD_FileStyleFlags, std::unordered_map<std::string, std::shared_ptr<FileStyle> > > m_FilesStyle;  // file infos for file
                                                                                                                           // extention only
-    std::vector<FileStyle::FileStyleFunctor> m_FilesStyleFunctors;                                                        // file style via lambda function
+    std::vector<FileStyle::FileStyleFunctor> m_FilesStyleFunctors;  // std::function is NOT memcpy-safe, must use std::vector
     FilterInfos m_SelectedFilter;
 
 public:
-    std::string dLGFilters;
-    std::string dLGdefaultExt;
+    ImString dLGFilters;
+    ImString dLGdefaultExt;
 
 public:
     const FilterInfos& GetSelectedFilter() const;
     void ParseFilters(const char* vFilters);                                                               // Parse filter syntax, detect and parse filter collection
-    void SetSelectedFilterWithExt(const std::string& vFilter);                                             // Select filter
+    void SetSelectedFilterWithExt(const char* vFilter);                                                    // Select filter
     bool FillFileStyle(std::shared_ptr<FileInfos> vFileInfos) const;                                       // fill with the good style
     void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos);  // Set FileStyle
-    void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon,
-                      ImFont* vFont);                         // link file style to Color and Icon and Font
+    void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const char* vIcon = "",
+                      ImFont* vFont = nullptr);               // link file style to Color and Icon and Font
     void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);  // lambda functor for set file style.
-    bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon,
+    bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, ImVec4* vOutColor, ImString* vOutIcon,
                       ImFont** vOutFont);  // Get Color and Icon for Filter
     void ClearFilesStyle();                // clear m_FileStyle
     bool IsCoveredByFilters(const FileInfos& vFileInfos,
                             bool vIsCaseInsensitive) const;            // check if current file extention (vExt) is covered by current filter, or by regex (vNameExt)
     float GetFilterComboBoxWidth() const;                              // will return the current combo box widget width
     bool DrawFilterComboBox(FileDialogInternal& vFileDialogInternal);  // draw the filter combobox 	// get the current selected filter
-    std::string ReplaceExtentionWithCurrentFilterIfNeeded(const std::string& vFileName,
-                                                          IGFD_ResultMode vFlag) const;  // replace the extention of the current file by the selected filter
+    ImString ReplaceExtentionWithCurrentFilterIfNeeded(const char* vFileName,
+                                                       IGFD_ResultMode vFlag) const;  // replace the extention of the current file by the selected filter
     void SetDefaultFilterIfNotDefined();                                                 // define the first filter if no filter is selected
 };
 
@@ -477,35 +480,35 @@ public:
 public:
     // extention of the file, the array is the levels of ext, by ex : .a.b.c, will be save in {.a.b.c, .b.c, .c}
     // 10 level max are sufficient i guess. the others levels will be checked if countExtDot > 1
-    std::array<std::string, EXT_MAX_LEVEL> fileExtLevels;
-    std::array<std::string, EXT_MAX_LEVEL> fileExtLevels_optimized;  // optimized for search => insensitivecase
-    // same for file name, can be sued in userFileAttributesFun
-    std::array<std::string, EXT_MAX_LEVEL> fileNameLevels;
-    std::array<std::string, EXT_MAX_LEVEL> fileNameLevels_optimized;  // optimized for search => insensitivecase
-    size_t countExtDot = 0U;                                          // count dots in file extention. this count will give the levels in fileExtLevels
-    FileType fileType;                                                // fileType
-    std::string filePath;                                             // path of the file
-    std::string fileName;                                             // file name only
-    std::string fileNameExt;                                          // filename of the file (file name + extention) (but no path)
-    std::string fileNameExt_optimized;                                // optimized for search => insensitivecase
-    std::string deviceInfos;                                          // quick infos to display after name for devices
-    std::string tooltipMessage;                                       // message to display on the tooltip, is not empty
-    int32_t tooltipColumn = -1;                                       // the tooltip will appears only when the mouse is over the tooltipColumn if > -1
-    size_t fileSize       = 0U;                                       // for sorting operations
-    std::pair<std::string, std::string> formatedFileSize;             // file size formated (10 o, 10 ko, 10 mo, 10 go)
-    std::string fileModifDate;                                        // file user defined format of the date (data + time by default)
-    std::shared_ptr<FileStyle> fileStyle = nullptr;                   // style of the file
+    ImString fileExtLevels[EXT_MAX_LEVEL];
+    ImString fileExtLevels_optimized[EXT_MAX_LEVEL];  // optimized for search => insensitivecase
+    // same for file name, can be used in userFileAttributesFun
+    ImString fileNameLevels[EXT_MAX_LEVEL];
+    ImString fileNameLevels_optimized[EXT_MAX_LEVEL];  // optimized for search => insensitivecase
+    size_t countExtDot = 0U;                            // count dots in file extention. this count will give the levels in fileExtLevels
+    FileType fileType;                                  // fileType
+    ImString filePath;                                  // path of the file
+    ImString fileName;                                  // file name only
+    ImString fileNameExt;                               // filename of the file (file name + extention) (but no path)
+    ImString fileNameExt_optimized;                     // optimized for search => insensitivecase
+    ImString deviceInfos;                               // quick infos to display after name for devices
+    ImString tooltipMessage;                             // message to display on the tooltip, is not empty
+    int32_t tooltipColumn = -1;                          // the tooltip will appears only when the mouse is over the tooltipColumn if > -1
+    size_t fileSize       = 0U;                          // for sorting operations
+    std::pair<ImString, ImString> formatedFileSize;      // file size formated (10 o, 10 ko, 10 mo, 10 go)
+    ImString fileModifDate;                              // file user defined format of the date (data + time by default)
+    std::shared_ptr<FileStyle> fileStyle = nullptr;      // style of the file
 #ifdef USE_THUMBNAILS
     IGFD_Thumbnail_Info thumbnailInfo;  // structre for the display for image file tetxure
 #endif                                  // USE_THUMBNAILS
 
 public:
-    bool SearchForTag(const std::string& vTag) const;  // will search a tag in fileNameExt and fileNameExt_optimized
-    bool SearchForExt(const std::string& vExt, const bool vIsCaseInsensitive,
-                      const size_t& vMaxLevel = EXT_MAX_LEVEL) const;  // will check the fileExtLevels levels for vExt, until vMaxLevel
-    bool SearchForExts(const std::string& vComaSepExts, const bool vIsCaseInsensitive,
-                       const size_t& vMaxLevel = EXT_MAX_LEVEL) const;  // will check the fileExtLevels levels for vExts (ext are coma separated), until vMaxLevel
-    bool FinalizeFileTypeParsing(const size_t& vMaxDotToExtract);       // finalize the parsing the file (only a file or link to file. no dir)
+    bool SearchForTag(const char* vTag) const;
+    bool SearchForExt(const char* vExt, const bool vIsCaseInsensitive,
+                      const size_t& vMaxLevel = EXT_MAX_LEVEL) const;
+    bool SearchForExts(const char* vComaSepExts, const bool vIsCaseInsensitive,
+                       const size_t& vMaxLevel = EXT_MAX_LEVEL) const;
+    bool FinalizeFileTypeParsing(const size_t& vMaxDotToExtract);
 };
 
 typedef std::pair<std::string, std::string> PathDisplayedName;
@@ -546,17 +549,17 @@ public:                            // types
     };
 
 private:
-    std::string m_CurrentPath;                                    // current path (to be decomposed in m_CurrentPathDecomposition
+    ImString m_CurrentPath;                                       // current path (to be decomposed in m_CurrentPathDecomposition
     std::vector<std::string> m_CurrentPathDecomposition;          // part words
     std::vector<std::shared_ptr<FileInfos> > m_FileList;          // base container
     std::vector<std::shared_ptr<FileInfos> > m_FilteredFileList;  // filtered container (search, sorting, etc..)
     std::vector<std::shared_ptr<FileInfos> > m_PathList;          // base container for path selection
     std::vector<std::shared_ptr<FileInfos> > m_FilteredPathList;  // filtered container for path selection (search, sorting, etc..)
     std::vector<std::string>::iterator m_PopupComposedPath;       // iterator on m_CurrentPathDecomposition for Current Path popup
-    std::string m_LastSelectedFileName;                           // for shift multi selection
+    ImString m_LastSelectedFileName;                               // for shift multi selection
     std::set<std::string> m_SelectedFileNames;                    // the user selection of FilePathNames
     bool m_CreateDirectoryMode = false;                           // for create directory widget
-    std::string m_FileSystemName;
+    ImString m_FileSystemName;
     std::unique_ptr<IFileSystem> m_FileSystemPtr = nullptr;
 
 public:
@@ -567,12 +570,12 @@ public:
     char variadicBuffer[MAX_FILE_DIALOG_NAME_BUFFER]      = "";     // called by m_SelectableItem
     char fileNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER]      = "";     // file name buffer in footer for imgui widget input text
     char directoryNameBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";     // directory name buffer (when in directory mode)
-    std::string headerFileName;                                     // detail view name of column file
-    std::string headerFileType;                                     // detail view name of column type
-    std::string headerFileSize;                                     // detail view name of column size
-    std::string headerFileDate;                                     // detail view name of column date + time
+    ImString headerFileName;                                        // detail view name of column file
+    ImString headerFileType;                                        // detail view name of column type
+    ImString headerFileSize;                                        // detail view name of column size
+    ImString headerFileDate;                                        // detail view name of column date + time
 #ifdef USE_THUMBNAILS
-    std::string headerFileThumbnails;  // detail view name of column thumbnails
+    ImString headerFileThumbnails;  // detail view name of column thumbnails
     bool sortingDirection[5] = {       // true => Ascending, false => Descending
         defaultSortOrderFilename, defaultSortOrderType, defaultSortOrderSize, defaultSortOrderDate, defaultSortOrderThumbnails};
 #else
@@ -582,23 +585,23 @@ public:
     SortingFieldEnum sortingField = SortingFieldEnum::FIELD_FILENAME;  // detail view sorting column
     bool showDevices              = false;                             // devices are shown (only on os windows)
 
-    std::string dLGpath;                  // base path set by user when OpenDialog was called
-    std::string dLGDefaultFileName;       // base default file path name set by user when OpenDialog was called
+    ImString dLGpath;                     // base path set by user when OpenDialog was called
+    ImString dLGDefaultFileName;          // base default file path name set by user when OpenDialog was called
     size_t dLGcountSelectionMax = 1U;     // 0 for infinite				// base max selection count set by user when OpenDialog was called
     bool dLGDirectoryMode       = false;  // is directory mode (defiend like : dLGDirectoryMode = (filters.empty()))
 
-    std::string fsRoot;
+    ImString fsRoot;
 
 private:
     void m_CompleteFileInfos(const std::shared_ptr<FileInfos>& vInfos);                    // set time and date infos of a file (detail view mode)
-    void m_RemoveFileNameInSelection(const std::string& vFileName);                               // selection : remove a file name
-    void m_AddFileNameInSelection(const std::string& vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
-    void m_AddFile(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName,
+    void m_RemoveFileNameInSelection(const char* vFileName);                               // selection : remove a file name
+    void m_AddFileNameInSelection(const char* vFileName, bool vSetLastSelectionFileName);  // selection : add a file name
+    void m_AddFile(const FileDialogInternal& vFileDialogInternal, const char* vPath, const char* vFileName,
                    const FileType& vFileType);  // add file called by scandir
-    void m_AddPath(const FileDialogInternal& vFileDialogInternal, const std::string& vPath, const std::string& vFileName,
+    void m_AddPath(const FileDialogInternal& vFileDialogInternal, const char* vPath, const char* vFileName,
                    const FileType& vFileType);  // add file called by scandir
     void m_ScanDirForPathSelection(const FileDialogInternal& vFileDialogInternal,
-                                   const std::string& vPath);  // scan the directory for retrieve the path list
+                                   const char* vPath);  // scan the directory for retrieve the path list
     void m_OpenPathPopup(const FileDialogInternal& vFileDialogInternal,
                          std::vector<std::string>::iterator vPathIter);   // open the popup list of paths
     void m_SetCurrentPath(std::vector<std::string>::iterator vPathIter);  // set the current path, update the path bar
@@ -625,7 +628,7 @@ public:
     std::shared_ptr<FileInfos> GetFilteredFileAt(size_t vIdx);
     std::shared_ptr<FileInfos> GetFilteredPathAt(size_t vIdx);
     std::vector<std::string>::iterator GetCurrentPopupComposedPath() const;
-    bool IsFileNameSelected(const std::string& vFileName);
+    bool IsFileNameSelected(const char* vFileName);
     std::string GetBack();
     void ClearComposer();
     void ClearFileLists();  // clear file list, will destroy thumbnail textures
@@ -635,19 +638,19 @@ public:
     void SortFields(const FileDialogInternal& vFileDialogInternal);        // will sort a column
     void OpenCurrentPath(const FileDialogInternal& vFileDialogInternal);   // set the path of the dialog, will launch the scandir for populate the file listview
     bool GetDevices();                                                     // list devices
-    bool CreateDir(const std::string& vPath);                              // create a directory on the file system
+    bool CreateDir(const char* vPath);                                     // create a directory on the file system
     std::string ComposeNewPath(std::vector<std::string>::iterator vIter);  // compose a path from the compose path widget
     bool SetPathOnParentDirectoryIfAny();                                  // compose paht on parent directory
     std::string GetCurrentPath();                                          // get the current path
-    void SetCurrentPath(const std::string& vCurrentPath);                  // set the current path
-    void SetDefaultFileName(const std::string& vFileName);
+    void SetCurrentPath(const char* vCurrentPath);                         // set the current path
+    void SetDefaultFileName(const char* vFileName);
     bool SelectDirectory(const std::shared_ptr<FileInfos>& vInfos);  // enter directory
     void SelectAllFileNames();
     void SelectFileName(const std::shared_ptr<FileInfos>& vInfos);            // add a filename in selection
     void SelectOrDeselectFileName(const FileDialogInternal& vFileDialogInternal, const std::shared_ptr<FileInfos>& vInfos);  // add/remove a filename in selection
-    void SetCurrentDir(const std::string& vPath);                                                                            // define current directory for scan
+    void SetCurrentDir(const char* vPath);                                                                                   // define current directory for scan
     void ScanDir(const FileDialogInternal& vFileDialogInternal,
-                 const std::string& vPath);  // scan the directory for retrieve the file list
+                 const char* vPath);  // scan the directory for retrieve the file list
     std::string GetResultingPath();
     std::string GetResultingFileName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
     std::string GetResultingFilePathName(FileDialogInternal& vFileDialogInternal, IGFD_ResultMode vFlag);
@@ -659,8 +662,8 @@ public:
     IFileSystem* GetFileSystemInstance() const {
         return m_FileSystemPtr.get();
     }
-    const std::string& GetFileSystemName() const {
-        return m_FileSystemName;
+    const char* GetFileSystemName() const {
+        return m_FileSystemName.c_str();
     }
 };
 
@@ -669,9 +672,9 @@ typedef std::function<void(const char*, UserDatas, bool*)> PaneFun;        // si
 typedef std::function<bool(FileInfos*, UserDatas)> UserFileAttributesFun;  // custom file Attributes call back, reject file if false
 
 struct IGFD_API FileDialogConfig {
-    std::string path;                                        // path
-    std::string fileName;                                    // defaut file name
-    std::string filePathName;                                // if not empty, the filename and the path will be obtained from filePathName
+    ImString path;                                           // path
+    ImString fileName;                                       // defaut file name
+    ImString filePathName;                                   // if not empty, the filename and the path will be obtained from filePathName
     int32_t countSelectionMax  = 1;                          // count selection max, 0 for infinite
     UserDatas userDatas        = nullptr;                    // user datas (can be retrieved in pane)
     ImGuiFileDialogFlags flags = ImGuiFileDialogFlags_None;  // ImGuiFileDialogFlags
@@ -687,7 +690,7 @@ public:
     SearchManager searchManager;  // the search manager
 
 public:
-    std::string name;                          // the internal dialog name (title + ##word)
+    ImString name;                             // the internal dialog name (title + ##word)
     bool showDialog           = false;         // the dialog is shown
     ImVec2 dialogCenterPos    = ImVec2(0, 0);  // center pos for display the confirm overwrite dialog
     int lastImGuiFrameCount   = 0;             // to be sure than only one dialog displayed per frame
@@ -697,13 +700,13 @@ public:
     bool isOk                 = false;         // is dialog ok button click
     bool fileInputIsActive    = false;         // when input text for file or directory is active
     bool fileListViewIsActive = false;         // when list view is active
-    std::string dLGkey;                        // the dialog key
-    std::string dLGtitle;                      // the dialog title
+    ImString dLGkey;                           // the dialog key
+    ImString dLGtitle;                         // the dialog title
     bool needToExitDialog  = false;            // we need to exit the dialog
     bool puUseCustomLocale = false;            // custom user locale
     int localeCategory     = LC_ALL;           // locale category to use
-    std::string localeBegin;                   // the locale who will be applied at start of the display dialog
-    std::string localeEnd;                     // the locale who will be applaied at end of the display dialog
+    ImString localeBegin;                      // the locale who will be applied at start of the display dialog
+    ImString localeEnd;                        // the locale who will be applaied at end of the display dialog
 
 private:
     FileDialogConfig m_DialogConfig;
@@ -714,8 +717,8 @@ public:
     void ResetForNewDialog();  // reset what is needed to reset for the openging of a new dialog
 
     void configureDialog(                  // open simple dialog
-        const std::string& vKey,           // key dialog
-        const std::string& vTitle,         // title
+        const char* vKey,                  // key dialog
+        const char* vTitle,                // title
         const char* vFilters,              // filters, if null, will display only directories
         const FileDialogConfig& vConfig);  // FileDialogConfig
     const FileDialogConfig& getDialogConfig() const;
@@ -788,9 +791,9 @@ protected:
 #ifdef USE_PLACES_FEATURE
 private:
     struct PlaceStruct {
-        std::string name;  // name of the place
+        ImString name;  // name of the place
         // todo: the path could be relative, better if the app is moved but place path can be outside of the app
-        std::string path;        // absolute path of the place
+        ImString path;           // absolute path of the place
         bool canBeSaved = true;  // defined by code, can be used for prevent serialization / deserialization
         FileStyle style;
         float thickness = 0.0f;  // when more than 0.0f, is a separator
@@ -807,17 +810,17 @@ public:
         int32_t selectedPlaceForEdition              = -1;
         ImGuiTreeNodeFlags collapsingHeaderFlag      = ImGuiTreeNodeFlags_None;
         ImGuiListClipper clipper;         // the list clipper of the grou
-        std::string name;                 // the group name, will be displayed
+        ImString name;                     // the group name, will be displayed
         std::vector<PlaceStruct> places;  // the places (name + path)
     public:
         bool AddPlace(                      // add a place by code
-            const std::string& vPlaceName,  // place name
-            const std::string& vPlacePath,  // place path
+            const char* vPlaceName,         // place name
+            const char* vPlacePath,         // place path
             const bool vCanBeSaved,         // prevent serialization
             const FileStyle& vStyle = {});  // style
         void AddPlaceSeparator(const float& vThickness = 1.0f);
         bool RemovePlace(                    // remove a place by code, return true if succeed
-            const std::string& vPlaceName);  // place name to remove
+            const char* vPlaceName);         // place name to remove
     };
 
 private:
@@ -837,14 +840,14 @@ public:
     std::string SerializePlaces(                                 // serialize place : return place buffer to save in a file
         const bool vForceSerialisationForAll = true);            // for avoid serialization of places with flag 'canBeSaved to false'
     void DeserializePlaces(                                      // deserialize place : load place buffer to load in the dialog (saved from
-        const std::string& vPlaces);                             // previous use with SerializePlaces()) place buffer to load
+        const char* vPlaces);                                    // previous use with SerializePlaces()) place buffer to load
     bool AddPlacesGroup(                                         // add a group
-        const std::string& vGroupName,                           // the group name
+        const char* vGroupName,                                  // the group name
         const size_t& vDisplayOrder,                             // the display roder of the group
         const bool vCanBeEdited     = false,                     // let the user add/remove place in the group
         const bool vOpenedByDefault = true);                     // hte group is opened by default
-    bool RemovePlacesGroup(const std::string& vGroupName);       // remove the group
-    GroupStruct* GetPlacesGroup(const std::string& vGroupName);  // get the group, if not existed, will be created
+    bool RemovePlacesGroup(const char* vGroupName);              // remove the group
+    GroupStruct* GetPlacesGroup(const char* vGroupName);         // get the group, if not existed, will be created
 #endif                                                           // USE_PLACES_FEATURE
 };
 
@@ -895,14 +898,14 @@ public:
 
     //  standard dialog
     virtual void OpenDialog(                    // open simple dialog
-        const std::string& vKey,                // key dialog
-        const std::string& vTitle,              // title
+        const char* vKey,                       // key dialog
+        const char* vTitle,                     // title
         const char* vFilters,                   // filters, if null, will display only directories
         const FileDialogConfig& vConfig = {});  // FileDialogConfig
 
     // Display / Close dialog form
     bool Display(                                               // Display the dialog. return true if a result was obtained (Ok or not)
-        const std::string& vKey,                                // key dialog to display (if not the same key as defined by OpenDialog => no opening)
+        const char* vKey,                                       // key dialog to display (if not the same key as defined by OpenDialog => no opening)
         ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,  // ImGuiWindowFlags
         ImVec2 vMinSize         = ImVec2(0, 0),                 // mininmal size contraint for the ImGuiWindow
         ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));    // maximal size contraint for the ImGuiWindow
@@ -910,11 +913,11 @@ public:
     void Close();  // close dialog
 
     // queries
-    bool WasOpenedThisFrame(const std::string& vKey) const;  // say if the dialog key was already opened this frame
-    bool WasOpenedThisFrame() const;                         // say if the dialog was already opened this frame
-    bool IsOpened(const std::string& vKey) const;            // say if the key is opened
-    bool IsOpened() const;                                   // say if the dialog is opened somewhere
-    std::string GetOpenedKey() const;                        // return the dialog key who is opened, return nothing if not opened
+    bool WasOpenedThisFrame(const char* vKey) const;  // say if the dialog key was already opened this frame
+    bool WasOpenedThisFrame() const;                  // say if the dialog was already opened this frame
+    bool IsOpened(const char* vKey) const;             // say if the key is opened
+    bool IsOpened() const;                            // say if the dialog is opened somewhere
+    std::string GetOpenedKey() const;                 // return the dialog key who is opened, return nothing if not opened
 
     // get result
     bool IsOk() const;                                                                                       // true => Dialog Closed with Ok result / false : Dialog closed with cancel result
@@ -936,21 +939,21 @@ public:
         const IGFD_FileStyleFlags& vFlags,                    // file style
         const char* vCriteria,                                // extention filter to tune
         const ImVec4& vColor,                                 // wanted color for the display of the file with extention filter
-        const std::string& vIcon = "",                        // wanted text or icon of the file with extention filter
-        ImFont* vFont            = nullptr);                             // wanted font
+        const char* vIcon = "",                               // wanted text or icon of the file with extention filter
+        ImFont* vFont     = nullptr);                         // wanted font
     void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);  // set file style via lambda function
     bool GetFileStyle(                                        // GetExtention datas. return true is extention exist
         const IGFD_FileStyleFlags& vFlags,                    // file style
-        const std::string& vCriteria,                         // extention filter (same as used in SetExtentionInfos)
+        const char* vCriteria,                                // extention filter (same as used in SetExtentionInfos)
         ImVec4* vOutColor,                                    // color to retrieve
-        std::string* vOutIcon = nullptr,                      // icon or text to retrieve
-        ImFont** vOutFont     = nullptr);                         // font to retreive
+        ImString* vOutIcon = nullptr,                         // icon or text to retrieve
+        ImFont** vOutFont  = nullptr);                        // font to retreive
     void ClearFilesStyle();                                   // clear extentions setttings
 
     void SetLocales(                      // set locales to use before and after the dialog display
         const int& vLocaleCategory,       // set local category
-        const std::string& vLocaleBegin,  // locale to use at begining of the dialog display
-        const std::string& vLocaleEnd);   // locale to use at the end of the dialog display
+        const char* vLocaleBegin,         // locale to use at begining of the dialog display
+        const char* vLocaleEnd);          // locale to use at the end of the dialog display
 
 protected:
     void m_NewFrame();   // new frame just at begining of display
@@ -987,7 +990,7 @@ protected:
     // - m_DrawFileListView
     // - m_DrawThumbnailsListView
     // - m_DrawThumbnailsGridView
-    void m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, std::string& vOutStr,
+    void m_BeginFileColorIconStyle(std::shared_ptr<FileInfos> vFileInfos, bool& vOutShowColor, ImString& vOutStr,
                                    ImFont** vOutFont);                    // begin style apply of filter with color an icon if any
     void m_EndFileColorIconStyle(const bool vShowColor, ImFont* vFont);  // end style apply of filter
 
@@ -1015,21 +1018,21 @@ IGFD_API void        SetCurrentContext(FileDialog* ctx);
 
 // Standard dialog operations
 IGFD_API void OpenDialog(
-    const std::string& vKey,
-    const std::string& vTitle,
+    const char* vKey,
+    const char* vTitle,
     const char* vFilters,
     const FileDialogConfig& vConfig = {});
 IGFD_API bool Display(
-    const std::string& vKey,
+    const char* vKey,
     ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
     ImVec2 vMinSize         = ImVec2(0, 0),
     ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));
 IGFD_API void Close();
 
 // Queries
-IGFD_API bool WasOpenedThisFrame(const std::string& vKey);
+IGFD_API bool WasOpenedThisFrame(const char* vKey);
 IGFD_API bool WasOpenedThisFrame();
-IGFD_API bool IsOpened(const std::string& vKey);
+IGFD_API bool IsOpened(const char* vKey);
 IGFD_API bool IsOpened();
 IGFD_API std::string GetOpenedKey();
 
@@ -1044,20 +1047,20 @@ IGFD_API UserDatas GetUserDatas();
 
 // File styles
 IGFD_API void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos);
-IGFD_API void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
+IGFD_API void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const char* vIcon = "", ImFont* vFont = nullptr);
 IGFD_API void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);
-IGFD_API bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon = nullptr, ImFont** vOutFont = nullptr);
+IGFD_API bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, ImVec4* vOutColor, ImString* vOutIcon = nullptr, ImFont** vOutFont = nullptr);
 IGFD_API void ClearFilesStyle();
 
 // Locales
-IGFD_API void SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd);
+IGFD_API void SetLocales(const int& vLocaleCategory, const char* vLocaleBegin, const char* vLocaleEnd);
 
 // Places feature
 #ifdef USE_PLACES_FEATURE
 IGFD_API std::string SerializePlaces(const bool vForceSerialisationForAll = true);
-IGFD_API void DeserializePlaces(const std::string& vPlaces);
-IGFD_API bool AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool vCanBeEdited = false, const bool vOpenedByDefault = true);
-IGFD_API bool RemovePlacesGroup(const std::string& vGroupName);
+IGFD_API void DeserializePlaces(const char* vPlaces);
+IGFD_API bool AddPlacesGroup(const char* vGroupName, const size_t& vDisplayOrder, const bool vCanBeEdited = false, const bool vOpenedByDefault = true);
+IGFD_API bool RemovePlacesGroup(const char* vGroupName);
 #endif  // USE_PLACES_FEATURE
 
 // Thumbnail feature
