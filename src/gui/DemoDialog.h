@@ -7,9 +7,6 @@ private:
     bool m_ReadOnly = false;
 
 public:
-    static CustomDrawReadOnlyCheckBoxFileDialog* Instance(CustomDrawReadOnlyCheckBoxFileDialog* vCopy = nullptr, bool vForce = false);
-
-public:
     void OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) override;
     bool isReadOnly() const;
 

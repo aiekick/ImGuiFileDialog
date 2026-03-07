@@ -41,6 +41,8 @@
 #include <imgui_test_engine/thirdparty/Str/Str.h>
 #include <shared/imgui_app.h>
 
+#include <ImGuiFileDialog.h>
+
 #include <tests/DialogTests.h>
 
 static void FindVideoEncoder(char* out, int out_len)
@@ -82,6 +84,7 @@ int main(int vArgc, char** vArgv) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    IGFD::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -90,7 +93,7 @@ int main(int vArgc, char** vArgv) {
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
 #ifdef IMGUI_HAS_VIEWPORT
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+   // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 #endif
 #if IMGUI_VERSION_NUM >= 19004
     io.ConfigDebugIsDebuggerPresent = ImOsIsDebuggerPresent();
@@ -162,6 +165,7 @@ int main(int vArgc, char** vArgv) {
     ImGuiTestEngine_Stop(engine);
     app->ShutdownBackends(app);
     app->ShutdownCloseWindow(app);
+    IGFD::DestroyContext();
     ImGui::DestroyContext();
 
     // IMPORTANT: we need to destroy the Dear ImGui context BEFORE the test engine context, so .ini data may be saved.

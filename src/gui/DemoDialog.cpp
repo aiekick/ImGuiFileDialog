@@ -191,18 +191,6 @@ std::string toStr(const char* fmt, ...) {
     return std::string();
 }
 
-CustomDrawReadOnlyCheckBoxFileDialog* CustomDrawReadOnlyCheckBoxFileDialog::Instance(CustomDrawReadOnlyCheckBoxFileDialog* vCopy, bool vForce) {
-    static CustomDrawReadOnlyCheckBoxFileDialog _instance;
-    static CustomDrawReadOnlyCheckBoxFileDialog* _instance_copy = nullptr;
-    if (vCopy || vForce) {
-        _instance_copy = vCopy;
-    }
-    if (_instance_copy) {
-        return _instance_copy;
-    }
-    return &_instance;
-}
-
 void CustomDrawReadOnlyCheckBoxFileDialog::OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) {
     m_ReadOnly = false;
     ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vConfig);
@@ -263,6 +251,8 @@ bool CustomDrawReadOnlyCheckBoxFileDialog::m_DrawFooter() {
 }
 
 void DemoDialog::init(const float& vFontSize) {
+    IGFD::CreateContext();
+
     ImGui::CustomStyle::Init();
     ImGui::SetPUSHID(4577);
 
@@ -272,7 +262,7 @@ void DemoDialog::init(const float& vFontSize) {
     ApplyOrangeBlueTheme();
 
 #ifdef USE_THUMBNAILS
-    ImGuiFileDialog::Instance()->SetCreateThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) -> void {
+    IGFD::SetCreateThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) -> void {
         if (vThumbnail_Info && vThumbnail_Info->isReadyToUpload && vThumbnail_Info->textureFileDatas) {
             GLuint textureId = 0;
             glGenTextures(1, &textureId);
@@ -316,7 +306,7 @@ void DemoDialog::init(const float& vFontSize) {
             vThumbnail_Info->isReadyToDisplay = true;
         }
     });
-    ImGuiFileDialog::Instance()->SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) {
+    IGFD::SetDestroyThumbnailCallback([](IGFD_Thumbnail_Info* vThumbnail_Info) {
         if (vThumbnail_Info) {
             auto texID = (GLuint)(size_t)vThumbnail_Info->textureID;
             glDeleteTextures(1, &texID);
@@ -345,24 +335,24 @@ void DemoDialog::init(const float& vFontSize) {
 
     // Our state
 
-    // singleton acces
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");             // add an text for a filter type
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);     // for all dirs
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);                              // for all link files
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
-    ImGuiFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+    // global context
+    IGFD::SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
+    IGFD::SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+    IGFD::SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+    IGFD::SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+    IGFD::SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
+    IGFD::SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");             // add an text for a filter type
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);     // for all dirs
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
+    IGFD::SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);                              // for all link files
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+    IGFD::SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
     // set file style with a lambda function
     // return true is a file style was defined
-    ImGuiFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFileInfos, IGFD::FileStyle& vOutStyle) -> bool {
+    IGFD::SetFileStyle([](const IGFD::FileInfos& vFileInfos, IGFD::FileStyle& vOutStyle) -> bool {
         if (!vFileInfos.fileNameExt.empty() && vFileInfos.fileNameExt[0] == '.') {
             vOutStyle.color = ImVec4(0.0f, 0.9f, 0.9f, 1.0f);
             vOutStyle.icon  = ICON_IGFD_REMOVE;
@@ -389,23 +379,23 @@ void DemoDialog::init(const float& vFontSize) {
     fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
     fileDialogEmbedded3.SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
 
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");             // add an text for a filter type
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);     // for all dirs
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);                              // for all link files
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
+    customFileDialog.SetFileStyle(IGFD_FileStyleByFullName, "((Custom.+[.]h))", ImVec4(0.1f, 0.9f, 0.1f, 0.9f));  // use a regex
+    customFileDialog.SetFileStyle(IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f));
+    customFileDialog.SetFileStyle(IGFD_FileStyleByExtention, ".hpp", ImVec4(0.0f, 0.0f, 1.0f, 0.9f));
+    customFileDialog.SetFileStyle(IGFD_FileStyleByExtention, ".md", ImVec4(1.0f, 0.0f, 1.0f, 0.9f));
+    customFileDialog.SetFileStyle(IGFD_FileStyleByExtention, ".png", ImVec4(0.0f, 1.0f, 1.0f, 0.9f), ICON_IGFD_FILE_PIC);  // add an icon for the filter type
+    customFileDialog.SetFileStyle(IGFD_FileStyleByExtention, ".gif", ImVec4(0.0f, 1.0f, 0.5f, 0.9f), "[GIF]");             // add an text for a filter type
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeDir, nullptr, ImVec4(0.5f, 1.0f, 0.9f, 0.9f), ICON_IGFD_FOLDER);     // for all dirs
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeFile, "CMakeLists.txt", ImVec4(0.1f, 0.5f, 0.5f, 0.9f), ICON_IGFD_ADD);
+    customFileDialog.SetFileStyle(IGFD_FileStyleByFullName, "doc", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_FILE_PIC);
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeFile, nullptr, ImVec4(0.2f, 0.9f, 0.2f, 0.9f), ICON_IGFD_FILE);                              // for all link files
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FOLDER);  // for all link dirs
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByTypeLink, nullptr, ImVec4(0.8f, 0.8f, 0.8f, 0.8f), ICON_IGFD_FILE);   // for all link files
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeDir | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.9f, 0.2f, 0.0f, 0.9f), ICON_IGFD_BOOKMARK);
+    customFileDialog.SetFileStyle(IGFD_FileStyleByTypeFile | IGFD_FileStyleByContainedInFullName, ".git", ImVec4(0.5f, 0.8f, 0.5f, 0.9f), ICON_IGFD_SAVE);
     // set file style with a lambda function
     // return true is a file style was defined
-    CustomDrawReadOnlyCheckBoxFileDialog::Instance()->SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
+    customFileDialog.SetFileStyle([](const IGFD::FileInfos& vFile, IGFD::FileStyle& vOutStyle) -> bool {
         if (!vFile.fileNameExt.empty() && vFile.fileNameExt[0] == '.') {
             vOutStyle.color = ImVec4(0.0f, 0.9f, 0.9f, 1.0f);
             vOutStyle.icon  = ICON_IGFD_REMOVE;
@@ -415,7 +405,7 @@ void DemoDialog::init(const float& vFontSize) {
     });
 
     // c interface
-    cFileDialogPtr = IGFD_Create();
+    cFileDialogPtr = IGFD_CreateContext();
     IGFD_SetFileStyle(cFileDialogPtr, IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "", nullptr);
     IGFD_SetFileStyle(cFileDialogPtr, IGFD_FileStyleByExtention, ".cpp", ImVec4(1.0f, 1.0f, 0.0f, 0.9f), "", nullptr);
     IGFD_SetFileStyle(cFileDialogPtr, IGFD_FileStyleByExtention, ".h", ImVec4(0.0f, 1.0f, 0.0f, 0.9f), "", nullptr);
@@ -432,7 +422,7 @@ void DemoDialog::init(const float& vFontSize) {
     if (docFile_1.is_open()) {
         std::stringstream strStream;
         strStream << docFile_1.rdbuf();  // read the file
-        ImGuiFileDialog::Instance()->DeserializePlaces(strStream.str());
+        IGFD::DeserializePlaces(strStream.str());
         docFile_1.close();
     }
 
@@ -455,12 +445,13 @@ void DemoDialog::init(const float& vFontSize) {
 
     // add places :
     const char* group_name = ICON_IGFD_SHORTCUTS " Places";
-    ImGuiFileDialog::Instance()->AddPlacesGroup(group_name, 1, false);
+    IGFD::AddPlacesGroup(group_name, 1, false);
     IGFD_AddPlacesGroup(cFileDialogPtr, group_name, 1, false);
 
     // Places :
-    auto places_ptr = ImGuiFileDialog::Instance()->GetPlacesGroupPtr(group_name);
-    if (places_ptr != nullptr) {
+
+    auto pPlaces = IGFD::GetCurrentContext()->GetPlacesGroup(group_name);
+    if (pPlaces != nullptr) {
 #if defined(__WIN32__) || defined(WIN32) || defined(_WIN32) || defined(__WIN64__) || defined(WIN64) || defined(_WIN64) || defined(_MSC_VER)
 #define addKnownFolderAsPlace(knownFolder, folderLabel, folderIcon)                                        \
     {                                                                                                      \
@@ -470,14 +461,14 @@ void DemoDialog::init(const float& vFontSize) {
             IGFD::FileStyle style;                                                                         \
             style.icon      = folderIcon;                                                                  \
             auto place_path = IGFD::Utils::UTF8Encode(path);                                               \
-            places_ptr->AddPlace(folderLabel, place_path, false, style);                                   \
+            pPlaces->AddPlace(folderLabel, place_path, false, style);                                   \
             IGFD_AddPlace(cFileDialogPtr, group_name, folderLabel, place_path.c_str(), false, folderIcon); \
         }                                                                                                  \
         CoTaskMemFree(path);                                                                               \
     }
         addKnownFolderAsPlace(FOLDERID_Desktop, "Desktop", ICON_IGFD_DESKTOP);
         addKnownFolderAsPlace(FOLDERID_Startup, "Startup", ICON_IGFD_HOME);
-        places_ptr->AddPlaceSeparator(3.0f);  // add a separator
+        pPlaces->AddPlaceSeparator(3.0f);  // add a separator
         addKnownFolderAsPlace(FOLDERID_Downloads, "Downloads", ICON_IGFD_DOWNLOADS);
         addKnownFolderAsPlace(FOLDERID_Pictures, "Pictures", ICON_IGFD_PICTURE);
         addKnownFolderAsPlace(FOLDERID_Music, "Music", ICON_IGFD_MUSIC);
@@ -485,13 +476,12 @@ void DemoDialog::init(const float& vFontSize) {
 #undef addKnownFolderAsPlace
 #else
 #endif
-        places_ptr = nullptr;
+        pPlaces = nullptr;
     }
 
     // add place by code (why ? because we can :-) )
-    // ImGuiFileDialog->
     // todo : do the code
-    // ImGuiFileDialog::Instance()->AddPlace("Current Dir", ".");
+    // IGFD::AddPlace("Current Dir", ".");
 #endif  // USE_PLACES_FEATURE
 }
 
@@ -516,7 +506,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
             static float flashingAttenuationInSeconds = 1.0f;
             if (ImGui::ContrastedButton("R##resetflashlifetime")) {
                 flashingAttenuationInSeconds = 1.0f;
-                ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+                IGFD::SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
                 fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
 
                 // c interface
@@ -525,7 +515,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
             ImGui::SameLine();
             ImGui::PushItemWidth(200);
             if (ImGui::SliderFloat("Flash lifetime (s)", &flashingAttenuationInSeconds, 0.01f, 5.0f)) {
-                ImGuiFileDialog::Instance()->SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
+                IGFD::SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
                 fileDialog2.SetFlashingAttenuationInSeconds(flashingAttenuationInSeconds);
 
                 // c interface
@@ -594,14 +584,14 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
             ImGui::Unindent();
         }
 
-        if (ImGui::CollapsingHeader("Singleton acces :")) {
+        if (ImGui::CollapsingHeader("Global context :")) {
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog")) {
                 const char* filters = ".*,.cpp,.h,.hpp";
                 IGFD::FileDialogConfig config;
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with collections of filters")) {
                 const char* filters =
@@ -610,7 +600,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex ((Custom.+[.]h))")) {
                 // the regex for being recognized at regex need to be between ( and )
@@ -619,7 +609,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with filter of type regex (([a-zA-Z0-9]+)) for extention less files")) {
                 // the regex for being recognized at regex need to be between ( and )
@@ -628,7 +618,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with selection of 5 items")) {
                 const char* filters = ".*,.cpp,.h,.hpp";
@@ -636,7 +626,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 5;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with infinite selection")) {
                 const char* filters = ".*,.cpp,.h,.hpp";
@@ -644,7 +634,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 0;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with last file path name")) {
                 const char* filters = ".*,.cpp,.h,.hpp";
@@ -653,14 +643,14 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.filePathName      = filePathName;
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open All file types with filter .*")) {
                 IGFD::FileDialogConfig config;
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", ".*", config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer filter")) {
                 const char* filters = ".a.b";
@@ -668,7 +658,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 0;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .*.*")) {
                 const char* filters = ".*.*";
@@ -676,7 +666,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 0;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with multilayer .vcxproj.*")) {
                 const char* filters = ".vcxproj.*";
@@ -684,7 +674,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 0;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with regex (([.]vcx))")) {
                 const char* filters = "(([.]vcx))";
@@ -692,7 +682,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 0;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open All file types with a multilayer collectionfilter")) {
                 const char* filters = "multi layers{.filters, .a.b }";
@@ -700,7 +690,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.path              = ".";
                 config.countSelectionMax = 1;
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_SAVE " Save File Dialog with a custom pane")) {
                 const char* filters = "C++ File (*.cpp){.cpp}";
@@ -711,7 +701,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 config.sidePaneWidth     = 350.0f;
                 config.userDatas         = IGFDUserDatas("SaveFile");
                 config.flags             = flags;
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_SAVE " Choose a File", filters, config);
             }
             if (ImGui::ContrastedButton(ICON_IGFD_FOLDER_OPEN " Open File Dialog with custom size according to gltf files")) {
                 const char* filters = ".gltf";
@@ -748,7 +738,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                     }
                     return true;
                 };
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
         }
 
@@ -776,7 +766,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 const char* filters = "All files{.*},Frames Format 1(.001,.NNN){(([.][0-9]{3}))},Frames Format 2(nnn.png){(([0-9]*.png))},Source files (*.cpp *.h *.hpp){.cpp,.h,.hpp},Image files (*.png *.gif *.jpg *.jpeg){.png,.gif,.jpg,.jpeg},.md";
                 IGFD::FileDialogConfig config;
                 config.path = ".";
-                CustomDrawReadOnlyCheckBoxFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
+                customFileDialog.OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
             }
             ImGui::Text("Is File Read only ?? : %s", IsFileReadOnly ? "yes" : "false");
 
@@ -888,21 +878,21 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
         // minSize => 0,0
         // maxSize => FLT_MAX, FLT_MAX (defined is float.h)
 
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-            if (ImGuiFileDialog::Instance()->IsOk()) {
-                filePathName = ImGuiFileDialog::Instance()->GetFilePathName(resultMode);
-                filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
-                filter       = ImGuiFileDialog::Instance()->GetCurrentFilter();
+        if (IGFD::Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+            if (IGFD::IsOk()) {
+                filePathName = IGFD::GetFilePathName(resultMode);
+                filePath     = IGFD::GetCurrentPath();
+                filter       = IGFD::GetCurrentFilter();
                 // here convert from string because a string was passed as a userDatas, but it can be what you want
-                if (ImGuiFileDialog::Instance()->GetUserDatas()) userDatas = std::string((const char*)ImGuiFileDialog::Instance()->GetUserDatas());
-                auto sel = ImGuiFileDialog::Instance()->GetSelection(resultMode);  // multiselection
+                if (IGFD::GetUserDatas()) userDatas = std::string((const char*)IGFD::GetUserDatas());
+                auto sel = IGFD::GetSelection(resultMode);  // multiselection
                 selection.clear();
                 for (const auto& s : sel) {
                     selection.emplace_back(s.first, s.second);
                 }
                 // action
             }
-            ImGuiFileDialog::Instance()->Close();
+            IGFD::Close();
         }
 
         if (fileDialog2.Display("ChooseDirDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
@@ -922,11 +912,11 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
             fileDialog2.Close();
         }
 
-        if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
-            if (CustomDrawReadOnlyCheckBoxFileDialog::Instance()->IsOk()) {
-                IsFileReadOnly = CustomDrawReadOnlyCheckBoxFileDialog::Instance()->isReadOnly();
+        if (customFileDialog.Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, minSize, maxSize)) {
+            if (customFileDialog.IsOk()) {
+                IsFileReadOnly = customFileDialog.isReadOnly();
             }
-            CustomDrawReadOnlyCheckBoxFileDialog::Instance()->Close();
+            customFileDialog.Close();
         }
 
         /////////////////////////////////////////////////////////////////
@@ -967,7 +957,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
 
 void DemoDialog::manageGPU() {
 #ifdef USE_THUMBNAILS
-    ImGuiFileDialog::Instance()->ManageGPUThumbnails();
+    IGFD::ManageGPUThumbnails();
     fileDialogEmbedded3.ManageGPUThumbnails();
 #endif
 }
@@ -976,12 +966,12 @@ void DemoDialog::unit() {
 #ifdef USE_PLACES_FEATURE
     // remove place
     // todo : do the code
-    // ImGuiFileDialog::Instance()->RemovePlace("Current Dir");
+    // IGFD::RemovePlace("Current Dir");
 
     // save place dialog 1
     std::ofstream configFileWriter_1("places_1.conf", std::ios::out);
     if (!configFileWriter_1.bad()) {
-        configFileWriter_1 << ImGuiFileDialog::Instance()->SerializePlaces();
+        configFileWriter_1 << IGFD::SerializePlaces();
         configFileWriter_1.close();
     }
     // save place dialog 2
@@ -1002,5 +992,7 @@ void DemoDialog::unit() {
 #endif
 
     // c interface
-    IGFD_Destroy(cFileDialogPtr);
+    IGFD_DestroyContext(cFileDialogPtr);
+
+    IGFD::DestroyContext();
 }
