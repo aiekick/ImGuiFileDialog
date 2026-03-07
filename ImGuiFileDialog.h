@@ -887,45 +887,7 @@ protected:
     ImGuiWindowFlags m_CurrentDisplayedFlags;
 
 public:
-#ifndef NEW_SINGLETON
-    // Singleton for easier accces form anywhere but only one dialog at a time
-    // vCopy or vForce can be used for share a memory pointer in a new memory space like a dll module
-    static FileDialog* Instance(FileDialog* vCopy = nullptr, bool vForce = false) {
-        static FileDialog _instance;
-        static FileDialog* _instance_copy = nullptr;
-        if (vCopy || vForce) {
-            _instance_copy = vCopy;
-        }
-        if (_instance_copy) {
-            return _instance_copy;
-        }
-        return &_instance;
-    }
-#else   // NEW_SINGLETON
-    static std::unique_ptr<FileDialog>& initSingleton(FileDialog* vCopy = nullptr, bool vForce = false) {
-        static auto mp_instance = std::unique_ptr<FileDialog>(new FileDialog());
-        static std::unique_ptr<FileDialog> mp_instance_copy;
-        if (vCopy != nullptr || vForce) {
-            if (vCopy != nullptr) {
-                mp_instance_copy = std::unique_ptr<FileDialog>(vCopy);
-            } else {
-                mp_instance_copy.release();  // frees the internal borrowed pointer without deletion
-            }
-        }
-        if (mp_instance_copy != nullptr) {
-            return mp_instance_copy;
-        }
-        return mp_instance;
-    }
-    static FileDialog& ref() { return *initSingleton().get(); }
-    static void unitSingleton() {
-        initSingleton(nullptr, true); // frees the borrowed pointer in case
-        initSingleton().reset(); // else the reset with destroy the borrowed pointer
-    }
-#endif  // NEW_SINGLETON
-
-public:
-    FileDialog();           // ImGuiFileDialog Constructor. can be used for have many dialog at same time (not possible with singleton)
+    FileDialog();           // ImGuiFileDialog Constructor. Can be used to create many dialog instances simultaneously.
     virtual ~FileDialog();  // ImGuiFileDialog Destructor
 
     //  standard dialog
@@ -1029,6 +991,84 @@ protected:
     void m_DisplayFileInfosTooltip(const int32_t& vRowIdx, const int32_t& vColumnIdx, std::shared_ptr<FileInfos> vFileInfos);
 };
 
+/////////////////////////////////////////////////
+////// CONTEXT MANAGEMENT ///////////////////////
+/////////////////////////////////////////////////
+
+// Global context pointer (like ImGui's GImGui or ImPlot's GImPlot)
+#ifndef GImGuiFileDialog
+extern IGFD_API FileDialog* GImGuiFileDialog;
+#endif
+
+// Context management functions
+IGFD_API FileDialog* CreateContext();
+IGFD_API void        DestroyContext(FileDialog* ctx = nullptr);
+IGFD_API FileDialog* GetCurrentContext();
+IGFD_API void        SetCurrentContext(FileDialog* ctx);
+
+/////////////////////////////////////////////////
+////// FREE FUNCTION API ////////////////////////
+/////////////////////////////////////////////////
+
+// Standard dialog operations
+IGFD_API void OpenDialog(
+    const std::string& vKey,
+    const std::string& vTitle,
+    const char* vFilters,
+    const FileDialogConfig& vConfig = {});
+IGFD_API bool Display(
+    const std::string& vKey,
+    ImGuiWindowFlags vFlags = ImGuiWindowFlags_NoCollapse,
+    ImVec2 vMinSize         = ImVec2(0, 0),
+    ImVec2 vMaxSize         = ImVec2(FLT_MAX, FLT_MAX));
+IGFD_API void Close();
+
+// Queries
+IGFD_API bool WasOpenedThisFrame(const std::string& vKey);
+IGFD_API bool WasOpenedThisFrame();
+IGFD_API bool IsOpened(const std::string& vKey);
+IGFD_API bool IsOpened();
+IGFD_API std::string GetOpenedKey();
+
+// Results
+IGFD_API bool IsOk();
+IGFD_API std::map<std::string, std::string> GetSelection(IGFD_ResultMode vFlag = IGFD_ResultMode_KeepInputFile);
+IGFD_API std::string GetFilePathName(IGFD_ResultMode vFlag = IGFD_ResultMode_AddIfNoFileExt);
+IGFD_API std::string GetCurrentFileName(IGFD_ResultMode vFlag = IGFD_ResultMode_AddIfNoFileExt);
+IGFD_API std::string GetCurrentPath();
+IGFD_API std::string GetCurrentFilter();
+IGFD_API UserDatas GetUserDatas();
+
+// File styles
+IGFD_API void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos);
+IGFD_API void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon = "", ImFont* vFont = nullptr);
+IGFD_API void SetFileStyle(FileStyle::FileStyleFunctor vFunctor);
+IGFD_API bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon = nullptr, ImFont** vOutFont = nullptr);
+IGFD_API void ClearFilesStyle();
+
+// Locales
+IGFD_API void SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd);
+
+// Places feature
+#ifdef USE_PLACES_FEATURE
+IGFD_API std::string SerializePlaces(const bool vForceSerialisationForAll = true);
+IGFD_API void DeserializePlaces(const std::string& vPlaces);
+IGFD_API bool AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool vCanBeEdited = false, const bool vOpenedByDefault = true);
+IGFD_API bool RemovePlacesGroup(const std::string& vGroupName);
+#endif  // USE_PLACES_FEATURE
+
+// Thumbnail feature
+#ifdef USE_THUMBNAILS
+IGFD_API void SetCreateThumbnailCallback(const ThumbnailFeature::CreateThumbnailFun& vCreateThumbnailFun);
+IGFD_API void SetDestroyThumbnailCallback(const ThumbnailFeature::DestroyThumbnailFun& vDestroyThumbnailFun);
+IGFD_API void ManageGPUThumbnails();
+#endif  // USE_THUMBNAILS
+
+// Key explorer feature
+#ifdef USE_EXPLORATION_BY_KEYS
+IGFD_API void SetFlashingAttenuationInSeconds(float vAttenValue);
+#endif  // USE_EXPLORATION_BY_KEYS
+
 }  // namespace IGFD
 
 #endif  // __cplusplus
@@ -1042,9 +1082,11 @@ protected:
 typedef IGFD::UserDatas IGFDUserDatas;
 typedef IGFD::PaneFun IGFDPaneFun;
 typedef IGFD::FileDialog ImGuiFileDialog;
+typedef IGFD::FileDialog ImGuiFileDialogContext;
 #else  // __cplusplus
 #define IGFD_C_API
 typedef struct ImGuiFileDialog ImGuiFileDialog;
+typedef struct ImGuiFileDialog ImGuiFileDialogContext;
 typedef struct IGFD_Selection_Pair IGFD_Selection_Pair;
 typedef struct IGFD_Selection IGFD_Selection;
 #endif  // __cplusplus
@@ -1079,9 +1121,15 @@ struct IGFD_Selection {
 IGFD_C_API IGFD_Selection IGFD_Selection_Get();                             // return an initialized IGFD_Selection
 IGFD_C_API void IGFD_Selection_DestroyContent(IGFD_Selection* vSelection);  // destroy the content of a IGFD_Selection
 
-// constructor / destructor
-IGFD_C_API ImGuiFileDialog* IGFD_Create(void);               // create the filedialog context
-IGFD_C_API void IGFD_Destroy(ImGuiFileDialog* vContextPtr);  // destroy the filedialog context
+// context management
+IGFD_C_API ImGuiFileDialogContext* IGFD_CreateContext(void);                        // create a filedialog context
+IGFD_C_API void IGFD_DestroyContext(ImGuiFileDialogContext* vContextPtr);            // destroy a filedialog context
+IGFD_C_API ImGuiFileDialogContext* IGFD_GetCurrentContext(void);                    // get the current filedialog context
+IGFD_C_API void IGFD_SetCurrentContext(ImGuiFileDialogContext* vContextPtr);        // set the current filedialog context
+
+// backward compatibility
+#define IGFD_Create()       IGFD_CreateContext()
+#define IGFD_Destroy(ctx)   IGFD_DestroyContext(ctx)
 
 #ifdef USE_THUMBNAILS
 typedef void (*IGFD_CreateThumbnailFun)(IGFD_Thumbnail_Info*);   // callback function for create thumbnail texture

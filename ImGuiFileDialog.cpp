@@ -132,6 +132,14 @@ SOFTWARE.
 #endif  // USE_THUMBNAILS
 
 ///////////////////////////////
+// GLOBAL CONTEXT POINTER
+///////////////////////////////
+
+#ifndef GImGuiFileDialog
+IGFD::FileDialog* GImGuiFileDialog = nullptr;
+#endif
+
+///////////////////////////////
 // FLOAT MACROS
 ///////////////////////////////
 
@@ -4848,6 +4856,196 @@ bool IGFD::FileDialog::m_Confirm_Or_OpenOverWriteFileDialog_IfNeeded(bool vLastA
     return false;
 }
 
+/////////////////////////////////////////////////
+////// CONTEXT MANAGEMENT ///////////////////////
+/////////////////////////////////////////////////
+
+namespace IGFD {
+
+FileDialog* CreateContext() {
+    FileDialog* ctx = new FileDialog();
+    if (GImGuiFileDialog == nullptr)
+        SetCurrentContext(ctx);
+    return ctx;
+}
+
+void DestroyContext(FileDialog* ctx) {
+    if (ctx == nullptr)
+        ctx = GImGuiFileDialog;
+    if (GImGuiFileDialog == ctx)
+        SetCurrentContext(nullptr);
+    delete ctx;
+}
+
+FileDialog* GetCurrentContext() {
+    return GImGuiFileDialog;
+}
+
+void SetCurrentContext(FileDialog* ctx) {
+    GImGuiFileDialog = ctx;
+}
+
+/////////////////////////////////////////////////
+////// FREE FUNCTION API ////////////////////////
+/////////////////////////////////////////////////
+
+#define IGFD_CONTEXT_ASSERT() IM_ASSERT(GImGuiFileDialog != nullptr && "No current ImGuiFileDialog context. Did you call IGFD::CreateContext()?")
+
+void OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const FileDialogConfig& vConfig) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->OpenDialog(vKey, vTitle, vFilters, vConfig);
+}
+
+bool Display(const std::string& vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->Display(vKey, vFlags, vMinSize, vMaxSize);
+}
+
+void Close() {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->Close();
+}
+
+bool WasOpenedThisFrame(const std::string& vKey) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->WasOpenedThisFrame(vKey);
+}
+
+bool WasOpenedThisFrame() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->WasOpenedThisFrame();
+}
+
+bool IsOpened(const std::string& vKey) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->IsOpened(vKey);
+}
+
+bool IsOpened() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->IsOpened();
+}
+
+std::string GetOpenedKey() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetOpenedKey();
+}
+
+bool IsOk() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->IsOk();
+}
+
+std::map<std::string, std::string> GetSelection(IGFD_ResultMode vFlag) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetSelection(vFlag);
+}
+
+std::string GetFilePathName(IGFD_ResultMode vFlag) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetFilePathName(vFlag);
+}
+
+std::string GetCurrentFileName(IGFD_ResultMode vFlag) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetCurrentFileName(vFlag);
+}
+
+std::string GetCurrentPath() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetCurrentPath();
+}
+
+std::string GetCurrentFilter() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetCurrentFilter();
+}
+
+UserDatas GetUserDatas() {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetUserDatas();
+}
+
+void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const FileStyle& vInfos) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetFileStyle(vFlags, vCriteria, vInfos);
+}
+
+void SetFileStyle(const IGFD_FileStyleFlags& vFlags, const char* vCriteria, const ImVec4& vColor, const std::string& vIcon, ImFont* vFont) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetFileStyle(vFlags, vCriteria, vColor, vIcon, vFont);
+}
+
+void SetFileStyle(FileStyle::FileStyleFunctor vFunctor) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetFileStyle(vFunctor);
+}
+
+bool GetFileStyle(const IGFD_FileStyleFlags& vFlags, const std::string& vCriteria, ImVec4* vOutColor, std::string* vOutIcon, ImFont** vOutFont) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->GetFileStyle(vFlags, vCriteria, vOutColor, vOutIcon, vOutFont);
+}
+
+void ClearFilesStyle() {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->ClearFilesStyle();
+}
+
+void SetLocales(const int& vLocaleCategory, const std::string& vLocaleBegin, const std::string& vLocaleEnd) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetLocales(vLocaleCategory, vLocaleBegin, vLocaleEnd);
+}
+
+#ifdef USE_PLACES_FEATURE
+std::string SerializePlaces(const bool vForceSerialisationForAll) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->SerializePlaces(vForceSerialisationForAll);
+}
+
+void DeserializePlaces(const std::string& vPlaces) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->DeserializePlaces(vPlaces);
+}
+
+bool AddPlacesGroup(const std::string& vGroupName, const size_t& vDisplayOrder, const bool vCanBeEdited, const bool vOpenedByDefault) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->AddPlacesGroup(vGroupName, vDisplayOrder, vCanBeEdited, vOpenedByDefault);
+}
+
+bool RemovePlacesGroup(const std::string& vGroupName) {
+    IGFD_CONTEXT_ASSERT();
+    return GImGuiFileDialog->RemovePlacesGroup(vGroupName);
+}
+#endif  // USE_PLACES_FEATURE
+
+#ifdef USE_THUMBNAILS
+void SetCreateThumbnailCallback(const ThumbnailFeature::CreateThumbnailFun& vCreateThumbnailFun) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetCreateThumbnailCallback(vCreateThumbnailFun);
+}
+
+void SetDestroyThumbnailCallback(const ThumbnailFeature::DestroyThumbnailFun& vDestroyThumbnailFun) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetDestroyThumbnailCallback(vDestroyThumbnailFun);
+}
+
+void ManageGPUThumbnails() {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->ManageGPUThumbnails();
+}
+#endif  // USE_THUMBNAILS
+
+#ifdef USE_EXPLORATION_BY_KEYS
+void SetFlashingAttenuationInSeconds(float vAttenValue) {
+    IGFD_CONTEXT_ASSERT();
+    GImGuiFileDialog->SetFlashingAttenuationInSeconds(vAttenValue);
+}
+#endif  // USE_EXPLORATION_BY_KEYS
+
+#undef IGFD_CONTEXT_ASSERT
+
+}  // namespace IGFD
+
 #endif  // __cplusplus
 
 // return an initialized IGFD_FileDialog_Config
@@ -4899,16 +5097,20 @@ IGFD_C_API void IGFD_Selection_DestroyContent(IGFD_Selection* vSelection) {
 }
 
 // create an instance of ImGuiFileDialog
-IGFD_C_API ImGuiFileDialog* IGFD_Create(void) {
-    return new ImGuiFileDialog();
+IGFD_C_API ImGuiFileDialogContext* IGFD_CreateContext(void) {
+    return IGFD::CreateContext();
 }
 
-// destroy the instance of ImGuiFileDialog
-IGFD_C_API void IGFD_Destroy(ImGuiFileDialog* vContextPtr) {
-    if (vContextPtr != nullptr) {
-        delete vContextPtr;
-        vContextPtr = nullptr;
-    }
+IGFD_C_API void IGFD_DestroyContext(ImGuiFileDialogContext* vContextPtr) {
+    IGFD::DestroyContext(vContextPtr);
+}
+
+IGFD_C_API ImGuiFileDialogContext* IGFD_GetCurrentContext(void) {
+    return IGFD::GetCurrentContext();
+}
+
+IGFD_C_API void IGFD_SetCurrentContext(ImGuiFileDialogContext* vContextPtr) {
+    IGFD::SetCurrentContext(vContextPtr);
 }
 
 IGFD_C_API void IGFD_OpenDialog(             // open a standard dialog
