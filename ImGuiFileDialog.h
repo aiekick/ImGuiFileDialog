@@ -796,7 +796,9 @@ private:
         float thickness = 0.0f;  // when more than 0.0f, is a separator
     };
 
-    struct GroupStruct {
+public:
+    class GroupStruct {
+        friend class PlacesFeature;
         bool canBeSaved                              = false;  // defined by code, can be used for prevent serialization / deserialization
         size_t displayOrder                          = 0U;     // the display order will be usedf first, then alphanumeric
         bool defaultOpened                           = false;  // the group is opened by default
@@ -804,13 +806,14 @@ private:
         char editBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";     // temp buffer for name edition
         int32_t selectedPlaceForEdition              = -1;
         ImGuiTreeNodeFlags collapsingHeaderFlag      = ImGuiTreeNodeFlags_None;
-        ImGuiListClipper clipper;           // the list clipper of the grou
-        std::string name;                   // the group name, will be displayed
-        std::vector<PlaceStruct> places;    // the places (name + path)
+        ImGuiListClipper clipper;         // the list clipper of the grou
+        std::string name;                 // the group name, will be displayed
+        std::vector<PlaceStruct> places;  // the places (name + path)
+    public:
         bool AddPlace(                      // add a place by code
             const std::string& vPlaceName,  // place name
             const std::string& vPlacePath,  // place path
-            const bool vCanBeSaved,        // prevent serialization
+            const bool vCanBeSaved,         // prevent serialization
             const FileStyle& vStyle = {});  // style
         void AddPlaceSeparator(const float& vThickness = 1.0f);
         bool RemovePlace(                    // remove a place by code, return true if succeed
@@ -831,18 +834,18 @@ protected:
     bool m_DrawPlacesPane(FileDialogInternal& vFileDialogInternal, const ImVec2& vSize);  // draw place Pane
 
 public:
-    std::string SerializePlaces(                                    // serialize place : return place buffer to save in a file
-        const bool vForceSerialisationForAll = true);              // for avoid serialization of places with flag 'canBeSaved to false'
-    void DeserializePlaces(                                         // deserialize place : load place buffer to load in the dialog (saved from
-        const std::string& vPlaces);                                // previous use with SerializePlaces()) place buffer to load
-    bool AddPlacesGroup(                                            // add a group
-        const std::string& vGroupName,                              // the group name
-        const size_t& vDisplayOrder,                                // the display roder of the group
-        const bool vCanBeEdited     = false,                       // let the user add/remove place in the group
-        const bool vOpenedByDefault = true);                       // hte group is opened by default
-    bool RemovePlacesGroup(const std::string& vGroupName);          // remove the group
-    GroupStruct* GetPlacesGroupPtr(const std::string& vGroupName);  // get the group, if not existed, will be created
-#endif                                                              // USE_PLACES_FEATURE
+    std::string SerializePlaces(                                 // serialize place : return place buffer to save in a file
+        const bool vForceSerialisationForAll = true);            // for avoid serialization of places with flag 'canBeSaved to false'
+    void DeserializePlaces(                                      // deserialize place : load place buffer to load in the dialog (saved from
+        const std::string& vPlaces);                             // previous use with SerializePlaces()) place buffer to load
+    bool AddPlacesGroup(                                         // add a group
+        const std::string& vGroupName,                           // the group name
+        const size_t& vDisplayOrder,                             // the display roder of the group
+        const bool vCanBeEdited     = false,                     // let the user add/remove place in the group
+        const bool vOpenedByDefault = true);                     // hte group is opened by default
+    bool RemovePlacesGroup(const std::string& vGroupName);       // remove the group
+    GroupStruct* GetPlacesGroup(const std::string& vGroupName);  // get the group, if not existed, will be created
+#endif                                                           // USE_PLACES_FEATURE
 };
 
 // file localization by input chat // widget flashing
@@ -884,7 +887,7 @@ protected:
     ImGuiListClipper m_FileListClipper;
     ImGuiListClipper m_PathListClipper;
     float prOkCancelButtonWidth = 0.0f;
-    ImGuiWindowFlags m_CurrentDisplayedFlags;
+    ImGuiWindowFlags m_CurrentDisplayedFlags{};
 
 public:
     FileDialog();           // ImGuiFileDialog Constructor. Can be used to create many dialog instances simultaneously.
