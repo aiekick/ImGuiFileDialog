@@ -2841,11 +2841,18 @@ void IGFD::FileDialogInternal::EndFrame() {
 }
 
 void IGFD::FileDialogInternal::ResetForNewDialog() {
+
 }
 
 void IGFD::FileDialogInternal::configureDialog(const std::string& aKey, const std::string& aTitle, const char* aFilters, const FileDialogConfig& aConfig) {
     m_DialogConfig = aConfig;
     ResetForNewDialog();
+    
+    if (dLGkey != aKey) {
+        // reset search if another dialog
+        searchManager.Clear();
+    }
+
     dLGkey   = aKey;
     dLGtitle = aTitle;
 
