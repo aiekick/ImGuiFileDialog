@@ -2,43 +2,47 @@
 
 #include <cassert>
 #include <cmath>
+#include <array>
+#include <algorithm>
 
 #include <ImGuiFileDialog/ImGuiFileDialog.h>
+
+using IGFD::ImString;
 
 ////////////////////////////////////////////////////////////////////////////
 //// ReplaceString /////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
 bool Test_IGFD_Utils_ReplaceString_0() {
-    std::string code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
+    ImString code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
     if (IGFD::Utils::ReplaceString(code, "FRAG", "TOTO") == false) return false;
     if (code != "@TOTOMENT TOTO VA AU ZOO\nfloat f = 0.0;\n") return false;
     return true;
 }
 
 bool Test_IGFD_Utils_ReplaceString_1() {
-    std::string code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
+    ImString code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
     if (IGFD::Utils::ReplaceString(code, "A", "TOTO") == false) return false;
     if (code != "@FRTOTOGMENT TOTO VTOTO TOTOU ZOO\nfloat f = 0.0;\n") return false;
     return true;
 }
 
 bool Test_IGFD_Utils_ReplaceString_2() {
-    std::string code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
+    ImString code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
     if (IGFD::Utils::ReplaceString(code, "Y", "TOTO") == true) return false;
     if (code != "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n") return false;
     return true;
 }
 
 bool Test_IGFD_Utils_ReplaceString_3() {
-    std::string code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
+    ImString code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
     if (IGFD::Utils::ReplaceString(code, "\n", "\n\n", 0) == false) return false;
     if (code != "@FRAGMENT TOTO VA AU ZOO\n\nfloat f = 0.0;\n\n") return false;
     return true;
 }
 
 bool Test_IGFD_Utils_ReplaceString_4() {
-    std::string code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
+    ImString code = "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n";
     if (IGFD::Utils::ReplaceString(code, "\\", "\n\n") == true) return false;
     if (code != "@FRAGMENT TOTO VA AU ZOO\nfloat f = 0.0;\n") return false;
     return true;
@@ -46,14 +50,14 @@ bool Test_IGFD_Utils_ReplaceString_4() {
 
 // test presence of infinite loop
 bool Test_IGFD_Utils_ReplaceString_5() {
-    std::string code = "//////";
+    ImString code = "//////";
     if (IGFD::Utils::ReplaceString(code, "/", "/") == true) return false;
     return true;
 }
 
 // test recursion growing
 bool Test_IGFD_Utils_ReplaceString_6() {
-    std::string code = "\n\n\n";
+    ImString code = "\n\n\n";
     if (IGFD::Utils::ReplaceString(code, "\n", "\n\n", 0) == false) return false;
     if (code != "\n\n\n\n\n\n") return false;
     code = "\n\n\n";
@@ -64,7 +68,7 @@ bool Test_IGFD_Utils_ReplaceString_6() {
 
 // test recursion reducing
 bool Test_IGFD_Utils_ReplaceString_7() {
-    std::string code = "//////";
+    ImString code = "//////";
     if (IGFD::Utils::ReplaceString(code, "//", "/", 0) == false) return false;
     if (code != "///") return false;
     code = "//////";
@@ -78,9 +82,10 @@ bool Test_IGFD_Utils_ReplaceString_7() {
 ////////////////////////////////////////////////////////////////////////////
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_0() {
-    std::string code = "TOTO;VA;AU;ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
-    if (arr.size() != 4U) return false;
+    ImString code = "TOTO;VA;AU;ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), ';', false);
+    if (arr.Size != 4) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -89,9 +94,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_0() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_1() {
-    std::string code = "TOTO;VA;AU;;ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
-    if (arr.size() != 4U) return false;
+    ImString code = "TOTO;VA;AU;;ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), ';', false);
+    if (arr.Size != 4) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -100,9 +106,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_1() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_2() {
-    std::string code = "TOTO;VA;AU;;ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, ';', true);
-    if (arr.size() != 5U) return false;
+    ImString code = "TOTO;VA;AU;;ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), ';', true);
+    if (arr.Size != 5) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -112,9 +119,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_2() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_3() {
-    std::string code = "TOTO:VA;AU;;ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, ';', false);
-    if (arr.size() != 3U) return false;
+    ImString code = "TOTO:VA;AU;;ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), ';', false);
+    if (arr.Size != 3) return false;
     if (arr[0] != "TOTO:VA") return false;
     if (arr[1] != "AU") return false;
     if (arr[2] != "ZOO") return false;
@@ -126,9 +134,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_char_3() {
 ////////////////////////////////////////////////////////////////////////////
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0() {
-    std::string code = "TOTO##VA##AU##ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
-    if (arr.size() != 4U) return false;
+    ImString code = "TOTO##VA##AU##ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), "##", false);
+    if (arr.Size != 4) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -137,9 +146,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1() {
-    std::string code = "TOTO##VA##AU####ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
-    if (arr.size() != 4U) return false;
+    ImString code = "TOTO##VA##AU####ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), "##", false);
+    if (arr.Size != 4) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -148,9 +158,10 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2() {
-    std::string code = "TOTO##VA##AU####ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", true);
-    if (arr.size() != 5U) return false;
+    ImString code = "TOTO##VA##AU####ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), "##", true);
+    if (arr.Size != 5) return false;
     if (arr[0] != "TOTO") return false;
     if (arr[1] != "VA") return false;
     if (arr[2] != "AU") return false;
@@ -160,12 +171,87 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2() {
 }
 
 bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
-    std::string code = "TOTO:VA##AU####ZOO";
-    auto arr         = IGFD::Utils::SplitStringToVector(code, "##", false);
-    if (arr.size() != 3U) return false;
+    ImString code = "TOTO:VA##AU####ZOO";
+    ImVector<ImString> arr;
+    IGFD::Utils::SplitStringToVector(arr, code.c_str(), "##", false);
+    if (arr.Size != 3) return false;
     if (arr[0] != "TOTO:VA") return false;
     if (arr[1] != "AU") return false;
     if (arr[2] != "ZOO") return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// LowerCaseString ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_LowerCaseString_0() {
+    auto res = IGFD::Utils::LowerCaseString("Hello WORLD 123!");
+    if (res != "hello world 123!") return false;
+    res = IGFD::Utils::LowerCaseString("");
+    if (res != "") return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// GetCharCountInString //////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_GetCharCountInString_0() {
+    if (IGFD::Utils::GetCharCountInString("hello.world.txt", '.') != 2U) return false;
+    if (IGFD::Utils::GetCharCountInString("nochar", '.') != 0U) return false;
+    if (IGFD::Utils::GetCharCountInString("", '.') != 0U) return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// GetLastCharPosWithMinCharCount ////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_GetLastCharPosWithMinCharCount_0() {
+    // "a.b.c.d" has dots at pos 1, 3, 5
+    // minCharCount=1 => last 1 dot from end => pos 5
+    auto pos = IGFD::Utils::GetLastCharPosWithMinCharCount("a.b.c.d", '.', 1);
+    if (pos != 5U) return false;
+    // minCharCount=2 => last 2 dots from end => pos 3
+    pos = IGFD::Utils::GetLastCharPosWithMinCharCount("a.b.c.d", '.', 2);
+    if (pos != 3U) return false;
+    // minCharCount=3 => last 3 dots from end => pos 1
+    pos = IGFD::Utils::GetLastCharPosWithMinCharCount("a.b.c.d", '.', 3);
+    if (pos != 1U) return false;
+    // minCharCount=0 => returns npos
+    pos = IGFD::Utils::GetLastCharPosWithMinCharCount("a.b.c.d", '.', 0);
+    if (pos != (size_t)-1) return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// FormatFileSize ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_FormatFileSize_0() {
+    auto res = IGFD::Utils::FormatFileSize(0);
+    if (res.first != "0") return false;
+    // 500 bytes
+    res = IGFD::Utils::FormatFileSize(500);
+    if (res.first != "500") return false;
+    // 1.5 KB = 1536 bytes
+    res = IGFD::Utils::FormatFileSize(1536);
+    if (res.first != "1.50") return false;
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+//// GetPathSeparator //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+bool Test_IGFD_Utils_GetPathSeparator_0() {
+    const char* sep = IGFD::Utils::GetPathSeparator();
+#ifdef _WIN32
+    if (strcmp(sep, "\\") != 0) return false;
+#else
+    if (strcmp(sep, "/") != 0) return false;
+#endif
     return true;
 }
 
@@ -176,8 +262,8 @@ bool Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3() {
 namespace IGFD {
 class TestUtils {
 public:
-    static bool ExtractNumFromStringAtPos(const std::string& str, size_t& pos, double& vOutNum) {
-        return Utils::M_ExtractNumFromStringAtPos(str, pos, vOutNum);
+    static bool ExtractNumFromStringAtPos(const char* str, size_t& pos, double& vOutNum) {
+        return Utils::M_ExtractNumFromStringAtPos(str, str ? strlen(str) : 0, pos, vOutNum);
     }
 };
 }  // namespace IGFD
@@ -275,7 +361,7 @@ bool Test_IGFD_Utils_NaturalCompare_0() {
 
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), true, false);
               });
 
     std::array<std::string, s_count_items> good_sort =  //
@@ -331,7 +417,7 @@ bool Test_IGFD_Utils_NaturalCompare_1() {
 
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, true, true);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), true, true);
               });
 
     std::array<std::string, s_count_items> good_sort =  //
@@ -387,7 +473,7 @@ bool Test_IGFD_Utils_NaturalCompare_2() {
 
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, false, false);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), false, false);
               });
 
     std::array<std::string, s_count_items> good_sort =  //
@@ -443,7 +529,7 @@ bool Test_IGFD_Utils_NaturalCompare_3() {
 
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, false, true);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), false, true);
               });
 
     std::array<std::string, s_count_items> good_sort =  //
@@ -488,7 +574,7 @@ bool Test_IGFD_Utils_NaturalCompare_4() {
 
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), true, false);
               });
 
     std::array<std::string, s_count_items> good_sort =  //
@@ -521,7 +607,7 @@ bool Test_IGFD_Utils_NaturalCompare_5() {
     // ASCENDING
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, true, false);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), true, false);
               });
 
     std::array<std::string, s_count_items> good_sort_asc =  //
@@ -540,7 +626,7 @@ bool Test_IGFD_Utils_NaturalCompare_5() {
     // DESCENDING
     std::sort(bad_sort.begin(), bad_sort.end(),                         //
               [](const std::string& a, const std::string& b) -> bool {  //
-                  return IGFD::Utils::NaturalCompare(a, b, true, true);
+                  return IGFD::Utils::NaturalCompare(a.c_str(), b.c_str(), true, true);
               });
 
     std::array<std::string, s_count_items> good_sort_desc =  //
@@ -584,6 +670,12 @@ bool Test_Utils(const std::string& vTest) {
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1);
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2);
     else IfTestExist(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3);
+
+    IfTestExist(Test_IGFD_Utils_LowerCaseString_0);
+    else IfTestExist(Test_IGFD_Utils_GetCharCountInString_0);
+    else IfTestExist(Test_IGFD_Utils_GetLastCharPosWithMinCharCount_0);
+    else IfTestExist(Test_IGFD_Utils_FormatFileSize_0);
+    else IfTestExist(Test_IGFD_Utils_GetPathSeparator_0);
 
     IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_0);
     else IfTestExist(Test_IGFD_Utils_ExtractNumFromStringAtPos_1);

@@ -7,7 +7,7 @@ private:
     bool m_ReadOnly = false;
 
 public:
-    void OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) override;
+    void OpenDialog(const char* vKey, const char* vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) override;
     bool isReadOnly() const;
 
 protected:

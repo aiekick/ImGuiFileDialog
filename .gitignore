@@ -15,3 +15,5 @@
 /bin/*.wasm
 /bin/*.js
 /bin/*.conf
+/.claude/settings.local.json
+/.vscode/settings.json

@@ -23,7 +23,7 @@ private:
 public:
     void addFilter(const std::string& vFilter) {
         fd.filterManager.ParseFilters(vFilter.c_str());
-        fd.filterManager.SetSelectedFilterWithExt(vFilter);
+        fd.filterManager.SetSelectedFilterWithExt(vFilter.c_str());
     }
 
     void addFile(const std::string& vFile) {

@@ -3,9 +3,12 @@
 #include "Test_FileManager.h"
 #include "Test_FileStyle.h"
 #include "Test_Utils.h"
+#include "Test_ImString.h"
 
 bool Test_ImGuiFileDialog(const std::string& vTest) {
-    if (vTest.find("IGFD_FilterManager") != std::string::npos) {
+    if (vTest.find("IGFD_ImString") != std::string::npos) {
+        return Test_ImString(vTest);
+    } else if (vTest.find("IGFD_FilterManager") != std::string::npos) {
         return Test_FilterManager(vTest);
     } else if (vTest.find("IGFD_FileManager") != std::string::npos) {
         return Test_FileManager(vTest);

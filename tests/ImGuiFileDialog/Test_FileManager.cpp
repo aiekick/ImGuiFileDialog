@@ -27,7 +27,7 @@ private:
     void m_compute_name_array() {
         for (const auto& file_ptr : fd.fileManager.m_FileList) {
             if (file_ptr) {
-                arr.emplace(file_ptr->fileNameExt);
+                arr.emplace(file_ptr->fileNameExt.c_str());
             }
         }
     }
@@ -35,11 +35,11 @@ private:
 public:
     void addFilter(const std::string& vFilter) {
         fd.filterManager.ParseFilters(vFilter.c_str());
-        fd.filterManager.SetSelectedFilterWithExt(vFilter);
+        fd.filterManager.SetSelectedFilterWithExt(vFilter.c_str());
     }
 
     void addFile(const std::string& vFile) {
-        fd.fileManager.m_AddFile(fd, ".", vFile, FileType(FileType::ContentType::File, false));
+        fd.fileManager.m_AddFile(fd, ".", vFile.c_str(), FileType(FileType::ContentType::File, false));
     };
 
     void addFiles(const std::vector<std::string>& vFiles) {
@@ -88,7 +88,7 @@ public:
     }
 
     void setCurrentPath(const std::string& vPath) {
-        fd.fileManager.m_CurrentPath = vPath;
+        fd.fileManager.m_CurrentPath = vPath.c_str();
     }
 
     std::string getCurrentDir() {
@@ -256,7 +256,7 @@ bool Test_IGFD_FileManager_Filtering_insensitive_case_1() {
 bool Test_IGFD_FileManager_FileInfos_SearchForExts_0() {
     auto infos_ptr = IGFD::FileInfos::create();
     infos_ptr->fileType.SetContent(IGFD::FileType::ContentType::File);
-    const std::string& filters = ".png,.gif,.jpg";
+    const char* filters = ".png,.gif,.jpg";
     infos_ptr->fileNameExt = "toto_0.png";
     if (!infos_ptr->FinalizeFileTypeParsing(1)) return false;
     if (!infos_ptr->SearchForExts(filters, false)) return false;
@@ -278,7 +278,7 @@ bool Test_IGFD_FileManager_GetResultingFilePathName_issue_144() {
     mgr.setInput("toto.cpp");
     if (fd.fileManager.GetResultingFileName(fd, IGFD_ResultMode_AddIfNoFileExt) != "toto.cpp") return false;
     mgr.createDirectoryOnDisk("TITI");
-    const std::string& existing_path_file = "TITI" + IGFD::Utils::GetPathSeparator() + "toto.cpp ";
+    const std::string existing_path_file = std::string("TITI") + IGFD::Utils::GetPathSeparator() + "toto.cpp ";
     mgr.createFileOnDisk(existing_path_file);
     mgr.setInput(existing_path_file);
     if (fd.fileManager.GetResultingFilePathName(fd, IGFD_ResultMode_AddIfNoFileExt) != existing_path_file) return false;

@@ -30,6 +30,48 @@ function(SetTest arg)
   add_test("${arg}" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT}" "${arg}")
 endfunction()
 
+## Test_IGFD_ImString -- Construction
+SetTest(Test_IGFD_ImString_Construction_Default)
+SetTest(Test_IGFD_ImString_Construction_CStr)
+SetTest(Test_IGFD_ImString_Construction_CStr_Null)
+SetTest(Test_IGFD_ImString_Construction_CStr_Len)
+SetTest(Test_IGFD_ImString_Construction_Range)
+SetTest(Test_IGFD_ImString_Construction_Copy)
+SetTest(Test_IGFD_ImString_Construction_Move)
+
+## Test_IGFD_ImString -- Assignment
+SetTest(Test_IGFD_ImString_Assignment_CStr)
+SetTest(Test_IGFD_ImString_Assignment_Copy)
+SetTest(Test_IGFD_ImString_Assignment_Move)
+
+## Test_IGFD_ImString -- Append
+SetTest(Test_IGFD_ImString_Append_CStr)
+SetTest(Test_IGFD_ImString_Append_ImString)
+SetTest(Test_IGFD_ImString_Append_PushBack)
+SetTest(Test_IGFD_ImString_Append_OperatorPlusEqual)
+
+## Test_IGFD_ImString -- Find
+SetTest(Test_IGFD_ImString_Find_Char)
+SetTest(Test_IGFD_ImString_Find_CStr)
+SetTest(Test_IGFD_ImString_Find_ImString)
+SetTest(Test_IGFD_ImString_Rfind_Char)
+SetTest(Test_IGFD_ImString_FindLastOf)
+
+## Test_IGFD_ImString -- Substr / Replace
+SetTest(Test_IGFD_ImString_Substr)
+SetTest(Test_IGFD_ImString_Replace)
+
+## Test_IGFD_ImString -- Comparison / Concat / Format
+SetTest(Test_IGFD_ImString_Comparison)
+SetTest(Test_IGFD_ImString_Concatenation)
+SetTest(Test_IGFD_ImString_Setf)
+SetTest(Test_IGFD_ImString_Appendf)
+
+## Test_IGFD_ImString -- UTF-8 / MemcpySafety / Clear
+SetTest(Test_IGFD_ImString_UTF8)
+SetTest(Test_IGFD_ImString_MemcpySafe)
+SetTest(Test_IGFD_ImString_Clear)
+
 ## Test_IGFD_FilterManager -- Simple Filters
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Simple_0)
 SetTest(Test_IGFD_FilterManager_ParseFilters_Filters_Simple_1)
@@ -168,6 +210,21 @@ SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_0)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_1)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_2)
 SetTest(Test_IGFD_Utils_SplitStringToVector_delimiter_std_string_3)
+
+## Test_IGFD_Utils -- LowerCaseString
+SetTest(Test_IGFD_Utils_LowerCaseString_0)
+
+## Test_IGFD_Utils -- GetCharCountInString
+SetTest(Test_IGFD_Utils_GetCharCountInString_0)
+
+## Test_IGFD_Utils -- GetLastCharPosWithMinCharCount
+SetTest(Test_IGFD_Utils_GetLastCharPosWithMinCharCount_0)
+
+## Test_IGFD_Utils -- FormatFileSize
+SetTest(Test_IGFD_Utils_FormatFileSize_0)
+
+## Test_IGFD_Utils -- GetPathSeparator
+SetTest(Test_IGFD_Utils_GetPathSeparator_0)
 
 ## Test_IGFD_Utils -- Natural Sorting related : ExtractNumFromStringAtPos
 SetTest(Test_IGFD_Utils_ExtractNumFromStringAtPos_0)

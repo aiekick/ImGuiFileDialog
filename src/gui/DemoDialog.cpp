@@ -191,7 +191,7 @@ std::string toStr(const char* fmt, ...) {
     return std::string();
 }
 
-void CustomDrawReadOnlyCheckBoxFileDialog::OpenDialog(const std::string& vKey, const std::string& vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) {
+void CustomDrawReadOnlyCheckBoxFileDialog::OpenDialog(const char* vKey, const char* vTitle, const char* vFilters, const IGFD::FileDialogConfig& vConfig) {
     m_ReadOnly = false;
     ImGuiFileDialog::OpenDialog(vKey, vTitle, vFilters, vConfig);
 }
@@ -422,7 +422,7 @@ void DemoDialog::init(const float& vFontSize) {
     if (docFile_1.is_open()) {
         std::stringstream strStream;
         strStream << docFile_1.rdbuf();  // read the file
-        IGFD::DeserializePlaces(strStream.str());
+        IGFD::DeserializePlaces(strStream.str().c_str());
         docFile_1.close();
     }
 
@@ -430,7 +430,7 @@ void DemoDialog::init(const float& vFontSize) {
     if (docFile_2.is_open()) {
         std::stringstream strStream;
         strStream << docFile_2.rdbuf();  // read the file
-        fileDialog2.DeserializePlaces(strStream.str());
+        fileDialog2.DeserializePlaces(strStream.str().c_str());
         docFile_2.close();
     }
 
@@ -461,7 +461,7 @@ void DemoDialog::init(const float& vFontSize) {
             IGFD::FileStyle style;                                                                         \
             style.icon      = folderIcon;                                                                  \
             auto place_path = IGFD::Utils::UTF8Encode(path);                                               \
-            pPlaces->AddPlace(folderLabel, place_path, false, style);                                   \
+            pPlaces->AddPlace(folderLabel, place_path.c_str(), false, style);                            \
             IGFD_AddPlace(cFileDialogPtr, group_name, folderLabel, place_path.c_str(), false, folderIcon); \
         }                                                                                                  \
         CoTaskMemFree(path);                                                                               \
@@ -494,7 +494,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
     {
         ImGui::Text("ImGuiFileDialog Demo : %s", IGFD_VERSION);
         ImGui::Text("Imgui Supported Version : %s", IGFD_IMGUI_SUPPORTED_VERSION);
-        ImGui::Text("FileSystem Interface : %s", fileManager.GetFileSystemName().c_str());
+        ImGui::Text("FileSystem Interface : %s", fileManager.GetFileSystemName());
 
         ImGui::Separator();
 
@@ -640,7 +640,7 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                 const char* filters = ".*,.cpp,.h,.hpp";
                 IGFD::FileDialogConfig config;
                 config.path              = ".";
-                config.filePathName      = filePathName;
+                config.filePathName      = filePathName.c_str();
                 config.countSelectionMax = 1;
                 config.flags             = flags;
                 IGFD::OpenDialog("ChooseFileDlgKey", ICON_IGFD_FOLDER_OPEN " Choose a File", filters, config);
@@ -719,13 +719,13 @@ void DemoDialog::display(const ImVec4& vDisplayRect) {
                             if (!result) {
                                 const auto fileSize           = IGFD::Utils::FormatFileSize(vFileInfosPtr->fileSize);
                                 const auto statInfosSize      = IGFD::Utils::FormatFileSize((size_t)statInfos.st_size);
-                                vFileInfosPtr->tooltipMessage = toStr("%s : %s %s\n%s : %s %s",                              //
+                                vFileInfosPtr->tooltipMessage = toStr("%s : %s %s\n%s : %s %s",                               //
                                                                       (vFileInfosPtr->fileNameLevels[0] + ".gltf").c_str(),  //
                                                                       fileSize.first.c_str(),                                //
                                                                       fileSize.second.c_str(),                               //
                                                                       (vFileInfosPtr->fileNameLevels[0] + ".bin").c_str(),   //
                                                                       statInfosSize.first.c_str(),                           //
-                                                                      statInfosSize.second.c_str());
+                                                                      statInfosSize.second.c_str()).c_str();
                                 vFileInfosPtr->tooltipColumn  = 2;  // size column
                                 vFileInfosPtr->fileSize += (size_t)statInfos.st_size;
                             } else {
