@@ -48,8 +48,7 @@ git clone https://github.com/aiekick/ImGuiFileDialog.git
 git checkout master
 ```
 
-These commands create a `lib` directory where you can store any third-party dependencies used in your project, downloads
-the ImGuiFileDialog git repository and checks out the Lib_Only branch where the actual library code is located.
+These commands create a `lib` directory for third-party dependencies and clone the ImGuiFileDialog repository's `master` branch, which contains the library sources. The demo application is maintained separately on the [DemoApp branch](https://github.com/aiekick/ImGuiFileDialog/tree/DemoApp).
 
 Add `lib/ImGuiFileDialog/ImGuiFileDialog.cpp` to your build system and include
 `lib/ImGuiFileDialog/ImGuiFileDialog.h` in your source code. ImGuiFileLib will compile with and be included directly in
@@ -140,7 +139,7 @@ void drawGui() {
 
 ### How to build the sample app
 
-The sample app is [here in master branch](https://github.com/aiekick/ImGuiFileDialog/tree/master)
+The sample app is on the [DemoApp branch](https://github.com/aiekick/ImGuiFileDialog/tree/DemoApp), not in the library-only `master` branch.
 
 You need to use CMake. For the 3 Os (Win, Linux, MacOs), the CMake usage is exactly the same,
 
@@ -176,9 +175,7 @@ you need many lib : opengl and cocoa framework
 
 ## That's all folks :-)
 
-You can check by example in this repo with the file CustomImGuiFileDialogConfig.h :
-- this trick was used to have custom icon font instead of labels for buttons or messages titles
-- you can also use your custom imgui button, the button call stamp must be same by the way :)
+For usage and customization examples, see the sample app on the [DemoApp branch](https://github.com/aiekick/ImGuiFileDialog/tree/DemoApp).
 
 The Custom Icon Font (in CustomFont.cpp and CustomFont.h) was made with ImGuiFontStudio (https://github.com/aiekick/ImGuiFontStudio) i wrote for that :)
 ImGuiFontStudio is also using ImGuiFileDialog.$
